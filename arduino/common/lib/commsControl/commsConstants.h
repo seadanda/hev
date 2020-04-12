@@ -85,64 +85,67 @@ class payload {
 public:
     payload(payloadType type = payloadType::payloadUnset)  {type_ = type; } //data_ = nullptr; cmd_ = nullptr; alarm_ = nullptr; }
     payload(const payload &other) {
-//        unsetAll();
         type_ = other.type_;
-        /*if ( other. data_ != nullptr) {  data_ = new  dataFormat;*/ memcpy(& data_, & other.data_, sizeof( dataFormat));// } else { data_ = nullptr; }
-        /*if ( other.  cmd_ != nullptr) {   cmd_ = new   cmdFormat;*/ memcpy(&  cmd_, &  other.cmd_, sizeof(  cmdFormat));// } else {  cmd_ = nullptr; }
-        /*if ( other.alarm_ != nullptr) { alarm_ = new alarmFormat;*/ memcpy(&alarm_, &other.alarm_, sizeof(alarmFormat));// } else {alarm_ = nullptr; }
+        memcpy(& data_, &other. data_, sizeof( dataFormat));
+        memcpy(&  cmd_, &other.  cmd_, sizeof(  cmdFormat));
+        memcpy(&alarm_, &other.alarm_, sizeof(alarmFormat));
     }
     payload& operator=(const payload& other) {
-//        unsetAll();
         type_ = other.type_;
-        /*if ( other. data_ != nullptr) {  data_ = new  dataFormat;*/ memcpy(& data_, & other.data_, sizeof( dataFormat));// } else { data_ = nullptr; }
-        /*if ( other.  cmd_ != nullptr) {   cmd_ = new   cmdFormat;*/ memcpy(&  cmd_, &  other.cmd_, sizeof(  cmdFormat));// } else {  cmd_ = nullptr; }
-        /*if ( other.alarm_ != nullptr) { alarm_ = new alarmFormat;*/ memcpy(&alarm_, &other.alarm_, sizeof(alarmFormat));// } else {alarm_ = nullptr; }
-
+        memcpy(& data_, &other. data_, sizeof( dataFormat));
+        memcpy(&  cmd_, &other.  cmd_, sizeof(  cmdFormat));
+        memcpy(&alarm_, &other.alarm_, sizeof(alarmFormat));
         return *this;
     }
 
-    ~payload() {;}//unsetData(); unsetAlarm(); unsetCmd();}
+    ~payload() { unsetAll(); }
 
     void setType(payloadType type) { type_ = type; }
     payloadType getType() {return type_; }
 
     // requires argument as new struct
-    void setData (dataFormat   *data) { /*unsetAll(); */ type_ = payloadType::payloadData; /*  data_ = new  dataFormat(  *data); }*/ memcpy(& data_,  data, sizeof( dataFormat)); }
-    void setCmd  (cmdFormat     *cmd) { /*unsetAll(); */ type_ = payloadType::payloadCmd;  /*   cmd_ = new   cmdFormat(   *cmd); }*/ memcpy(&  cmd_,   cmd, sizeof(  cmdFormat)); }
-    void setAlarm(alarmFormat *alarm) { /*unsetAll(); */ type_ = payloadType::payloadAlarm;/* alarm_ = new alarmFormat( *alarm); }*/ memcpy(&alarm_, alarm, sizeof(alarmFormat)); }
+    void setData (dataFormat   *data) { type_ = payloadType::payloadData;  memcpy(& data_,  data, sizeof( dataFormat)); }
+    void setCmd  (cmdFormat     *cmd) { type_ = payloadType::payloadCmd;   memcpy(&  cmd_,   cmd, sizeof(  cmdFormat)); }
+    void setAlarm(alarmFormat *alarm) { type_ = payloadType::payloadAlarm; memcpy(&alarm_, alarm, sizeof(alarmFormat)); }
 
-    dataFormat  *getData () {return  &data_; }
-    cmdFormat   *getCmd  () {return   &cmd_; }
+    // get pointers to particular payload types
+    dataFormat  *getData () {return & data_; }
+    cmdFormat   *getCmd  () {return &  cmd_; }
     alarmFormat *getAlarm() {return &alarm_; }
 
-//    void unsetAll()   { unsetData(); unsetAlarm(); unsetCmd(); type_ = payloadType::payloadUnset; }
-//    void unsetData()  { if ( data_ != nullptr) { delete  data_;  data_ = nullptr; } }
-//    void unsetCmd()   { if (  cmd_ != nullptr) { delete   cmd_;   cmd_ = nullptr; } }
-//    void unsetAlarm() { if (alarm_ != nullptr) { delete alarm_; alarm_ = nullptr; } }
+    void unsetAll()   { unsetData(); unsetAlarm(); unsetCmd(); type_ = payloadType::payloadUnset; }
+    void unsetData()  { memset(& data_, 0, sizeof( dataFormat)); }
+    void unsetCmd()   { memset(&  cmd_, 0, sizeof(  cmdFormat)); }
+    void unsetAlarm() { memset(&alarm_, 0, sizeof(alarmFormat)); }
 
-    void setPayload(payloadType type, void* dt) {
-        switch (type) {
+    void setPayload(payloadType type, void* information) {
+        setType(type);
+        setInformation(information);
+    }
+
+    void setInformation(void* information) {
+        switch (type_) {
             case payloadType::payloadData:
-                setData(reinterpret_cast<dataFormat*>(dt));
+                setData (reinterpret_cast< dataFormat*>(information));
                 break;
             case payloadType::payloadCmd:
-                setCmd(reinterpret_cast<cmdFormat*>(dt));
+                setCmd  (reinterpret_cast<  cmdFormat*>(information));
                 break;
             case payloadType::payloadAlarm:
-                setAlarm(reinterpret_cast<alarmFormat*>(dt));
+                setAlarm(reinterpret_cast<alarmFormat*>(information));
                 break;
             default:
                 break;
         }
     }
 
-    // returns void pointer, in case you know what to do with data
+    // returns void pointer, in case you know what to do with data or dont care what the format is
     void *getInformation() {
         switch (type_) {
             case payloadType::payloadData:
-                return reinterpret_cast<void*>(getData());
+                return reinterpret_cast<void*>(getData ());
             case payloadType::payloadCmd:
-                return reinterpret_cast<void*>(getCmd());
+                return reinterpret_cast<void*>(getCmd  ());
             case payloadType::payloadAlarm:
                 return reinterpret_cast<void*>(getAlarm());
             default:
@@ -150,7 +153,8 @@ public:
         }
     }
 
-    uint8_t getInformationSize()  {
+    // returns payload information size
+    uint8_t getSize()  {
         switch (type_) {
             case payloadType::payloadData:
                 return static_cast<uint8_t>(sizeof( dataFormat));

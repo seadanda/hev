@@ -26,13 +26,13 @@ public:
     void receiver();
 
 private:
-    RingBuf<commsFormat *,CONST_MAX_SIZE_RB_SENDING> *getQueue(payloadType *type);
+    RingBuf<commsFormat *,CONST_MAX_SIZE_RB_SENDING> *getQueue(payloadType &type);
     payloadType getInfoType(uint8_t *address);
 
     void sendQueue    (RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *queue);
     void resendPacket (RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *queue);
-    bool receivePacket(payloadType *type);
-    void finishPacket (payloadType *type);
+    bool receivePacket(payloadType &type);
+    void finishPacket (payloadType &type);
 
     bool encoder(uint8_t* payload, uint8_t dataSize);
     bool decoder(uint8_t* payload, uint8_t dataStart, uint8_t dataStop);
@@ -52,6 +52,7 @@ private:
 
     RingBuf<payload, CONST_MAX_SIZE_RB_RECEIVING> *queueReceived_;
 
+    payload     payloadTmp_;
     commsFormat commsTmp_;
 
     uint32_t baudrate_;

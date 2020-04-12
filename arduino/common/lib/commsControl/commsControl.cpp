@@ -99,13 +99,13 @@ void commsControl::receiver() {
                                     break;
                                 case COMMS_CONTROL_ACK:
                                     // received ACK
-                                    finishPacket(&type);
+                                    finishPacket(type);
                                     break;
                                 default:
                                     uint8_t tmpSequenceReceive = (control >> 1 ) & 0x7F;
                                     tmpSequenceReceive += 1;
                                     // received DATA
-                                    if (receivePacket(&type)) {
+                                    if (receivePacket(type)) {
                                         commsAck_->setAddress(commsTmp_.getAddress());
                                         commsAck_->setSequenceReceive(tmpSequenceReceive);
                                         sendPacket(commsAck_);
@@ -155,16 +155,16 @@ bool commsControl::writePayload(payload &pl) {
             return false;
     }
 
-    RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *tmpQueue = getQueue(&type);
+    RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *queue = getQueue(type);
     // add new entry to the queue
-    if (tmpQueue->isFull()) {
+    if (queue->isFull()) {
         commsFormat *tmpCommsRm;
-        if (tmpQueue->pop(tmpCommsRm)) {
+        if (queue->pop(tmpCommsRm)) {
             delete tmpCommsRm;
         }
     }
 
-    if (tmpQueue->push(tmpComms) ) {
+    if (queue->push(tmpComms) ) {
         return true;
     }
     return false;
@@ -258,46 +258,28 @@ void commsControl::resendPacket(RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING
 
 
 // receiving anything of commsFormat
-bool commsControl::receivePacket(payloadType *type) {
-    payload tmpPl = payload(*type);
+bool commsControl::receivePacket(payloadType &type) {
+    payloadTmp_.unsetAll();
+    payloadTmp_.setType(type);
+    void *tmpInformation = payloadTmp_.getInformation();
+    // if type is definet, copy information from comms to payload
+    if (tmpInformation != nullptr) {
+        memcpy(tmpInformation, commsTmp_.getInformation(), commsTmp_.getInfoSize());
 
-    void *tmpInformation = nullptr;
-    switch (*type) {
-        case payloadType::payloadData:
-            tmpInformation = reinterpret_cast<void*>(tmpPl.getData());
-//            tmpInformation = reinterpret_cast<void*>(new dataFormat);
-            break;
-        case payloadType::payloadCmd:
-            tmpInformation = reinterpret_cast<void*>(tmpPl.getCmd());
-//            tmpInformation = reinterpret_cast<void*>(new cmdFormat);
-            break;
-        case payloadType::payloadAlarm:
-          tmpInformation = reinterpret_cast<void*>(tmpPl.getAlarm());
-//            tmpInformation = reinterpret_cast<void*>(new alarmFormat);
-            break;
-        default:
-            break;
-    }
-
-    if (tmpInformation == nullptr) {
-        return false;
-    }
-    memcpy(tmpInformation, commsTmp_.getInformation(), commsTmp_.getInfoSize());
-    tmpPl.setPayload(*type, tmpInformation);
-
-    // remove first entry if RB is full
-    if (queueReceived_->isFull()) {
-        payload tmpPlRm;
-        if (queueReceived_->pop(tmpPlRm)) {
-            ;
+        // remove first entry if queue is full
+        if (queueReceived_->isFull()) {
+            payload tmpPlRm;
+            if (queueReceived_->pop(tmpPlRm)) {
+                ;
+            }
         }
+        return queueReceived_->push(payloadTmp_);
     }
-
-    return queueReceived_->push(tmpPl);
+    return false;
 }
 
 // if FCS is ok, remove from queue
-void commsControl::finishPacket(payloadType *type) {
+void commsControl::finishPacket(payloadType &type) {
     RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *tmpQueue = getQueue(type);
 
     if (tmpQueue != nullptr && !tmpQueue->isEmpty()) {
@@ -327,8 +309,8 @@ payloadType commsControl::getInfoType(uint8_t *address) {
 }
 
 // get link to queue according to packet format
-RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *commsControl::getQueue(payloadType *type) {
-    switch (*type) {
+RingBuf<commsFormat *, CONST_MAX_SIZE_RB_SENDING> *commsControl::getQueue(payloadType &type) {
+    switch (type) {
         case payloadType::payloadAlarm:
             return queueAlarm_;
         case payloadType::payloadCmd:
