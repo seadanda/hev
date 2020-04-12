@@ -15,7 +15,7 @@ from collections import deque
 
 import binascii
 import logging
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 # communication class that governs talking between devices
@@ -44,21 +44,19 @@ class commsControl():
         self._sequenceReceive = 0
         
         # initialize of the multithreading
-        self._lock = threading.Lock()
+        self._lockSerial = threading.Lock()
         self._receiving = True
-        receivingWorker = threading.Thread(target=self.receiver, daemon=True)
-        receivingWorker.start()
+        threading.Thread(target=self.receiver, daemon=True).start()
         
         self._sending = True
         self._datavalid = threading.Event()  # callback for send process
         self._dvlock = threading.Lock()      # make callback threadsafe
-        sendingWorker = threading.Thread(target=self.sender, daemon=True)
-        sendingWorker.start()
+        threading.Thread(target=self.sender, daemon=True).start()
     
     # open serial port
     def openSerial(self, port, baudrate = 115200, timeout = 2):
         if port is not None:
-            self._serial = serial.Serial(port = port, baudrate=baudrate, timeout = timeout)
+            self._serial = serial.Serial(port = port, baudrate=baudrate, timeout = timeout, dsrdtr = True)
         else:
             try:
                 self._serial.close()
@@ -74,14 +72,21 @@ class commsControl():
                     self.sendQueue(self._alarms  ,  10)
                     self.sendQueue(self._commands,  50)
                     self.sendQueue(self._data    , 200)
-            with self._dvlock:
-                self._datavalid.clear()
+            if self.finishedSending():
+                with self._dvlock:
+                    self._datavalid.clear()
+                    
+    def finishedSending(self):
+        if (len(self._alarms) + len(self._data) + len(self._commands)) > 0:
+            return False
+        else:
+            return True
 
     def receiver(self):
         while self._receiving:
             if self._serial is not None:
                 if self._serial.in_waiting > 0:
-                    with self._lock:
+                    with self._lockSerial:
                         logging.debug("Receiving data...")
                         data = self._serial.read(self._serial.in_waiting)
                         self.processPacket(data)
@@ -91,7 +96,7 @@ class commsControl():
             logging.debug(f'Queue length: {len(queue)}')
             currentTime = int(round(time.time() * 1000))
             if currentTime > (self._timeLastTransmission + timeout):
-                with self._lock:
+                with self._lockSerial:
                     self._timeLastTransmission = currentTime
                     queue[0].setSequenceSend(self._sequenceSend)
                     self.sendPacket(queue[0])
@@ -154,8 +159,6 @@ class commsControl():
                         else:
                             sequenceReceive = ((control >> 1) & 0x7F) + 1
                             address = tmpComms.getData()[tmpComms.getAddress():tmpComms.getControl()]
-
-                            #payload = tmpComms.getData()[tmpComms.getInformation() : tmpComms.getFcs()]
                             
                             if self.receivePacket(payloadType, tmpComms):
                                 logging.debug("Preparing ACK")
@@ -169,7 +172,7 @@ class commsControl():
                 self._received.clear()
                 
                 self._foundStart    = False
-                self._receivedStart = -1        
+                self._receivedStart = -1
         
     def writePayload(self, payload):
         payloadType = payload.getType()

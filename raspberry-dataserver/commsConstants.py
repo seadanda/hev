@@ -59,7 +59,7 @@ class dataFormat(BaseFormat):
         # < = little endian
         # > = big endian
         # ! = network format (big endian)
-        self._dataStruct = Struct("!BBHHHHHHHHHBBBBBB")
+        self._dataStruct = Struct("<BBHHHHHHHHHBBBBBB")
         self._byteArray = None
         self._type = payloadType.payloadData
 
@@ -184,7 +184,7 @@ class dataFormat(BaseFormat):
 class commandFormat(BaseFormat):
     def __init__(self):
         super().__init__()
-        self._dataStruct = Struct("!BBI")
+        self._dataStruct = Struct("<BBI")
         self._byteArray = None
         self._type = payloadType.payloadCmd
 
@@ -231,7 +231,7 @@ class command_codes(Enum):
 class alarmFormat(BaseFormat):
     def __init__(self):
         super().__init__()
-        self._dataStruct = Struct("!BBI")
+        self._dataStruct = Struct("<BBI")
         self._byteArray = None
         self._type = payloadType.payloadAlarm
 
