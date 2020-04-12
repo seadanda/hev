@@ -94,17 +94,17 @@ void commsFormat::copyData(uint8_t* data, uint8_t dataSize) {
 // STATIC METHODS
 // TODO rewrite in a slightly better way using the enum
 commsFormat* commsFormat::generateALARM(payload *pl) {
-    commsFormat *tmpComms = new commsFormat(pl->getInformationSize(), PACKET_ALARM);
+    commsFormat *tmpComms = new commsFormat(pl->getSize(), PACKET_ALARM);
     tmpComms->setInformation(pl);
     return tmpComms;
 }
 commsFormat* commsFormat::generateCMD  (payload *pl) {
-    commsFormat *tmpComms = new commsFormat(pl->getInformationSize(), PACKET_CMD  );
+    commsFormat *tmpComms = new commsFormat(pl->getSize(), PACKET_CMD  );
     tmpComms->setInformation(pl);
     return tmpComms;
 }
 commsFormat* commsFormat::generateDATA (payload *pl) {
-    commsFormat *tmpComms = new commsFormat(pl->getInformationSize(), PACKET_DATA );
+    commsFormat *tmpComms = new commsFormat(pl->getSize(), PACKET_DATA );
     tmpComms->setInformation(pl);
     return tmpComms;
 }

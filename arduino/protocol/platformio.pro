@@ -6,7 +6,7 @@ else {
 }
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/include"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/src"
-INCLUDEPATH += "$${_PRO_FILE_PWD_}/lib/commsControl"
+INCLUDEPATH += "$${_PRO_FILE_PWD_}/../common/lib/commsControl"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/.pio/libdeps/uno/uCRC16Lib_ID5390/src"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/.pio/libdeps/uno/RingBuffer_ID5418/src"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduino-avr/cores/arduino"
@@ -31,9 +31,9 @@ DEFINES += "__AVR_ATmega328P__"
 OTHER_FILES += platformio.ini
 
 SOURCES +=  src/protocol.cpp \
-            lib/commsControl/commsControl.cpp \
-            lib/commsControl/commsFormat.cpp
+            ../common/lib/commsControl/commsControl.cpp \
+            ../common/lib/commsControl/commsFormat.cpp
 
-HEADERS +=  lib/commsControl/commsConstants.h \
-            lib/commsControl/commsControl.h \
-            lib/commsControl/commsFormat.h
+HEADERS +=  ../common/lib/commsControl/commsConstants.h \
+            ../common/lib/commsControl/commsControl.h \
+            ../common/lib/commsControl/commsFormat.h
