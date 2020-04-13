@@ -53,7 +53,7 @@
 		    </div>
 		    <div class = "controls py-1 ml-auto mr-auto">
 		    <a> <button class="sb-nav-button py-3 mb-1">STOP</button></a>
-		    <a> <button class="sb-nav-button py-1 mb-1">START</button></a>
+		    <a> <input type="submit" name="download" value="START" class="sb-nav-button py-1 mb-1"></input></a>
 		    <a> <button class="sb-nav-button py-1 mb-1">RESET</button></a>
 		    </div>
 		  </div>
@@ -97,12 +97,13 @@
 	  function update_variables() {
 	  $.getJSON("live-data",
           function (data) {
-          document.getElementById("pressure").innerHTML = data.pressure;
+          //document.getElementById("pressure").innerHTML = data.pressure;
           document.getElementById("temperature").innerHTML = data.temperature;
           document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
           document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
           document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
           document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
+          document.getElementById("fsm_state").innerHTML = data.fsm_state;
           }
 	  );
 	  }
