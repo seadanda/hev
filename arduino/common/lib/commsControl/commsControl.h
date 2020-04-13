@@ -23,7 +23,7 @@ public:
     bool readPayload (payload &pl);
 
     void sender();
-    void receiver(int&, int&, int&);
+    void receiver();
 
 private:
     RingBuf<commsFormat *,CONST_MAX_SIZE_RB_SENDING> *getQueue(payloadType &type);

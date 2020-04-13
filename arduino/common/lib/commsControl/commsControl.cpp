@@ -57,7 +57,7 @@ void commsControl::sender() {
 
 // main function to always try to receive data
 // TODO: needs switch on data type with global timeouts on data pushing
-void commsControl::receiver(int &buga, int &bugb, int &bugc) {
+void commsControl::receiver() {
     uint8_t currentTransIndex;
 
     // check if any data in waiting
@@ -96,17 +96,14 @@ void commsControl::receiver(int &buga, int &bugb, int &bugc) {
                                     // received NACK
                                     // TODO: modify timeout for next sent frame?
                                     // resendPacket(&address);
-                                    buga++;
                                     break;
                                 case COMMS_CONTROL_ACK:
                                     // received ACK
                                     finishPacket(type);
-                                    bugb++;
                                     break;
                                 default:
                                     uint8_t tmpSequenceReceive = (control >> 1 ) & 0x7F;
                                     tmpSequenceReceive += 1;
-                                    bugc++;
                                     // received DATA
                                     if (receivePacket(type)) {
                                         commsAck_->setAddress(commsTmp_.getAddress());
@@ -135,7 +132,7 @@ void commsControl::receiver(int &buga, int &bugb, int &bugc) {
                 lastTransIndex_ = 0;
             }
         }
-    }
+    } 
 }
 
 bool commsControl::writePayload(payload &pl) {
@@ -249,7 +246,7 @@ void commsControl::sendPacket(commsFormat *packet) {
     if (encoder(packet->getData(), packet->getSize()) ) {
         if (Serial.availableForWrite() >= commsSendSize_) {
             Serial.write(commsSend_, commsSendSize_);
-        }
+        } 
     }
 }
 

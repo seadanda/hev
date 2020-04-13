@@ -6,11 +6,11 @@
 
 int ventilation_mode = HEV_MODE_PS;
 
-const uint16_t report_freq = 1 ; // in Hz
+const uint16_t report_freq = 5 ; // in Hz
 const uint16_t update_freq = 100 ; // in Hz
 
 uint16_t report_cnt = 0;
-
+ 
 float working_pressure = 1;             //?
 float inspiratory_minute_volume = 6000; // ml/min
 float respiratory_rate = 15;            //  10-40 +-1 ;aka breaths_per_min
@@ -97,7 +97,6 @@ void setup()
 
 }
 
-int buga, bugb, bugc  = 0;
 void loop()
 {
     // buzzer
@@ -112,9 +111,9 @@ void loop()
     getValves(vin_air, vin_o2, vinhale, vexhale, vpurge, vatmos);
     data.readback_valve_air_in = vin_air;
     data.readback_valve_o2_in = vin_o2;
-    data.readback_valve_inhale = buga; //vinhale;
-    data.readback_valve_exhale = bugb; //vexhale;
-    data.readback_valve_purge = bugc;  //vpurge;
+    data.readback_valve_inhale = vinhale;
+    data.readback_valve_exhale = vexhale;
+    data.readback_valve_purge = vpurge;
     // data.pressure_o2_supply = freeMemory() & 0xFFFF;
     // data.pressure_o2_regulated = freeMemory() >> 16;
     // TODO ; add to dataFormat
@@ -124,17 +123,17 @@ void loop()
     FSM_breath_cycle();
 
     report_cnt++;
-    // if(report_cnt % (update_freq/report_freq) == 0)
-    // {
+    if(report_cnt % (update_freq/report_freq) == 0)
+    {
         plSend.setType(payloadType::payloadData);
         plSend.setData(&data);
         comms.writePayload(plSend);
-    // }
+    }
     // per cycle sender
     comms.sender();
     // per cycle receiver
     
-    comms.receiver(buga, bugb, bugc);
+    comms.receiver();
 
     uint8_t cmdCode = 0;
     if(comms.readPayload(plReceive)){
@@ -142,7 +141,6 @@ void loop()
           cmdCode = (plReceive.getCmd()->cmdCode);
           plReceive.setType(payloadType::payloadUnset);
       }
-
     }
 
     switch(cmdCode){
@@ -153,5 +151,5 @@ void loop()
         default:
         break;
     }
-    delay(1000);
+    delay(1000/update_freq);
 }
