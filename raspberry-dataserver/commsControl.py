@@ -48,9 +48,9 @@ class commsControl():
         self._receiving = True
         threading.Thread(target=self.receiver, daemon=True).start()
         
-        self._sending = True
+        self._sending   = True
         self._datavalid = threading.Event()  # callback for send process
-        self._dvlock = threading.Lock()      # make callback threadsafe
+        self._dvlock    = threading.Lock()      # make callback threadsafe
         threading.Thread(target=self.sender, daemon=True).start()
     
     # open serial port
@@ -73,14 +73,17 @@ class commsControl():
                     self.sendQueue(self._commands,  50)
                     self.sendQueue(self._data    , 200)
             if self.finishedSending():
-                with self._dvlock:
-                    self._datavalid.clear()
+                self._datavalid.clear()
                     
     def finishedSending(self):
-        if (len(self._alarms) + len(self._data) + len(self._commands)) > 0:
-            return False
-        else:
-            return True
+        with self._dvlock:
+            try:
+                if (len(self._alarms) + len(self._data) + len(self._commands)) > 0:
+                    return False
+                else:
+                    return True
+            except:
+                return True
 
     def receiver(self):
         while self._receiving:
@@ -92,14 +95,15 @@ class commsControl():
                         self.processPacket(data)
 
     def sendQueue(self, queue, timeout):
-        if len(queue) > 0:
-            logging.debug(f'Queue length: {len(queue)}')
-            currentTime = int(round(time.time() * 1000))
-            if currentTime > (self._timeLastTransmission + timeout):
-                with self._lockSerial:
-                    self._timeLastTransmission = currentTime
-                    queue[0].setSequenceSend(self._sequenceSend)
-                    self.sendPacket(queue[0])
+        with self._dvlock:
+            if len(queue) > 0:
+                logging.debug(f'Queue length: {len(queue)}')
+                currentTime = int(round(time.time() * 1000))
+                if currentTime > (self._timeLastTransmission + timeout):
+                    with self._lockSerial:
+                        self._timeLastTransmission = currentTime
+                        queue[0].setSequenceSend(self._sequenceSend)
+                        self.sendPacket(queue[0])
                     
     def getQueue(self, payloadType):
         if   payloadType == commsConstants.payloadType.payloadAlarm:
@@ -186,9 +190,9 @@ class commsControl():
             return False        
         tmpComms.setInformation(payload)
         
-        tmpQueue = self.getQueue(payloadType)
-        tmpQueue.append(tmpComms)
         with self._dvlock:
+            queue = self.getQueue(payloadType)
+            queue.append(tmpComms)
             self._datavalid.set()
             
         return True
@@ -200,11 +204,12 @@ class commsControl():
     
     def finishPacket(self, queue):
         try:
-            if len(queue) > 0:
-                # 0x7F to deal with possible overflows (0 should follow after 127)
-                if ((queue[0].getSequenceSend() + 1) & 0x7F) == self._sequenceReceive:
-                    self._sequenceSend = (self._sequenceSend + 1) % 128
-                    queue.popleft()
+            with self._dvlock:
+                if len(queue) > 0:
+                    # 0x7F to deal with possible overflows (0 should follow after 127)
+                    if ((queue[0].getSequenceSend() + 1) & 0x7F) == self._sequenceReceive:
+                        self._sequenceSend = (self._sequenceSend + 1) % 128
+                        queue.popleft()
         except:
             logging.debug("Queue is probably empty")
             
