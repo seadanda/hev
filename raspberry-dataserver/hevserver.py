@@ -184,9 +184,9 @@ class HEVServer(object):
         LOCALHOST = "127.0.0.1"
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
         r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
-        #b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
-        #tasks = [b1, r1, b2]
-        tasks = [b1, r1]
+        b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
+        tasks = [b1, r1, b2]
+        #tasks = [b1, r1]
         await asyncio.gather(*tasks, return_exceptions=True)
 
     def serve_all(self) -> None:
@@ -206,7 +206,13 @@ if __name__ == "__main__":
     else:
         # get arduino serial port
         for port in list_ports.comports():
+            vidpid = ""
+            if port.pid != None and port.vid != None:
+                vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
+                logging.debug(vidpid)
             if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
+                port_device = port.device 
+            elif vidpid == "10C4:EA60" :
                 port_device = port.device 
 
         # initialise low level interface

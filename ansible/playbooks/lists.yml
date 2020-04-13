@@ -6,6 +6,8 @@ rpi_swlist:
   - python3-serial
   - python3-flask
   - sqlite3
+  - fonts-open-sans
+  - libts0
 
 pip_list: 
   - libscrc
