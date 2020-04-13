@@ -1998,18 +1998,21 @@ pre code {
   border: 0;
 }
 
-.form-control {
-  height: calc(1.5em + 0.75rem + 2px);
-  padding: 0.375rem 0.75rem;
+.form-control, .form-button {
+  padding: 0.2rem 0.2rem;
   font-size: 0.5rem;
   font-weight: 400;
-  line-height: 1.5;
+  line-height: 1.0;
   color: #495057;
   background-color: #fff;
   background-clip: padding-box;
   border: 1px solid #ced4da;
   border-radius: 0.25rem;
   transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+.form-button{
+  height: calc(1.3em + 0.75rem + 2px);
+  padding: 0.375rem 0.75rem;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-control {

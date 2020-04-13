@@ -17,7 +17,7 @@
         <option value='pressure_buffer' selected>pressure_buffer</option>
         <option value='pressure_inhale' selected>pressure_inhale</option>
         <option value='variable5' selected>variable5</option>
-        <input class="form-control py-0" type="button" value="Submit" onclick="updateChartType()" style="background-color: #1f4793 ; color: white">
+        <input class="form-button py-0" type="button" value="Submit" onclick="updateChartType()" style="background-color: #1f4793 ; color: white">
 	</select>
 
 	<div class="row">
@@ -75,7 +75,7 @@
             <div class="card-header d-flex align-items-center justify-content-between py-1">
 	      <a class="small text-dark stretched-link" href="#">variable5</a>
             </div>
-            <div class="card-body px-1 py-3"><span class = "reading-main" id = "variable5">000.00</span> &#8451;</div>
+            <div class="card-body px-1 py-3"><span class = "reading-main" id = "temperature_buffer">000.00</span> &#8451;</div>
 	  </div>
 	</div>
 	<div class="col-xl-4 px-1 py-0 col-md-8">
@@ -83,7 +83,7 @@
             <div class="card-header d-flex align-items-center justify-content-between py-1">
 	      <a class="small text-dark stretched-link" href="#">variable6</a>
             </div>
-            <div class="card-body px-1 py-3"><span class = "reading-main" id = "variable6">000.00</span> Pa</div>
+            <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_o2_regulated">000.00</span> Pa</div>
 	  </div>
 	</div>
 
@@ -102,23 +102,23 @@
 		  </div>
 		</div>
 		<div class="card-body px-1 py-1">
-		  <table class="text-align-right">
-		    <tr>
-		      <td><span class=""><label class="small" for="inputThres1">Inhale Time (ms):</label><input class="form-control px-0" id="inputThres1" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad(this);"/></span></td>
-		      <td><span class="form-group"><label class="small" for="inputVar1">Fill Time (ms):</label><input class="form-control px-0 py-0" id="inputThres1" type="number" value=1 name="variable1" readOnly min=0 max = 100 onclick="show_easy_numpad(this);"/></span></td>
-		      <td><span class="form-group"><label class="small" for="inputVar1">Pause (ms):</label><input class="form-control px-0" id="inputThres1" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad(this);"/></span></td>
+		  <table class="text-align-right py-0 my-0 small">
+		    <tr class="py-0">
+		      <td><span class=""><label class="small" for="inputInhale">Inhale Time (ms): </label><input class="form-control" id="inputThres1" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
+		      <td><span class="form-group"><label class="small" for="inputFill">Fill Time (ms): </label><input class="form-control" id="inputFill" type="number" value=1 name="variable1" readOnly min=0 max = 100 onclick="show_easy_numpad_wrapper(this);"/></span></td>
+		      <td><span class="form-group"><label class="small" for="inputPause">Pause (ms): </label><input class="form-control" id="inputPause" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);"/></span></td>
 		      <td></td>
 		    </tr> 
-		    <tr>
-		      <td><span class=""> <br>  <label class="small" for="inputThres1">Exhale/Inhale: </label><input class="form-control px-0 lh-1" id="inputThres1" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad(this);/></span></td>
-		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">PEEP (cmH2O):</label><input class="form-control px-0 py-0" id="inputThres1" type="number" value=1 name="variable1" readOnly min=0 max = 100 /></span></td>
-		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">Exhale Time (ms):</label><input class="form-control px-0" id="inputThres1" type="number" value=1 name="variable1" readOnly min=0 max=100 /></span></td>
-		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">RPM:</label><input class="form-control px-0" id="inputThres1" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad(this);" /></span></td>
+		    <tr class="py-0">
+		      <td><span class="form-group"> <br>  <label class="small" for="inputExhale">Exhale/Inhale: </label><input class="form-control lh-1" id="inputExInhale" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
+		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">PEEP (cmH2O): </label><input class="form-control" id="inputPEEP" type="number" value=1 name="inputPEEP" readOnly min=0 max = 100 /></span></td>
+		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">Exhale Time (ms): </label><input class="form-control" id="inputExhaleTime" type="number" value=1 name="variable1" readOnly min=0 max=100 /></span></td>
+		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">RPM: </label><input class="form-control" id="inputRPM" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);" /></span></td>
 		    </tr>
 		  </table>
 		</div>
 		<div class="card-footer px-0 py-0 align-items-center">
-		  <span class="form-group ml-auto mr-auto"><input class="form-control py-0" id="inputPassword" type="submit" value="Submit Changes" style="background-color: #1f4793 ; color: white" /></span>
+		  <span class="form-group ml-auto mr-auto"><input class="form-button py-0" id="form_submit" type="submit" value="Update Setting" style="background-color: #1f4793 ; color: white" disabled /></span>
 		</div>
 	      </div>
 	    </form>
@@ -142,7 +142,12 @@
   var x = document.getElementsByClassName("form-control");
   var i;
   if ( x.length > 0 && x[0].readOnly == true ){
-  for (i = 0; i < x.length; i++) { x[i].readOnly = false; }
+  for (i = 0; i < x.length; i++) {
+		  if (x[i].id != "form_submit"){x[i].readOnly = false;}
+		  else{ x[i].disabled=false; }
+		  var submit = document.getElementById("form_submit");
+		  submit.disabled=false;
+		  }
   var el = document.getElementById("path-locked");
   el.classList.add("transparent");
 		  var el2 = document.getElementById("path-unlocked");
@@ -151,8 +156,12 @@
 		  }
 		  else{
 		  for (i = 0; i < x.length; i++ ) {
-		  x[i].readOnly = true;
-		  }
+		  if (x[i].id != "form_submit"){x[i].readOnly = true;}
+		  else {x[i].disabled=true;}
+				  }
+				  
+		  var submit = document.getElementById("form_submit");
+		  submit.disabled=true;
 		  var el = document.getElementById("path-unlocked");
 		  el.classList.add("transparent");
 		  var el2 = document.getElementById("path-locked");
@@ -161,20 +170,8 @@
 		  }
 		 
   
-  if ( document.getElementById("inputName").readOnly == true){
-  document.getElementById("inputName").readOnly = false;
-  document.getElementById("inputAge").readOnly = false;
-  document.getElementById("inputWeight").readOnly = false;
-  document.getElementById("inputHeight").readOnly = false;
-  }
-  else {
-  document.getElementById("inputName").readOnly   = true;
-  document.getElementById("inputAge").readOnly    = true;
-  document.getElementById("inputWeight").readOnly = true;
-  document.getElementById("inputHeight").readOnly = true;
-  }
 				  }
-				  ,1000)}
+				  ,500)}
 				 
 				  </script>
 
