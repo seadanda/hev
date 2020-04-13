@@ -1,5 +1,5 @@
 from struct import Struct 
-from enum import Enum, auto
+from enum import Enum, auto, unique
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -107,8 +107,6 @@ class dataFormat(BaseFormat):
     # for receiving dataFormat from microcontroller
     # fill the struct from a byteArray, 
     def fromByteArray(self, byteArray):
-        logging.debug(f"Byte array of size {len(byteArray)}")
-        logging.debug(f"Byte array of size {byteArray}")
         self._byteArray = byteArray
         (self._version,
         self._fsm_state,
@@ -182,16 +180,37 @@ class dataFormat(BaseFormat):
 # cmd type payload
 # =======================================
 class commandFormat(BaseFormat):
-    def __init__(self):
+    def __init__(self, cmdCode=0, param=0):
         super().__init__()
         self._dataStruct = Struct("<BBI")
         self._byteArray = None
         self._type = payloadType.payloadCmd
 
         self._version = 0
-        self._cmdCode = 0
-        self._param = 0
+        self._cmdCode = cmdCode
+        self._param = param
+        self.toByteArray()
 
+    # manage direct reading and writing of member variables
+    @property
+    def cmdCode(self):
+        return self._cmdCode
+    
+    @cmdCode.setter
+    def cmdCode(self, cmdCodeIn):
+        self._cmdCode = cmdCodeIn
+        self.toByteArray()
+
+    @property
+    def param(self):
+        return self._param
+    
+    @param.setter
+    def param(self, paramIn):
+        self._param = paramIn
+        self.toByteArray()
+
+    # print nicely
     def __repr__(self):
         return f"""{{
     "version" : {self._version},
@@ -221,9 +240,10 @@ class commandFormat(BaseFormat):
         }
         return data
         
+@unique
 class command_codes(Enum):
-    CMD_START = 1
-    CMD_STOP  = 2
+    CMD_START = 0x1
+    CMD_STOP  = 0x2
     
 # =======================================
 # alarm type payload
@@ -267,6 +287,7 @@ class alarmFormat(BaseFormat):
         }
         return data
 
+@unique
 class alarm_codes(Enum):
     ALARM_START = 1
     ALARM_STOP  = 2

@@ -25,16 +25,14 @@ dep = Dependant(comms)
 start = 0x1
 stop =  0x2
 
-cmd = commandFormat()
-cmd.cmdCode = start
-cmd.toByteArray()
+# initialise as start command, automatically executes toByteArray()
+cmd = commandFormat(cmdCode=start)
 
 comms.writePayload(cmd)
 #comms.sender()
 while True:
     time.sleep(30)
-    cmd.cmdCode = stop
-    cmd.toByteArray()
+    cmd.cmdCode = stop # automatically executes toByteArray()
     comms.writePayload(cmd)
     #comms.registerData(stop)
     pass
