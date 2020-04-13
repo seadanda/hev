@@ -64,12 +64,12 @@ class svpi():
                 # send alarm
                 alarm = np.random.randint(0, 6)
                 self._currentAlarm = alarm
-                return bytearray((0xA0,0x01,0x00,0x00,0x00,alarm))
+                return bytearray((0xA0,0x01,alarm,0x00,0x00,0x00))
             else:
                 # stop previous alarm
                 alarm = self._currentAlarm
                 self._currentAlarm = None
-                return bytearray((0xA0,0x02,0x00,0x00,0x00,alarm))
+                return bytearray((0xA0,0x02,alarm,0x00,0x00,0x00))
         return None
 
     def getThresholds(self) -> List[float]:
