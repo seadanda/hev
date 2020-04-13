@@ -201,19 +201,19 @@ if __name__ == "__main__":
     parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
     args = parser.parse_args()
     
-    # get arduino serial port
-    for port in list_ports.comports():
-        if "ARDUINO" in port.manufacturer.upper():
-            port = port.device 
-
     # check if input file was specified
     if args.inputFile != '':
         # initialise frond end generator from file
         lli = svpi.svpi(args.inputFile)
     else:
+        # get arduino serial port
+        for port in list_ports.comports():
+            if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
+                port_device = port.device 
+
         # initialise low level interface
         try:
-            lli = commsControl.commsControl(port=port)
+            lli = commsControl.commsControl(port=port_device)
         except NameError:
             print("Arduino not connected")
             exit(1)
