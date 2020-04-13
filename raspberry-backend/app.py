@@ -44,6 +44,16 @@ def fan():
 def multiple_appends(listname, *element):
     listname.extend(element)
 
+@WEBAPP.route('/')
+def send_cmd():
+    """
+    Send command to the data server
+    """ 
+    if form.validate_on_submit():
+        if 'download' in request.form:
+            print("benzina") # do something
+        elif 'watch' in request.form:
+            pass # do something else
 
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():

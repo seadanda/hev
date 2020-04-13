@@ -79,7 +79,7 @@ def monitoring(source_address):
 
     # Instantiating the client
     hevclient = HEVClient()
-    hevclient.set_thresholds([12.3, 45.6, 78.9])
+    #print(hevclient.send_cmd("CMD_START"))
 
     epoch = datetime(1970, 1, 1)
 
