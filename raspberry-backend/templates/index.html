@@ -14,8 +14,8 @@
 	<select id='chart_variables' multiple>
         <option value='temperature' selected>temperature</option>
         <option value='pressure' selected>pressure</option>
-        <option value='variable3' selected>variable3</option>
-        <option value='variable4' selected>variable4</option>
+        <option value='pressure_buffer' selected>pressure_buffer</option>
+        <option value='pressure_inhale' selected>pressure_inhale</option>
         <option value='variable5' selected>variable5</option>
         <input class="form-control py-0" type="button" value="Submit" onclick="updateChartType()" style="background-color: #1f4793 ; color: white">
 	</select>
@@ -54,9 +54,9 @@
 	  <div class="col-xl-4 col-md-8 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">variable3</a>
+		<a class="small text-dark stretched-link" href="#">pressure_buffer</a>
               </div>
-              <div class="card-body px-1 py-3"><span class = "reading-main" id = "variable3">000.00</span> &#8451;</div>
+              <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_buffer">000.00</span> Pa</div>
 	    </div>
 	  </div>
 	</div>
@@ -65,9 +65,9 @@
 	<div class="col-xl-4 px-1 py-0 col-md-5">
 	  <div class="card bg-primary text-dark mb-2">
             <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">variable4</a>
+	      <a class="small text-dark stretched-link" href="#">pressure_inhale</a>
             </div>
-            <div class="card-body px-1 py-3"><span class = "reading-main" id = "variable4">000.00</span> Pa</div>
+            <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_inhale">000.00</span> Pa</div>
 	  </div>
 	</div>
 	<div class="col-xl-4 col-md-8 px-1 py-0">

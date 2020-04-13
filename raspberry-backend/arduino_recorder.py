@@ -46,10 +46,23 @@ def database_setup():
            alarms         STRING         NOT NULL,
            temperature    FLOAT           NOT NULL,
            pressure       FLOAT           NOT NULL,
-           variable3    FLOAT           NOT NULL,
-           variable4    FLOAT           NOT NULL,
-           variable5    FLOAT           NOT NULL,
-           variable6    FLOAT           NOT NULL           
+           version       FLOAT           NOT NULL,           
+           fsm_state    FLOAT           NOT NULL,
+           pressure_air_supply    FLOAT           NOT NULL,
+           pressure_air_regulated    FLOAT           NOT NULL,
+           pressure_o2_supply    FLOAT           NOT NULL,   
+           pressure_o2_regulated    FLOAT           NOT NULL,
+           pressure_buffer    FLOAT           NOT NULL,
+           pressure_inhale    FLOAT           NOT NULL,
+           pressure_patient    FLOAT           NOT NULL,
+           temperature_buffer    FLOAT           NOT NULL,
+           pressure_diff_patient    FLOAT           NOT NULL,
+           readback_valve_air_in    FLOAT           NOT NULL,
+           readback_valve_o2_in    FLOAT           NOT NULL,
+           readback_valve_inhale    FLOAT           NOT NULL,
+           readback_valve_exhale    FLOAT           NOT NULL,
+           readback_valve_purge    FLOAT           NOT NULL,
+           readback_mode    FLOAT           NOT NULL                
            );'''
         )
         conn.commit()
@@ -77,38 +90,62 @@ def monitoring(source_address):
 
             # Computing the time in seconds since the epoch because easier to manipulate. 
             timestamp = (current_time -epoch).total_seconds() * 1000
+  
+            data_receiver = hevclient.get_values()
+            data_alarms = hevclient.get_alarms()
             
-            if hevclient.get_values() != []:
-                data_receiver = hevclient.get_values()
-                data_alarms = hevclient.get_alarms()
+            if data_receiver != None:
 
                 # data alarms can have length of 6, joining all the strings
-                data_alarms = ','.join(data_alarms) 
+                if data_alarms != None:
+                    data_alarms = ','.join(data_alarms)
+                else:
+                    data_alarms = "none"
 
-                random_data = {
+
+                data_packet = {
                     'time' : timestamp,
                     'alarms' : data_alarms,
-                    'temperature': data_receiver[0],
-                    'pressure': data_receiver[1],
-                    'variable3': data_receiver[2],
-                    'variable4': data_receiver[3],
-                    'variable5': data_receiver[4],
-                    'variable6': data_receiver[5]    
+                    'temperature': 1,
+                    'version': 1,
+                    'pressure': 1,
+                    'fsm_state': data_receiver["version"],
+                    'pressure_air_supply': data_receiver["pressure_air_supply"],
+                    'pressure_air_regulated': data_receiver["pressure_air_regulated"],
+                    'pressure_o2_supply': data_receiver["pressure_o2_supply"], 
+                    'pressure_o2_regulated': data_receiver["pressure_o2_regulated"], 
+                    'pressure_buffer': data_receiver["pressure_buffer"], 
+                    'pressure_inhale': data_receiver["pressure_inhale"], 
+                    'pressure_patient': data_receiver["pressure_patient"], 
+                    'temperature_buffer': data_receiver["temperature_buffer"], 
+                    'pressure_diff_patient': data_receiver["pressure_diff_patient"], 
+                    'readback_valve_air_in': data_receiver["readback_valve_air_in"], 
+                    'readback_valve_o2_in': data_receiver["readback_valve_o2_in"], 
+                    'readback_valve_inhale': data_receiver["readback_valve_inhale"], 
+                    'readback_valve_exhale': data_receiver["readback_valve_exhale"], 
+                    'readback_valve_purge': data_receiver["readback_valve_purge"], 
+                    'readback_mode': data_receiver["readback_mode"]
                 }
 
                 print("Writing to database ...")
                 try:
                     cursor.execute(
                             'INSERT INTO {tn} VALUES '
-                            '(:time, :alarms, :temperature, :pressure, :variable3, :variable4, :variable5, :variable6)'.format(tn=TABLE_NAME), random_data
+                            '(:time, :alarms, :temperature, :pressure , :version, '
+                            ':fsm_state, :pressure_air_supply, '
+                            ':pressure_air_regulated, :pressure_o2_supply,'
+                            ':pressure_o2_regulated, :pressure_buffer,'
+                            ':pressure_inhale, :pressure_patient,'
+                            ':temperature_buffer, :pressure_diff_patient,'
+                            ':readback_valve_air_in, :readback_valve_o2_in,'
+                            ':readback_valve_inhale, :readback_valve_exhale,'
+                            ':readback_valve_purge, :readback_mode)'
+                            .format(tn=TABLE_NAME), data_packet
                     )
                     conn.commit()
                 except sqlite3.Error as err:
                      raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
-                finally:
-                    #print("temperature: {temperature}  pressure: {pressure}".format(**random_data))
-                    #print("Received values: {}".format(random_data))
-                   
+                finally:                  
                     sys.stdout.flush()
                     time.sleep(1)
 

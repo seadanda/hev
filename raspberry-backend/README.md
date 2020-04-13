@@ -24,6 +24,9 @@ Start the HEV server
 ```sh
 cd raspberry-dataserver
 python3 hevserver.py
+
+# In case you want to test with random generated numbers
+python3 hevserver.py --inputFile share/byteArray.dump
 ```
 
 

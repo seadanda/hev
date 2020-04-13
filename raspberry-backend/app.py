@@ -79,31 +79,40 @@ def live_data():
     Output in json format
     """
 
-    data = {'created_at' : None, 'temperature' : None, 
-            'pressure' : None, 'variable3' : None, 
-            'variable4' : None, 'variable5' : None, 'variable6' : None}
+    list_variables = ['created_at' , 'temperature' , 
+            'pressure' , 'version' , 
+            'fsm_state' , 'pressure_air_supply' ,
+            'pressure_air_regulated' , 'pressure_o2_supply' , 
+            'pressure_o2_regulated' , 'pressure_buffer' ,
+            'pressure_inhale' , 'pressure_patient' ,
+            'temperature_buffer' , 'pressure_diff_patient' ,
+            'readback_valve_air_in' , 'readback_valve_o2_in' ,
+            'readback_valve_inhale' , 'readback_valve_exhale' ,
+            'readback_valve_purge' , 'readback_mode' ]
+
+    data = {key: None for key in list_variables}
+
+    united_var = ','.join(list_variables)
 
     sqlite_file = 'database/HEC_monitoringDB.sqlite'
     with sqlite3.connect(sqlite_file) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT created_at, temperature, "
-        "pressure, variable3, variable4, variable5, variable6 "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1")
+        cursor.execute("SELECT {var} "
+        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1".format(var=united_var))
         
         fetched = cursor.fetchone()
-        data['created_at'] = fetched[0]
-        data['temperature'] = round(fetched[1],2)
-        data['pressure'] = round(fetched[2],2)
-        data['variable3'] = round(fetched[3],2)
-        data['variable4'] = round(fetched[4],2)                
-        data['variable5'] = round(fetched[5],2)                
-        data['variable6'] = round(fetched[6],2)                
+
+        for index, item in enumerate(list_variables):
+            if item == 'created_at':
+                data[item] = fetched[index]
+            else:
+                data[item] = round(fetched[index],2)   
+
 
     response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'
 
     
-
     #return Response(json.dumps(data),  mimetype='application/json')
     return response
 
