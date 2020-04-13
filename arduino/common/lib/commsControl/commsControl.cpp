@@ -132,7 +132,7 @@ void commsControl::receiver() {
                 lastTransIndex_ = 0;
             }
         }
-    }
+    } 
 }
 
 bool commsControl::writePayload(payload &pl) {
@@ -246,7 +246,7 @@ void commsControl::sendPacket(commsFormat *packet) {
     if (encoder(packet->getData(), packet->getSize()) ) {
         if (Serial.availableForWrite() >= commsSendSize_) {
             Serial.write(commsSend_, commsSendSize_);
-        }
+        } 
     }
 }
 

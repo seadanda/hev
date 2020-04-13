@@ -27,8 +27,8 @@ void FSM_assignment( ) {
         {
         case BS_IDLE:
             if (running == true) {
+                // FSM_time = millis();
                 next_state = BS_BUFF_PREFILL;
-                FSM_time = millis();
                 // Serial.println("Exit IDLE") ;
             } else {
                 next_state = BS_IDLE;
@@ -100,7 +100,7 @@ void FSM_breath_cycle()
         case BS_IDLE:
             
             if (running == true) {
-                FSM_time = millis();
+                // FSM_time = millis();
             } else {
                 timeout = 1000; 
             }
@@ -177,4 +177,9 @@ void do_start()
 void do_stop()
 {
     running = false;
+}
+
+bool get_running()
+{
+    return running;
 }
