@@ -16,7 +16,8 @@ class Dependant(object):
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
-        logging.info(f"payload received: {payload}")
+        # logging.info(f"payload received: {payload}")
+        logging.info(f"payload received: {payload._readback_valve_inhale} {payload._readback_valve_exhale} {payload._readback_valve_purge} {payload._fsm_state}")
         self._llipacket = payload.getDict() # returns a dict
         # pop from queue - protects against Dependant going down and not receiving packets
         self._lli.pop_payloadrecv()
@@ -29,13 +30,14 @@ cmd = commandFormat()
 cmd.cmdCode = start
 cmd.toByteArray()
 
+time.sleep(4)
 comms.writePayload(cmd)
 #comms.sender()
 while True:
-    time.sleep(30)
-    cmd.cmdCode = stop
-    cmd.toByteArray()
-    comms.writePayload(cmd)
+    # time.sleep(1)
+    # cmd.cmdCode = stop
+    # cmd.toByteArray()
+    # comms.writePayload(cmd)
     #comms.registerData(stop)
     pass
 

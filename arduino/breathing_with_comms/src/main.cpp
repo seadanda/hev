@@ -92,10 +92,12 @@ void setup()
     pinMode(pin_buzzer, OUTPUT);
     pinMode(pin_button_0, INPUT);
 
+    while (!Serial) ;
     comms.beginSerial();
 
 }
 
+int buga, bugb, bugc  = 0;
 void loop()
 {
     // buzzer
@@ -110,11 +112,11 @@ void loop()
     getValves(vin_air, vin_o2, vinhale, vexhale, vpurge, vatmos);
     data.readback_valve_air_in = vin_air;
     data.readback_valve_o2_in = vin_o2;
-    data.readback_valve_inhale = vinhale;
-    data.readback_valve_exhale = vexhale;
-    data.readback_valve_purge = vpurge;
-    data.pressure_o2_supply = freeMemory() & 0xFFFF;
-    data.pressure_o2_regulated = freeMemory() >> 16;
+    data.readback_valve_inhale = buga; //vinhale;
+    data.readback_valve_exhale = bugb; //vexhale;
+    data.readback_valve_purge = bugc;  //vpurge;
+    // data.pressure_o2_supply = freeMemory() & 0xFFFF;
+    // data.pressure_o2_regulated = freeMemory() >> 16;
     // TODO ; add to dataFormat
     // data.readback_valve_atmosphere = vpurge;
 
@@ -122,16 +124,17 @@ void loop()
     FSM_breath_cycle();
 
     report_cnt++;
-    if(report_cnt % (update_freq/report_freq) == 0)
-    {
+    // if(report_cnt % (update_freq/report_freq) == 0)
+    // {
         plSend.setType(payloadType::payloadData);
         plSend.setData(&data);
         comms.writePayload(plSend);
-    }
+    // }
     // per cycle sender
     comms.sender();
     // per cycle receiver
-    comms.receiver();
+    
+    comms.receiver(buga, bugb, bugc);
 
     uint8_t cmdCode = 0;
     if(comms.readPayload(plReceive)){
@@ -150,5 +153,5 @@ void loop()
         default:
         break;
     }
-    delay(1000/update_freq);
+    delay(1000);
 }
