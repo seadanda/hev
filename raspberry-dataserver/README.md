@@ -24,34 +24,57 @@ Alarms are included in the broadcast packet but can also come through as a dedic
 The packet is a json frame with format:
 ```json
 {
-    “type”: str,
-    “sensors”: List[float],
-    “alarms”: List[str],
-    “settings”: List[float]
+    "sensors": {
+        "version": int,
+        "fsm_state": int,
+        "pressure_air_supply": float,
+        "pressure_air_regulated": float,
+        "pressure_o2_supply": float,
+        "pressure_o2_regulated": float,
+        "pressure_buffer": float,
+        "pressure_inhale": float,
+        "pressure_patient": float,
+        "temperature_buffer": float,
+        "pressure_diff_patient": float,
+        "readback_valve_air_in": float,
+        "readback_valve_o2_in": float,
+        "readback_valve_inhale": float,
+        "readback_valve_exhale": float,
+        "readback_valve_purge": float,
+        "readback_mode": int
+    },
+    "alarms": List[str]
 }
 ```
 
-- “type” refers to a string with maximum length 9 char
-- “sensors” refers to a list of length 6, with each element containing a 32b float
-- “alarms” refers to a list of strings of length varying between 1 and 6 inclusive, with each element containing a string of max length 21 char (easier to just give an int as below?)
-
-```
-0: “none”, 
-1: "manual",
-2: "gas supply",
-3: "apnea",
-4: "expired minute volume",
-5: "upper pressure limit",
-6: "power failure",
-```
+- “sensors” refers to a dict containing all values in the `dataFormat` class
+- “alarms” refers to a list of strings taken from the `alarm_codes` enum in `commsConstants.py`
 
 Example broadcast packet:
 ```json
 {
-    "type": "broadcast",
-    "sensors": [862.359688536043, 376.8359070273678, 545.0542884669316, 989.5016042203939, 449.15263765793776, 152.43765749693776],
-    "alarms": ['manual']
-    “settings”: [... ]
+    "sensors": {
+        "version": 160,
+        "fsm_state": 0,
+        "pressure_air_supply": 0,
+        "pressure_air_regulated": 0,
+        "pressure_o2_supply": 0,
+        "pressure_o2_regulated": 0,
+        "pressure_buffer": 36864,
+        "pressure_inhale": 36864,
+        "pressure_patient": 0,
+        "temperature_buffer": 0,
+        "pressure_diff_patient": 0,
+        "readback_valve_air_in": 0,
+        "readback_valve_o2_in": 0,
+        "readback_valve_inhale": 0,
+        "readback_valve_exhale": 0,
+        "readback_valve_purge": 1,
+        "readback_mode": 0
+    },
+    "alarms": [
+        "ALARM_START"
+    ]
 }
 ```
 
@@ -66,81 +89,38 @@ Example alarm packet:
 ### Request socket
 The HEVServer class has a method to set a different mode of operation, this is done through the shared socket to avoid multiple threads writing to the same variables.
 
-TODO return acknowledge to BOTH via broadcast packet, so they are both aware of the actual mode set in case of both trying to set at the same time.
+Sending data to the arduino is acheived by opening a connection to the shared request socket, sending a payload and waiting for an acknowledge before closing the connection. This is now acheived by using command packets with a cmd which is taken from the `command_codes` enum in `commsConstants.py`. These are the only commands currently supported.
 
 #### Uplink packets
-Sending data to the arduino is acheived by opening a connection to the shared request socket, sending a payload and waiting for an acknowledge before closing the connection. There are two such types of packets:
-
-- Set mode 
-
-    - PRVC
-    - SIMV-PC
-    - CPAP
-- Set thresholds
-
-    - TODO
-
-
 Query packet format:
 ```json
 {
     "type": str,
-    "mode”: str,
-    “settings”: List[float]
+    "cmd”: str,
+    “param”: int
 }
 ```
 
-Example query to change the mode to CPAP:
+Example command packet:
 ```json
 {
-    “type”: “setmode”,
-    “mode”: “CPAP”
+    "type": "cmd",
+    "cmd": "CMD_START",
+    "param": null
 }
 ```
-
-Example query to change the threshold settings:
-```json
-{
-    “type”: “setthresholds”,
-    “settings”: [...]
-}
-```
-
-Example query to set the mode and thresholds in one packet:
-```json
-{
-    “type”: “setup”,
-    “mode”: “CPAP”,
-    “settings”: [...]
-}
-```
+where the value of the cmd key is a key in the `command_codes` enum from `commsConstants.py`
 
 #### Downlink packets
 Reply format:
 ```json
 {
     “type”: str,
-    “mode”: str,
-    “settings”: List[float]
 }
 ```
+where type can be either `"ack"` in response to a valid command or `"nack"` in response to an invalid command
 
 
-Example acknowledge packet for change of mode:
-```json
-{
-    “type”: “ackmode”,
-    “mode”: “CPAP”
-}
-```
-
-Example acknowledge packet for change of settings:
-```json
-{
-    “type”: “ackset”,
-    “settings”: [...]
-}
-```
 ## Example `hevclient.py` Usage
 
 ```python
@@ -149,15 +129,28 @@ import hevclient
 # create instance of hevclient. Starts connection and polls in the background
 hevclient = HEVClient()
 
+
 # Play with sensor values and alarms
-for i in range(10):
-    print(f"Sensor values: {hevclient.get_values()}")
-    print(f"Alarms: {hevclient.get_alarms()}")
+for i in range(30):
+    values = hevclient.get_values() # returns a dict or None
+    alarms = hevclient.get_alarms() # returns a list of alarms currently ongoing
+    if values is None:
+        i = i+1 if i > 0 else 0
+    else:
+        print(f"Values: {json.dumps(values, indent=4)}")
+        print(f"Alarms: {alarms}")
     time.sleep(1)
 
-# Set mode
-print(hevclient.set_mode("CPAP"))
+# send commands:
+print(hevclient.send_cmd("CMD_START"))
+time.sleep(1)
+print("This one will fail since foo is not in the command_codes enum:")
+print(hevclient.send_cmd("foo"))
 
-# Set thresholds
-print(hevclient.set_thresholds([12.3, 45.6, 78.9]))
+# print some more values
+for i in range(10):
+    print(f"Alarms: {hevclient.get_alarms()}")
+    print(f"Values: {json.dumps(hevclient.get_values(), indent=4)}")
+    print(f"Alarms: {hevclient.get_alarms()}")
+    time.sleep(1)
 ```
