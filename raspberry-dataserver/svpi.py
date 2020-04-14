@@ -104,6 +104,9 @@ class svpi():
             # peek at the leftmost item, don't pop until receipt confirmed
             callback(self._payloadrecv[0])
 
+    def writePayload(self, payload):
+        logging.info(payload)
+
     def bind_to(self, callback):
         self._observers.append(callback)
 

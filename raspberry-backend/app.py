@@ -51,11 +51,11 @@ def send_cmd():
     """ 
     web_form = request.form
     if web_form.get('start') == "START":
-        print("-----------------------------")
+        print(hevclient.send_cmd("CMD_START"))
     elif web_form.get('stop') == "STOP":
-       print("==============================")
+        print(hevclient.send_cmd("CMD_STOP"))
     elif web_form.get('reset') == "RESET":
-       print("******************************")		    
+        print(hevclient.send_cmd("CMD_RESET"))
     return render_template('index.html', result=live_data())
  
     
