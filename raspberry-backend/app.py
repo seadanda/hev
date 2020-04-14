@@ -20,9 +20,9 @@ WEBAPP = Flask(__name__)
 hevclient = HEVClient()
 
 
-@WEBAPP.route('/')
+@WEBAPP.route('/', methods=['GET', 'POST'])
 def hello_world():
-    return render_template('index.html', result=live_data())
+   return render_template('index.html', result=live_data())
 
 @WEBAPP.route('/new')
 def hello_worlds():
@@ -44,16 +44,21 @@ def fan():
 def multiple_appends(listname, *element):
     listname.extend(element)
 
-@WEBAPP.route('/')
+@WEBAPP.route('/send_cmd', methods=['POST'])
 def send_cmd():
     """
     Send command to the data server
     """ 
-    if form.validate_on_submit():
-        if 'download' in request.form:
-            print("benzina") # do something
-        elif 'watch' in request.form:
-            pass # do something else
+    web_form = request.form
+    if web_form.get('start') == "START":
+        print("-----------------------------")
+    elif web_form.get('stop') == "STOP":
+       print("==============================")
+    elif web_form.get('reset') == "RESET":
+       print("******************************")		    
+    return render_template('index.html', result=live_data())
+ 
+    
 
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
