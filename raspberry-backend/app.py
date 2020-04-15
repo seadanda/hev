@@ -12,6 +12,7 @@ import sqlite3
 from flask import json
 import chardet
 from hevclient import HEVClient
+from commsConstants import dataFormat
 
 
 WEBAPP = Flask(__name__)
@@ -19,6 +20,9 @@ WEBAPP = Flask(__name__)
 # Instantiating the client
 hevclient = HEVClient()
 
+
+def getList(dict):
+    return [*dict]
 
 @WEBAPP.route('/', methods=['GET', 'POST'])
 def hello_world():
@@ -94,15 +98,9 @@ def live_data():
     Output in json format
     """
 
-    list_variables = ['created_at', 'version' , 
-            'fsm_state' , 'pressure_air_supply' ,
-            'pressure_air_regulated' , 'pressure_o2_supply' , 
-            'pressure_o2_regulated' , 'pressure_buffer' ,
-            'pressure_inhale' , 'pressure_patient' ,
-            'temperature_buffer' , 'pressure_diff_patient' ,
-            'readback_valve_air_in' , 'readback_valve_o2_in' ,
-            'readback_valve_inhale' , 'readback_valve_exhale' ,
-            'readback_valve_purge' , 'readback_mode' ]
+    list_variables = []
+    list_variables.append("created_at")
+    list_variables.extend(getList(dataFormat().getDict()))
 
     data = {key: None for key in list_variables}
 
