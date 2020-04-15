@@ -100,7 +100,8 @@ void loop() {
     // per cycle sender
     comms_.sender();
     // per cycle receiver
-    comms_.receiver();
+    int x1, x2, x3 = 0;
+    comms_.receiver(x1,x2,x3);
 
     if (comms_.readPayload(plReceive_)) {
 

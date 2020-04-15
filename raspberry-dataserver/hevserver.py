@@ -10,14 +10,16 @@ import threading
 import argparse
 import svpi
 import commsControl
-from commsConstants import payloadType
+from commsConstants import payloadType, command_codes, alarm_codes, commandFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
 import logging
-logging.basicConfig(level=logging.DEBUG,
+logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+class HEVPacketError(Exception):
+    pass
 
 class HEVServer(object):
     def __init__(self, lli):
@@ -80,47 +82,43 @@ class HEVServer(object):
         # listen for queries on the request socket
         data = await reader.read(300)
         request = json.loads(data.decode("utf-8"))
+
+        # logging
         addr = writer.get_extra_info("peername")
         logging.info(f"Answering request from {addr}")
-        payload = ""
+        
+        try:
+            reqtype = request["type"]
+            if reqtype == "cmd":
+                reqcmd = request["cmd"]
+                reqparam = request["param"] if request["param"] is not None else 0
 
-        # three possible queries: set mode, set thresholds or both
-        if request["type"] == "setmode":
-            mode = request["mode"]
-            logging.debug(f"{addr!r} requested to change to mode {mode!r}")
+                if reqcmd in command_codes.__members__:
+                    # valid request
+                    command = commandFormat(cmdCode=command_codes[reqcmd].value, param=reqparam)
 
-            # send via protocol and prepare reply
-            if self._lli.setMode(mode):
-                packet = f"""{{"type": "ackmode", "mode": \"{mode}\"}}""".encode()
-            else:
-                packet = f"""{{"type": "nack"}}""".encode()
-        elif request["type"] == "setthresholds":
-            thresholds = request["thresholds"]
-            logging.debug(
-                f"{addr!r} requested to set thresholds to {thresholds!r}")
+                    self._lli.writePayload(command)
 
-            # send via protocol
-            payload = self._lli.setThresholds(thresholds)
-            # prepare reply
-            packet = f"""{{"type": "ackthresholds", "thresholds": \"{payload}\"}}""".encode()
-        elif request["type"] == "setup":
-            mode = request["mode"]
-            thresholds = request["thresholds"]
-            logging.debug(f"{addr!r} requested to change to mode {mode!r}")
-            logging.debug(
-                f"{addr!r} requested to set thresholds to {thresholds!r}")
+                    # processed and sent to controller, send ack to GUI since it's in enum
+                    # TODO should we wait for ack from controller or is that going to block the port for too long?
+                    payload = {"type": "ack"}
+                else:
+                    raise HEVPacketError("Invalid command packet")
+        
+                packet = json.dumps(payload).encode()
 
-            # send via protocol and prepare reply
-            if self._lli.setMode(mode):
-                self._lli.setThresholds(thresholds)
-                packet = f"""{{"type": "ack", "mode": \"{mode}\", "thresholds": \"{thresholds}\"}}""".encode()
-            else:
-                packet = f"""{{"type": "nack"}}""".encode()
-
-        # send reply and close connection
-        writer.write(packet)
-        await writer.drain()
-        writer.close()
+                # send reply and close connection
+                writer.write(packet)
+                await writer.drain()
+                writer.close()
+        except (NameError, HEVPacketError) as e:
+            # invalid request: reject immediately
+            logging.warning(f"Invalid command packet. Type {reqtype} does not exist")
+            payload = {"type": "nack"}
+            packet = json.dumps(payload).encode()
+            writer.write(packet)
+            await writer.drain()
+            writer.close()
 
     async def handle_broadcast(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # log address
@@ -142,7 +140,7 @@ class HEVServer(object):
             broadcast_packet["sensors"] = values
             broadcast_packet["alarms"] = alarms # add alarms key/value pair
 
-            logging.info(f"Send: {json.dumps(broadcast_packet,indent=4)}")
+            logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
                 writer.write(json.dumps(broadcast_packet).encode())
@@ -186,9 +184,9 @@ class HEVServer(object):
         LOCALHOST = "127.0.0.1"
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
         r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
-        #b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
-        #tasks = [b1, r1, b2]
-        tasks = [b1, r1]
+        b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
+        tasks = [b1, r1, b2]
+        #tasks = [b1, r1]
         await asyncio.gather(*tasks, return_exceptions=True)
 
     def serve_all(self) -> None:
@@ -208,7 +206,13 @@ if __name__ == "__main__":
     else:
         # get arduino serial port
         for port in list_ports.comports():
+            vidpid = ""
+            if port.pid != None and port.vid != None:
+                vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
+                logging.debug(vidpid)
             if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
+                port_device = port.device 
+            elif vidpid == "10C4:EA60" :
                 port_device = port.device 
 
         # initialise low level interface

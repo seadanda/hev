@@ -32,6 +32,12 @@
               name: "{{ item }}"
           with_items: "{{ pip_list }}"  
 
+        - name: link fonts for hev-display
+          file:
+              src: "/usr/share/fonts/truetype/dejavu"
+              dest: "/usr/local/qt5pi/lib/fonts"
+              state: link
+
   #- name: install arduino suite
   #command: ./arduino_suite.sh
 

@@ -79,7 +79,7 @@ def monitoring(source_address):
 
     # Instantiating the client
     hevclient = HEVClient()
-    hevclient.set_thresholds([12.3, 45.6, 78.9])
+    print(hevclient.send_cmd("CMD_START"))
 
     epoch = datetime(1970, 1, 1)
 
@@ -107,9 +107,9 @@ def monitoring(source_address):
                     'time' : timestamp,
                     'alarms' : data_alarms,
                     'temperature': 1,
-                    'version': 1,
+                    'version': data_receiver["version"],
                     'pressure': 1,
-                    'fsm_state': data_receiver["version"],
+                    'fsm_state': data_receiver["fsm_state"],
                     'pressure_air_supply': data_receiver["pressure_air_supply"],
                     'pressure_air_regulated': data_receiver["pressure_air_regulated"],
                     'pressure_o2_supply': data_receiver["pressure_o2_supply"], 

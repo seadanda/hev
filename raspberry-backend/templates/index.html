@@ -16,7 +16,8 @@
         <option value='pressure' selected>pressure</option>
         <option value='pressure_buffer' selected>pressure_buffer</option>
         <option value='pressure_inhale' selected>pressure_inhale</option>
-        <option value='variable5' selected>variable5</option>
+        <option value='temperature_buffer' selected>temperature_buffer</option>
+        <option value='pressure_o2_regulated' selected>pressure_o2_regulated</option>
         <input class="form-button py-0" type="button" value="Submit" onclick="updateChartType()">
 	</select>
 
@@ -45,9 +46,9 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">Pressure</a>
+		<a class="small text-dark stretched-link" href="#">fsm_state</a>
               </div>
-              <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure">000.00</span> Pa</div>
+              <div class="card-body px-1 py-3"><span class = "reading-main" id = "fsm_state">000.00</span> </div>
 	    </div>
 	  </div>
 	  
@@ -73,7 +74,7 @@
 	<div class="col-xl-4 col-md-8 px-1 py-0">
 	  <div class="card bg-primary text-dark mb-2">
             <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">variable5</a>
+	      <a class="small text-dark stretched-link" href="#">temperature_buffer</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "temperature_buffer">000.00</span> &#8451;</div>
 	  </div>
@@ -81,7 +82,7 @@
 	<div class="col-xl-4 px-1 py-0 col-md-8">
 	  <div class="card bg-primary text-dark mb-2">
             <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">variable6</a>
+	      <a class="small text-dark stretched-link" href="#">pressure_o2_regulated</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_o2_regulated">000.00</span> Pa</div>
 	  </div>
