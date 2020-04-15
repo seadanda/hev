@@ -78,14 +78,14 @@ $(document).ready(function() {
       label: 'A',
       yAxisID: 'A',
                 data: [],
-                label: "temperature",
+                label: "pressure_buffer",
                 borderColor: "#0000FF",
                 fill: false,
               },{ 
       label: 'B',
       yAxisID: 'B',
                 data: [],
-                label: "pressure",
+                label: "pressure_inhale",
                 borderColor: "#000000",
                 fill: false,
               } 
@@ -122,7 +122,7 @@ $(document).ready(function() {
 		    display: true}
           }
     });
-    requestDataVar1("temperature", "pressure");
+    requestDataVar1("pressure_buffer", "pressure_inhale");
 });
 
 
@@ -217,12 +217,12 @@ function updateChartType() {
    });
     requestDataVar1(selection_results[0], selection_results[1]);
 }; // ends update button
-
-    document.multiselect('#chart_variables')        
+    document.multiselect('#chart_variables')
+                            
                 .setCheckBoxClick("checkboxAll", function(target, args) {
                         console.log("Checkbox 'Select All' was clicked and got value ", args.checked);})
-                .setCheckBoxClick("1", function(target, args) {
+                .setCheckBoxClick("pressure_buffer", function(target, args) {
                         console.log("Checkbox for item with value '1' was clicked and got value ", args.checked); });
 
-
-
+    document.multiselect('#chart_variables')
+          .deselectAll();

@@ -56,8 +56,8 @@ def send_cmd():
         print(hevclient.send_cmd("CMD_STOP"))
     elif web_form.get('reset') == "RESET":
         print(hevclient.send_cmd("CMD_RESET"))
-    return render_template('index.html', result=live_data())
- 
+    #return render_template('index.html', result=live_data())
+    return ('', 204)
     
 
 @WEBAPP.route('/data_handler', methods=['POST'])
@@ -94,8 +94,7 @@ def live_data():
     Output in json format
     """
 
-    list_variables = ['created_at' , 'temperature' , 
-            'pressure' , 'version' , 
+    list_variables = ['created_at', 'version' , 
             'fsm_state' , 'pressure_air_supply' ,
             'pressure_air_regulated' , 'pressure_o2_supply' , 
             'pressure_o2_regulated' , 'pressure_buffer' ,

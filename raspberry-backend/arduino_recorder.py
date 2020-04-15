@@ -24,16 +24,11 @@ def get_temperature():
     """
     return random() * 20
 
-def get_pressure():
-    """
-    Returns a random number to simulate data obtained from a sensor
-    """
-    return random() * 10
 
 def database_setup():
     '''
     This function creates the sqlite3 table with the timestamp column 
-    and the columns for temperature and humidity
+    and the columns for the arduino packet data  
     '''
     print('Creating ' + TABLE_NAME + ' table..' )
 
@@ -44,8 +39,6 @@ def database_setup():
         conn.execute('''CREATE TABLE IF NOT EXISTS ''' + TABLE_NAME + ''' (
            created_at     INTEGER        NOT NULL,
            alarms         STRING         NOT NULL,
-           temperature    FLOAT           NOT NULL,
-           pressure       FLOAT           NOT NULL,
            version       FLOAT           NOT NULL,           
            fsm_state    FLOAT           NOT NULL,
            pressure_air_supply    FLOAT           NOT NULL,
@@ -106,9 +99,7 @@ def monitoring(source_address):
                 data_packet = {
                     'time' : timestamp,
                     'alarms' : data_alarms,
-                    'temperature': 1,
                     'version': data_receiver["version"],
-                    'pressure': 1,
                     'fsm_state': data_receiver["fsm_state"],
                     'pressure_air_supply': data_receiver["pressure_air_supply"],
                     'pressure_air_regulated': data_receiver["pressure_air_regulated"],
@@ -131,7 +122,7 @@ def monitoring(source_address):
                 try:
                     cursor.execute(
                             'INSERT INTO {tn} VALUES '
-                            '(:time, :alarms, :temperature, :pressure , :version, '
+                            '(:time, :alarms,  :version, '
                             ':fsm_state, :pressure_air_supply, '
                             ':pressure_air_regulated, :pressure_o2_supply,'
                             ':pressure_o2_regulated, :pressure_buffer,'
