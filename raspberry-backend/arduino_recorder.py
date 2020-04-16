@@ -41,6 +41,10 @@ def database_setup():
            exec_string += var + "  FLOAT  NOT NULL, "
         exec_string += "alarms  STRING  NOT NULL "
 
+        # Setting the maximum size of the DB to 100 MB
+        conn.execute("PRAGMA max_page_count = 204800")
+        conn.execute("PRAGMA page_size = 512")
+
         conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
            .format(tn=TABLE_NAME, ex_str=exec_string))
 
