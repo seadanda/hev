@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO,
 class hevfromtxt():
     def __init__(self, inputFile):
         # use input file for testing
-        h = np.loadtxt('share/sample.txt',skiprows = 1, delimiter = ',')
+        h = np.loadtxt(inputFile,skiprows = 1, delimiter = ',')
         self._pressure = h[:,1].tolist()
         self._flow = h[:,2].tolist()
         self._volume = h[:,3].tolist()
