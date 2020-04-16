@@ -289,5 +289,29 @@ class alarmFormat(BaseFormat):
 
 @unique
 class alarm_codes(Enum):
-    ALARM_START = 1
-    ALARM_STOP  = 2
+    # Taken from safety doc. Correct as of 1400 on 20200416
+    APNEA                          = 1  # HP
+    CHECK_VALVE_EXHALE             = 2  # HP
+    CHECK_P_PATIENT                = 3  # HP
+    EXPIRATION_SENSE_FAULT_OR_LEAK = 4  #  MP
+    EXPIRATION_VALVE_LEAK          = 5  #  MP
+    HIGH_FIO2                      = 6  #  MP
+    HIGH_PRESSURE                  = 7  # HP
+    HIGH_RR                        = 8  #  MP
+    HIGH_VTE                       = 9  #  MP
+    LOW_VTE                        = 10 #  MP
+    HIGH_VTI                       = 11 #  MP
+    LOW_VTI                        = 12 #  MP
+    INTENTIONAL_STOP               = 13 # HP
+    LOW_BATTERY                    = 14 # HP (LP) if AC power isn't (is) connected
+    LOW_FIO2                       = 15 # HP
+    OCCLUSION                      = 16 # HP
+    HIGH_PEEP                      = 17 # HP
+    LOW_PEEP                       = 18 # HP
+    AC_POWER_DISCONNECTION         = 19 #  MP
+    BATTERY_FAULT_SRVC             = 20 #  MP
+    BATTERY_CHARGE                 = 21 #  MP
+    AIR_FAIL                       = 22 # HP
+    O2_FAIL                        = 23 # HP
+    PRESSURE_SENSOR_FAULT          = 24 # HP
+    ARDUINO_FAIL                   = 25 # HP

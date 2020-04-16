@@ -11,31 +11,33 @@
     <!--<h1 class="mt-4">Info</h1> !-->
     <div class = "row">
       <div class = "col-md-7 py-0">
-	<select id='chart_variables' multiple="multiple">
+	<div class="row col-center pb-1">
+	<select id='chart_variables' multiple="multiple" class="form-select">
         <option value='pressure_buffer' selected>pressure_buffer</option>
         <option value='pressure_inhale' selected>pressure_inhale</option>
         <option value='temperature_buffer' selected>temperature_buffer</option>
         <option value='pressure_o2_regulated' selected>pressure_o2_regulated</option>
-        <input class="form-button py-0" type="button" value="Submit" onclick="updateChartType()" style="background-color: #1f4793 ; color: white">
 	</select>
+        <input class="form-button" type="button" value="Submit" onclick="updateChartType()">
+	</div>
 
 	<div class="row">
           <div class="col-md-12">
             <div class="card mb-6">
-              <div class="card-chart-header small ">Plots</div>
-              <div class="card-body px-0 py-0"><canvas id="pressure_air_supply" width="100%" height="65px"></canvas></div>
+              <!--<div class="card-chart-header small ">Variable number 1</div>-->
+              <div class="card-body px-0 py-0"><canvas id="pressure_air_supply" width="100%" height="80px"></canvas></div>
             </div>
           </div>
 	</div>
       </div>
     
-      <div class = "col-md-5 py-0 px-0  mr-0">
+      <div class = "col-md-5 py-0 px-0  mr-0 pl-1">
 	<div class="row">
 	  
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">Version</a>
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">Version</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id="version">000.00</span></div>
 	    </div>
@@ -43,8 +45,8 @@
 	  
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">fsm_state</a>
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">fsm_state</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id = "fsm_state">000.00</span> </div>
 	    </div>
@@ -52,8 +54,8 @@
 	  
 	  <div class="col-xl-4 col-md-8 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">pressure_buffer</a>
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">pressure_buffer</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_buffer">000.00</span> Pa</div>
 	    </div>
@@ -63,24 +65,24 @@
 	<div class="row">
 	<div class="col-xl-4 px-1 py-0 col-md-5">
 	  <div class="card bg-primary text-dark mb-2">
-            <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">pressure_inhale</a>
+            <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+	      <a class="small text-dark stretched-link col-center" href="#">pressure_inhale</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_inhale">000.00</span> Pa</div>
 	  </div>
 	</div>
 	<div class="col-xl-4 col-md-8 px-1 py-0">
 	  <div class="card bg-primary text-dark mb-2">
-            <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">temperature_buffer</a>
+            <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+	      <a class="small text-dark stretched-link col-center" href="#">temperature_buffer</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "temperature_buffer">000.00</span> &#8451;</div>
 	  </div>
 	</div>
 	<div class="col-xl-4 px-1 py-0 col-md-8">
 	  <div class="card bg-primary text-dark mb-2">
-            <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">pressure_o2_regulated</a>
+            <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
+	      <a class="small text-dark stretched-link col-center" href="#">pressure_o2_regulated</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_o2_regulated">000.00</span> Pa</div>
 	  </div>
@@ -90,9 +92,9 @@
 	<div class="row no-gutters w-100">
 	    <form action="{{ url_for('data_handler') }}" method="post" class="w-95">
 	      <div class="card rounded-lg small px-0">
-		<div class="card-header align-items-center justify-content-between px-1 py-1">
-		  INPUTS
-		  <div class = "float-right"><a class="unlock thresholds" id="toggle_thresholds" onclick="toggle_lock_settings()">
+		<div class="card-header align-items-center justify-content-between pl-3 pr-1 py-1">
+		  Settings
+		  <div class = "float-right mr-1"><a class="unlock thresholds" id="toggle_thresholds" onclick="toggle_lock_settings()">
 		      <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="svg-inline--fa fa-lock fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 			<path class="path-icon" id = "path-locked" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
 			<path class="path-icon transparent" id="path-unlocked" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
@@ -102,22 +104,22 @@
 		</div>
 		<div class="card-body px-1 py-1">
 		  <table class="text-align-right py-0 my-0 small">
-		    <tr class="py-0">
+		    <tr class="">
 		      <td><span class=""><label class="small" for="inputInhale">Inhale Time (ms): </label><input class="form-control" id="inputThres1" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
 		      <td><span class="form-group"><label class="small" for="inputFill">Fill Time (ms): </label><input class="form-control" id="inputFill" type="number" value=1 name="variable1" readOnly min=0 max = 100 onclick="show_easy_numpad_wrapper(this);"/></span></td>
 		      <td><span class="form-group"><label class="small" for="inputPause">Pause (ms): </label><input class="form-control" id="inputPause" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);"/></span></td>
 		      <td></td>
 		    </tr> 
-		    <tr class="py-0">
-		      <td><span class="form-group"> <br>  <label class="small" for="inputExhale">Exhale/Inhale: </label><input class="form-control lh-1" id="inputExInhale" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
-		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">PEEP (cmH2O): </label><input class="form-control" id="inputPEEP" type="number" value=1 name="inputPEEP" readOnly min=0 max = 100 /></span></td>
-		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">Exhale Time (ms): </label><input class="form-control" id="inputExhaleTime" type="number" value=1 name="variable1" readOnly min=0 max=100 /></span></td>
-		      <td><span class="form-group"> <br> <label class="small" for="inputVar1">RPM: </label><input class="form-control" id="inputRPM" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);" /></span></td>
+		    <tr class="">
+		      <td><span class="form-group">  <label class="small" for="inputExhale">Exhale/Inhale: </label><input class="form-control lh-1" id="inputExInhale" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
+		      <td><span class="form-group"> <label class="small" for="inputVar1">PEEP (cmH2O): </label><input class="form-control" id="inputPEEP" type="number" value=1 name="inputPEEP" readOnly min=0 max = 100 /></span></td>
+		      <td><span class="form-group"> <label class="small" for="inputVar1">Exhale Time (ms): </label><input class="form-control" id="inputExhaleTime" type="number" value=1 name="variable1" readOnly min=0 max=100 /></span></td>
+		      <td><span class="form-group"> <label class="small" for="inputVar1">RPM: </label><input class="form-control" id="inputRPM" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);" /></span></td>
 		    </tr>
 		  </table>
 		</div>
-		<div class="card-footer px-0 py-0 align-items-center">
-		  <span class="form-group ml-auto mr-auto"><input class="form-button py-0" id="form_submit" type="submit" value="Update Setting" style="background-color: #1f4793 ; color: white" disabled /></span>
+		<div class="card-footer px-0 py-0">
+		  <div class="col-center"><input class="form-button float-right" id="form_submit" type="submit" value="Update" disabled /></div>
 		</div>
 	      </div>
 	    </form>
@@ -125,7 +127,7 @@
 	
 	<div class = "row no-gutters ml-auto mr-auto py-2">
 	    <a> <button class="sb-control-button py-3 rounded-lg mr-1">INHALE</button></a>
-	    <a> <button class="sb-control-button py-1 rounded-lg ml-1">EXHALE</button></a>
+	    <a> <button class="sb-control-button sb-control-button-pressed py-1 rounded-lg ml-1">EXHALE</button></a>
 	</div>
 	</div>
       </div>
@@ -142,8 +144,13 @@
   var i;
   if ( x.length > 0 && x[0].readOnly == true ){
   for (i = 0; i < x.length; i++) {
-		  if (x[i].id != "form_submit"){x[i].readOnly = false;}
-		  else{ x[i].disabled=false; }
+		  if (x[i].id != "form_submit"){
+		  x[i].readOnly = false;
+		  }
+		  else{
+		  x[i].disabled=false;
+
+		  }
 		  var submit = document.getElementById("form_submit");
 		  submit.disabled=false;
 		  }
@@ -155,8 +162,10 @@
 		  }
 		  else{
 		  for (i = 0; i < x.length; i++ ) {
-		  if (x[i].id != "form_submit"){x[i].readOnly = true;}
-		  else {x[i].disabled=true;}
+				  if (x[i].id != "form_submit"){
+				  x[i].readOnly = true;
+				  }
+		  else {x[i].disabled=true;
 				  }
 				  
 		  var submit = document.getElementById("form_submit");

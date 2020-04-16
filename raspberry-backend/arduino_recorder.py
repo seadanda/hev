@@ -9,20 +9,19 @@ import sys
 import time
 import argparse
 import sqlite3
-from random import random
 from datetime import datetime
 import threading
 from hevclient import HEVClient
-
+from commsConstants import dataFormat
 
 SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
 TABLE_NAME = 'hec_monitor'  # name of the table to be created
 
-def get_temperature():
-    """
-    Returns a random number to simulate data obtained from a sensor
-    """
-    return random() * 20
+def getList(dict): 
+    return [*dict] 
+
+# List of data variables in the data packet from the Arduino
+data_format = getList(dataFormat().getDict())
 
 
 def database_setup():
@@ -36,28 +35,19 @@ def database_setup():
     try:
         # Connecting to the database file
         conn = sqlite3.connect(SQLITE_FILE)
-        conn.execute('''CREATE TABLE IF NOT EXISTS ''' + TABLE_NAME + ''' (
-           created_at     INTEGER        NOT NULL,
-           alarms         STRING         NOT NULL,
-           version       FLOAT           NOT NULL,           
-           fsm_state    FLOAT           NOT NULL,
-           pressure_air_supply    FLOAT           NOT NULL,
-           pressure_air_regulated    FLOAT           NOT NULL,
-           pressure_o2_supply    FLOAT           NOT NULL,   
-           pressure_o2_regulated    FLOAT           NOT NULL,
-           pressure_buffer    FLOAT           NOT NULL,
-           pressure_inhale    FLOAT           NOT NULL,
-           pressure_patient    FLOAT           NOT NULL,
-           temperature_buffer    FLOAT           NOT NULL,
-           pressure_diff_patient    FLOAT           NOT NULL,
-           readback_valve_air_in    FLOAT           NOT NULL,
-           readback_valve_o2_in    FLOAT           NOT NULL,
-           readback_valve_inhale    FLOAT           NOT NULL,
-           readback_valve_exhale    FLOAT           NOT NULL,
-           readback_valve_purge    FLOAT           NOT NULL,
-           readback_mode    FLOAT           NOT NULL                
-           );'''
-        )
+   
+        exec_string = "created_at  INTEGER  NOT NULL, "
+        for var in data_format:
+           exec_string += var + "  FLOAT  NOT NULL, "
+        exec_string += "alarms  STRING  NOT NULL "
+
+        # Setting the maximum size of the DB to 100 MB
+        conn.execute("PRAGMA max_page_count = 204800")
+        conn.execute("PRAGMA page_size = 512")
+
+        conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
+           .format(tn=TABLE_NAME, ex_str=exec_string))
+
         conn.commit()
         conn.close()
     except sqlite3.Error as err:
@@ -72,7 +62,6 @@ def monitoring(source_address):
 
     # Instantiating the client
     hevclient = HEVClient()
-    print(hevclient.send_cmd("CMD_START"))
 
     epoch = datetime(1970, 1, 1)
 
@@ -94,46 +83,26 @@ def monitoring(source_address):
                     data_alarms = ','.join(data_alarms)
                 else:
                     data_alarms = "none"
-
-
-                data_packet = {
-                    'time' : timestamp,
-                    'alarms' : data_alarms,
-                    'version': data_receiver["version"],
-                    'fsm_state': data_receiver["fsm_state"],
-                    'pressure_air_supply': data_receiver["pressure_air_supply"],
-                    'pressure_air_regulated': data_receiver["pressure_air_regulated"],
-                    'pressure_o2_supply': data_receiver["pressure_o2_supply"], 
-                    'pressure_o2_regulated': data_receiver["pressure_o2_regulated"], 
-                    'pressure_buffer': data_receiver["pressure_buffer"], 
-                    'pressure_inhale': data_receiver["pressure_inhale"], 
-                    'pressure_patient': data_receiver["pressure_patient"], 
-                    'temperature_buffer': data_receiver["temperature_buffer"], 
-                    'pressure_diff_patient': data_receiver["pressure_diff_patient"], 
-                    'readback_valve_air_in': data_receiver["readback_valve_air_in"], 
-                    'readback_valve_o2_in': data_receiver["readback_valve_o2_in"], 
-                    'readback_valve_inhale': data_receiver["readback_valve_inhale"], 
-                    'readback_valve_exhale': data_receiver["readback_valve_exhale"], 
-                    'readback_valve_purge': data_receiver["readback_valve_purge"], 
-                    'readback_mode': data_receiver["readback_mode"]
-                }
+                
+                data_packet = { el : data_receiver[el] for el in data_format}
+                data_packet.update({"time" : timestamp})
+                data_packet.update({"alarms" : data_alarms})
 
                 print("Writing to database ...")
                 try:
+                    exec_string = "( :time, "
+                    for el in data_format: 
+                         exec_string += ":" + el + ", "
+                    exec_string += ":alarms) "
+
                     cursor.execute(
-                            'INSERT INTO {tn} VALUES '
-                            '(:time, :alarms,  :version, '
-                            ':fsm_state, :pressure_air_supply, '
-                            ':pressure_air_regulated, :pressure_o2_supply,'
-                            ':pressure_o2_regulated, :pressure_buffer,'
-                            ':pressure_inhale, :pressure_patient,'
-                            ':temperature_buffer, :pressure_diff_patient,'
-                            ':readback_valve_air_in, :readback_valve_o2_in,'
-                            ':readback_valve_inhale, :readback_valve_exhale,'
-                            ':readback_valve_purge, :readback_mode)'
-                            .format(tn=TABLE_NAME), data_packet
+                            'INSERT INTO {tn} VALUES {ex_str} '
+                            .format(tn=TABLE_NAME, ex_str=exec_string), data_packet
                     )
+
                     conn.commit()
+
+
                 except sqlite3.Error as err:
                      raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
                 finally:                  
