@@ -47,34 +47,38 @@ class HEVServer(object):
         logging.debug(f"Payload received: {payload!r}")
         # check if it is data or alarm
         payload_type = payload.getType()
-        if payload_type == payloadType.payloadData:
+        if payload_type == payloadType.payloadAlarm:
+            # Alarm is latched until acknowledged in GUI
+            alarm_packet = payload.getDict()
+            alarmCode = alarm_packet["alarmCode"]
+            with self._dblock:
+                try:
+                    alarm = alarm_codes(alarmCode).name
+                except ValueError as e:
+                    # alarmCode does not exist in the enum, this is serious!
+                    logging.error(e)
+                    self._alarms.append("ARDUINO_FAIL") # assume Arduino is broken
+                if alarm not in self._alarms:
+                    self._alarms.append(alarm)
+            # let broadcast thread know there is data to send
+            with self._dvlock:
+                self._datavalid.set()
+        elif payload_type == payloadType.payloadData:
             # pass data to db
             with self._dblock:
                 self._values = payload.getDict()
-        elif payload_type == payloadType.payloadAlarm:
-            alarm_map = {
-                0: "manual",
-                1: "gas supply",
-                2: "apnea",
-                3: "expired minute volume",
-                4: "upper pressure limit",
-                5: "power failure",
-            }
-            new_alarm = payload.getDict()
-            param = new_alarm["param"]
-            if new_alarm["alarmCode"] == 2:
-                # alarm stop, delete from list
-                with self._dblock:
-                    self._alarms.remove(alarm_map[param])
-
-            elif new_alarm["alarmCode"] == 1:
-                # alarm start, add to list
-                with self._dblock:
-                    self._alarms.append(alarm_map[param])
-
-        # let broadcast thread know there is data to send
-        with self._dvlock:
-            self._datavalid.set()
+            # let broadcast thread know there is data to send
+            with self._dvlock:
+                self._datavalid.set()
+        elif payload_type == payloadType.payloadCmd:
+            # ignore for the minute
+            pass
+        elif payload_type == payloadType.payloadUnset:
+            # ignore for the minute
+            pass
+        else:
+            # invalid packet, don't throw exception just log and pop
+            logging.error("Received invalid packet, ignoring")
 
         # pop from lli queue
         self._lli.pop_payloadrecv()
@@ -101,20 +105,36 @@ class HEVServer(object):
                     self._lli.writePayload(command)
 
                     # processed and sent to controller, send ack to GUI since it's in enum
-                    # TODO should we wait for ack from controller or is that going to block the port for too long?
                     payload = {"type": "ack"}
                 else:
-                    raise HEVPacketError("Invalid command packet")
+                    raise HEVPacketError(f"Invalid command packet. Command {reqcmd} does not exist.")
         
-                packet = json.dumps(payload).encode()
+            elif reqtype == "broadcast":
+                # ignore for the minute
+                pass
+            elif reqtype == "alarm":
+                # acknowledgement of alarm from gui
+                try:
+                    # delete alarm if it exists
+                    with self._dblock:
+                        self._alarms.remove(request["ack"])
+                    payload = {"type": "ack"}
+                except NameError as e:
+                    raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
+            else:
+                raise HEVPacketError(f"Invalid request type")
 
-                # send reply and close connection
-                writer.write(packet)
-                await writer.drain()
-                writer.close()
+            packet = json.dumps(payload).encode()
+
+            # send reply and close connection
+            writer.write(packet)
+            await writer.drain()
+            writer.close()
+
+
         except (NameError, HEVPacketError) as e:
             # invalid request: reject immediately
-            logging.warning(f"Invalid command packet. Type {reqtype} does not exist")
+            logging.warning(e)
             payload = {"type": "nack"}
             packet = json.dumps(payload).encode()
             writer.write(packet)

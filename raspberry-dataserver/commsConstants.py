@@ -17,7 +17,7 @@ class payloadType(Enum):
 
 class BaseFormat():
     def __init__(self):
-        self._RPI_VERSION = 0xA1
+        self._RPI_VERSION = 0xA0
         self._byteArray = None
         self._type = payloadType.payloadUnset
         self._version = 0
@@ -294,7 +294,7 @@ class alarm_codes(Enum):
     CHECK_VALVE_EXHALE             = 2  # HP
     CHECK_P_PATIENT                = 3  # HP
     EXPIRATION_SENSE_FAULT_OR_LEAK = 4  #  MP
-    EXPIRATION_VALVE_Leak          = 5  #  MP
+    EXPIRATION_VALVE_LEAK          = 5  #  MP
     HIGH_FIO2                      = 6  #  MP
     HIGH_PRESSURE                  = 7  # HP
     HIGH_RR                        = 8  #  MP

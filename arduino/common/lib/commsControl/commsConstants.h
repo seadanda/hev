@@ -31,7 +31,7 @@
 #define PACKET_DATA  0x40
 #define PACKET_SET   0x20 //set vs get ?
 
-#define HEV_FORMAT_VERSION 0xA1
+#define HEV_FORMAT_VERSION 0xA0
 
 enum command_codes {CMD_START = 1,
                     CMD_STOP  = 2};
