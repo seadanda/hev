@@ -9,13 +9,14 @@ import time
 import threading
 import argparse
 import svpi
+import hevfromtxt
 import commsControl
 from commsConstants import payloadType, command_codes, alarm_codes, commandFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
 import logging
-logging.basicConfig(level=logging.INFO,
+logging.basicConfig(level=logging.DEBUG,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 class HEVPacketError(Exception):
@@ -201,8 +202,14 @@ if __name__ == "__main__":
     
     # check if input file was specified
     if args.inputFile != '':
-        # initialise frond end generator from file
-        lli = svpi.svpi(args.inputFile)
+        if args.inputFile[-1-3:] == '.txt':
+            # assume sample.txt format
+            lli = hevfromtxt.hevfromtxt(args.inputFile)
+        else:
+            # assume hex dump
+            lli = svpi.svpi(args.inputFile)
+
+        logging.info(f"Serving data from {args.inputFile}")
     else:
         # get arduino serial port
         for port in list_ports.comports():
@@ -218,8 +225,9 @@ if __name__ == "__main__":
         # initialise low level interface
         try:
             lli = commsControl.commsControl(port=port_device)
+            logging.info(f"Serving data from device {port_device}")
         except NameError:
-            print("Arduino not connected")
+            logging.error("Arduino not connected")
             exit(1)
 
     hevsrv = HEVServer(lli)
