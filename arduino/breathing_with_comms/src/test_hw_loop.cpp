@@ -8,6 +8,7 @@ int timeout = 1000;
 byte lab_cycle_mode = 0;
 byte bs_state = BS_IDLE;
 bool running = false;
+bool reset = false;
 int next_state;
 
 byte getLabCycleMode()
@@ -29,10 +30,13 @@ void FSM_assignment( ) {
             if (running == true) {
                 // FSM_time = millis();
                 next_state = BS_BUFF_PREFILL;
-                // Serial.println("Exit IDLE") ;
             } else {
                 next_state = BS_IDLE;
             }
+            reset = false;
+            break;
+        case BS_CALIBRATION:
+            next_state = BS_BUFF_PREFILL;
             break;
         case BS_BUFF_PREFILL:
             next_state = BS_BUFF_FILL;
@@ -82,14 +86,17 @@ void FSM_assignment( ) {
         case BS_BUFF_FLUSH:
             next_state = BS_IDLE;
             break;
+        case BS_STOP:
+            if (reset == true) {
+                next_state = BS_IDLE;
+            }
+            break;
         default:
             next_state = bs_state;
         }
         bs_state = next_state;
         FSM_time = millis();
     }
-
-
 }
 
 void FSM_breath_cycle()
@@ -104,18 +111,43 @@ void FSM_breath_cycle()
             } else {
                 timeout = 1000; 
             }
-            setValves(V_CLOSED, V_CLOSED, V_OPEN, V_OPEN, V_CLOSED, V_CLOSED);
+            // TODO
+            // air, o2, purge are based on button states in idle
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.0, V_CLOSED, V_CLOSED);
             break;
+        case BS_CALIBRATION : 
+            setValves(V_CLOSED, V_CLOSED, 0.9, 0.9, V_OPEN, V_CLOSED);
+            // TODO
+            // do calib - measure P_regulated for 10 s and calc mean
+            // P_patient, P_buffer and P_inhale shoudl be equal
+            timeout = 10000;
         case BS_BUFF_PREFILL:
-            setValves(V_CLOSED, V_CLOSED, V_CLOSED, V_OPEN, V_CLOSED, V_CLOSED);
+            // TODO - exhale settable; timeout expert settable
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.8, V_CLOSED, V_CLOSED);
             timeout = 100;
             break;
         case BS_BUFF_FILL:
-            setValves(V_OPEN, V_OPEN, V_CLOSED, V_OPEN, V_CLOSED, V_CLOSED);
-            timeout = 1200;
+            // TODO - exhale settable; timeout settable
+            setValves(V_OPEN, V_OPEN, 0.0, 0.8, V_CLOSED, V_CLOSED);
+            timeout = 600;
             break;
         case BS_BUFF_LOADED:
-            setValves(V_CLOSED, V_CLOSED, V_CLOSED, V_OPEN, V_CLOSED, V_CLOSED);
+            // TODO - exhale settable; timeout expert settable
+            // Calc pressure and stay in loaded if not ok
+            // pressure settable by expert
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.8, V_CLOSED, V_CLOSED);
+            timeout = 100;
+            break;
+        case BS_BUFF_PRE_INHALE:
+            // TODO - timeout settable
+            // spontaneous trigger can be enabled
+            // - can be triggered by : 
+                // P_inhale ; 
+                // P_diff_patient //=flow
+                // P_patient and p_diff_patient
+                // P_patient or p_diff_patient
+                // with thresholds on each
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.0, V_CLOSED, V_CLOSED);
             switch (lab_cycle_mode)
             {
                 case LAB_MODE_FLUSH:
@@ -127,22 +159,25 @@ void FSM_breath_cycle()
                     
                     break;
                 default:
-                    timeout =1500;
+                    timeout = 100;
             }
-            break;
-        case BS_BUFF_PRE_INHALE:
-            setValves(V_CLOSED, V_CLOSED, V_CLOSED, V_CLOSED, V_CLOSED, V_CLOSED);
-            timeout = 100;
         
             break;
         case BS_INHALE:
-            setValves(V_CLOSED, V_CLOSED, V_OPEN, V_CLOSED, V_CLOSED, V_CLOSED);
-            timeout =1600;
+            // TODO : spontaneous trigger
+            // if p_diff_patient < thresh (def: 25% below nominal)
+            // go to exhale fill
+            // TODO : spontaneous trigger
+            // if p_inhale > max thresh pressure(def: 50?)
+            // go to exhale fill
+            setValves(V_CLOSED, V_CLOSED, 0.8, 0.0, V_CLOSED, V_CLOSED);
+            timeout =1000;
             
             break;
         case BS_PAUSE:
-            setValves(V_CLOSED, V_CLOSED, V_CLOSED, V_CLOSED, V_CLOSED, V_CLOSED);
-            timeout = 200;
+            // TODO: timeout setting
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.0, V_CLOSED, V_CLOSED);
+            timeout = 500;
             
             break;
         case BS_EXHALE_FILL:
@@ -151,22 +186,27 @@ void FSM_breath_cycle()
         
             break;
         case BS_EXHALE:
-            setValves(V_CLOSED, V_CLOSED, V_CLOSED, V_OPEN, V_CLOSED, V_CLOSED);
+            // TODO: exhale timeout based on 
+            // (inhale_time* (Exhale/Inhale ratio))  -  fill time
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.9, V_CLOSED, V_CLOSED);
             timeout = 400;
             
             break;
         case BS_BUFF_PURGE:
-            setValves(V_CLOSED, V_CLOSED, V_CLOSED, V_OPEN, V_OPEN, V_CLOSED);
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.9, V_OPEN, V_CLOSED);
             timeout =1000;
             break;
         case BS_BUFF_FLUSH:
-            setValves(V_CLOSED, V_CLOSED, V_OPEN, V_OPEN, V_CLOSED, V_CLOSED);
+            setValves(V_CLOSED, V_CLOSED, 0.9, 0.9, V_CLOSED, V_CLOSED);
             timeout =1000;
+            break;
+        case BS_STOP: 
+            // TODO : require a reset command to go back to idle
+            setValves(V_CLOSED, V_CLOSED, 0.0, 0.0, V_CLOSED, V_CLOSED);
+            timeout = 1000;
             break;
     }
 
-//  Serial.println("state FSM_breath_cycle: " + String(bs_state));
-//  Serial.println("start: " + String(start));
 }
 
 void do_start()
@@ -177,6 +217,11 @@ void do_start()
 void do_stop()
 {
     running = false;
+}
+
+void do_reset()
+{
+    reset = true;
 }
 
 bool get_running()
