@@ -101,7 +101,8 @@ $(document).ready(function() {
                     type: 'time',
                     time: {
 			unit: 'second',
-			displayFormat: 'second'
+			displayFormat: 'second',
+                        type: 'realtime'
                     },
 		    ticks: {
 			maxTicksLimit: 5,
@@ -116,7 +117,15 @@ $(document).ready(function() {
                    id: 'B',
                    type: 'linear',
                    position: 'right',
-                }]
+                },{
+        ticks: {
+            min: 0,
+            max: 200,
+            stepSize: 20
+        }
+
+
+}]
 	        },
 		legend : {
 		    display: true}
