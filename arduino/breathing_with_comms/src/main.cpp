@@ -1,5 +1,6 @@
 #include <Arduino.h>
-#include <MemoryFree.h>
+// #include <MemoryFree.h>
+
 #include "commsControl.h"
 #include "test_hw_loop.h"
 #include "common.h"
@@ -49,27 +50,25 @@ float calc_expiratory_minute_volume()
     return 0;
 }
 
-// FROM OVERLEAF DOC
-// Working pressure, corresponding to the manually set and monitored input pressure to the unit
-// Inspiratory Minute Volume setting
-// Breaths per minute setting
-// Tidal volume display, based on previous two parameters
-// Inspiration time setting
-// Pause time setting
-// expiration time display based on previous two parameters
-// expired minute volume
-// Airway pressure display based on the reading of $P_2$ ??? not a setting
-// PEEP setting ??? external
-// Trigger sensitivity to patient initiated breath
-
-
 void setup()
 {
+#ifdef CHIP_ESP32
+    ledcSetup(pwm_chan_inhale, pwm_frequency, pwm_resolution);
+    ledcSetup(pwm_chan_exhale, pwm_frequency, pwm_resolution);
+    ledcAttachPin(pin_valve_inhale , pwm_chan_inhale);  
+    ledcAttachPin(pin_valve_exhale , pwm_chan_exhale);  
+    pin_to_chan[pin_valve_inhale] = pwm_chan_inhale;
+    pin_to_chan[pin_valve_exhale] = pwm_chan_exhale;
+
+// map<int,int> pin_to_chan; // = { pin_valve_inhale : pwm_chan_inhale , pin_valve_exhale : pwm_chan_exhale};
+#else
+// NOTE defaults to whatever the frequency of the pin is for non-ESP32 boards.  Changing frequency is possible but complicated
+    pinMode(pin_valve_inhale, OUTPUT);
+    pinMode(pin_valve_exhale, OUTPUT);
+#endif
 
     pinMode(pin_valve_air_in, OUTPUT);
     pinMode(pin_valve_o2_in, OUTPUT);
-    pinMode(pin_valve_inhale, OUTPUT);
-    pinMode(pin_valve_exhale, OUTPUT);
     pinMode(pin_valve_purge, OUTPUT);
     pinMode(pin_valve_atmosphere, OUTPUT);
 
@@ -107,7 +106,8 @@ void loop()
     data.pressure_buffer = analogRead(pin_p_buffer);
     data.pressure_inhale = analogRead(pin_p_inhale);
 
-    bool vin_air, vin_o2, vinhale, vexhale, vpurge, vatmos;
+    bool vin_air, vin_o2, vpurge, vatmos;
+    float vinhale, vexhale;
     getValves(vin_air, vin_o2, vinhale, vexhale, vpurge, vatmos);
     data.readback_valve_air_in = vin_air;
     data.readback_valve_o2_in = vin_o2;

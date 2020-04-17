@@ -37,8 +37,11 @@ class HEVClient(object):
 
         # grab data from the socket as soon as it is available and dump it in the db
         while self._polling:
-            data = await reader.read(500)
-            payload = json.loads(data.decode("utf-8"))
+            data = await reader.read(600)
+            try:
+                payload = json.loads(data.decode("utf-8"))
+            except json.decoder.JSONDecodeError:
+                logging.warning(f"Could not decode packet: {data}")
             with self._lock:
                 self._values = payload["sensors"]
                 self._alarms = payload["alarms"]
@@ -50,15 +53,21 @@ class HEVClient(object):
     def start_client(self) -> None:
         asyncio.run(self.polling())
 
-    async def send_request(self, cmd: str, param: str=None) -> bool:
+    async def send_request(self, reqtype, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
 
-        payload = {
-            "type": "cmd",
-            "cmd": cmd,
-            "param": param
-        }
+        if reqtype == "cmd":
+            payload = {
+                "type": "cmd",
+                "cmd": cmd,
+                "param": param
+            }
+        elif reqtype == "alarm":
+            payload = {
+                "type": "alarm",
+                "ack": alarm
+            }
 
         packet = json.dumps(payload).encode()
 
@@ -67,7 +76,10 @@ class HEVClient(object):
 
         # wait for acknowledge
         data = await reader.read(300)
-        data = json.loads(data.decode("utf-8"))
+        try:
+            data = json.loads(data.decode("utf-8"))
+        except json.decoder.JSONDecodeError:
+            logging.warning(f"Could not decode packet: {data}")
 
         # close connection to free up socket
         writer.close()
@@ -75,15 +87,19 @@ class HEVClient(object):
 
         # check that acknowledge is meaningful
         if data["type"] == "ack":
-            logging.info(f"Command {cmd} sent successfully")
+            logging.info(f"Request type {reqtype} sent successfully")
             return True
         else:
-            logging.warning(f"Sending command {cmd} failed")
+            logging.warning(f"Request type {reqtype} failed")
             return False
 
     def send_cmd(self, cmd: str, param: str=None) -> bool:
         # send a cmd and wait to see if it's valid
-        return asyncio.run(self.send_request(cmd))
+        return asyncio.run(self.send_request("cmd", cmd=cmd, param=param))
+
+    def ack_alarm(self, alarm: str) -> bool:
+        # acknowledge alarm to remove it from the hevserver list
+        return asyncio.run(self.send_request("alarm", alarm=alarm))
 
     def get_values(self) -> Dict:
         # get sensor values from db
@@ -101,7 +117,7 @@ if __name__ == "__main__":
 
 
     # Play with sensor values and alarms
-    for i in range(30):
+    for i in range(20):
         values = hevclient.get_values() # returns a dict or None
         alarms = hevclient.get_alarms() # returns a list of alarms currently ongoing
         if values is None:
@@ -110,6 +126,15 @@ if __name__ == "__main__":
             print(f"Values: {json.dumps(values, indent=4)}")
             print(f"Alarms: {alarms}")
         time.sleep(1)
+    
+    # acknowledge the oldest alarm
+    try:
+        hevclient.ack_alarm(alarms[0]) # blindly assume we have one after 40s
+    except:
+        logging.info("No alarms received")
+
+    time.sleep(1)
+    print(f"Alarms: {hevclient.get_alarms()}")
 
     # send commands:
     print(hevclient.send_cmd("CMD_START"))
@@ -119,7 +144,6 @@ if __name__ == "__main__":
 
     # print some more values
     for i in range(10):
-        print(f"Alarms: {hevclient.get_alarms()}")
         print(f"Values: {json.dumps(hevclient.get_values(), indent=4)}")
         print(f"Alarms: {hevclient.get_alarms()}")
         time.sleep(1)

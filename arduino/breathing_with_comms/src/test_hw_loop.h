@@ -12,6 +12,7 @@ bool get_running();
 enum BS_STATES : byte
 {
     BS_IDLE,
+    BS_CALIBRATION,
     BS_BUFF_PREFILL,
     BS_BUFF_FILL,
     BS_BUFF_LOADED,
@@ -20,6 +21,7 @@ enum BS_STATES : byte
     BS_PAUSE,
     BS_EXHALE_FILL,
     BS_EXHALE,
+    BS_STOP,
     BS_BUFF_PURGE,
     BS_BUFF_FLUSH
 };

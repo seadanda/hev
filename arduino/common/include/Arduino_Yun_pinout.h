@@ -29,4 +29,4 @@ const int pin_buzzer         = 9;
 
 const int pin_button_0       = 13;
 
-//     // lcd
+const int pwm_resolution = 8; // 8 bit resolution

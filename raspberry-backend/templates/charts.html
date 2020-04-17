@@ -1,5 +1,8 @@
 {% set charts_active = True %}
 {% extends 'base.html' %}
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script> 
+
 
 {% block fan_classes %}
 {% endblock %}
@@ -11,94 +14,34 @@
     <div class = "row">
 
 
-      <div class = "col-md-7 py-0">
+      <div class = "col-md-10 py-0">
 	<div class="row">
           <div class="col-md-12">
             <div class="card mb-6">
-              <div class="card-chart-header small ">Variable number 1</div>
-              <div class="card-body px-0 py-0"><canvas id="pressure_air_supply" width="200%" height="40"></canvas></div>
+              <div class="card-chart-header small ">Pressure [mbar]</div>
+              <div class="card-body px-0 py-0"><canvas id="pressure_chart" width="200%" height="30"></canvas></div>
             </div>
           </div>
 	</div>
 	<div class = "row">
           <div class="col-md-12">
             <div class="card mb-6 px-0 py-0">
-              <div class="card-chart-header small">Variable number 2</div>
-	      <div class="card-body px-0 py-0"><canvas id="variable2" width="200%" height="40"></canvas></div>
+              <div class="card-chart-header small">Flow [mL/min]</div>
+	      <div class="card-body px-0 py-0"><canvas id="flow_chart" width="200%" height="30"></canvas></div>
 	    </div>
 	  </div>
 	</div>
 	<div class = "row">
 	  <div class="col-md-12">
 	    <div class="card mb-6 px-0 py-0">
-	      <div class="card-chart-header small ">Variable number 3</div>
-	      <div class="card-body px-0 py-0"><canvas id="chart_variable3" width="200%" height="40"></canvas></div>
+	      <div class="card-chart-header small ">Volume [mL]</div>
+	      <div class="card-body px-0 py-0"><canvas id="volume_chart" width="200%" height="30"></canvas></div>
 	    </div>
 	  </div>
 	</div>
       </div>
     
-      <div class = "col-md-5 py-0 px-0  mr-0">
-  
-	<div class="row">
-	  
-	  <div class="col-xl-5b px-1 py-0 mr-0">
-	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between">
-		<a class="small text-dark stretched-link" href="#">Temperature</a>
-              </div>
-              <div class="card-body"><span class = "reading" id="temperature">000.00</span> &#8451;</div>
-	    </div>
-	  </div>
-	  
-	  <div class="col-xl-5b px-1 py-0 mr-0">
-	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between">
-		<a class="small text-dark stretched-link" href="#">Pressure</a>
-              </div>
-              <div class="card-body"><span class = "reading" id = "pressure">000.00</span> Pa</div>
-	    </div>
-	  </div>
-	</div>
-	
-	<div class="row">
-	  <div class="col-xl-5b col-md-8 px-1 py-0">
-	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between">
-		<a class="small text-dark stretched-link" href="#">variable3</a>
-              </div>
-              <div class="card-body"><span class = "reading" id = "variable3">000.00</span> &#8451;</div>
-	    </div>
-	  </div>
-	  <div class="col-xl-5b px-1 py-0 col-md-8">
-	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between">
-		<a class="small text-dark stretched-link" href="#">variable4</a>
-              </div>
-              <div class="card-body"><span class = "reading" id = "variable4">000.00</span> Pa</div>
-	    </div>
-	  </div>
-	</div>
-	
-	<div class="row">
-	  <div class="col-xl-5b col-md-8 px-1 py-0">
-	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between">
-		<a class="small text-dark stretched-link" href="#">variable5</a>
-              </div>
-              <div class="card-body"><span class = "reading" id = "variable5">000.00</span> &#8451;</div>
-	    </div>
-	  </div>
-	  <div class="col-xl-5b px-1 py-0 col-md-8">
-	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between">
-		<a class="small text-dark stretched-link" href="#">variable6</a>
-              </div>
-              <div class="card-body"><span class = "reading" id = "variable6">000.00</span> Pa</div>
-	    </div>
-	  </div>
-	</div>
-	
+      
       </div>
     </div>
   </div>

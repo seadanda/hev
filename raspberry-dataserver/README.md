@@ -73,7 +73,7 @@ Example broadcast packet:
         "readback_mode": 0
     },
     "alarms": [
-        "ALARM_START"
+        "APNEA"
     ]
 }
 ```
@@ -82,7 +82,7 @@ Example alarm packet:
 ```json
 {
     “type”: “alarm”,
-    “alarms”: [‘apnea’]
+    “alarms”: [‘APNEA’]
 }
 ```
 

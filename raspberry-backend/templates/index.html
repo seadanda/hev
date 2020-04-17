@@ -11,13 +11,15 @@
     <!--<h1 class="mt-4">Info</h1> !-->
     <div class = "row">
       <div class = "col-md-7 py-0">
-	<select id='chart_variables' multiple="multiple">
+	<div class="row col-center pb-1">
+	<select id='chart_variables' multiple="multiple" class="form-select">
         <option value='pressure_buffer' selected>pressure_buffer</option>
         <option value='pressure_inhale' selected>pressure_inhale</option>
         <option value='temperature_buffer' selected>temperature_buffer</option>
         <option value='pressure_o2_regulated' selected>pressure_o2_regulated</option>
-        <input class="form-button py-0" type="button" value="Submit" onclick="updateChartType()">
 	</select>
+        <input class="form-button" type="button" value="Submit" onclick="updateChartType()">
+	</div>
 
 	<div class="row">
           <div class="col-md-12">
@@ -29,13 +31,13 @@
 	</div>
       </div>
     
-      <div class = "col-md-5 py-0 px-0  mr-0">
+      <div class = "col-md-5 py-0 px-0  mr-0 pl-1">
 	<div class="row">
 	  
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">Version</a>
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">Version</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id="version">000.00</span></div>
 	    </div>
@@ -43,8 +45,8 @@
 	  
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">fsm_state</a>
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">fsm_state</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id = "fsm_state">000.00</span> </div>
 	    </div>
@@ -52,8 +54,8 @@
 	  
 	  <div class="col-xl-4 col-md-8 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1">
-		<a class="small text-dark stretched-link" href="#">pressure_buffer</a>
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">pressure_buffer</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_buffer">000.00</span> Pa</div>
 	    </div>
@@ -63,24 +65,24 @@
 	<div class="row">
 	<div class="col-xl-4 px-1 py-0 col-md-5">
 	  <div class="card bg-primary text-dark mb-2">
-            <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">pressure_inhale</a>
+            <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+	      <a class="small text-dark stretched-link col-center" href="#">pressure_inhale</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_inhale">000.00</span> Pa</div>
 	  </div>
 	</div>
 	<div class="col-xl-4 col-md-8 px-1 py-0">
 	  <div class="card bg-primary text-dark mb-2">
-            <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">temperature_buffer</a>
+            <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+	      <a class="small text-dark stretched-link col-center" href="#">temperature_buffer</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "temperature_buffer">000.00</span> &#8451;</div>
 	  </div>
 	</div>
 	<div class="col-xl-4 px-1 py-0 col-md-8">
 	  <div class="card bg-primary text-dark mb-2">
-            <div class="card-header d-flex align-items-center justify-content-between py-1">
-	      <a class="small text-dark stretched-link" href="#">pressure_o2_regulated</a>
+            <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
+	      <a class="small text-dark stretched-link col-center" href="#">pressure_o2_regulated</a>
             </div>
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_o2_regulated">000.00</span> Pa</div>
 	  </div>
@@ -90,8 +92,8 @@
 	<div class="row no-gutters w-100">
 	    <form action="{{ url_for('data_handler') }}" method="post" class="w-95">
 	      <div class="card rounded-lg small px-0">
-		<div class="card-header align-items-center justify-content-between px-1 py-1">
-		  INPUTS
+		<div class="card-header align-items-center justify-content-between pl-3 pr-1 py-1">
+		  Settings
 		  <div class = "float-right mr-1"><a class="unlock thresholds" id="toggle_thresholds" onclick="toggle_lock_settings()">
 		      <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="svg-inline--fa fa-lock fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
 			<path class="path-icon" id = "path-locked" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
@@ -116,8 +118,8 @@
 		    </tr>
 		  </table>
 		</div>
-		<div class="card-footer px-0 py-0 align-items-center">
-		  <span class="form-group ml-auto mr-auto"><input class="form-button py-0" id="form_submit" type="submit" value="Update Settings" disabled /></span>
+		<div class="card-footer px-0 py-0">
+		  <div class="col-center"><input class="form-button float-right" id="form_submit" type="submit" value="Update" disabled /></div>
 		</div>
 	      </div>
 	    </form>
@@ -142,8 +144,13 @@
   var i;
   if ( x.length > 0 && x[0].readOnly == true ){
   for (i = 0; i < x.length; i++) {
-		  if (x[i].id != "form_submit"){x[i].readOnly = false;}
-		  else{ x[i].disabled=false; }
+		  if (x[i].id != "form_submit"){
+		  x[i].readOnly = false;
+		  }
+		  else{
+		  x[i].disabled=false;
+
+		  }
 		  var submit = document.getElementById("form_submit");
 		  submit.disabled=false;
 		  }
@@ -155,8 +162,10 @@
 		  }
 		  else{
 		  for (i = 0; i < x.length; i++ ) {
-		  if (x[i].id != "form_submit"){x[i].readOnly = true;}
-		  else {x[i].disabled=true;}
+				  if (x[i].id != "form_submit"){
+				  x[i].readOnly = true;
+				  }
+		  else {x[i].disabled=true;
 				  }
 				  
 		  var submit = document.getElementById("form_submit");
@@ -173,5 +182,23 @@
 				  ,500)}
 				 
 				  </script>
+
+	
+	<script type=text/javascript>
+	  function update_variables() {
+	  $.getJSON("live-data",
+          function (data) {
+          //document.getElementById("pressure").innerHTML = data.pressure;
+          document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
+          document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
+          document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
+          document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
+          document.getElementById("fsm_state").innerHTML = data.fsm_state;
+          document.getElementById("version").innerHTML = data.version;
+          }
+	  );
+	  }
+	  setInterval('update_variables()', 2000);
+	</script>
 
 {% endblock %}

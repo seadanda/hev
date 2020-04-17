@@ -113,24 +113,29 @@ $(document).ready(function() {
                    id: 'A',
                    type: 'linear',
                    position: 'left',
+		    ticks: {
+                  fontColor: "#0000FF", // this here
+                },
                 }, {
-                   id: 'B',
-                   type: 'linear',
-                   position: 'right',
-                },{
-        ticks: {
-            min: 0,
-            max: 200,
-            stepSize: 20
-        }
-
-
-}]
-	        },
-		legend : {
-		    display: true}
-          }
-    });
+                    id: 'B',
+                    type: 'linear',
+                    position: 'right',
+		    ticks: {
+			fontColor: "#000000", // this here
+                    },
+		    ticks: {
+			min: 0,
+			max: 200,
+			stepSize: 20
+		    }
+		}
+		       ]
+	  },
+      legend : {
+	  display: true
+      }
+	  }
+  });
     requestDataVar1("pressure_buffer", "pressure_inhale");
 });
 
@@ -210,11 +215,20 @@ function updateChartType() {
                 yAxes: [{
                    id: 'A',
                    type: 'linear',
-                   position: 'left',
+                    position: 'left',
+		    color: "#0000FF",
+		    ticks: {
+			fontColor: "#0000FF", // this here
+                    },
+
                 }, {
                    id: 'B',
                    type: 'linear',
-                   position: 'right',
+                    position: 'right',
+		    color: "#000000",
+		    ticks: {
+                  fontColor: "#000000", // this here
+                },
                 }]
 	        },
 		legend : {

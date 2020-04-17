@@ -28,3 +28,5 @@ const int pin_led_2          = 2;
 const int pin_buzzer         = 5;
 
 const int pin_button_0       = 13;
+
+const int pwm_resolution = 8; // 8 bit resolution

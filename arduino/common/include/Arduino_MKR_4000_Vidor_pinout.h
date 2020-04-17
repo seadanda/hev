@@ -30,3 +30,5 @@ const int pin_buzzer         = 0;
 
     // buttons
 const int pin_button_0       = 14;
+
+const int pwm_resolution = 8; // 8 bit resolution; up to 12 possible
