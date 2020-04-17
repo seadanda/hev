@@ -40,6 +40,10 @@ def settings():
 def charts():
     return render_template('charts.html', result=live_data())
 
+@WEBAPP.route('/logs')
+def logs():
+    return render_template('logs.html', result=live_data())    
+
 @WEBAPP.route('/fan')
 def fan():
     return render_template('fan.html', result=live_data())
@@ -135,16 +139,18 @@ def live_alarms():
     Output in json format
     """
 
-    data = {'alarms' : None}
+    data = {'created_at' : None, 'alarms' : None}
 
     sqlite_file = 'database/HEC_monitoringDB.sqlite'
     with sqlite3.connect(sqlite_file) as conn:
         cursor = conn.cursor()
-        cursor.execute("SELECT alarms "
+        cursor.execute("SELECT created_at, alarms "
         "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1")
 
         fetched = cursor.fetchone()
-        data['alarms'] = fetched[0]
+
+        data['created_at'] = fetched[0]
+        data['alarms'] = fetched[1]
 
     response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'

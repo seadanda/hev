@@ -47,9 +47,14 @@
 		      <a href="charts"> <div class = "sb-nav-link-icon border-invisible {{'active' if charts_active}}">
 			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chart-area" class="fa-chart-area fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M500 384c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v308h436zM372.7 159.5L288 216l-85.3-113.7c-5.1-6.8-15.5-6.3-19.9 1L96 248v104h384l-89.9-187.8c-3.2-6.5-11.4-8.7-17.4-4.7z"></path></svg>
 		      </div></a>
+		      <a href="logs"> <div class = "sb-nav-link-icon border-invisible {{'active' if settings_active}}">
+			  <img src="../static/img/exclamation-circle-solid.svg"></img>
+			  </div></a>
 		      <a href="settings"> <div class = "sb-nav-link-icon border-invisible {{'active' if settings_active}}">
-			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
-		      </div></a>
+              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
+			  </div></a>
+  
+			  
 		    </div>
                     <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
@@ -73,7 +78,7 @@
         <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
+	    <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script> -->
         <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
 
