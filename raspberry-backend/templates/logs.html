@@ -80,12 +80,13 @@ function requestAlarms() {
       cache: false
   });
    // call it again after one second
-   setTimeout(requestAlarms, 1000);
+   alarmLogs = setTimeout(requestAlarms, 1000);
 
 }
 
 
 function update_logs() {
+    clearInterval(alarmInterval);
     requestAlarms()
   }
 
