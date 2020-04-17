@@ -1,7 +1,6 @@
 var chart_pressure;
 var chart_flow;
 var chart_volume;
-var time_value = 0 ;
 
 /**
  * Request data from the server, add it to the graph and set a timeout
@@ -31,7 +30,7 @@ function requestChartVar() {
             var seconds = date.getSeconds();
 
             // Show the time that has passed 
-            chart_pressure.data.labels.push(-(60-seconds));
+            chart_pressure.data.labels.push(seconds);
             chart_pressure.data.datasets[0].data.push(point["pressure_buffer"]);
 
             // add the point

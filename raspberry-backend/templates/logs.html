@@ -58,10 +58,7 @@
 var logging;
 
 function requestAlarms() {
-  var table = document.getElementById("HEV_logs");
-  var row = table.insertRow(1);
-  var cell1 = row.insertCell(0);
-  var cell2 = row.insertCell(1);
+
   $.getJSON({
       url: '/live-alarms',
       success: function(data) {
@@ -69,9 +66,15 @@ function requestAlarms() {
          var h = date.getHours();
 	       var m = date.getMinutes();
 	       var s = date.getSeconds();
-         cell1.innerHTML = (("0"+date.getDate()).slice(-2)) +"."+ (("0"+(date.getMonth()+1)).slice(-2)) +"."+ (date.getFullYear()) 
+         if (data.alarms != "none") {
+            var table = document.getElementById("HEV_logs");
+            var row = table.insertRow(1);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            cell1.innerHTML = (("0"+date.getDate()).slice(-2)) +"."+ (("0"+(date.getMonth()+1)).slice(-2)) +"."+ (date.getFullYear()) 
          + ' &emsp; ' +	 h + ":" + m + ":" + s; ;
-         cell2.innerHTML = data.alarms;
+            cell2.innerHTML = data.alarms;
+         }
          
       },
       cache: false
