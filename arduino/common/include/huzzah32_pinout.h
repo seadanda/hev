@@ -13,11 +13,11 @@ const int pin_valve_inhale     = 21;  // GPIO ONLY
 const int pin_valve_exhale     = 19;  // MISO
 
     // adcs
-const int pin_p_air_supply    = A4; // 36 / INPUT ONLY
-const int pin_p_air_regulated = A3; // 39 / INPUT ONLY
-const int pin_p_buffer        = A2; // 34 / INPUT ONLY
-const int pin_p_inhale        = A0; // DAC2 / 26 ****
-const int pin_p_patient       = A7; // 32
+const int pin_pressure_air_supply    = A4; // 36 / INPUT ONLY
+const int pin_pressure_air_regulated = A3; // 39 / INPUT ONLY
+const int pin_pressure_buffer        = A2; // 34 / INPUT ONLY
+const int pin_pressure_inhale        = A0; // DAC2 / 26 ****
+const int pin_pressure_patient       = A7; // 32
 const int pin_temp            = A9; // 33
 const int pin_p_o2_supply     = A10; // 27 
 const int pin_p_o2_regulated  = A6;  // 14

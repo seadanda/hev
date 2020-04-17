@@ -13,11 +13,11 @@ const int pin_valve_inhale        = 21;  // formerly valve_out
 const int pin_valve_exhale        = 19;  // formerly valve_scavenge
 
     // adcs
-const int pin_p_air_supply       = A0; // IO36  // INPUT ONLY
-const int pin_p_air_regulated    = A3; // IO39  // INPUT ONLY
-const int pin_p_buffer           = A6; // IO34  // INPUT ONLY
-const int pin_p_inhale           = A7; // IO35  // INPUT ONLY
-const int pin_p_patient          = A4; // IO32
+const int pin_pressure_air_supply       = A0; // IO36  // INPUT ONLY
+const int pin_pressure_air_regulated    = A3; // IO39  // INPUT ONLY
+const int pin_pressure_buffer           = A6; // IO34  // INPUT ONLY
+const int pin_pressure_inhale           = A7; // IO35  // INPUT ONLY
+const int pin_pressure_patient          = A4; // IO32
 const int pin_temp               = A5; // IO33
 const int pin_p_o2_supply       = A17; // IO27
 const int pin_p_o2_regulated    = A16; // IO14 
