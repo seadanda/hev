@@ -137,6 +137,8 @@
 {% endblock %}
 
 {% block scripts %}
+
+
 <script type=text/javascript>
   function toggle_lock_settings() {
   setTimeout(function(){
@@ -145,42 +147,55 @@
   if ( x.length > 0 && x[0].readOnly == true ){
   for (i = 0; i < x.length; i++) {
 		  if (x[i].id != "form_submit"){
-		  x[i].readOnly = false;
+		     x[i].readOnly = false;
 		  }
 		  else{
-		  x[i].disabled=false;
-
+		     x[i].disabled=false;
 		  }
 		  var submit = document.getElementById("form_submit");
 		  submit.disabled=false;
 		  }
-  var el = document.getElementById("path-locked");
-  el.classList.add("transparent");
+          var el = document.getElementById("path-locked");
+          el.classList.add("transparent");
 		  var el2 = document.getElementById("path-unlocked");
 		  el2.classList.remove("transparent");
 
-		  }
-		  else{
+		  } else {
 		  for (i = 0; i < x.length; i++ ) {
-				  if (x[i].id != "form_submit"){
-				  x[i].readOnly = true;
-				  }
-		  else {x[i].disabled=true;
-				  }
+			if (x[i].id != "form_submit"){
+			x[i].readOnly = true;
+			}
+		    else {x[i].disabled=true; }
 				  
-		  var submit = document.getElementById("form_submit");
-		  submit.disabled=true;
-		  var el = document.getElementById("path-unlocked");
-		  el.classList.add("transparent");
-		  var el2 = document.getElementById("path-locked");
-		  el2.classList.remove("transparent");
-		  
+		    var submit = document.getElementById("form_submit");
+		    submit.disabled=true;
+		    var el = document.getElementById("path-unlocked");
+		    el.classList.add("transparent");
+		    var el2 = document.getElementById("path-locked");
+		    el2.classList.remove("transparent");		  
 		  }
-		 
+		  }
+	500})
+    }				 
+</script>
+
+<script type=text/javascript>
+	function update_variables() {
+	$.getJSON("live-data",
+		function (data) {
+		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
+		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
+		document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
+		document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
+		document.getElementById("fsm_state").innerHTML = data.fsm_state;
+		document.getElementById("version").innerHTML = data.version;
+		}
+	);
+	}
+	setInterval('update_variables()', 2000);
+
+  </script>
   
-				  }
-				  ,500)}
-				 
-				  </script>
+
 
 {% endblock %}

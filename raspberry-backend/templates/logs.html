@@ -1,0 +1,96 @@
+{% set logs_active = True %}
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<style>
+  table {
+    font-family: arial, sans-serif;
+    border-collapse: collapse;
+    width: 75%;
+  }
+  
+  td, th {
+    border: 1px solid #dddddd;
+    text-align: left;
+    padding: 8px;
+  }
+  
+  tr:nth-child(even) {
+    background-color: #dddddd;
+  }
+  </style>
+
+<main>
+  <div class="container-fluid">
+    <!--<h1 class="mt-4">Info</h1> !-->
+
+
+      <table id="HEV_logs">
+        <thead>
+            <tr>
+                <th>Date and time</th>
+                <th>Alarm message</th>
+
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td>End of logs</td>
+                <td></td>
+
+            </tr>
+        </tfoot>
+    </table>
+    <button type="button" onclick="update_logs()">UPDATE</button>
+
+
+  </div>
+</main>
+
+<script>
+var logging;
+
+function requestAlarms() {
+
+  $.getJSON({
+      url: '/live-alarms',
+      success: function(data) {
+         date = new Date(data.created_at);
+         var h = date.getHours();
+	       var m = date.getMinutes();
+	       var s = date.getSeconds();
+         if (data.alarms != "none") {
+            var table = document.getElementById("HEV_logs");
+            var row = table.insertRow(1);
+            var cell1 = row.insertCell(0);
+            var cell2 = row.insertCell(1);
+            cell1.innerHTML = (("0"+date.getDate()).slice(-2)) +"."+ (("0"+(date.getMonth()+1)).slice(-2)) +"."+ (date.getFullYear()) 
+         + ' &emsp; ' +	 h + ":" + m + ":" + s; ;
+            cell2.innerHTML = data.alarms;
+         }
+         
+      },
+      cache: false
+  });
+   // call it again after one second
+   alarmLogs = setTimeout(requestAlarms, 1000);
+
+}
+
+
+function update_logs() {
+    clearInterval(alarmInterval);
+    requestAlarms()
+  }
+
+</script>
+
+
+{% endblock %}

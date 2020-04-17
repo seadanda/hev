@@ -1,6 +1,8 @@
 {% set charts_active = True %}
 {% extends 'base.html' %}
 
+
+
 {% block fan_classes %}
 {% endblock %}
 
@@ -46,6 +48,16 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/moment.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
+<script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
+
+
 <script>
 function setActiveClass() {
   var element = document.getElementById("fan-icon");

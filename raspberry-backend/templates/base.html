@@ -47,9 +47,14 @@
 		      <a href="charts"> <div class = "sb-nav-link-icon border-invisible {{'active' if charts_active}}">
 			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chart-area" class="fa-chart-area fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M500 384c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v308h436zM372.7 159.5L288 216l-85.3-113.7c-5.1-6.8-15.5-6.3-19.9 1L96 248v104h384l-89.9-187.8c-3.2-6.5-11.4-8.7-17.4-4.7z"></path></svg>
 		      </div></a>
+		      <a href="logs"> <div class = "sb-nav-link-icon border-invisible {{'active' if settings_active}}">
+			  <img src="../static/img/exclamation-circle-solid.svg"></img>
+			  </div></a>
 		      <a href="settings"> <div class = "sb-nav-link-icon border-invisible {{'active' if settings_active}}">
-			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
-		      </div></a>
+              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
+			  </div></a>
+  
+			  
 		    </div>
                     <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
@@ -66,87 +71,51 @@
 	    {% block content %}
 	    {% endblock %}
           </div>
-        </div>
+		</div>
         <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script> 
         <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
 
-	<script>
-	  function startTime() {
-	  var today = new Date();
-	  var h = today.getHours();
-	  var m = today.getMinutes();
-	  var s = today.getSeconds();
-	  m = checkTime(m);
-	  s = checkTime(s);
-	  document.getElementById('time').innerHTML = (("0"+today.getDate()).slice(-2)) +"."+ (("0"+(today.getMonth()+1)).slice(-2)) +"."+ (today.getFullYear()) + ' &emsp; ' +
-	  h + ":" + m + ":" + s;
-	  var t = setTimeout(startTime, 500);
-	  }
-	  function checkTime(i) {
-	  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
-									return i;
-									}
-									</script>
 	
+	
+
 	
 	<script type=text/javascript>
-	  function update_variables() {
-	  $.getJSON("live-data",
-          function (data) {
-          //document.getElementById("pressure").innerHTML = data.pressure;
-          document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
-          document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
-          document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
-          document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
-          document.getElementById("fsm_state").innerHTML = data.fsm_state;
-          document.getElementById("version").innerHTML = data.version;
-          }
-	  );
-	  }
-	  setInterval('update_variables()', 2000);
-	</script>
-	
-	
-	<script type=text/javascript>
+          var alarmLogs;
+          clearInterval(alarmLogs);
+
 	  function update_alarms() {
-	  $.getJSON("live-alarms",
-	  function (data) {
-	  if (data.alarms !== 'none') {
-	  document.getElementById("alarms").innerHTML = data.alarms;
-	  var el = document.getElementById("alarm_ul");
-	  el.classList.add("alarm-red");
-	  var el2 = document.getElementById("path-alarm");
-	  el2.classList.add("path-icon-alarm");
-
-	  } else {  
-	  document.getElementById("alarms").innerHTML = ''
-	  
-	  var el = document.getElementById("alarm_ul");
-	  el.classList.remove("alarm-red");
-	  var el2 = document.getElementById("path-alarm");
-	  el2.classList.remove("path-icon-alarm");
-
-	  }    
+        $.getJSON("live-alarms", function (data) {
+	       if (data.alarms !== 'none') {
+	          document.getElementById("alarms").innerHTML = data.alarms;
+	          var el = document.getElementById("alarm_ul");
+	          el.classList.add("alarm-red");
+	          var el2 = document.getElementById("path-alarm");
+	          el2.classList.add("path-icon-alarm");
+            } else {  
+	           document.getElementById("alarms").innerHTML = ''
+	           var el = document.getElementById("alarm_ul");
+	           el.classList.remove("alarm-red");
+	           var el2 = document.getElementById("path-alarm");
+	           el2.classList.remove("path-icon-alarm");
+	        }    
+	    });
 	  }
-	  );
-	  }
-	  setInterval('update_alarms()', 1000);
+	  var alarmInterval = setInterval('update_alarms()', 1000);
 	</script>
 
 	
 
 	<script type = text/javascript>
 	  function show_easy_numpad_wrapper(thisElement){
-	  if (thisElement.disabled == false && thisElement.readOnly == false){
-	  show_easy_numpad(thisElement);
-	  }
+	    if (thisElement.disabled == false && thisElement.readOnly == false) {
+	       show_easy_numpad(thisElement);
+	    }
 	  }
 	</script>
 	
