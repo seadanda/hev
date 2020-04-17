@@ -101,23 +101,6 @@
 									</script>
 	
 	
-	<script type=text/javascript>
-	  function update_variables() {
-	  $.getJSON("live-data",
-          function (data) {
-          //document.getElementById("pressure").innerHTML = data.pressure;
-          document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
-          document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
-          document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
-          document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
-          document.getElementById("fsm_state").innerHTML = data.fsm_state;
-          document.getElementById("version").innerHTML = data.version;
-          }
-	  );
-	  }
-	  setInterval('update_variables()', 2000);
-	</script>
-	
 	
 	<script type=text/javascript>
 	  function update_alarms() {
