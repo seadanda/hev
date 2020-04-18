@@ -137,6 +137,7 @@
 {% endblock %}
 
 {% block scripts %}
+        <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
 <script type=text/javascript>
   function toggle_lock_settings() {
   setTimeout(function(){
@@ -200,5 +201,10 @@
 	  }
 	  setInterval('update_variables()', 2000);
 	</script>
+	
 
 {% endblock %}
+	{% block body_scripts %}
+
+        <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
+	{% endblock %}
