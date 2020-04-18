@@ -1,8 +1,11 @@
 #include <Arduino.h>
 // #include <MemoryFree.h>
-
+#include <Wire.h>
+#include "Adafruit_MCP9808.h"
+#include <INA.h>
 #include "commsControl.h"
-#include "test_hw_loop.h"
+#include "BreathingLoop.h"
+#include "UILoop.h"
 #include "common.h"
 
 int ventilation_mode = HEV_MODE_PS;
@@ -28,6 +31,10 @@ dataFormat data;
 commsControl comms;
 payload plReceive;
 payload plSend;
+
+// loops
+BreathingLoop breathing_loop;
+UILoop        ui_loop(&breathing_loop);
 
 bool start_fsm = false;
 
@@ -101,8 +108,8 @@ void loop()
     // buzzer
     // tone(pin, freq (Hz), duration);
 
-    data.fsm_state = getFsmState();
-    data.readback_mode = getLabCycleMode();
+    data.fsm_state = breathing_loop.getFsmState();
+    data.readback_mode = breathing_loop.getLabCycleMode();
     data.pressure_buffer = analogRead(pin_pressure_buffer);
     data.pressure_inhale = analogRead(pin_pressure_inhale);
 
@@ -119,8 +126,8 @@ void loop()
     // TODO ; add to dataFormat
     // data.readback_valve_atmosphere = vpurge;
 
-    FSM_assignment();
-    FSM_breath_cycle();
+    breathing_loop.FSM_assignment();
+    breathing_loop.FSM_breath_cycle();
 
     report_cnt++;
     if(report_cnt % (update_freq/report_freq) == 0)
@@ -138,18 +145,11 @@ void loop()
     uint8_t cmdCode = 0;
     if(comms.readPayload(plReceive)){
       if (plReceive.getType() == payloadType::payloadCmd) {
-          cmdCode = (plReceive.getCmd()->cmdCode);
+        //   cmdCode = (plReceive.getCmd()->cmdCode);
+          ui_loop.doCommand(plReceive.getCmd());
           plReceive.setType(payloadType::payloadUnset);
       }
     }
 
-    switch(cmdCode){
-        case 0x1 : do_start(); 
-        break;
-        case 0x2 : do_stop(); 
-        break;
-        default:
-        break;
-    }
-    delay(1000/update_freq);
+    breathing_loop.updatePressures(); //delay(1000/update_freq);
 }
