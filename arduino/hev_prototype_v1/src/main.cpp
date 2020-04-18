@@ -1,11 +1,13 @@
 #include <Arduino.h>
 // #include <MemoryFree.h>
 #include <Wire.h>
-#include "Adafruit_MCP9808.h"
+#include <Adafruit_MCP9808.h>
 #include <INA.h>
 #include "commsControl.h"
 #include "BreathingLoop.h"
+#include "ValvesController.h"
 #include "UILoop.h"
+#include "AlarmLoop.h"
 #include "common.h"
 
 int ventilation_mode = HEV_MODE_PS;
@@ -35,6 +37,7 @@ payload plSend;
 // loops
 BreathingLoop breathing_loop;
 UILoop        ui_loop(&breathing_loop);
+AlarmLoop     alarm_loop;
 
 bool start_fsm = false;
 
@@ -113,9 +116,10 @@ void loop()
     data.pressure_buffer = analogRead(pin_pressure_buffer);
     data.pressure_inhale = analogRead(pin_pressure_inhale);
 
-    bool vin_air, vin_o2, vpurge, vatmos;
+    bool vin_air, vin_o2, vpurge ;
     float vinhale, vexhale;
-    getValves(vin_air, vin_o2, vinhale, vexhale, vpurge, vatmos);
+    ValvesController *valves_controller = breathing_loop.getValvesController();
+    valves_controller->getValves(vin_air, vin_o2, vinhale, vexhale, vpurge);
     data.readback_valve_air_in = vin_air;
     data.readback_valve_o2_in = vin_o2;
     data.readback_valve_inhale = vinhale;

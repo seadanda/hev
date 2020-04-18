@@ -6,6 +6,7 @@
 // @author Antonio Fernandez Prieto <antonio.fernandez.prieto@cern.ch>
 
 #include <Arduino.h>
+#include "ValvesController.h"
 
 class BreathingLoop
 {
@@ -22,26 +23,26 @@ public:
     void doReset();
     bool getRunning();
     void updatePressures();
+    ValvesController * getValvesController();
 
-    // states
-    enum BL_STATES : byte
-    {
-        IDLE,
-        CALIBRATION,
-        BUFF_PREFILL,
-        BUFF_FILL,
-        BUFF_LOADED,
-        BUFF_PRE_INHALE,
-        INHALE,
-        PAUSE,
-        EXHALE_FILL,
-        EXHALE,
-        STOP,
-        BUFF_PURGE,
-        BUFF_FLUSH
-    };
+        // states
+        enum BL_STATES : byte {
+            IDLE,
+            CALIBRATION,
+            BUFF_PREFILL,
+            BUFF_FILL,
+            BUFF_LOADED,
+            BUFF_PRE_INHALE,
+            INHALE,
+            PAUSE,
+            EXHALE_FILL,
+            EXHALE,
+            STOP,
+            BUFF_PURGE,
+            BUFF_FLUSH
+        };
 
-//TODO: this should probably be common
+    //TODO: this should probably be common
     enum VENTILATION_MODES : byte
     {
         LAB_MODE_BREATHE = 0,
@@ -57,6 +58,18 @@ private:
     bool     _running;
     bool     _reset;
     int      _next_state;
+
+    ValvesController _valves_controller;
+
+    // calibration
+    void calibrate();
+    void init_calib();
+    float getCalibrationOffset();
+    int _calib_N;
+    int _calib_timeout;
+    int _calib_sum_pressure;
+    int _calib_time;
+    float _calib_avg_pressure;
 };
 
 

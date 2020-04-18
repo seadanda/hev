@@ -1,3 +1,6 @@
+#ifndef UI_LOOP_H
+#define UI_LOOP_H
+
 #include <Arduino.h>
 #include "commsFormat.h"
 #include "BreathingLoop.h"
@@ -12,3 +15,5 @@ public:
 private:
     BreathingLoop *_breathing_loop;
 };
+
+#endif

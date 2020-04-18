@@ -2,7 +2,7 @@
 #define COMMON_H
 #include <Arduino.h>
 
-#define HEV_MINI_SYSTEM  // uncomment this if using lab 14-1-014
+//#define HEV_MINI_SYSTEM  // uncomment this if using lab 14-1-014
 
 #if defined(ARDUINO_FEATHER_ESP32)
 #include <huzzah32_pinout.h>
@@ -26,6 +26,8 @@
 #include <Arduino_Yun_pinout.h>
 #endif
 
+// 
+const float MAX_VALVE_FRAC_OPEN = 0.68;
 // input params
 enum hev_modes : byte
 {
@@ -35,30 +37,6 @@ enum hev_modes : byte
     HEV_MODE_TEST
 };
 
-enum valve_states : bool
-{
-    V_OPEN = HIGH,
-    V_CLOSED = LOW
-};
 
-static struct struct_valve_port_states 
-{ 
-    // bools are used for valves that are digitally controlled - i.e. only on or off.
-    bool air_in;  
-    bool o2_in;
-    float inhale; 
-    float exhale;
-    bool purge;
-    bool atmos;    
-} valve_port_states;
-
-// static uint32_t valve_port_states = 0x0; 
-static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
-static int chan_to_pin[50];  
-
-void setValves(bool vin_air, bool vin_o2, float vinhale, 
-               float vexhale, bool vpurge, bool vatmos);
-void getValves(bool &vin_air, bool &vin_o2, float &vinhale,  
-               float &vexhale, bool &vpurge, bool &vatmos);
 
 #endif
