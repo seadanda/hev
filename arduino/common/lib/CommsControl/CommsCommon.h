@@ -84,40 +84,40 @@ enum PAYLOAD_TYPE {
 // information is set as information in the protocol
 class Payload {
 public:
-    Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {type_ = type; } //data_ = nullptr; cmd_ = nullptr; alarm_ = nullptr; }
+    Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {_type = type; } //data_ = nullptr; cmd_ = nullptr; alarm_ = nullptr; }
     Payload(const Payload &other) {
-        type_ = other.type_;
-        memcpy(& data_, &other. data_, sizeof( data_format));
-        memcpy(&  cmd_, &other.  cmd_, sizeof(  cmd_format));
-        memcpy(&alarm_, &other.alarm_, sizeof(alarm_format));
+        _type = other._type;
+        memcpy(& _data, &other. _data, sizeof( data_format));
+        memcpy(&  _cmd, &other.  _cmd, sizeof(  cmd_format));
+        memcpy(&_alarm, &other._alarm, sizeof(alarm_format));
     }
     Payload& operator=(const Payload& other) {
-        type_ = other.type_;
-        memcpy(& data_, &other. data_, sizeof( data_format));
-        memcpy(&  cmd_, &other.  cmd_, sizeof(  cmd_format));
-        memcpy(&alarm_, &other.alarm_, sizeof(alarm_format));
+        _type = other._type;
+        memcpy(& _data, &other. _data, sizeof( data_format));
+        memcpy(&  _cmd, &other.  _cmd, sizeof(  cmd_format));
+        memcpy(&_alarm, &other._alarm, sizeof(alarm_format));
         return *this;
     }
 
     ~Payload() { unsetAll(); }
 
-    void setType(PAYLOAD_TYPE type) { type_ = type; }
-    PAYLOAD_TYPE getType() {return type_; }
+    void setType(PAYLOAD_TYPE type) { _type = type; }
+    PAYLOAD_TYPE getType() {return _type; }
 
     // requires argument as new struct
-    void setData (data_format   *data) { type_ = PAYLOAD_TYPE::DATA;  memcpy(& data_,  data, sizeof( data_format)); }
-    void setCmd  (cmd_format     *cmd) { type_ = PAYLOAD_TYPE::CMD;   memcpy(&  cmd_,   cmd, sizeof(  cmd_format)); }
-    void setAlarm(alarm_format *alarm) { type_ = PAYLOAD_TYPE::ALARM; memcpy(&alarm_, alarm, sizeof(alarm_format)); }
+    void setData (data_format   *data) { _type = PAYLOAD_TYPE::DATA;  memcpy(& _data,  data, sizeof( data_format)); }
+    void setCmd  (cmd_format     *cmd) { _type = PAYLOAD_TYPE::CMD;   memcpy(&  _cmd,   cmd, sizeof(  cmd_format)); }
+    void setAlarm(alarm_format *alarm) { _type = PAYLOAD_TYPE::ALARM; memcpy(&_alarm, alarm, sizeof(alarm_format)); }
 
     // get pointers to particular payload types
-    data_format  *getData () {return & data_; }
-    cmd_format   *getCmd  () {return &  cmd_; }
-    alarm_format *getAlarm() {return &alarm_; }
+    data_format  *getData () {return & _data; }
+    cmd_format   *getCmd  () {return &  _cmd; }
+    alarm_format *getAlarm() {return &_alarm; }
 
-    void unsetAll()   { unsetData(); unsetAlarm(); unsetCmd(); type_ = PAYLOAD_TYPE::UNSET; }
-    void unsetData()  { memset(& data_, 0, sizeof( data_format)); }
-    void unsetCmd()   { memset(&  cmd_, 0, sizeof(  cmd_format)); }
-    void unsetAlarm() { memset(&alarm_, 0, sizeof(alarm_format)); }
+    void unsetAll()   { unsetData(); unsetAlarm(); unsetCmd(); _type = PAYLOAD_TYPE::UNSET; }
+    void unsetData()  { memset(& _data, 0, sizeof( data_format)); }
+    void unsetCmd()   { memset(&  _cmd, 0, sizeof(  cmd_format)); }
+    void unsetAlarm() { memset(&_alarm, 0, sizeof(alarm_format)); }
 
     void setPayload(PAYLOAD_TYPE type, void* information) {
         setType(type);
@@ -125,7 +125,7 @@ public:
     }
 
     void setInformation(void* information) {
-        switch (type_) {
+        switch (_type) {
             case PAYLOAD_TYPE::DATA:
                 setData (reinterpret_cast< data_format*>(information));
                 break;
@@ -142,7 +142,7 @@ public:
 
     // returns void pointer, in case you know what to do with data or dont care what the format is
     void *getInformation() {
-        switch (type_) {
+        switch (_type) {
             case PAYLOAD_TYPE::DATA:
                 return reinterpret_cast<void*>(getData ());
             case PAYLOAD_TYPE::CMD:
@@ -156,7 +156,7 @@ public:
 
     // returns payload information size
     uint8_t getSize()  {
-        switch (type_) {
+        switch (_type) {
             case PAYLOAD_TYPE::DATA:
                 return static_cast<uint8_t>(sizeof( data_format));
             case PAYLOAD_TYPE::CMD:
@@ -169,11 +169,11 @@ public:
     }
 
 private:
-    PAYLOAD_TYPE type_;
+    PAYLOAD_TYPE _type;
 
-    data_format   data_;
-    cmd_format     cmd_;
-    alarm_format alarm_;
+    data_format   _data;
+    cmd_format     _cmd;
+    alarm_format _alarm;
 };
 
 #endif
