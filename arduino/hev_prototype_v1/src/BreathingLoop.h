@@ -7,8 +7,8 @@
 // @author Peter Svihra <peter.svihra@cern.ch>
 
 #include <Arduino.h>
-#include "ValvesController.h"
 #include "common.h"
+#include "ValvesController.h"
 
 class BreathingLoop
 {
@@ -16,7 +16,7 @@ class BreathingLoop
 public:
     BreathingLoop();
     ~BreathingLoop();
-    uint8_t getLabCycleMode();
+    uint8_t getVentilationMode();
     uint8_t getFsmState();
     void FSM_assignment();
     void FSM_breathCycle();
@@ -24,7 +24,8 @@ public:
     void doStop();
     void doReset();
     bool getRunning();
-    void updatePressures();
+    void updateReadings();
+    readings getReadingAverages();
     ValvesController * getValvesController();
 
     states_timeouts &getTimeouts();
@@ -69,7 +70,7 @@ private:
     // calibration
     void calibrate();
     void initCalib();
-    float getCalibrationOffset();    
+    float getCalibrationOffset();
     int _calib_N;
     uint32_t _calib_timeout;
     uint32_t _calib_time;
@@ -80,10 +81,15 @@ private:
     uint32_t calculateTimeoutExhale();
     states_timeouts _states_timeouts = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
 
-    // values reading
-    bool _reading;
-    uint32_t _reading_time;
-    uint32_t _reading_timeout;
+    // readings
+    void resetReadingSums();
+    readings _readings_sums;
+    readings _readings_avgs;
+    uint16_t _readings_N;
+    int _readings_time;
+    int _readings_timeout;
+    int _readings_avgs_time;
+    int _readings_avgs_timeout;
 };
 
 

@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFi.h>
 // #include <MemoryFree.h>
 #include <Wire.h>
 #include <Adafruit_MCP9808.h>
@@ -12,14 +13,8 @@
 
 int ventilation_mode = HEV_MODE_PS;
 
-const uint16_t report_freq = 5 ; // in Hz
-const uint16_t update_freq = 100 ; // in Hz
-
+uint32_t report_timeout = 50; //ms
 uint32_t report_time = 0;
-uint32_t report_timeout = static_cast<uint32_t>(1000 * report_freq);
-
-uint16_t report_cnt = 0;
- 
 float working_pressure = 1;             //?
 float inspiratory_minute_volume = 6000; // ml/min
 float respiratory_rate = 15;            //  10-40 +-1 ;aka breaths_per_min
@@ -66,6 +61,8 @@ float calcExpiratoryMinuteVolume()
 void setup()
 {
 #ifdef CHIP_ESP32
+    WiFi.mode(WIFI_OFF);
+    btStop();
     ledcSetup(pwm_chan_inhale, pwm_frequency, pwm_resolution);
     ledcSetup(pwm_chan_exhale, pwm_frequency, pwm_resolution);
     ledcAttachPin(pin_valve_inhale , pwm_chan_inhale);  
@@ -90,16 +87,16 @@ void setup()
     pinMode(pin_pressure_buffer, INPUT);
     pinMode(pin_pressure_inhale, INPUT);
     pinMode(pin_pressure_patient, INPUT);
-    pinMode(pin_temp, INPUT);
+    pinMode(pin_temperature_buffer, INPUT);
 #ifdef HEV_FULL_SYSTEM
-    pinMode(pin_p_o2_supply, INPUT);
-    pinMode(pin_p_o2_regulated, INPUT);
-    pinMode(pin_p_diff_patient, INPUT);
+    pinMode(pin_pressure_o2_supply, INPUT);
+    pinMode(pin_pressure_o2_regulated, INPUT);
+    pinMode(pin_pressure_diff_patient, INPUT);
 #endif
 
-    pinMode(pin_led_0, OUTPUT);
-    pinMode(pin_led_1, OUTPUT);
-    pinMode(pin_led_2, OUTPUT);
+    pinMode(pin_led_green, OUTPUT);
+    pinMode(pin_led_yellow, OUTPUT);
+    pinMode(pin_led_red, OUTPUT);
 
     pinMode(pin_buzzer, OUTPUT);
     pinMode(pin_button_0, INPUT);
@@ -114,11 +111,6 @@ void loop()
     // buzzer
     // tone(pin, freq (Hz), duration);
 
-    data.fsm_state = breathing_loop.getFsmState();
-    data.readback_mode = breathing_loop.getLabCycleMode();
-    data.pressure_buffer = analogRead(pin_pressure_buffer);
-    data.pressure_inhale = analogRead(pin_pressure_inhale);
-
     bool vin_air, vin_o2, vpurge ;
     float vinhale, vexhale;
     ValvesController *valves_controller = breathing_loop.getValvesController();
@@ -128,27 +120,36 @@ void loop()
     data.readback_valve_inhale = vinhale;
     data.readback_valve_exhale = vexhale;
     data.readback_valve_purge = vpurge;
-    // data.pressure_o2_supply = freeMemory() & 0xFFFF;
-    // data.pressure_o2_regulated = freeMemory() >> 16;
-    // TODO ; add to dataFormat
-    // data.readback_valve_atmosphere = vpurge;
+
+    data.fsm_state = breathing_loop.getFsmState();
+    data.readback_mode = breathing_loop.getVentilationMode();
+    readings readings_avgs = breathing_loop.getReadingAverages();
+    data.pressure_air_supply = readings_avgs.pressure_air_supply;
+    data.pressure_air_regulated = readings_avgs.pressure_air_regulated;
+    data.pressure_buffer = readings_avgs.pressure_buffer;
+    data.pressure_inhale = readings_avgs.pressure_inhale;
+    data.pressure_patient = readings_avgs.pressure_patient;
+    data.temperature_buffer = readings_avgs.temperature_buffer;
+    data.pressure_o2_supply = readings_avgs.pressure_o2_supply;
+    data.pressure_o2_regulated = readings_avgs.pressure_o2_regulated;
+    data.pressure_diff_patient = readings_avgs.pressure_diff_patient;
 
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
 
-    // writing data to sending ring buffer is defined by frequency
-    // TODO: programmable changing of the report_timeout
-    if (millis() > report_time + report_timeout) {
+    unsigned long tnow = millis();
+    if(tnow > report_time + report_timeout)
+    {
         plSend.setType(PAYLOAD_TYPE::DATA);
         plSend.setData(&data);
         comms.writePayload(plSend);
-        report_time = static_cast<uint32_t>(millis());
+        report_time = tnow;
     }
     // per cycle sender
     comms.sender();
-
     // per cycle receiver
     comms.receiver();
+
     if(comms.readPayload(plReceive)){
       if (plReceive.getType() == PAYLOAD_TYPE::CMD) {
           ui_loop.doCommand(plReceive.getCmd());
@@ -156,5 +157,5 @@ void loop()
       }
     }
 
-    breathing_loop.updatePressures(); //delay(1000/update_freq);
+    breathing_loop.updateReadings(); 
 }
