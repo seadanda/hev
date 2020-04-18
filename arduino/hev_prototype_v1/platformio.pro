@@ -45,5 +45,5 @@ SOURCES += src/main.cpp \
             src/BreathingLoop.cpp \
             src/common.cpp \
             src/UILoop.cpp \
-            ../common/lib/commsControl/CommsControl.cpp \
-            ../common/lib/commsControl/CommsFormat.cpp
+            ../common/lib/CommsControl/CommsControl.cpp \
+            ../common/lib/CommsControl/CommsFormat.cpp
