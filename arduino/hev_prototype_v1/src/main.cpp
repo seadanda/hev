@@ -137,9 +137,8 @@ void loop()
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
 
-    unsigned long tnow = millis();
-    if(tnow > report_time + report_timeout)
-    {
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if(tnow - report_time > report_timeout) {
         plSend.setType(PAYLOAD_TYPE::DATA);
         plSend.setData(&data);
         comms.writePayload(plSend);
@@ -150,7 +149,7 @@ void loop()
     // per cycle receiver
     comms.receiver();
 
-    if(comms.readPayload(plReceive)){
+    if(comms.readPayload(plReceive)) {
       if (plReceive.getType() == PAYLOAD_TYPE::CMD) {
           ui_loop.doCommand(plReceive.getCmd());
           plReceive.setType(PAYLOAD_TYPE::UNSET);

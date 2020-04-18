@@ -105,7 +105,7 @@ enum VALVE_STATES : bool {
     V_CLOSED = LOW
 };
 
-struct fsm_timeouts {
+struct states_timeouts {
     uint32_t calibration;
     uint32_t buff_purge;
     uint32_t buff_flush;
@@ -157,7 +157,7 @@ static alarm_thresholds alarm_threshold_max;
 
 
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value);
-void setTimeout(CMD_SET_TIMEOUT cmd, fsm_timeouts &timeouts, uint32_t value);
+void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t value);
 
 // used for calculating averages
 struct readings{

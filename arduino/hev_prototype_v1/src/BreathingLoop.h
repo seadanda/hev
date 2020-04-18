@@ -57,13 +57,12 @@ public:
     };
 
 private:
-    uint64_t _fsm_time ;
+    uint32_t _fsm_time ;
     uint32_t _fsm_timeout;
     uint8_t  _ventilation_mode;
     uint8_t  _bl_state;
     bool     _running;
     bool     _reset;
-    uint8_t  _next_state;
 
     ValvesController _valves_controller;
 
@@ -72,8 +71,8 @@ private:
     void initCalib();
     float getCalibrationOffset();
     int _calib_N;
-    uint32_t _calib_timeout;
     uint32_t _calib_time;
+    uint32_t _calib_timeout;
     int _calib_sum_pressure;
     float _calib_avg_pressure;
 
@@ -86,10 +85,10 @@ private:
     readings _readings_sums;
     readings _readings_avgs;
     uint16_t _readings_N;
-    int _readings_time;
-    int _readings_timeout;
-    int _readings_avgs_time;
-    int _readings_avgs_timeout;
+    uint32_t _readings_time;
+    uint32_t _readings_timeout;
+    uint32_t _readings_avgs_time;
+    uint32_t _readings_avgs_timeout;
 };
 
 

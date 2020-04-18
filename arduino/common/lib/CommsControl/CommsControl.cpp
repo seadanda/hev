@@ -3,7 +3,7 @@
 CommsControl::CommsControl(uint32_t baudrate) {
     _baudrate = baudrate;
 
-    _last_trans_time = millis();
+    _last_trans_time = static_cast<uint32_t>(millis());
 
     _start_trans_index   = 0xFF;
     _last_trans_index    = 0;
@@ -42,15 +42,16 @@ void CommsControl::beginSerial() {
 // main function to always call and try and send data
 // TODO: needs switch on data type with global timeouts on data pushing
 void CommsControl::sender() {
-    if (millis() > _last_trans_time + CONST_TIMEOUT_ALARM ) {
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (tnow - _last_trans_time > CONST_TIMEOUT_ALARM) {
         sendQueue(_ring_buff_alarm);
     }
 
-    if (millis() > _last_trans_time + CONST_TIMEOUT_CMD ) {
+    if (tnow - _last_trans_time > CONST_TIMEOUT_CMD) {
         sendQueue(_ring_buff_cmd);
     }
 
-    if (millis() > _last_trans_time + CONST_TIMEOUT_DATA ) {
+    if (tnow - _last_trans_time > CONST_TIMEOUT_DATA) {
         sendQueue(_ring_buff_data);
     }
 }
@@ -232,12 +233,11 @@ bool CommsControl::decoder(uint8_t* data, uint8_t dataStart, uint8_t dataStop) {
 void CommsControl::sendQueue(RingBuf<CommsFormat *, CONST_MAX_SIZE_RB_SENDING> *queue) {
     // if have data to send
     if (!queue->isEmpty()) {
-        // reset sending counter
-        _last_trans_time = millis();
-
         queue->operator [](0)->setSequenceSend(_sequence_send);
-
         sendPacket(queue->operator [](0));
+
+        // reset sending counter
+        _last_trans_time = static_cast<uint32_t>(millis());
     }
 }
 

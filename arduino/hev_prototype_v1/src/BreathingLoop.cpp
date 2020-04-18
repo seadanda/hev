@@ -6,14 +6,16 @@ The Idea of this code is to unfold the FSM in two: one to assign the transitions
 
 BreathingLoop::BreathingLoop()
 {
-
-    _fsm_time = millis();
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    _readings_time = tnow;
+    _readings_avgs_time = tnow;
+    _calib_time = tnow;
+    _fsm_time = tnow;
     _fsm_timeout = 1000;
     _ventilation_mode = 0;
     _bl_state = BL_STATES::IDLE;
     _running = false;
     _reset = false;
-    _next_state;
 
     initCalib();
     resetReadingSums();
@@ -38,8 +40,8 @@ void BreathingLoop::updateReadings()
 {
     // calc pressure every 1ms
     // create averages every 10ms
-    unsigned long tnow = millis();
-    if (tnow > _readings_time + _readings_timeout) {
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (tnow - _readings_time > _readings_timeout) {
         _readings_time = tnow;
         _readings_N++;
 
@@ -49,21 +51,25 @@ void BreathingLoop::updateReadings()
         _readings_sums.pressure_inhale += analogRead(pin_pressure_inhale);
         _readings_sums.pressure_patient += analogRead(pin_pressure_patient);
         _readings_sums.temperature_buffer += analogRead(pin_temperature_buffer);
+#ifdef HEV_FULL_SYSTEM
         _readings_sums.pressure_o2_supply += analogRead(pin_pressure_o2_supply);
         _readings_sums.pressure_o2_regulated += analogRead(pin_pressure_o2_regulated);
         _readings_sums.pressure_diff_patient += analogRead(pin_pressure_diff_patient);
+#endif
     }
 
-    if (tnow > _readings_avgs_time + _readings_avgs_timeout) {
+    if (tnow - _readings_avgs_time > _readings_avgs_timeout) {
         _readings_avgs.pressure_air_supply = _readings_sums.pressure_air_supply / _readings_N;
         _readings_avgs.pressure_air_regulated = _readings_sums.pressure_air_regulated / _readings_N;
         _readings_avgs.pressure_buffer = _readings_sums.pressure_buffer / _readings_N;
         _readings_avgs.pressure_inhale = _readings_sums.pressure_inhale / _readings_N;
         _readings_avgs.pressure_patient = _readings_sums.pressure_patient / _readings_N;
         _readings_avgs.temperature_buffer = _readings_sums.temperature_buffer / _readings_N;
+#ifdef HEV_FULL_SYSTEM
         _readings_avgs.pressure_o2_supply = _readings_sums.pressure_o2_supply / _readings_N;
         _readings_avgs.pressure_o2_regulated = _readings_sums.pressure_o2_regulated / _readings_N;
         _readings_avgs.pressure_diff_patient = _readings_sums.pressure_diff_patient / _readings_N;
+#endif
         resetReadingSums();
     }
 }
@@ -95,80 +101,82 @@ void BreathingLoop::resetReadingSums()
 }
 
 //This is used to assign the transitions of the fsm
-void BreathingLoop::FSM_assignment( ) {  
-    if (millis() > _fsm_time + _fsm_timeout ) {
+void BreathingLoop::FSM_assignment( ) {
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (tnow - _fsm_time > _fsm_timeout) {
+        uint8_t  next_state;
         switch (_bl_state)
         {
         case BL_STATES::IDLE:
             if (_running == true) {
                 // FSM_time = millis();
-                _next_state = BL_STATES::BUFF_PREFILL;
+                next_state = BL_STATES::BUFF_PREFILL;
             } else {
-                _next_state = BL_STATES::IDLE;
+                next_state = BL_STATES::IDLE;
             }
             _reset = false;
             break;
         case BL_STATES::CALIBRATION:
-            _next_state = BL_STATES::BUFF_PREFILL;
+            next_state = BL_STATES::BUFF_PREFILL;
             break;
         case BL_STATES::BUFF_PREFILL:
-            _next_state = BL_STATES::BUFF_FILL;
+            next_state = BL_STATES::BUFF_FILL;
             break;
         case BL_STATES::BUFF_FILL:
-            _next_state = BL_STATES::BUFF_LOADED;
+            next_state = BL_STATES::BUFF_LOADED;
             break;
         case BL_STATES::BUFF_LOADED:
             switch (_ventilation_mode)
             {
             case LAB_MODE_FLUSH:
-                _next_state = BL_STATES::BUFF_FLUSH;
+                next_state = BL_STATES::BUFF_FLUSH;
                 break;
             case LAB_MODE_PURGE:
-                _next_state = BL_STATES::BUFF_PURGE;
+                next_state = BL_STATES::BUFF_PURGE;
                 break;
             default:
-                _next_state = BL_STATES::BUFF_PRE_INHALE;
+                next_state = BL_STATES::BUFF_PRE_INHALE;
             }
             break;
         case BL_STATES::BUFF_PRE_INHALE:
-            _next_state = BL_STATES::INHALE;
+            next_state = BL_STATES::INHALE;
             break;
         case BL_STATES::INHALE:
-            _next_state = BL_STATES::PAUSE;
+            next_state = BL_STATES::PAUSE;
             break;
         case BL_STATES::PAUSE:
-            _next_state = BL_STATES::EXHALE_FILL;
+            next_state = BL_STATES::EXHALE_FILL;
             break;
         case BL_STATES::EXHALE_FILL:
-            _next_state = BL_STATES::EXHALE;
+            next_state = BL_STATES::EXHALE;
             break;
         case BL_STATES::EXHALE:
             if (_running == false) {
-                _next_state = BL_STATES::IDLE;
+                next_state = BL_STATES::IDLE;
             } else {
-                _next_state = BL_STATES::BUFF_LOADED;
+                next_state = BL_STATES::BUFF_LOADED;
             }
             break;
         case BL_STATES::BUFF_PURGE:
             if (_running == false) {
-                _next_state = BL_STATES::IDLE;
+                next_state = BL_STATES::IDLE;
             } else {
-                _next_state = BL_STATES::BUFF_PREFILL;
+                next_state = BL_STATES::BUFF_PREFILL;
             }
             break;
         case BL_STATES::BUFF_FLUSH:
-            _next_state = BL_STATES::IDLE;
+            next_state = BL_STATES::IDLE;
             break;
         case BL_STATES::STOP:
             if (_reset == true) {
-                _next_state = BL_STATES::IDLE;
+                next_state = BL_STATES::IDLE;
             }
             break;
         default:
-            _next_state = _bl_state;
+            next_state = _bl_state;
         }
-        _bl_state = _next_state;
-        _fsm_time = millis();
+        _bl_state = next_state;
+        _fsm_time = static_cast<uint32_t>(millis());
     }
 }
 
@@ -305,7 +313,8 @@ bool BreathingLoop::getRunning()
 void BreathingLoop::calibrate()
 {
     // get pressure_air_regulated over 10s calc mean
-    if (millis() > _calib_time + _calib_timeout  ){
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (tnow - _calib_time > _calib_timeout) {
         _calib_N++;
         _calib_sum_pressure += analogRead(pin_pressure_air_regulated);
         _calib_avg_pressure = _calib_sum_pressure / _calib_N;
@@ -317,7 +326,7 @@ void BreathingLoop::initCalib()
 {
 
     _calib_timeout = 10;
-    _calib_time = millis();
+    _calib_time = static_cast<uint32_t>(millis());
     _calib_sum_pressure = 0;
     _calib_avg_pressure = 0;
     _calib_N = 0;

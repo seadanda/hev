@@ -57,7 +57,7 @@ private:
 
     uint32_t _baudrate;
 
-    uint64_t _last_trans_time;
+    uint32_t _last_trans_time;
 
     uint8_t _comms_received[CONST_MAX_SIZE_BUFFER];
     uint8_t _comms_received_size;
