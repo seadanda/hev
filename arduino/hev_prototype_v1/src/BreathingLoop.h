@@ -6,6 +6,8 @@
 // @author Antonio Fernandez Prieto <antonio.fernandez.prieto@cern.ch>
 
 #include <Arduino.h>
+// #include "CommsCommon.h"
+#include "common.h"
 #include "ValvesController.h"
 
 class BreathingLoop
@@ -14,7 +16,7 @@ class BreathingLoop
 public:
     BreathingLoop();
     ~BreathingLoop();
-    uint8_t getLabCycleMode();
+    uint8_t getVentilationMode();
     uint8_t getFsmState();
     void FSM_assignment();
     void FSM_breath_cycle();
@@ -22,7 +24,8 @@ public:
     void doStop();
     void doReset();
     bool getRunning();
-    void updatePressures();
+    void updateReadings();
+    readings getReadingAverages();
     ValvesController * getValvesController();
 
         // states
@@ -64,13 +67,23 @@ private:
 
     // calibration
     void calibrate();
-    void init_calib();
+    void initCalib();
     float getCalibrationOffset();
     int _calib_N;
     int _calib_timeout;
     int _calib_sum_pressure;
     int _calib_time;
     float _calib_avg_pressure;
+
+    // readings
+    void resetReadingSums();
+    readings _readings_sums;
+    readings _readings_avgs;
+    uint16_t _readings_N;
+    int _readings_time;
+    int _readings_timeout;
+    int _readings_avgs_time;
+    int _readings_avgs_timeout;
 };
 
 

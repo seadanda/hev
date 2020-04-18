@@ -15,7 +15,8 @@ BreathingLoop::BreathingLoop()
     _reset = false;
     _next_state;
 
-    init_calib();
+    initCalib();
+    resetReadingSums();
 }
 
 BreathingLoop::~BreathingLoop()
@@ -23,7 +24,7 @@ BreathingLoop::~BreathingLoop()
 ;
 }
 
-uint8_t BreathingLoop::getLabCycleMode()
+uint8_t BreathingLoop::getVentilationMode()
 {
     return _ventilation_mode;
 }
@@ -33,12 +34,64 @@ uint8_t BreathingLoop::getFsmState()
     return _bs_state;
 }
 
-void BreathingLoop::updatePressures()
+void BreathingLoop::updateReadings()
 {
-    delay(10); //placeholder
-// TODO
-// calc pressure every 1ms
-// create averages;
+    // calc pressure every 1ms
+    // create averages every 10ms
+    unsigned long tnow = millis();
+    if (tnow > _readings_time + _readings_timeout) {
+        _readings_time = tnow;
+        _readings_N++;
+
+        _readings_sums.pressure_air_supply += analogRead(pin_pressure_air_supply);
+        _readings_sums.pressure_air_regulated += analogRead(pin_pressure_air_regulated);
+        _readings_sums.pressure_buffer += analogRead(pin_pressure_buffer);
+        _readings_sums.pressure_inhale += analogRead(pin_pressure_inhale);
+        _readings_sums.pressure_patient += analogRead(pin_pressure_patient);
+        _readings_sums.temperature_buffer += analogRead(pin_temperature_buffer);
+        _readings_sums.pressure_o2_supply += analogRead(pin_pressure_o2_supply);
+        _readings_sums.pressure_o2_regulated += analogRead(pin_pressure_o2_regulated);
+        _readings_sums.pressure_diff_patient += analogRead(pin_pressure_diff_patient);
+    }
+
+    if (tnow > _readings_avgs_time + _readings_avgs_timeout) {
+        _readings_avgs.pressure_air_supply = _readings_sums.pressure_air_supply / _readings_N;
+        _readings_avgs.pressure_air_regulated = _readings_sums.pressure_air_regulated / _readings_N;
+        _readings_avgs.pressure_buffer = _readings_sums.pressure_buffer / _readings_N;
+        _readings_avgs.pressure_inhale = _readings_sums.pressure_inhale / _readings_N;
+        _readings_avgs.pressure_patient = _readings_sums.pressure_patient / _readings_N;
+        _readings_avgs.temperature_buffer = _readings_sums.temperature_buffer / _readings_N;
+        _readings_avgs.pressure_o2_supply = _readings_sums.pressure_o2_supply / _readings_N;
+        _readings_avgs.pressure_o2_regulated = _readings_sums.pressure_o2_regulated / _readings_N;
+        _readings_avgs.pressure_diff_patient = _readings_sums.pressure_diff_patient / _readings_N;
+        resetReadingSums();
+    }
+}
+
+readings BreathingLoop::getReadingAverages()
+{
+    return _readings_avgs;
+
+}
+
+void BreathingLoop::resetReadingSums()
+{
+    unsigned long tnow = millis();
+    _readings_time = tnow;
+    _readings_avgs_time = tnow;
+    _readings_timeout = 1; //ms
+    _readings_avgs_timeout = 10; //ms
+    _readings_N = 0;
+    
+    _readings_sums.pressure_air_supply     = 0;
+    _readings_sums.pressure_air_regulated  = 0;
+    _readings_sums.pressure_buffer         = 0;
+    _readings_sums.pressure_inhale         = 0;
+    _readings_sums.pressure_patient        = 0;
+    _readings_sums.temperature_buffer      = 0;
+    _readings_sums.pressure_o2_supply      = 0;
+    _readings_sums.pressure_o2_regulated   = 0;
+    _readings_sums.pressure_diff_patient   = 0;
 }
 
 //This is used to assign the transitions of the fsm
@@ -134,7 +187,7 @@ void BreathingLoop::FSM_breath_cycle()
             // TODO
             // air, o2, purge are based on button states in idle
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-            init_calib();
+            initCalib();
             break;
         case BL_STATES::CALIBRATION : 
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, 0.9 * VALVE_STATE::OPEN, 0.9 * VALVE_STATE::OPEN, VALVE_STATE::OPEN);
@@ -254,7 +307,7 @@ bool BreathingLoop::getRunning()
 void BreathingLoop::calibrate()
 {
     // get pressure_air_regulated over 10s calc mean
-    if (_calib_time + _calib_timeout > millis() ){
+    if (millis() > _calib_time + _calib_timeout  ){
         _calib_N++;
         _calib_sum_pressure += analogRead(pin_pressure_air_regulated);
         _calib_avg_pressure = _calib_sum_pressure / _calib_N;
@@ -262,7 +315,7 @@ void BreathingLoop::calibrate()
 }
 
 
-void BreathingLoop::init_calib()
+void BreathingLoop::initCalib()
 {
 
     _calib_timeout = 10;

@@ -31,7 +31,7 @@
 #define PACKET_DATA  0x40
 #define PACKET_SET   0x20 //set vs get ?
 
-#define HEV_FORMAT_VERSION 0xA0
+#define HEV_FORMAT_VERSION 0xA1
 
 // struct for all data sent
 struct data_format {

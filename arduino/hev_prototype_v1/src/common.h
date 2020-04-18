@@ -161,4 +161,17 @@ void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t valu
 void setTimeout(CMD_SET_TIMEOUT cmd, fsm_timeouts &timeouts, uint32_t value);
 uint32_t getTimeoutExhale();
 
+// used for calculating averages
+struct readings{
+    uint16_t pressure_air_supply    = 0;
+    uint16_t pressure_air_regulated = 0;
+    uint16_t pressure_buffer        = 0;
+    uint16_t pressure_inhale        = 0;
+    uint16_t pressure_patient       = 0;
+    uint16_t temperature_buffer     = 0;
+    uint16_t pressure_o2_supply     = 0;
+    uint16_t pressure_o2_regulated  = 0;
+    uint16_t pressure_diff_patient  = 0;
+
+};
 #endif
