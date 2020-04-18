@@ -240,12 +240,14 @@ function updateChartType() {
    });
     requestDataVar1(selection_results[0], selection_results[1]);
 }; // ends update button
-    document.multiselect('#chart_variables')
-                            
-                .setCheckBoxClick("checkboxAll", function(target, args) {
-                        console.log("Checkbox 'Select All' was clicked and got value ", args.checked);})
-                .setCheckBoxClick("pressure_buffer", function(target, args) {
-                        console.log("Checkbox for item with value '1' was clicked and got value ", args.checked); });
 
-    document.multiselect('#chart_variables')
-          .deselectAll();
+document.multiselect('#chart_variables')
+                        
+            .setCheckBoxClick("checkboxAll", function(target, args) {
+                    console.log("Checkbox 'Select All' was clicked and got value ", args.checked);})
+            .setCheckBoxClick("pressure_buffer", function(target, args) {
+                    console.log("Checkbox for item with value '1' was clicked and got value ", args.checked); });
+
+document.multiselect('#chart_variables')
+      .deselectAll();
+

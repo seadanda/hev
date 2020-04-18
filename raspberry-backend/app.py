@@ -28,9 +28,6 @@ def getList(dict):
 def hello_world():
    return render_template('index.html', result=live_data())
 
-@WEBAPP.route('/new')
-def hello_worlds():
-    return render_template('index_v3.html', result=live_data())
 
 @WEBAPP.route('/settings')
 def settings():
@@ -38,11 +35,11 @@ def settings():
 
 @WEBAPP.route('/charts')
 def charts():
-    return render_template('charts.html', result=live_data())
+    return render_template('charts.html')
 
 @WEBAPP.route('/logs')
 def logs():
-    return render_template('logs.html', result=live_data())    
+    return render_template('logs.html', result=last_N_alarms(10))    
 
 @WEBAPP.route('/fan')
 def fan():
@@ -157,6 +154,28 @@ def live_alarms():
 
     return response
 
+
+@WEBAPP.route('/last_N_alarms', methods=['GET'])
+def last_N_alarms(N):
+    """
+    Query the sqlite3 table for the last N alarms
+    Output in json format
+    """
+
+    data = {'created_at' : None, 'alarms' : None}
+
+    sqlite_file = 'database/HEC_monitoringDB.sqlite'
+    with sqlite3.connect(sqlite_file) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT created_at, alarms "
+        "FROM hec_monitor ORDER BY ROWID DESC LIMIT {}".format(N))
+
+        fetched = cursor.fetchall()
+
+    response = make_response(json.dumps(fetched).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
 
 
 if __name__ == '__main__':

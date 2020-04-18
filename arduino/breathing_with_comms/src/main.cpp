@@ -72,11 +72,11 @@ void setup()
     pinMode(pin_valve_purge, OUTPUT);
     pinMode(pin_valve_atmosphere, OUTPUT);
 
-    pinMode(pin_p_air_supply, INPUT);
-    pinMode(pin_p_air_regulated, INPUT);
-    pinMode(pin_p_buffer, INPUT);
-    pinMode(pin_p_inhale, INPUT);
-    pinMode(pin_p_patient, INPUT);
+    pinMode(pin_pressure_air_supply, INPUT);
+    pinMode(pin_pressure_air_regulated, INPUT);
+    pinMode(pin_pressure_buffer, INPUT);
+    pinMode(pin_pressure_inhale, INPUT);
+    pinMode(pin_pressure_patient, INPUT);
     pinMode(pin_temp, INPUT);
 #ifdef HEV_FULL_SYSTEM
     pinMode(pin_p_o2_supply, INPUT);
@@ -103,8 +103,8 @@ void loop()
 
     data.fsm_state = getFsmState();
     data.readback_mode = getLabCycleMode();
-    data.pressure_buffer = analogRead(pin_p_buffer);
-    data.pressure_inhale = analogRead(pin_p_inhale);
+    data.pressure_buffer = analogRead(pin_pressure_buffer);
+    data.pressure_inhale = analogRead(pin_pressure_inhale);
 
     bool vin_air, vin_o2, vpurge, vatmos;
     float vinhale, vexhale;

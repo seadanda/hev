@@ -71,8 +71,10 @@
 	    {% block content %}
 	    {% endblock %}
           </div>
-        </div>
-	
+	</div>
+        <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+        <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
+
         <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
@@ -80,7 +82,7 @@
         <script src="{{ url_for('static', filename='js/Chart.js') }}"></script>
         <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
-
+	
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
@@ -101,41 +103,37 @@
 									}
 									</script>
 	
-	
-	
 	<script type=text/javascript>
+          var alarmLogs;
+          clearInterval(alarmLogs);
+
 	  function update_alarms() {
-	  $.getJSON("live-alarms",
-	  function (data) {
-	  if (data.alarms !== 'none') {
-	  document.getElementById("alarms").innerHTML = data.alarms;
-	  var el = document.getElementById("alarm_ul");
-	  el.classList.add("alarm-red");
-	  var el2 = document.getElementById("path-alarm");
-	  el2.classList.add("path-icon-alarm");
-
-	  } else {  
-	  document.getElementById("alarms").innerHTML = ''
-	  
-	  var el = document.getElementById("alarm_ul");
-	  el.classList.remove("alarm-red");
-	  var el2 = document.getElementById("path-alarm");
-	  el2.classList.remove("path-icon-alarm");
-
-	  }    
+        $.getJSON("live-alarms", function (data) {
+	       if (data.alarms !== 'none') {
+	          document.getElementById("alarms").innerHTML = data.alarms;
+	          var el = document.getElementById("alarm_ul");
+	          el.classList.add("alarm-red");
+	          var el2 = document.getElementById("path-alarm");
+	          el2.classList.add("path-icon-alarm");
+            } else {  
+	           document.getElementById("alarms").innerHTML = ''
+	           var el = document.getElementById("alarm_ul");
+	           el.classList.remove("alarm-red");
+	           var el2 = document.getElementById("path-alarm");
+	           el2.classList.remove("path-icon-alarm");
+	        }    
+	    });
 	  }
-	  );
-	  }
-	  setInterval('update_alarms()', 1000);
+	  var alarmInterval = setInterval('update_alarms()', 1000);
 	</script>
 
 	
 
 	<script type = text/javascript>
 	  function show_easy_numpad_wrapper(thisElement){
-	  if (thisElement.disabled == false && thisElement.readOnly == false){
-	  show_easy_numpad(thisElement);
-	  }
+	    if (thisElement.disabled == false && thisElement.readOnly == false) {
+	       show_easy_numpad(thisElement);
+	    }
 	  }
 	</script>
 	
