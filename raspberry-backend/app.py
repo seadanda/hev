@@ -35,7 +35,7 @@ def settings():
 
 @WEBAPP.route('/charts')
 def charts():
-    return render_template('charts.html')
+    return render_template('charts.html', result=last_N_data())
 
 @WEBAPP.route('/charts2')
 def charts2():
@@ -43,7 +43,7 @@ def charts2():
 
 @WEBAPP.route('/logs')
 def logs():
-    return render_template('logs.html', result=last_N_alarms(10))    
+    return render_template('logs.html', result=last_N_alarms())    
 
 @WEBAPP.route('/fan')
 def fan():
@@ -133,6 +133,46 @@ def live_data():
     #return Response(json.dumps(data),  mimetype='application/json')
     return response
 
+@WEBAPP.route('/last_N_data', methods=['GET'])
+def last_N_data():
+    """
+    Query the sqlite3 table for variables
+    Output in json format
+    """
+    N = 30
+    list_variables = []
+    list_variables.append("created_at")
+    list_variables.extend(getList(dataFormat().getDict()))
+
+
+    united_var = ','.join(list_variables)
+
+    sqlite_file = 'database/HEC_monitoringDB.sqlite'
+    fetched_all = []
+
+    with sqlite3.connect(sqlite_file) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT {var} "
+        "FROM hec_monitor ORDER BY ROWID DESC LIMIT {entries}".format(var=united_var, entries=N))
+        
+        fetched = cursor.fetchall()
+        for el in fetched:
+          data = {key: None for key in list_variables}
+
+          for index, item in enumerate(list_variables):
+              if item == 'created_at':
+                  data[item] = el[index]
+              else:
+                  data[item] = round(el[index],2)   
+          fetched_all.append(data)
+          #print(fetched_all)
+
+    response = make_response(json.dumps(fetched_all).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
+
+
 @WEBAPP.route('/live-alarms', methods=['GET'])
 def live_alarms():
     """
@@ -160,12 +200,12 @@ def live_alarms():
 
 
 @WEBAPP.route('/last_N_alarms', methods=['GET'])
-def last_N_alarms(N):
+def last_N_alarms():
     """
     Query the sqlite3 table for the last N alarms
     Output in json format
     """
-
+    N = 10
     data = {'created_at' : None, 'alarms' : None}
 
     sqlite_file = 'database/HEC_monitoringDB.sqlite'
