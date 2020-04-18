@@ -37,6 +37,10 @@ def settings():
 def charts():
     return render_template('charts.html')
 
+@WEBAPP.route('/charts2')
+def charts2():
+    return render_template('charts2.html')
+
 @WEBAPP.route('/logs')
 def logs():
     return render_template('logs.html', result=last_N_alarms(10))    
