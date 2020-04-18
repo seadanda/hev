@@ -34,6 +34,7 @@ OTHER_FILES += platformio.ini
 
 HEADERS += src/common.h \
             src/MemoryFree.h \
+            src/AlarmLoop.h \
             src/BreathingLoop.h \
             src/UILoop.h \
             ../common/lib/CommsControl/CommsCommon.h \
@@ -41,9 +42,10 @@ HEADERS += src/common.h \
             ../common/lib/CommsControl/CommsFormat.h
 
 SOURCES += src/main.cpp \
-            src/MemoryFree.cpp \
-            src/BreathingLoop.cpp \
             src/common.cpp \
+            src/MemoryFree.cpp \
+            src/AlarmLoop.cpp \
+            src/BreathingLoop.cpp \
             src/UILoop.cpp \
             ../common/lib/CommsControl/CommsControl.cpp \
             ../common/lib/CommsControl/CommsFormat.cpp
