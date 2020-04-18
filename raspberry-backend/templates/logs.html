@@ -42,9 +42,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td>End of logs</td>
-                <td></td>
-
+                
             </tr>
         </tfoot>
     </table>
@@ -57,22 +55,26 @@
 <script>
 var logging;
 
-function requestAlarms() {
+function convertTimestamp(timestamp) {
+  date = new Date(timestamp);
+  var h = date.getHours();
+	var m = date.getMinutes();
+	var s = date.getSeconds();
+  return (("0"+date.getDate()).slice(-2)) +"."+ (("0"+(date.getMonth()+1)).slice(-2)) +"."+ (date.getFullYear()) 
+         + ' &emsp; ' +	 h + ":" + m + ":" + s; ;
+}
 
+
+function requestAlarms() {
   $.getJSON({
       url: '/live-alarms',
       success: function(data) {
-         date = new Date(data.created_at);
-         var h = date.getHours();
-	       var m = date.getMinutes();
-	       var s = date.getSeconds();
          if (data.alarms != "none") {
             var table = document.getElementById("HEV_logs");
             var row = table.insertRow(1);
             var cell1 = row.insertCell(0);
             var cell2 = row.insertCell(1);
-            cell1.innerHTML = (("0"+date.getDate()).slice(-2)) +"."+ (("0"+(date.getMonth()+1)).slice(-2)) +"."+ (date.getFullYear()) 
-         + ' &emsp; ' +	 h + ":" + m + ":" + s; ;
+            cell1.innerHTML = convertTimestamp(data.created_at)
             cell2.innerHTML = data.alarms;
          }
          
@@ -89,6 +91,20 @@ function update_logs() {
     clearInterval(alarmInterval);
     requestAlarms()
   }
+
+var obj = {{result.data|tojson|safe}}
+// Reversing array so that the most recent number is on top
+var last_results = JSON.parse(obj).reverse();
+
+var table = document.getElementById("HEV_logs");
+var i;
+for (i=0; i<last_results.length; i++) {
+  var row = table.insertRow(1);
+  var cell1 = row.insertCell(0);
+  var cell2 = row.insertCell(1);
+  cell1.innerHTML = convertTimestamp(last_results[i][0]);
+  cell2.innerHTML = last_results[i][1];
+}
 
 </script>
 
