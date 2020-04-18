@@ -15,6 +15,9 @@ int ventilation_mode = HEV_MODE_PS;
 const uint16_t report_freq = 5 ; // in Hz
 const uint16_t update_freq = 100 ; // in Hz
 
+uint32_t report_time = 0;
+uint32_t report_timeout = static_cast<uint32_t>(1000 * report_freq);
+
 uint16_t report_cnt = 0;
  
 float working_pressure = 1;             //?
@@ -131,21 +134,21 @@ void loop()
     // data.readback_valve_atmosphere = vpurge;
 
     breathing_loop.FSM_assignment();
-    breathing_loop.FSM_breath_cycle();
+    breathing_loop.FSM_breathCycle();
 
-    report_cnt++;
-    if(report_cnt % (update_freq/report_freq) == 0)
-    {
+    // writing data to sending ring buffer is defined by frequency
+    // TODO: programmable changing of the report_timeout
+    if (millis() > report_time + report_timeout) {
         plSend.setType(PAYLOAD_TYPE::DATA);
         plSend.setData(&data);
         comms.writePayload(plSend);
+        report_time = static_cast<uint32_t>(millis());
     }
     // per cycle sender
     comms.sender();
+
     // per cycle receiver
     comms.receiver();
-
-    uint8_t cmdCode = 0;
     if(comms.readPayload(plReceive)){
       if (plReceive.getType() == PAYLOAD_TYPE::CMD) {
           ui_loop.doCommand(plReceive.getCmd());

@@ -148,7 +148,6 @@ struct alarm_thresholds {
 };
 
 // default values definitions
-static fsm_timeouts     fsm_timeout = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
 static alarm_thresholds alarm_threshold_min;
 static alarm_thresholds alarm_threshold_max;
 
@@ -159,6 +158,5 @@ static alarm_thresholds alarm_threshold_max;
 
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value);
 void setTimeout(CMD_SET_TIMEOUT cmd, fsm_timeouts &timeouts, uint32_t value);
-uint32_t getTimeoutExhale();
 
 #endif

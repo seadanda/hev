@@ -4,9 +4,11 @@
 // Main Breathing Controller.  Runs the FSM for breathing function
 // @author Karol Hennessy <karol.hennessy@cern.ch>
 // @author Antonio Fernandez Prieto <antonio.fernandez.prieto@cern.ch>
+// @author Peter Svihra <peter.svihra@cern.ch>
 
 #include <Arduino.h>
 #include "ValvesController.h"
+#include "common.h"
 
 class BreathingLoop
 {
@@ -17,7 +19,7 @@ public:
     uint8_t getLabCycleMode();
     uint8_t getFsmState();
     void FSM_assignment();
-    void FSM_breath_cycle();
+    void FSM_breathCycle();
     void doStart();
     void doStop();
     void doReset();
@@ -25,7 +27,9 @@ public:
     void updatePressures();
     ValvesController * getValvesController();
 
-        // states
+    states_timeouts &getTimeouts();
+
+    // states
     enum BL_STATES : uint8_t {
             IDLE,
             CALIBRATION,
@@ -40,7 +44,7 @@ public:
             STOP,
             BUFF_PURGE,
             BUFF_FLUSH
-        };
+    };
 
 
 //TODO: this should probably be common
@@ -53,24 +57,33 @@ public:
 
 private:
     uint64_t _fsm_time ;
-    uint32_t _timeout;
+    uint32_t _fsm_timeout;
     uint8_t  _ventilation_mode;
-    uint8_t  _bs_state;
+    uint8_t  _bl_state;
     bool     _running;
     bool     _reset;
-    int      _next_state;
+    uint8_t  _next_state;
 
     ValvesController _valves_controller;
 
     // calibration
     void calibrate();
-    void init_calib();
-    float getCalibrationOffset();
+    void initCalib();
+    float getCalibrationOffset();    
     int _calib_N;
-    int _calib_timeout;
+    uint32_t _calib_timeout;
+    uint32_t _calib_time;
     int _calib_sum_pressure;
-    int _calib_time;
     float _calib_avg_pressure;
+
+    // timeouts
+    uint32_t calculateTimeoutExhale();
+    states_timeouts _states_timeouts = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
+
+    // values reading
+    bool _reading;
+    uint32_t _reading_time;
+    uint32_t _reading_timeout;
 };
 
 

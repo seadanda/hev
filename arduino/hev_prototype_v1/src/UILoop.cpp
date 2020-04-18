@@ -45,7 +45,7 @@ void UILoop::cmdGeneral(cmd_format *cf) {
 }
 
 void UILoop::cmdSetTimeout(cmd_format *cf) {
-    setTimeout(static_cast<CMD_SET_TIMEOUT>(cf->cmd_code), fsm_timeout, cf->param);
+    setTimeout(static_cast<CMD_SET_TIMEOUT>(cf->cmd_code), _breathing_loop->getTimeouts(), cf->param);
 }
 
 void UILoop::cmdSetMode(cmd_format *cf) {

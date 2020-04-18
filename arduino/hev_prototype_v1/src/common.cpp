@@ -122,8 +122,3 @@ void setTimeout(CMD_SET_TIMEOUT cmd, fsm_timeouts &timeouts, uint32_t value) {
             break;
     }
 }
-
-uint32_t getTimeoutExhale() {
-    // FIXME 1/1 has to be replaced using exhale/inhale ratio
-    return static_cast<uint32_t>(fsm_timeout.inhale * ( 1/ 1) ) - fsm_timeout.buff_fill;
-}
