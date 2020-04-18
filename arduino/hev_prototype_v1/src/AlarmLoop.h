@@ -2,7 +2,7 @@
 #define ALARM_LOOP_H
 
 #include <Arduino.h>
-#include "commsFormat.h"
+#include "CommsFormat.h"
 
 class AlarmLoop
 {
@@ -10,7 +10,7 @@ class AlarmLoop
 public:
     AlarmLoop();
     ~AlarmLoop();
-    int doAlarm(alarmFormat *af);
+    int doAlarm(alarm_format *af);
 private:
     // BreathingLoop *_breathing_loop;
 };

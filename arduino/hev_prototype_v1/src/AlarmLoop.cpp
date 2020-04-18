@@ -8,7 +8,7 @@ AlarmLoop::AlarmLoop()
 AlarmLoop::~AlarmLoop()
 {;}
 
-int AlarmLoop::doAlarm(alarmFormat *af)
+int AlarmLoop::doAlarm(alarm_format *af)
 {
     return 0;
 }
