@@ -3,7 +3,7 @@
 #include <Wire.h>
 #include "Adafruit_MCP9808.h"
 #include <INA.h>
-#include "commsControl.h"
+#include "CommsControl.h"
 #include "BreathingLoop.h"
 #include "UILoop.h"
 #include "common.h"
@@ -27,10 +27,10 @@ float expiratory_minute_volume; // calc?? same as inspiratory_minute_volume?
 float trigger_sensitivity;
 
 // comms
-dataFormat data;
-commsControl comms;
-payload plReceive;
-payload plSend;
+data_format data;
+CommsControl comms;
+Payload plReceive;
+Payload plSend;
 
 // loops
 BreathingLoop breathing_loop;
@@ -39,19 +39,19 @@ UILoop        ui_loop(&breathing_loop);
 bool start_fsm = false;
 
 // calculations
-float calc_tidal_volume()
+float calcTidalVolume()
 {
     return inspiratory_minute_volume / respiratory_rate;
 }
 
-float calc_expiration_time()
+float calcExpirationTime()
 {
     float total_respiratory_time = 60.0 / respiratory_rate;
     // total = expire + inspire + pause
     return (total_respiratory_time - inspiratory_time - pause_time);
 }
 
-float calc_expiratory_minute_volume()
+float calcExpiratoryMinuteVolume()
 {
     // probably need to calculate this from readings
     return 0;
@@ -132,22 +132,20 @@ void loop()
     report_cnt++;
     if(report_cnt % (update_freq/report_freq) == 0)
     {
-        plSend.setType(payloadType::payloadData);
+        plSend.setType(PAYLOAD_TYPE::DATA);
         plSend.setData(&data);
         comms.writePayload(plSend);
     }
     // per cycle sender
     comms.sender();
     // per cycle receiver
-    
     comms.receiver();
 
     uint8_t cmdCode = 0;
     if(comms.readPayload(plReceive)){
-      if (plReceive.getType() == payloadType::payloadCmd) {
-        //   cmdCode = (plReceive.getCmd()->cmdCode);
+      if (plReceive.getType() == PAYLOAD_TYPE::CMD) {
           ui_loop.doCommand(plReceive.getCmd());
-          plReceive.setType(payloadType::payloadUnset);
+          plReceive.setType(PAYLOAD_TYPE::UNSET);
       }
     }
 

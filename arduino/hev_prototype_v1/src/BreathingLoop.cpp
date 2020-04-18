@@ -21,12 +21,12 @@ BreathingLoop::~BreathingLoop()
 ;
 }
 
-byte BreathingLoop::getLabCycleMode()
+uint8_t BreathingLoop::getLabCycleMode()
 {
     return _ventilation_mode;
 }
 
-byte BreathingLoop::getFsmState()
+uint8_t BreathingLoop::getFsmState()
 {
     return _bs_state;
 }
@@ -138,27 +138,26 @@ void BreathingLoop::FSM_breath_cycle()
             // TODO
             // do calib - measure P_regulated for 10 s and calc mean
             // P_patient, P_buffer and P_inhale shoudl be equal
-            _timeout = 10000;
+            _timeout = fsm_timeout.calibration;
         case BL_STATES::BUFF_PREFILL:
-            // TODO - exhale settable; timeout expert settable
+            // TODO - exhale settable
             setValves(V_CLOSED, V_CLOSED, 0.0, 0.8, V_CLOSED, V_CLOSED);
-            _timeout = 100;
+            _timeout = fsm_timeout.buff_prefill;
             break;
         case BL_STATES::BUFF_FILL:
-            // TODO - exhale settable; timeout settable
+            // TODO - exhale settable
             setValves(V_OPEN, V_OPEN, 0.0, 0.8, V_CLOSED, V_CLOSED);
-            _timeout = 600;
+            _timeout = fsm_timeout.buff_fill;
             break;
         case BL_STATES::BUFF_LOADED:
-            // TODO - exhale settable; timeout expert settable
+            // TODO - exhale settable
             // Calc pressure and stay in loaded if not ok
             // pressure settable by expert
             setValves(V_CLOSED, V_CLOSED, 0.0, 0.8, V_CLOSED, V_CLOSED);
-            _timeout = 100;
+            _timeout = fsm_timeout.buff_loaded;
             break;
         case BL_STATES::BUFF_PRE_INHALE:
-            // TODO - timeout settable
-            // spontaneous trigger can be enabled
+            // TODO spontaneous trigger can be enabled
             // - can be triggered by : 
                 // P_inhale ; 
                 // P_diff_patient //=flow
@@ -177,7 +176,7 @@ void BreathingLoop::FSM_breath_cycle()
                     
                     break;
                 default:
-                    _timeout = 100;
+                    _timeout = fsm_timeout.buff_pre_inhale;
             }
         
             break;
@@ -189,35 +188,34 @@ void BreathingLoop::FSM_breath_cycle()
             // if p_inhale > max thresh pressure(def: 50?)
             // go to exhale fill
             setValves(V_CLOSED, V_CLOSED, 0.8, 0.0, V_CLOSED, V_CLOSED);
-            _timeout =1000;
+            _timeout = fsm_timeout.inhale;
             
             break;
         case BL_STATES::PAUSE:
-            // TODO: timeout setting
             setValves(V_CLOSED, V_CLOSED, 0.0, 0.0, V_CLOSED, V_CLOSED);
-            _timeout = 500;
+            _timeout = fsm_timeout.pause;
             
             break;
         case BL_STATES::EXHALE_FILL:
-            // TODO: timeout setting
             setValves(V_OPEN, V_OPEN, 0.0, 0.9, V_CLOSED, V_CLOSED);
-            _timeout = 600;
+            _timeout = fsm_timeout.exhale_fill;
         
             break;
         case BL_STATES::EXHALE:
             // TODO: exhale timeout based on 
             // (inhale_time* (Exhale/Inhale ratio))  -  fill time
+            fsm_timeout.exhale = getTimeoutExhale();
             setValves(V_CLOSED, V_CLOSED, 0.0, 0.9, V_CLOSED, V_CLOSED);
-            _timeout = 400;
+            _timeout = fsm_timeout.exhale;
             
             break;
         case BL_STATES::BUFF_PURGE:
             setValves(V_CLOSED, V_CLOSED, 0.0, 0.9, V_OPEN, V_CLOSED);
-            _timeout =1000;
+            _timeout = fsm_timeout.buff_purge;
             break;
         case BL_STATES::BUFF_FLUSH:
             setValves(V_CLOSED, V_CLOSED, 0.9, 0.9, V_CLOSED, V_CLOSED);
-            _timeout =1000;
+            _timeout = fsm_timeout.buff_flush;
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
