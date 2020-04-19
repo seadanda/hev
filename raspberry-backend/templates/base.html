@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="{{'no-scroll-lock' if logs_active}}">
     <head>
         <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -17,8 +17,8 @@
 	{% block scripts %}
 	{% endblock %}
     </head>
-    <body class="sb-nav-fixed">
-      <nav class="sb-topnav navbar navbar-expand navbar-dark bg-dark px-0 py-0">
+    <body class="sb-nav-fixed {{'no-scroll-lock' if logs_active}}">
+      <nav class="sb-topnav navbar navbar-expand navbar-dark bg-white px-0 py-0">
 	<!-- Logo -->
         <a class="navbar-brand" href=""><img src="{{ url_for('static', filename='img/cern-hev-logo.png') }}" id="logo"></a>
 	
