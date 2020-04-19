@@ -49,22 +49,20 @@ class DataFormat(BaseFormat):
         super().__init__()
         # struct will set the num bytes per variable
         # B = unsigned char = 1 byte
-        # X = padding = 1 byte
         # H = unsigned short = 2 bytes
         # I = unsigned int = 4 bytes
         # < = little endian
         # > = big endian
         # ! = network format (big endian)
-        self._dataStruct = Struct("<BBHIHHHHHHHHHBBBBBB")
+        self._dataStruct = Struct("<BIBHHHHHHHHHBBBBBB")
         self._byteArray = None
         self._type = PAYLOAD_TYPE.DATA
 
 
         # make all zero to start with
         self._version = 0
-        self._fsm_state = 0
-        self._dummy = 0
         self._timestamp = 0
+        self._fsm_state = "IDLE"
         self._pressure_air_supply = 0
         self._pressure_air_regulated = 0
         self._pressure_o2_supply = 0
@@ -84,8 +82,8 @@ class DataFormat(BaseFormat):
     def __repr__(self):
         return f"""{{
     "version"                : {self._version},
-    "fsm_state"              : {self._fsm_state},
     "timestamp"              : {self._timestamp},
+    "fsm_state"              : {self._fsm_state},
     "pressure_air_supply"    : {self._pressure_air_supply},
     "pressure_air_regulated" : {self._pressure_air_regulated},
     "pressure_o2_supply"     : {self._pressure_o2_supply},
@@ -110,9 +108,8 @@ class DataFormat(BaseFormat):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
         (self._version,
-        self._fsm_state,
-        self._dummy,
         self._timestamp,
+        self._fsm_state,
         self._pressure_air_supply,
         self._pressure_air_regulated,
         self._pressure_o2_supply,
@@ -128,6 +125,10 @@ class DataFormat(BaseFormat):
         self._readback_valve_exhale,
         self._readback_valve_purge,
         self._readback_mode) = self._dataStruct.unpack(self._byteArray) 
+        try:
+            self._fsm_state = BL_STATES(self._fsm_state)
+        except ValueError:
+            self._fsm_state = BL_STATES(1)
 
 
     # for sending DataFormat to microcontroller
@@ -139,9 +140,8 @@ class DataFormat(BaseFormat):
 
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
-            self._fsm_state,
-            self._dummy,
             self._timestamp,
+            self._fsm_state,
             self._pressure_air_supply,
             self._pressure_air_regulated,
             self._pressure_o2_supply,
@@ -162,8 +162,8 @@ class DataFormat(BaseFormat):
     def getDict(self):
         data = {
             "version"                : self._version,
-            "fsm_state"              : self._fsm_state,
             "timestamp"              : self._timestamp,
+            "fsm_state"              : self._fsm_state,
             "pressure_air_supply"    : self._pressure_air_supply,
             "pressure_air_regulated" : self._pressure_air_regulated,
             "pressure_o2_supply"     : self._pressure_o2_supply,
@@ -188,12 +188,11 @@ class DataFormat(BaseFormat):
 class CommandFormat(BaseFormat):
     def __init__(self, cmdType=0, cmdCode=0, param=0):
         super().__init__()
-        self._dataStruct = Struct("<BBHIBBHI")
+        self._dataStruct = Struct("<BIBBI")
         self._byteArray = None
         self._type = PAYLOAD_TYPE.CMD
 
         self._version = 0
-        self._dummy = 0
         self._timestamp = 0
         self._cmdType = cmdType
         self._cmdCode = cmdCode
@@ -241,24 +240,18 @@ class CommandFormat(BaseFormat):
     def fromByteArray(self, byteArray):
         self._byteArray = byteArray
         (self._version,
-        self._dummy,
-        self._dummy,
         self._timestamp,
         self._cmdType,
         self._cmdCode,
-        self._dummy,
         self._param) = self._dataStruct.unpack(self._byteArray) 
 
     def toByteArray(self):
         # since pi is sender
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
-            self._dummy,
-            self._dummy,
             self._timestamp,
             self._cmdType,
             self._cmdCode,
-            self._dummy,
             self._param
         )
 
@@ -278,14 +271,14 @@ class CommandFormat(BaseFormat):
 class AlarmFormat(BaseFormat):
     def __init__(self):
         super().__init__()
-        self._dataStruct = Struct("<BBHIBBHI")
+        self._dataStruct = Struct("<BIBBI")
         self._byteArray = None
         self._type = PAYLOAD_TYPE.ALARM
 
         self._version = 0
-        self._dummy = 0
         self._timestamp = 0
-        self._alarmCode   = 0
+        self._alarmType = 0
+        self._alarmCode = 0
         self._param = 0
 
     def __repr__(self):
@@ -300,32 +293,26 @@ class AlarmFormat(BaseFormat):
     def fromByteArray(self, byteArray):
         self._byteArray = byteArray
         (self._version,
-        self._dummy,
-        self._dummy,
         self._timestamp,
         self._alarmType,
         self._alarmCode,
-        self._dummy,
         self._param) = self._dataStruct.unpack(self._byteArray)
 
     def toByteArray(self):
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
-            self._dummy,
-            self._dummy,
             self._timestamp,
             self._alarmType,
             self._alarmCode,
-            self._dummy,
             self._param
         ) 
     
     def getDict(self):
         data = {
             "version"   : self._version,
+            "timestamp" : self._timestamp,
             "alarmType" : self._alarmType,
             "alarmCode" : self._alarmCode,
-            "timestamp" : self._timestamp,
             "param"     : self._param
         }
         return data
@@ -416,3 +403,18 @@ class CMD_MAP(Enum):
     SET_MODE          =  CMD_SET_MODE
     SET_THRESHOLD_MIN =  ALARM_CODES
     SET_THRESHOLD_MAX =  ALARM_CODES
+
+class BL_STATES(Enum):
+    IDLE            =  1
+    CALIBRATION     =  2
+    BUFF_PREFILL    =  3
+    BUFF_FILL       =  4
+    BUFF_LOADED     =  5
+    BUFF_PRE_INHALE =  6
+    INHALE          =  7
+    PAUSE           =  8
+    EXHALE_FILL     =  9
+    EXHALE          = 10
+    STOP            = 11
+    BUFF_PURGE      = 12
+    BUFF_FLUSH      = 13
