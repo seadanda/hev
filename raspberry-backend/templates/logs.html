@@ -32,6 +32,8 @@
             <tr>
                 <th>Date and time</th>
                 <th>Alarm message</th>
+                <th>Aknowledge</th>
+
 
             </tr>
         </thead>
@@ -46,8 +48,8 @@
             </tr>
         </tfoot>
     </table>
-    <button type="button" onclick="update_logs()">UPDATE</button>
-
+    <button type="button" id="update_button" style="background-color:gray; border-color:blue; color:white">Update alarms</button>
+    <button type="button" id="ack_alarms"   style="background-color:gray; border-color:blue; color:white">Aknowledge alarms</button>
 
   </div>
 </main>
@@ -74,8 +76,12 @@ function requestAlarms() {
             var row = table.insertRow(1);
             var cell1 = row.insertCell(0);
             var cell2 = row.insertCell(1);
+            var cell3 = row.insertCell(2);
+
             cell1.innerHTML = convertTimestamp(data.created_at)
             cell2.innerHTML = data.alarms;
+            cell3.innerHTML =  '<button type="button" id="ack"   style="background-color:gray; border-color:blue; color:white">Ack</button>';
+
          }
          
       },
@@ -89,7 +95,7 @@ function requestAlarms() {
 
 function update_logs() {
     clearInterval(alarmInterval);
-    requestAlarms()
+    requestAlarms();
   }
 
 var obj = {{result.data|tojson|safe}}
@@ -105,6 +111,21 @@ for (i=0; i<last_results.length; i++) {
   cell1.innerHTML = convertTimestamp(last_results[i][0]);
   cell2.innerHTML = last_results[i][1];
 }
+
+var button_state = false ;
+
+document.getElementById('update_button').onclick = function(){
+  if (button_state == false) {
+    this.style.backgroundColor = "green";
+    button_state = true;
+    update_logs();
+  } else {
+    this.style.backgroundColor = "gray";
+    button_state = false;
+    clearInterval(alarmLogs);
+  }
+}
+
 
 </script>
 
