@@ -126,14 +126,14 @@ where type can be either `"ack"` in response to a valid command or `"nack"` in r
 ## Example `hevclient.py` Usage
 
 ```python
-import hevclient
-
-# create instance of hevclient. Starts connection and polls in the background
+# just import hevclient and do something like the following
 hevclient = HEVClient()
 
 
+time.sleep(2)
+print(hevclient.send_cmd("GENERAL", "START"))
 # Play with sensor values and alarms
-for i in range(30):
+for i in range(20):
     values = hevclient.get_values() # returns a dict or None
     alarms = hevclient.get_alarms() # returns a list of alarms currently ongoing
     if values is None:
@@ -143,16 +143,25 @@ for i in range(30):
         print(f"Alarms: {alarms}")
     time.sleep(1)
 
+# acknowledge the oldest alarm
+try:
+    hevclient.ack_alarm(alarms[0]) # blindly assume we have one after 40s
+except:
+    logging.info("No alarms received")
+
+time.sleep(1)
+print(f"Alarms: {hevclient.get_alarms()}")
+
 # send commands:
-print(hevclient.send_cmd("CMD_START"))
 time.sleep(1)
 print("This one will fail since foo is not in the command_codes enum:")
-print(hevclient.send_cmd("foo"))
+print(hevclient.send_cmd("general", "foo"))
 
 # print some more values
 for i in range(10):
-    print(f"Alarms: {hevclient.get_alarms()}")
     print(f"Values: {json.dumps(hevclient.get_values(), indent=4)}")
     print(f"Alarms: {hevclient.get_alarms()}")
     time.sleep(1)
+
+print(hevclient.send_cmd("GENERAL", "STOP"))
 ```
