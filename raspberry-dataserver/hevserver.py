@@ -100,6 +100,7 @@ class HEVServer(object):
                     # temporary, since CMD_START and CMD_STOP are now deprecated
                     reqcmdtype = "GENERAL" # fake a general command
                     logging.warning("CMD_START AND CMD_STOP are deprecated and will be removed in a future release.")
+                    reqcmd = reqcmd.split("_")[1]
                 else:
                     reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
