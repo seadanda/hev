@@ -36,8 +36,9 @@
 // struct for all data sent
 struct data_format {
     uint8_t  version                = HEV_FORMAT_VERSION;
-    uint32_t timestamp              = 0;
     uint8_t  fsm_state              = 0;
+    uint16_t dummy                  = 0;
+    uint32_t timestamp              = 0;
     uint16_t pressure_air_supply    = 0;
     uint16_t pressure_air_regulated = 0;
     uint16_t pressure_o2_supply     = 0;
