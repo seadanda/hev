@@ -17,7 +17,7 @@ class payloadType(Enum):
 
 class BaseFormat():
     def __init__(self):
-        self._RPI_VERSION = 0xA0
+        self._RPI_VERSION = 0xA1
         self._byteArray = None
         self._type = payloadType.payloadUnset
         self._version = 0
@@ -59,13 +59,14 @@ class dataFormat(BaseFormat):
         # < = little endian
         # > = big endian
         # ! = network format (big endian)
-        self._dataStruct = Struct("<BBHHHHHHHHHBBBBBB")
+        self._dataStruct = Struct("<BIBHHHHHHHHHBBBBBB")
         self._byteArray = None
         self._type = payloadType.payloadData
 
 
         # make all zero to start with
         self._version = 0
+        self._timestamp = 0
         self._fsm_state = 0
         self._pressure_air_supply = 0
         self._pressure_air_regulated = 0
@@ -86,6 +87,7 @@ class dataFormat(BaseFormat):
     def __repr__(self):
         return f"""{{
     "version"                : {self._version},
+    "timestamp"              : {self._timestamp},
     "fsm_state"              : {self._fsm_state},
     "pressure_air_supply"    : {self._pressure_air_supply},
     "pressure_air_regulated" : {self._pressure_air_regulated},
@@ -109,6 +111,7 @@ class dataFormat(BaseFormat):
     def fromByteArray(self, byteArray):
         self._byteArray = byteArray
         (self._version,
+        self._timestamp,
         self._fsm_state,
         self._pressure_air_supply,
         self._pressure_air_regulated,
@@ -136,6 +139,7 @@ class dataFormat(BaseFormat):
 
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
+            self._timestamp,
             self._fsm_state,
             self._pressure_air_supply,
             self._pressure_air_regulated,
@@ -157,6 +161,7 @@ class dataFormat(BaseFormat):
     def getDict(self):
         data = {
             "version"                : self._version,
+            "timestamp"              : self._timestamp,
             "fsm_state"              : self._fsm_state,
             "pressure_air_supply"    : self._pressure_air_supply,
             "pressure_air_regulated" : self._pressure_air_regulated,
@@ -182,11 +187,12 @@ class dataFormat(BaseFormat):
 class commandFormat(BaseFormat):
     def __init__(self, cmdCode=0, param=0):
         super().__init__()
-        self._dataStruct = Struct("<BBI")
+        self._dataStruct = Struct("<BIBI")
         self._byteArray = None
         self._type = payloadType.payloadCmd
 
         self._version = 0
+        self._timestamp = 0
         self._cmdCode = cmdCode
         self._param = param
         self.toByteArray()
@@ -213,14 +219,16 @@ class commandFormat(BaseFormat):
     # print nicely
     def __repr__(self):
         return f"""{{
-    "version" : {self._version},
-    "cmdCode" : {self._cmdCode},
-    "param"   : {self._param}
+    "version"   : {self._version},
+    "timestamp" : {self._timestamp},
+    "cmdCode"   : {self._cmdCode},
+    "param"     : {self._param}
 }}"""
         
     def fromByteArray(self, byteArray):
         self._byteArray = byteArray
         (self._version,
+        self._timestamp,
         self._cmdCode,
         self._param) = self._dataStruct.unpack(self._byteArray) 
 
@@ -228,15 +236,17 @@ class commandFormat(BaseFormat):
         # since pi is sender
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
+            self._timestamp,
             self._cmdCode,
             self._param
         )
 
     def getDict(self):
         data = {
-            "version" : self._version,
-            "cmdCode" : self._cmdCode,
-            "param"   : self._param
+            "version"   : self._version,
+            "timestamp" : self._timestamp,
+            "cmdCode"   : self._cmdCode,
+            "param"     : self._param
         }
         return data
         
@@ -251,17 +261,19 @@ class command_codes(Enum):
 class alarmFormat(BaseFormat):
     def __init__(self):
         super().__init__()
-        self._dataStruct = Struct("<BBI")
+        self._dataStruct = Struct("<BIBI")
         self._byteArray = None
         self._type = payloadType.payloadAlarm
 
         self._version = 0
+        self._timestamp = 0
         self._alarmCode   = 0
         self._param = 0
 
     def __repr__(self):
         return f"""{{
     "version"   : {self._version},
+    "timestamp" : {self._timestamp},
     "alarmCode" : {self._alarmCode},
     "param"     : {self._param}
 }}"""
@@ -269,12 +281,14 @@ class alarmFormat(BaseFormat):
     def fromByteArray(self, byteArray):
         self._byteArray = byteArray
         (self._version,
+        self._timestamp,
         self._alarmCode,
         self._param) = self._dataStruct.unpack(self._byteArray)
 
     def toByteArray(self):
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
+            self._timestamp,
             self._alarmCode,
             self._param
         ) 
@@ -282,6 +296,7 @@ class alarmFormat(BaseFormat):
     def getDict(self):
         data = {
             "version"   : self._version,
+            "timestamp" : self._timestamp,
             "alarmCode" : self._alarmCode,
             "param"     : self._param
         }
