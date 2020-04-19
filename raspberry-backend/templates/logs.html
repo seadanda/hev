@@ -26,6 +26,9 @@
   <div class="container-fluid">
     <!--<h1 class="mt-4">Info</h1> !-->
 
+    <input type="button" value="Update alarms" id="update_button" style="background-color:gray; border-color:blue; color:white"></input>
+    <button type="button" id="ack_alarms"   style="background-color:gray; border-color:blue; color:white">Aknowledge all alarms</button>
+
 
       <table id="HEV_logs">
         <thead>
@@ -48,8 +51,6 @@
             </tr>
         </tfoot>
     </table>
-    <button type="button" id="update_button" style="background-color:gray; border-color:blue; color:white">Update alarms</button>
-    <button type="button" id="ack_alarms"   style="background-color:gray; border-color:blue; color:white">Aknowledge alarms</button>
 
   </div>
 </main>
@@ -94,7 +95,7 @@ function requestAlarms() {
 
 
 function update_logs() {
-    clearInterval(alarmInterval);
+    //clearInterval(alarmInterval);
     requestAlarms();
   }
 
@@ -116,10 +117,12 @@ var button_state = false ;
 
 document.getElementById('update_button').onclick = function(){
   if (button_state == false) {
+    this.value = "Loading alarms"
     this.style.backgroundColor = "green";
     button_state = true;
     update_logs();
   } else {
+    this.value = "Update alarms"
     this.style.backgroundColor = "gray";
     button_state = false;
     clearInterval(alarmLogs);
