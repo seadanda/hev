@@ -53,13 +53,14 @@ class HEVClient(object):
     def start_client(self) -> None:
         asyncio.run(self.polling())
 
-    async def send_request(self, reqtype, cmd: str=None, param: str=None, alarm: str=None) -> bool:
+    async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
 
         if reqtype == "cmd":
             payload = {
                 "type": "cmd",
+                "cmdtype": cmdtype,
                 "cmd": cmd,
                 "param": param
             }
@@ -69,6 +70,7 @@ class HEVClient(object):
                 "ack": alarm
             }
 
+        logging.info(payload)
         packet = json.dumps(payload).encode()
 
         writer.write(packet)
@@ -93,9 +95,9 @@ class HEVClient(object):
             logging.warning(f"Request type {reqtype} failed")
             return False
 
-    def send_cmd(self, cmd: str, param: str=None) -> bool:
+    def send_cmd(self, cmdtype:str, cmd: str, param: str=None) -> bool:
         # send a cmd and wait to see if it's valid
-        return asyncio.run(self.send_request("cmd", cmd=cmd, param=param))
+        return asyncio.run(self.send_request("cmd", cmdtype=cmdtype, cmd=cmd, param=param))
 
     def ack_alarm(self, alarm: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list
@@ -116,6 +118,9 @@ if __name__ == "__main__":
     hevclient = HEVClient()
 
 
+    time.sleep(2)
+    print(hevclient.send_cmd("GENERAL", "START"))
+    print("done")
     # Play with sensor values and alarms
     for i in range(20):
         values = hevclient.get_values() # returns a dict or None
@@ -137,13 +142,14 @@ if __name__ == "__main__":
     print(f"Alarms: {hevclient.get_alarms()}")
 
     # send commands:
-    print(hevclient.send_cmd("CMD_START"))
     time.sleep(1)
     print("This one will fail since foo is not in the command_codes enum:")
-    print(hevclient.send_cmd("foo"))
+    print(hevclient.send_cmd("general", "foo"))
 
     # print some more values
     for i in range(10):
         print(f"Values: {json.dumps(hevclient.get_values(), indent=4)}")
         print(f"Alarms: {hevclient.get_alarms()}")
         time.sleep(1)
+
+    print(hevclient.send_cmd("GENERAL", "STOP"))

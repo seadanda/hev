@@ -11,7 +11,7 @@ import argparse
 import svpi
 import hevfromtxt
 import commsControl
-from commsConstants import payloadType, command_codes, alarm_codes, commandFormat
+from commsConstants import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CommandFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
@@ -47,13 +47,13 @@ class HEVServer(object):
         logging.debug(f"Payload received: {payload!r}")
         # check if it is data or alarm
         payload_type = payload.getType()
-        if payload_type == payloadType.payloadAlarm:
+        if payload_type == PAYLOAD_TYPE.ALARM:
             # Alarm is latched until acknowledged in GUI
             alarm_packet = payload.getDict()
             alarmCode = alarm_packet["alarmCode"]
             with self._dblock:
                 try:
-                    alarm = alarm_codes(alarmCode).name
+                    alarm = ALARM_CODES(alarmCode).name
                 except ValueError as e:
                     # alarmCode does not exist in the enum, this is serious!
                     logging.error(e)
@@ -63,17 +63,17 @@ class HEVServer(object):
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
-        elif payload_type == payloadType.payloadData:
+        elif payload_type == PAYLOAD_TYPE.DATA:
             # pass data to db
             with self._dblock:
                 self._values = payload.getDict()
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
-        elif payload_type == payloadType.payloadCmd:
+        elif payload_type == PAYLOAD_TYPE.CMD:
             # ignore for the minute
             pass
-        elif payload_type == payloadType.payloadUnset:
+        elif payload_type == PAYLOAD_TYPE.UNSET:
             # ignore for the minute
             pass
         else:
@@ -96,19 +96,34 @@ class HEVServer(object):
             reqtype = request["type"]
             if reqtype == "cmd":
                 reqcmd = request["cmd"]
+                if reqcmd == "CMD_START" or reqcmd == "CMD_STOP":
+                    # temporary, since CMD_START and CMD_STOP are now deprecated
+                    reqcmdtype = "GENERAL" # fake a general command
+                    logging.warning("CMD_START AND CMD_STOP are deprecated and will be removed in a future release.")
+                else:
+                    reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                if reqcmd in command_codes.__members__:
-                    # valid request
-                    command = commandFormat(cmdCode=command_codes[reqcmd].value, param=reqparam)
-
-                    self._lli.writePayload(command)
-
-                    # processed and sent to controller, send ack to GUI since it's in enum
-                    payload = {"type": "ack"}
+                cmdType = CMD_TYPE[reqcmdtype].value 
+                cmdCode = 0
+                if cmdType ==  1:
+                    cmdCode = CMD_GENERAL[reqcmd].value
+                elif cmdType ==  2:
+                    cmdCode = CMD_SET_TIMEOUT[reqcmd].value
+                elif cmdType ==  3:
+                    cmdCode = CMD_SET_MODE[reqcmd].value
+                elif cmdType ==  4 or cmdType == 5:
+                    cmdCode = ALARM_CODES[reqcmd].value
                 else:
-                    raise HEVPacketError(f"Invalid command packet. Command {reqcmd} does not exist.")
-        
+                    raise HEVPacketError(f"Invalid command packet. Command type {reqcmdtype} does not exist.")
+
+                command = CommandFormat(cmdType=cmdType, cmdCode=cmdCode, param=reqparam)
+
+                self._lli.writePayload(command)
+
+                # processed and sent to controller, send ack to GUI since it's in enum
+                payload = {"type": "ack"}
+
             elif reqtype == "broadcast":
                 # ignore for the minute
                 pass
@@ -131,8 +146,7 @@ class HEVServer(object):
             await writer.drain()
             writer.close()
 
-
-        except (NameError, HEVPacketError) as e:
+        except (NameError, KeyError, HEVPacketError) as e:
             # invalid request: reject immediately
             logging.warning(e)
             payload = {"type": "nack"}

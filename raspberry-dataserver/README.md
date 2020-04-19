@@ -22,7 +22,7 @@ A broadcast is sent out to all connections every n seconds where n is configurab
 Alarms are included in the broadcast packet but can also come through as a dedicated alarm packet if they come through alone, depending on the LLI implementation (TBC)
 
 The packet is a json frame with format:
-```json
+```python
 {
     "sensors": {
         "version": int,
@@ -82,7 +82,7 @@ Example alarm packet:
 ```json
 {
     “type”: “alarm”,
-    “alarms”: [‘APNEA’]
+    “alarms”: ["APNEA"]
 }
 ```
 
@@ -93,9 +93,10 @@ Sending data to the arduino is acheived by opening a connection to the shared re
 
 #### Uplink packets
 Query packet format:
-```json
+```python
 {
     "type": str,
+    "cmdtype": str,
     "cmd”: str,
     “param”: int
 }
@@ -105,7 +106,8 @@ Example command packet:
 ```json
 {
     "type": "cmd",
-    "cmd": "CMD_START",
+    "cmdtype": "GENERAL",
+    "cmd": "START",
     "param": null
 }
 ```
@@ -113,7 +115,7 @@ where the value of the cmd key is a key in the `command_codes` enum from `commsC
 
 #### Downlink packets
 Reply format:
-```json
+```python
 {
     “type”: str,
 }
