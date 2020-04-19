@@ -126,9 +126,9 @@ class DataFormat(BaseFormat):
         self._readback_valve_purge,
         self._readback_mode) = self._dataStruct.unpack(self._byteArray) 
         try:
-            self._fsm_state = BL_STATES(self._fsm_state)
+            self._fsm_state = BL_STATES(self._fsm_state).name
         except ValueError:
-            self._fsm_state = BL_STATES(1)
+            self._fsm_state = BL_STATES(1).name
 
 
     # for sending DataFormat to microcontroller
