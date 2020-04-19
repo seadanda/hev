@@ -159,17 +159,18 @@ static alarm_thresholds alarm_threshold_max;
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value);
 void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t value);
 
-// used for calculating averages
+// used for calculating averages, template due to different size for sums and averages
+template <typename T>
 struct readings{
-    uint16_t pressure_air_supply    = 0;
-    uint16_t pressure_air_regulated = 0;
-    uint16_t pressure_buffer        = 0;
-    uint16_t pressure_inhale        = 0;
-    uint16_t pressure_patient       = 0;
-    uint16_t temperature_buffer     = 0;
-    uint16_t pressure_o2_supply     = 0;
-    uint16_t pressure_o2_regulated  = 0;
-    uint16_t pressure_diff_patient  = 0;
-
+    uint64_t timestamp       = 0; //
+    T pressure_air_supply    = 0;
+    T pressure_air_regulated = 0;
+    T pressure_buffer        = 0;
+    T pressure_inhale        = 0;
+    T pressure_patient       = 0;
+    T temperature_buffer     = 0;
+    T pressure_o2_supply     = 0;
+    T pressure_o2_regulated  = 0;
+    T pressure_diff_patient  = 0;
 };
 #endif

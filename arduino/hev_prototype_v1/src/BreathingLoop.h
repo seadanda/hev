@@ -25,7 +25,7 @@ public:
     void doReset();
     bool getRunning();
     void updateReadings();
-    readings getReadingAverages();
+    readings<uint16_t> getReadingAverages();
     ValvesController * getValvesController();
 
     states_timeouts &getTimeouts();
@@ -57,12 +57,12 @@ public:
     };
 
 private:
-    uint32_t _fsm_time ;
-    uint32_t _fsm_timeout;
-    uint8_t  _ventilation_mode;
-    uint8_t  _bl_state;
-    bool     _running;
-    bool     _reset;
+    uint32_t            _fsm_time ;
+    uint32_t            _fsm_timeout;
+    VENTILATION_MODES   _ventilation_mode;
+    BL_STATES           _bl_state;
+    bool                _running;
+    bool                _reset;
 
     ValvesController _valves_controller;
 
@@ -70,10 +70,10 @@ private:
     void calibrate();
     void initCalib();
     float getCalibrationOffset();
-    int _calib_N;
+    uint32_t _calib_N;
     uint32_t _calib_time;
     uint32_t _calib_timeout;
-    int _calib_sum_pressure;
+    uint32_t _calib_sum_pressure; // 32 bit due to possible analog read overflow
     float _calib_avg_pressure;
 
     // timeouts
@@ -82,9 +82,10 @@ private:
 
     // readings
     void resetReadingSums();
-    readings _readings_sums;
-    readings _readings_avgs;
-    uint16_t _readings_N;
+    readings<uint32_t> _readings_sums; // 32 bit due to possible analog read overflow
+    readings<uint16_t> _readings_avgs;
+    bool     _readings_reset;
+    uint32_t _readings_N;
     uint32_t _readings_time;
     uint32_t _readings_timeout;
     uint32_t _readings_avgs_time;
