@@ -31,13 +31,12 @@ stop =  0x2
 cmd = commandFormat(cmdCode=start)
 
 time.sleep(4)
-comms.writePayload(cmd)
-#comms.sender()
-print('sent cmd start')
+#comms.writePayload(cmd)
+#print('sent cmd start')
 while True:
     time.sleep(20)
-    cmd.cmdCode = stop # automatically executes toByteArray()
-    comms.writePayload(cmd)
-    print('sent cmd stop')
+    #cmd.cmdCode = stop # automatically executes toByteArray()
+    #comms.writePayload(cmd)
+    #print('sent cmd stop')
     pass
 

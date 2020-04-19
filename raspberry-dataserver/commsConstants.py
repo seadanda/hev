@@ -60,7 +60,7 @@ class dataFormat(BaseFormat):
         # < = little endian
         # > = big endian
         # ! = network format (big endian)
-        self._dataStruct = Struct("<BBHIHHHHHHHHHBBBBBB")
+        self._dataStruct = Struct("<BB2xIHHHHHHHHHBBBBBB")
         self._byteArray = None
         self._type = payloadType.payloadData
 
@@ -68,7 +68,6 @@ class dataFormat(BaseFormat):
         # make all zero to start with
         self._version = 0
         self._fsm_state = 0
-        self._dummy  = 0
         self._timestamp = 0
         self._pressure_air_supply = 0
         self._pressure_air_regulated = 0
@@ -90,7 +89,6 @@ class dataFormat(BaseFormat):
         return f"""{{
     "version"                : {self._version},
     "fsm_state"              : {self._fsm_state},
-    "dummy"                  : {self._dummy},
     "timestamp"              : {self._timestamp},
     "pressure_air_supply"    : {self._pressure_air_supply},
     "pressure_air_regulated" : {self._pressure_air_regulated},
@@ -117,7 +115,6 @@ class dataFormat(BaseFormat):
         #logging.info(binascii.hexlify(byteArray))
         (self._version,
         self._fsm_state,
-        self._dummy,
         self._timestamp,
         self._pressure_air_supply,
         self._pressure_air_regulated,
@@ -146,7 +143,6 @@ class dataFormat(BaseFormat):
         self._byteArray = self._dataStruct.pack(
             self._RPI_VERSION,
             self._fsm_state,
-            self._dummy,
             self._timestamp,
             self._pressure_air_supply,
             self._pressure_air_regulated,
@@ -169,7 +165,6 @@ class dataFormat(BaseFormat):
         data = {
             "version"                : self._version,
             "fsm_state"              : self._fsm_state,
-            "dummy"              : self._dummy,
             "timestamp"              : self._timestamp,
             "pressure_air_supply"    : self._pressure_air_supply,
             "pressure_air_regulated" : self._pressure_air_regulated,
