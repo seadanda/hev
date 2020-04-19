@@ -1,5 +1,8 @@
 #include <Arduino.h>
+#include "common.h"
+#ifdef CHIP_ESP32
 #include <WiFi.h>
+#endif
 // #include <MemoryFree.h>
 #include <Wire.h>
 #include <Adafruit_MCP9808.h>
@@ -9,7 +12,6 @@
 #include "ValvesController.h"
 #include "UILoop.h"
 #include "AlarmLoop.h"
-#include "common.h"
 
 int ventilation_mode = HEV_MODE_PS;
 
