@@ -163,8 +163,8 @@ void loop()
     uint32_t tnow = static_cast<uint32_t>(millis());
     if(tnow - report_time > report_timeout) {
         plSend.setType(PAYLOAD_TYPE::DATA);
-        plSend.setData(&data2);
-        data2.readback_mode = plSend.getSize();
+        plSend.setData(&data);
+        // data2.readback_mode = plSend.getSize();
         comms.writePayload(plSend);
         report_time = tnow;
     }
