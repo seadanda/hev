@@ -120,7 +120,6 @@ if __name__ == "__main__":
 
     time.sleep(2)
     print(hevclient.send_cmd("GENERAL", "START"))
-    print("done")
     # Play with sensor values and alarms
     for i in range(20):
         values = hevclient.get_values() # returns a dict or None

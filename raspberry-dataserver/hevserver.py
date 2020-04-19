@@ -11,7 +11,7 @@ import argparse
 import svpi
 import hevfromtxt
 import commsControl
-from commsConstants import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CommandFormat
+from commsConstants import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
@@ -104,20 +104,9 @@ class HEVServer(object):
                     reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                cmdType = CMD_TYPE[reqcmdtype].value 
-                cmdCode = 0
-                if cmdType ==  1:
-                    cmdCode = CMD_GENERAL[reqcmd].value
-                elif cmdType ==  2:
-                    cmdCode = CMD_SET_TIMEOUT[reqcmd].value
-                elif cmdType ==  3:
-                    cmdCode = CMD_SET_MODE[reqcmd].value
-                elif cmdType ==  4 or cmdType == 5:
-                    cmdCode = ALARM_CODES[reqcmd].value
-                else:
-                    raise HEVPacketError(f"Invalid command packet. Command type {reqcmdtype} does not exist.")
-
-                command = CommandFormat(cmdType=cmdType, cmdCode=cmdCode, param=reqparam)
+                command = CommandFormat(cmdType=CMD_TYPE[reqcmdtype].value,
+                                        cmdCode=CMD_MAP[reqcmdtype].value[reqcmd].value,
+                                        param=reqparam)
 
                 self._lli.writePayload(command)
 
@@ -148,7 +137,7 @@ class HEVServer(object):
 
         except (NameError, KeyError, HEVPacketError) as e:
             # invalid request: reject immediately
-            logging.warning(e)
+            logging.warning(f"Invalid packet: {e}")
             payload = {"type": "nack"}
             packet = json.dumps(payload).encode()
             writer.write(packet)
@@ -163,7 +152,8 @@ class HEVServer(object):
         while self._broadcasting:
             # wait for data from serial port
             try:
-                await asyncio.wait_for(self._datavalid.wait(), timeout=0.5) # set timeout such that there is never pileup
+                # set timeout such that there is never pileup
+                await asyncio.wait_for(self._datavalid.wait(), timeout=0.05)
             except asyncio.TimeoutError:
                 continue
             # take lock of db and prepare packet

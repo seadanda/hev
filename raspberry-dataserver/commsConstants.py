@@ -409,3 +409,10 @@ class ALARM_CODES(Enum):
     O2_FAIL                        = 23  # HP
     PRESSURE_SENSOR_FAULT          = 24  # HP
     ARDUINO_FAIL                   = 25  # HP
+
+class CMD_MAP(Enum):
+    GENERAL           =  CMD_GENERAL
+    SET_TIMEOUT       =  CMD_SET_TIMEOUT
+    SET_MODE          =  CMD_SET_MODE
+    SET_THRESHOLD_MIN =  ALARM_CODES
+    SET_THRESHOLD_MAX =  ALARM_CODES
