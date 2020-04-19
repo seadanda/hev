@@ -17,15 +17,15 @@ const int pin_pressure_air_regulated  = A1;
 const int pin_pressure_buffer         = A2;
 const int pin_pressure_inhale         = A3;
 const int pin_pressure_patient        = A4;
-const int pin_temp             = A5;
-const int pin_p_o2_supply      = A6;
-// const int pin_p_o2_regulated   = A7;
-// const int pin_p_diff_patient   = A8;
+const int pin_temperature_buffer      = A5;
+const int pin_pressure_o2_supply      = A6;
+// const int pin_pressure_o2_regulated   = A7;
+// const int pin_pressure_diff_patient   = A8;
 
     // leds
-const int pin_led_0          = 8;
-const int pin_led_1          = 9;
-const int pin_led_2          = 10;
+const int pin_led_green          = 8;
+const int pin_led_yellow          = 9;
+const int pin_led_red          = 10;
 
     // buzzer
 const int pin_buzzer         = 11;
