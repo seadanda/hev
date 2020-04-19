@@ -15,19 +15,21 @@ int ventilation_mode = HEV_MODE_PS;
 
 uint32_t report_timeout = 50; //ms
 uint32_t report_time = 0;
-float working_pressure = 1;             //?
-float inspiratory_minute_volume = 6000; // ml/min
-float respiratory_rate = 15;            //  10-40 +-1 ;aka breaths_per_min
-float inspiratory_pressure = 10;        // 10-80 cmH2O +-1
-//float tidal_volume = 200; // calc 200-1500ml +- 100
-float inspiratory_time = 1.0; // 0.4-1.5s +-0.1
-float pause_time = 1.0;       // range?
-//float expiratory_time ; // calc
-float expiratory_minute_volume; // calc?? same as inspiratory_minute_volume?
-float trigger_sensitivity;
+
+// float working_pressure = 1;             //?
+// float inspiratory_minute_volume = 6000; // ml/min
+// float respiratory_rate = 15;            //  10-40 +-1 ;aka breaths_per_min
+// float inspiratory_pressure = 10;        // 10-80 cmH2O +-1
+// //float tidal_volume = 200; // calc 200-1500ml +- 100
+// float inspiratory_time = 1.0; // 0.4-1.5s +-0.1
+// float pause_time = 1.0;       // range?
+// //float expiratory_time ; // calc
+// float expiratory_minute_volume; // calc?? same as inspiratory_minute_volume?
+// float trigger_sensitivity;
 
 // comms
 data_format data;
+// data_format data2;
 CommsControl comms;
 Payload plReceive;
 Payload plSend;
@@ -37,26 +39,26 @@ BreathingLoop breathing_loop;
 UILoop        ui_loop(&breathing_loop);
 AlarmLoop     alarm_loop;
 
-bool start_fsm = false;
+// bool start_fsm = false;
 
-// calculations
-float calcTidalVolume()
-{
-    return inspiratory_minute_volume / respiratory_rate;
-}
+// // calculations
+// float calcTidalVolume()
+// {
+//     return inspiratory_minute_volume / respiratory_rate;
+// }
 
-float calcExpirationTime()
-{
-    float total_respiratory_time = 60.0 / respiratory_rate;
-    // total = expire + inspire + pause
-    return (total_respiratory_time - inspiratory_time - pause_time);
-}
+// float calcExpirationTime()
+// {
+//     float total_respiratory_time = 60.0 / respiratory_rate;
+//     // total = expire + inspire + pause
+//     return (total_respiratory_time - inspiratory_time - pause_time);
+// }
 
-float calcExpiratoryMinuteVolume()
-{
-    // probably need to calculate this from readings
-    return 0;
-}
+// float calcExpiratoryMinuteVolume()
+// {
+//     // probably need to calculate this from readings
+//     return 0;
+// }
 
 void setup()
 {
@@ -111,6 +113,25 @@ void loop()
     // buzzer
     // tone(pin, freq (Hz), duration);
 
+    // data2.fsm_state              = 2;
+    // data2.dummy                  = 0x0e0e;
+    // data2.timestamp              = 0x01010101;
+    // data2.pressure_air_supply    = 0x0303;
+    // data2.pressure_air_regulated = 0x0404;
+    // data2.pressure_o2_supply     = 0x0505;
+    // data2.pressure_o2_regulated  = 0x0606;
+    // data2.pressure_buffer        = 0x0707;
+    // data2.pressure_inhale        = 0x0808;
+    // data2.pressure_patient       = 0x0909;
+    // data2.temperature_buffer     = 0x0a0a;
+    // data2.pressure_diff_patient  = 0x0b0b;
+    // data2.readback_valve_air_in  = 0xc;
+    // data2.readback_valve_o2_in   =0xd ;
+    // data2.readback_valve_inhale  =0xe ;
+    // data2.readback_valve_exhale  =0xf ;
+    // data2.readback_valve_purge   = 0x10;
+    // data2.readback_mode          =0x11;
+
     bool vin_air, vin_o2, vpurge ;
     float vinhale, vexhale;
     ValvesController *valves_controller = breathing_loop.getValvesController();
@@ -142,7 +163,8 @@ void loop()
     uint32_t tnow = static_cast<uint32_t>(millis());
     if(tnow - report_time > report_timeout) {
         plSend.setType(PAYLOAD_TYPE::DATA);
-        plSend.setData(&data);
+        plSend.setData(&data2);
+        data2.readback_mode = plSend.getSize();
         comms.writePayload(plSend);
         report_time = tnow;
     }

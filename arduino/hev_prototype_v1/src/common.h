@@ -160,8 +160,7 @@ void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t valu
 void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t value);
 
 // used for calculating averages, template due to different size for sums and averages
-template <typename T>
-struct readings{
+template <typename T> struct readings{
     uint64_t timestamp       = 0; //
     T pressure_air_supply    = 0;
     T pressure_air_regulated = 0;
