@@ -91,7 +91,7 @@ function requestChartVar() {
         cache: false
     });
     // call it again after one second
-    setTimeout(requestChartVar, 1000);
+    setTimeout(requestChartVar, 200);
 }
 
 requestChartVar();
@@ -118,9 +118,10 @@ $(document).ready(function() {
                 curve: 'smooth'
               },
             title: {
-              display: false,
-              text: 'Pressure [mbar]'
-            },
+                display: true,
+                text: 'Pressure [mbar]',
+                fontSize: 25
+              },            
             scales: {
             xAxes: [{
                 ticks: {
@@ -251,8 +252,9 @@ $(document).ready(function() {
                 curve: 'smooth'
               },
             title: {
-              display: false,
-              text: 'Volume [mL]'
+              display: true,
+              text: 'Volume [mL]',
+              fontSize: 25
             },
             scales: {
             xAxes: [{

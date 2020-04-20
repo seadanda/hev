@@ -23,7 +23,8 @@ function requestDataVar1(var1, var2) {
             }
 
             // add the point
-            chart.data.labels.push(point.created_at);
+            //chart.data.labels.push(point.created_at);
+            chart.data.labels.push(0);
             chart.data.datasets[0].data.push(point[var1]);
             chart.data.datasets[1].data.push(point[var2]);
             
@@ -32,7 +33,7 @@ function requestDataVar1(var1, var2) {
         cache: false
     });
     // call it again after one second
-    refreshIntervalId = setTimeout(requestDataVar1, 1000, var1, var2);
+    refreshIntervalId = setTimeout(requestDataVar1, 200, var1, var2);
 }
 
 
@@ -52,7 +53,7 @@ function requestDataVar(var1, var2) {
             }
 
             // add the point
-            chart_new.data.labels.push(point.created_at);
+            chart_new.data.labels.push(0);
             chart_new.data.datasets[0].data.push(point[var1]);
             chart_new.data.datasets[1].data.push(point[var2]);
             
@@ -98,11 +99,11 @@ $(document).ready(function() {
             },
             scales: {
 		xAxes: [{
-                    type: 'time',
-                    time: {
-			unit: 'second',
-			displayFormat: 'second',
-                        type: 'realtime'
+            //type: 'time',
+            time: {
+			        unit: 'second',
+			        displayFormat: 'second',
+              type: 'realtime'
                     },
 		    ticks: {
 			maxTicksLimit: 5,

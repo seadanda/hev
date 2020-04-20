@@ -39,8 +39,8 @@ class svpi():
             else:
                 # grab next array from filedump
                 fullArray = self._bytestore[0+self._pos*27:27+self._pos*27]
-                # current byte dump (20200411) has wrong format 27 bytes, new format expects 26. snip out second byte
-                byteArray = fullArray[:1] + fullArray[2:]
+                # currently (20200420) the byte dump has the wrong format of 27 bytes, expects 32. snip out second byte and add six more bytes for zeroed timestamp and dummy
+                byteArray = fullArray[:1] + fullArray[-1-5:] + fullArray[2:]
                 # go to next byte array. if at the end, loop
                 self._pos = self._pos + 1 if self._pos < 99 else 0
                 payload = commsConstants.DataFormat()
@@ -54,7 +54,8 @@ class svpi():
         if np.random.randint(0, 20) == 0:
             # send alarm
             alarm = 1 + np.random.randint(0, len(ALARM_CODES))
-            return bytearray((0xA0,alarm,0x00,0x00,0x00,0x00))
+            # give all simulated alarms low priority for the minute
+            return bytearray((0xA0,0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x01,alarm,0x00,0x00,0x00,0x00,0x00,0x00))
         return None
 
     # callback to dependants to read the received payload
