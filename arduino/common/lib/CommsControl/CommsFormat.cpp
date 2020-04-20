@@ -1,12 +1,12 @@
-#include "commsFormat.h"
+#include "CommsFormat.h"
 
 // constructor to init variables
-commsFormat::commsFormat(uint8_t infoSize, uint8_t address, uint16_t control) {
-    memset(data_, 0, sizeof(data_));
+CommsFormat::CommsFormat(uint8_t infoSize, uint8_t address, uint16_t control) {
+    memset(_data, 0, sizeof(_data));
 
-    infoSize_   = infoSize;
-    packetSize_ = infoSize + CONST_MIN_SIZE_PACKET ; // minimum size (start,address,control,fcs,stop)
-    if (packetSize_ > CONST_MAX_SIZE_PACKET) {
+    _info_size   = infoSize;
+    _packet_size = infoSize + CONST_MIN_SIZE_PACKET ; // minimum size (start,address,control,fcs,stop)
+    if (_packet_size > CONST_MAX_SIZE_PACKET) {
         return;
     }
 
@@ -20,14 +20,14 @@ commsFormat::commsFormat(uint8_t infoSize, uint8_t address, uint16_t control) {
     generateCrc();
 }
 
-void commsFormat::assignBytes(uint8_t* target, uint8_t* source, uint8_t size, bool calcCrc) {
+void CommsFormat::assignBytes(uint8_t* target, uint8_t* source, uint8_t size, bool calcCrc) {
     memcpy(target, source, size);
     if (calcCrc) {
         generateCrc();
     }
 }
 
-void commsFormat::setSequenceSend(uint8_t counter) {
+void CommsFormat::setSequenceSend(uint8_t counter) {
     // sequence send valid only for info frames (not supervisory ACK/NACK)
     if ((*(getControl() + 1) & COMMS_CONTROL_SUPERVISORY) == 0) {
         counter = (counter << 1) & 0xFE;
@@ -35,7 +35,7 @@ void commsFormat::setSequenceSend(uint8_t counter) {
     }
 }
 
-uint8_t commsFormat::getSequenceSend() {
+uint8_t CommsFormat::getSequenceSend() {
     // sequence send valid only for info frames (not supervisory ACK/NACK)
     if ((*(getControl() + 1) & COMMS_CONTROL_SUPERVISORY) == 0) {
         return (*(getControl() + 1) >> 1) & 0x7F;
@@ -44,17 +44,17 @@ uint8_t commsFormat::getSequenceSend() {
     }
 }
 
-void commsFormat::setSequenceReceive(uint8_t counter) {
+void CommsFormat::setSequenceReceive(uint8_t counter) {
     counter = (counter << 1) & 0xFE;
     assignBytes(getControl()    , &counter, 1);
 }
 
-uint8_t commsFormat::getSequenceReceive() {
+uint8_t CommsFormat::getSequenceReceive() {
     return (*(getControl()) >> 1) & 0x7F;
 }
 
 // compare calculated and received CRC value
-bool commsFormat::compareCrc() {
+bool CommsFormat::compareCrc() {
     // generate data crc
     generateCrc(false);
 
@@ -63,29 +63,29 @@ bool commsFormat::compareCrc() {
     assignBytes(reinterpret_cast<uint8_t*>(&tmpFcs), getFcs(), 2, false);
 
     // return comparison
-    return tmpFcs == crc_;
+    return tmpFcs == _crc;
 }
 
 // calculate CRC value
-void commsFormat::generateCrc(bool assign) {
+void CommsFormat::generateCrc(bool assign) {
     // calculate crc
-    crc_ = uCRC16Lib::calculate(reinterpret_cast<char*>(getAddress()), static_cast<uint16_t>(infoSize_ + 3));
+    _crc = uCRC16Lib::calculate(reinterpret_cast<char*>(getAddress()), static_cast<uint16_t>(_info_size + 3));
 
     // assign crc to fcs
     if (assign) {
-        assignBytes(getFcs(), reinterpret_cast<uint8_t*>(&crc_), 2, false);
+        assignBytes(getFcs(), reinterpret_cast<uint8_t*>(&_crc), 2, false);
     }
 }
 
 // assign received information to packet
-void commsFormat::setInformation(payload *pl) {
+void CommsFormat::setInformation(Payload *pl) {
     assignBytes(getInformation(), reinterpret_cast<uint8_t*>(pl->getInformation()), getInfoSize());
 }
 
-void commsFormat::copyData(uint8_t* data, uint8_t dataSize) {
-    packetSize_ = dataSize;
-    infoSize_ = dataSize - CONST_MIN_SIZE_PACKET;
-    memset(getData(),    0, sizeof(data_));
+void CommsFormat::copyData(uint8_t* data, uint8_t dataSize) {
+    _packet_size = dataSize;
+    _info_size = dataSize - CONST_MIN_SIZE_PACKET;
+    memset(getData(),    0, sizeof(_data));
 
     assignBytes(getData(), data, dataSize);
 }
@@ -93,18 +93,18 @@ void commsFormat::copyData(uint8_t* data, uint8_t dataSize) {
 
 // STATIC METHODS
 // TODO rewrite in a slightly better way using the enum
-commsFormat* commsFormat::generateALARM(payload *pl) {
-    commsFormat *tmpComms = new commsFormat(pl->getSize(), PACKET_ALARM);
+CommsFormat* CommsFormat::generateALARM(Payload *pl) {
+    CommsFormat *tmpComms = new CommsFormat(pl->getSize(), PACKET_ALARM);
     tmpComms->setInformation(pl);
     return tmpComms;
 }
-commsFormat* commsFormat::generateCMD  (payload *pl) {
-    commsFormat *tmpComms = new commsFormat(pl->getSize(), PACKET_CMD  );
+CommsFormat* CommsFormat::generateCMD  (Payload *pl) {
+    CommsFormat *tmpComms = new CommsFormat(pl->getSize(), PACKET_CMD  );
     tmpComms->setInformation(pl);
     return tmpComms;
 }
-commsFormat* commsFormat::generateDATA (payload *pl) {
-    commsFormat *tmpComms = new commsFormat(pl->getSize(), PACKET_DATA );
+CommsFormat* CommsFormat::generateDATA (Payload *pl) {
+    CommsFormat *tmpComms = new CommsFormat(pl->getSize(), PACKET_DATA );
     tmpComms->setInformation(pl);
     return tmpComms;
 }

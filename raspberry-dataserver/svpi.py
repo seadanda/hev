@@ -10,7 +10,7 @@ from collections import deque
 import commsFormat
 import threading
 import commsConstants
-from commsConstants import alarm_codes
+from commsConstants import ALARM_CODES
 from typing import List, Dict
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -35,7 +35,7 @@ class svpi():
             alarm = self.getAlarms()
             if alarm is not None:
                 byteArray = alarm
-                payload = commsConstants.alarmFormat()
+                payload = commsConstants.AlarmFormat()
             else:
                 # grab next array from filedump
                 fullArray = self._bytestore[0+self._pos*27:27+self._pos*27]
@@ -43,7 +43,7 @@ class svpi():
                 byteArray = fullArray[:1] + fullArray[2:]
                 # go to next byte array. if at the end, loop
                 self._pos = self._pos + 1 if self._pos < 99 else 0
-                payload = commsConstants.dataFormat()
+                payload = commsConstants.DataFormat()
             
             payload.fromByteArray(byteArray)
             self.payloadrecv = payload
@@ -53,7 +53,7 @@ class svpi():
         # give/cancel a random alarm a twentieth of the time
         if np.random.randint(0, 20) == 0:
             # send alarm
-            alarm = 1 + np.random.randint(0, len(alarm_codes))
+            alarm = 1 + np.random.randint(0, len(ALARM_CODES))
             return bytearray((0xA0,alarm,0x00,0x00,0x00,0x00))
         return None
 

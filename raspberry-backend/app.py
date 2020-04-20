@@ -12,7 +12,7 @@ import sqlite3
 from flask import json
 import chardet
 from hevclient import HEVClient
-from commsConstants import dataFormat
+from commsConstants import DataFormat
 
 
 WEBAPP = Flask(__name__)
@@ -60,11 +60,11 @@ def send_cmd():
     """ 
     web_form = request.form
     if web_form.get('start') == "START":
-        print(hevclient.send_cmd("CMD_START"))
+        print(hevclient.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
-        print(hevclient.send_cmd("CMD_STOP"))
+        print(hevclient.send_cmd("GENERAL", "STOP"))
     elif web_form.get('reset') == "RESET":
-        print(hevclient.send_cmd("CMD_RESET"))
+        print(hevclient.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
     
@@ -105,7 +105,7 @@ def live_data():
 
     list_variables = []
     list_variables.append("created_at")
-    list_variables.extend(getList(dataFormat().getDict()))
+    list_variables.extend(getList(DataFormat().getDict()))
 
     data = {key: None for key in list_variables}
 

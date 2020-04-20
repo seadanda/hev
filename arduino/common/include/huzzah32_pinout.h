@@ -18,15 +18,15 @@ const int pin_pressure_air_regulated = A3; // 39 / INPUT ONLY
 const int pin_pressure_buffer        = A2; // 34 / INPUT ONLY
 const int pin_pressure_inhale        = A0; // DAC2 / 26 ****
 const int pin_pressure_patient       = A7; // 32
-const int pin_temp            = A9; // 33
-const int pin_p_o2_supply     = A10; // 27 
-const int pin_p_o2_regulated  = A6;  // 14
-const int pin_p_diff_patient  = A5;  // 4
+const int pin_temperature_buffer     = A9; // 33
+const int pin_pressure_o2_supply     = A10; // 27 
+const int pin_pressure_o2_regulated  = A6;  // 14
+const int pin_pressure_diff_patient  = A5;  // 4
 
     // leds
-const int pin_led_0          = 17; // TX
-const int pin_led_1          = 16; // RX
-const int pin_led_2          = 15; // A13 ****
+const int pin_led_green          = 17; // TX
+const int pin_led_yellow          = 16; // RX
+const int pin_led_red          = 15; // A13 ****
 
     // buzzer
 const int pin_buzzer         = 22; // I2C SDA
