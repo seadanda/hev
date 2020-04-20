@@ -258,5 +258,8 @@ if __name__ == "__main__":
     hevsrv = HEVServer(lli)
 
     # serve forever
-    while True:
-        pass
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_forever()
+    finally:
+        loop.close()
