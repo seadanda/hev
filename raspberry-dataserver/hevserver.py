@@ -54,12 +54,12 @@ class HEVServer(object):
             with self._dblock:
                 try:
                     alarm = ALARM_CODES(alarmCode).name
+                    if alarm not in self._alarms:
+                        self._alarms.append(alarm)
                 except ValueError as e:
                     # alarmCode does not exist in the enum, this is serious!
                     logging.error(e)
                     self._alarms.append("ARDUINO_FAIL") # assume Arduino is broken
-                if alarm not in self._alarms:
-                    self._alarms.append(alarm)
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
