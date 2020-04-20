@@ -1,12 +1,49 @@
 var chart_pressure;
 var chart_flow;
 var chart_volume;
-var time_value = 0 ;
+
+var size_data;
+var initial_xaxis = [];
+var initial_yaxis_pressure = [];
+var initial_yaxis_volume = [];
+var initial_yaxis_flow = [];
 
 /**
  * Request data from the server, add it to the graph and set a timeout
  * to request again
  */
+
+function last_results() {
+    $.getJSON({
+        url: '/last_N_data',
+        success: function(data) {
+          for (i=0; i<data.length; i++) {
+            size_data = data.length
+            var date = new Date(data[i]["created_at"]);
+            var seconds = date.getSeconds();
+            initial_xaxis.push(-i);
+            initial_yaxis_pressure.push(data[i]["pressure_buffer"]);
+            initial_yaxis_volume.push(data[i]["pressure_inhale"]);
+            initial_yaxis_flow.push(data[i]["temperature_buffer"]);
+          }
+          //reverse because data is read from the other way
+          initial_xaxis.reverse();
+          initial_yaxis_pressure.reverse();
+          initial_yaxis_volume.reverse();
+          initial_yaxis_flow.reverse();
+
+
+
+        },
+        cache: false
+    });
+}
+
+
+last_results();
+
+
+
 function requestChartVar() {
     $.ajax({
         url: '/live-data',
@@ -16,41 +53,48 @@ function requestChartVar() {
                 chart_pressure.data.labels.shift();
                 chart_pressure.data.datasets[0].data.shift();
             }
+
             if(chart_flow.data.datasets[0].data.length > 30){
-                chart_flow.data.labels.shift();
+                //chart_flow.data.labels.shift();
                 chart_flow.data.datasets[0].data.shift();
             }
+
+ 
             if(chart_volume.data.datasets[0].data.length > 30){
-                chart_volume.data.labels.shift();
+                //chart_volume.data.labels.shift();
                 chart_volume.data.datasets[0].data.shift();
             }
 
+            for (var i=0; i<30; i++) {
+                chart_pressure.data.labels[i] -= 1 ;
+           }
 
-            // Convert epoch timestamp into seconds
-            var date = new Date(point.created_at);
-            var seconds = date.getSeconds();
 
-            // Show the time that has passed 
-            chart_pressure.data.labels.push(-(60-seconds));
+            // add the point           
+            chart_pressure.data.labels.push(0);
             chart_pressure.data.datasets[0].data.push(point["pressure_buffer"]);
 
             // add the point
-            chart_flow.data.labels.push(point.created_at);
+            //chart_pressure.data.labels.push(0);
             chart_flow.data.datasets[0].data.push(point["pressure_inhale"]);
 
             // add the point
-            chart_volume.data.labels.push(point.created_at);
+            //chart_pressure.data.labels.push(0);
             chart_volume.data.datasets[0].data.push(point["temperature_buffer"]);
             
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
+
+            
         },
         cache: false
     });
     // call it again after one second
     setTimeout(requestChartVar, 1000);
 }
+
+requestChartVar();
 
 
 
@@ -59,9 +103,9 @@ $(document).ready(function() {
     chart_pressure = new Chart(ctx_pressure, {
         type: 'line',
         data: {
-            labels: [],
+            labels: initial_xaxis,
             datasets: [{
-                data: [],
+                data: initial_yaxis_pressure,
                 label: "Var1",
                 borderColor: "#3e95cd",
                 fill: false
@@ -70,6 +114,9 @@ $(document).ready(function() {
           },
           options: {
             responsive: true,
+            stroke: {
+                curve: 'smooth'
+              },
             title: {
               display: false,
               text: 'Pressure [mbar]'
@@ -103,12 +150,15 @@ $(document).ready(function() {
               streaming: {
                   duration: 20000,
                   refresh: 1000,
-                  delay: 2000,
-                  onRefresh:     requestChartVar()
+                  delay: 2000
+                 // onRefresh:     requestChartVar()
               }
           }
     });
 });
+
+
+
 
 
 
@@ -118,9 +168,9 @@ $(document).ready(function() {
     chart_flow = new Chart(ctx_flow, {
         type: 'line',
         data: {
-            labels: [],
+            labels: initial_xaxis,
             datasets: [{
-                data: [],
+                data: initial_yaxis_flow,
                 label: "Var1",
                 borderColor: "#3e95cd",
                 fill: false
@@ -128,25 +178,51 @@ $(document).ready(function() {
             ]
           },
           options: {
+            responsive: true,
+            stroke: {
+                curve: 'smooth'
+              },
             title: {
               display: false,
-              text: 'Variable 1'
+              text: 'Pressure [mbar]'
             },
             scales: {
             xAxes: [{
-                type: 'time',
+                ticks: {
+                    beginAtZero: true
+                },
+                //type: 'time',
                 time: {
                     unit: 'second',
                     displayFormat: 'second'
                 }
-            }]
+            }],
+			yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    suggestedMax: 25
+                  },
+				scaleLabel: {
+					display: true,
+                    labelString: 'Flow [mL/min]'
+				}
+			}]            
             },
                 legend : {
                     display: false}
+          },
+          plugins: {
+              streaming: {
+                  duration: 20000,
+                  refresh: 1000,
+                  delay: 2000
+                  //onRefresh:     requestChartVar2()
+              }
           }
     });
-    //requestChartVar("pressure_inhale");
 });
+
+
 
 
 
@@ -155,9 +231,9 @@ $(document).ready(function() {
     chart_volume = new Chart(ctx_volume, {
         type: 'line',
         data: {
-            labels: [],
+            labels: initial_xaxis,
             datasets: [{
-                data: [],
+                data: initial_yaxis_volume,
                 label: "Var1",
                 borderColor: "#3e95cd",
                 fill: false
@@ -165,24 +241,49 @@ $(document).ready(function() {
             ]
           },
           options: {
+            responsive: true,
+            stroke: {
+                curve: 'smooth'
+              },
             title: {
               display: false,
-              text: 'Variable 1'
+              text: 'Volume [mL]'
             },
             scales: {
             xAxes: [{
-                type: 'time',
+                ticks: {
+                    beginAtZero: true
+                },
+                //type: 'time',
                 time: {
                     unit: 'second',
                     displayFormat: 'second'
                 }
-            }]
+            }],
+			yAxes: [{
+                ticks: {
+                    beginAtZero: true,
+                    suggestedMax: 25
+                  },
+				scaleLabel: {
+					display: true,
+                    labelString: 'Volume [mL]'
+				}
+			}]            
             },
                 legend : {
                     display: false}
+          },
+          plugins: {
+              streaming: {
+                  duration: 20000,
+                  refresh: 1000,
+                  delay: 2000
+                  //onRefresh:     requestChartVar3()
+              }
           }
     });
-    //requestChartVar("temperature_buffer");
 });
+
 
 

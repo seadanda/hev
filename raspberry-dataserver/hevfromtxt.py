@@ -24,6 +24,7 @@ class hevfromtxt():
         self._volume = h[:,3].tolist()
         self._length = len(self._pressure)
         self._pos = 0 # position within sample
+        self._delay = 0.2 # time period
 
         # received queue and observers to be notified on update
         self._payloadrecv = deque(maxlen = 16)
@@ -34,8 +35,10 @@ class hevfromtxt():
     def generate(self) -> None:
         while True:
             # grab next array from filedump
-            self._pos = self._pos + 1 if self._pos + 1 < self._length else 0
-            payload = commsConstants.dataFormat()
+            increment = int(round(self._delay / 0.2))
+            increment = 1 if increment < 1 else increment
+            self._pos = self._pos + increment if self._pos + increment < self._length else 0
+            payload = commsConstants.DataFormat()
             
             # directly setting private member variables in this edge case
             payload._version = payload._RPI_VERSION
@@ -44,7 +47,7 @@ class hevfromtxt():
             payload._temperature_buffer = self._flow[self._pos]
 
             self.payloadrecv = payload
-            time.sleep(1)
+            time.sleep(self._delay)
 
     # callback to dependants to read the received payload
     @property

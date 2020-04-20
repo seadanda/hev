@@ -9,20 +9,20 @@ const int pin_valve_purge      = 3;
 const int pin_valve_atmosphere = 4;
 
     // adcs
-const int pin_p_air_supply     = A0;
-const int pin_p_air_regulated  = A1;
-const int pin_p_buffer         = A2;
-const int pin_p_inhale         = A3;
-const int pin_p_patient        = A4;
-const int pin_temp             = A5;
-// const int pin_p_o2_supply      = A6;
-// const int pin_p_o2_regulated   = A7;
-// const int pin_p_diff_patient   = A8;
+const int pin_pressure_air_supply     = A0;
+const int pin_pressure_air_regulated  = A1;
+const int pin_pressure_buffer         = A2;
+const int pin_pressure_inhale         = A3;
+const int pin_pressure_patient        = A4;
+const int pin_temperature_buffer      = A5;
+// const int pin_pressure_o2_supply      = A6;
+// const int pin_pressure_o2_regulated   = A7;
+// const int pin_pressure_diff_patient   = A8;
 
     // leds
-const int pin_led_0          = 0;
-const int pin_led_1          = 1;
-const int pin_led_2          = 2;
+const int pin_led_green          = 0;
+const int pin_led_yellow          = 1;
+const int pin_led_red          = 2;
 
     // buzzer
 const int pin_buzzer         = 9;

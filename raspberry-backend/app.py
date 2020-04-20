@@ -12,7 +12,7 @@ import sqlite3
 from flask import json
 import chardet
 from hevclient import HEVClient
-from commsConstants import dataFormat
+from commsConstants import DataFormat
 
 
 WEBAPP = Flask(__name__)
@@ -28,9 +28,6 @@ def getList(dict):
 def hello_world():
    return render_template('index.html', result=live_data())
 
-@WEBAPP.route('/new')
-def hello_worlds():
-    return render_template('index_v3.html', result=live_data())
 
 @WEBAPP.route('/settings')
 def settings():
@@ -38,11 +35,15 @@ def settings():
 
 @WEBAPP.route('/charts')
 def charts():
-    return render_template('charts.html', result=live_data())
+    return render_template('charts.html', result=last_N_data())
+
+@WEBAPP.route('/charts2')
+def charts2():
+    return render_template('charts2.html')
 
 @WEBAPP.route('/logs')
 def logs():
-    return render_template('logs.html', result=live_data())    
+    return render_template('logs.html', result=last_N_alarms())    
 
 @WEBAPP.route('/fan')
 def fan():
@@ -59,11 +60,11 @@ def send_cmd():
     """ 
     web_form = request.form
     if web_form.get('start') == "START":
-        print(hevclient.send_cmd("CMD_START"))
+        print(hevclient.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
-        print(hevclient.send_cmd("CMD_STOP"))
+        print(hevclient.send_cmd("GENERAL", "STOP"))
     elif web_form.get('reset') == "RESET":
-        print(hevclient.send_cmd("CMD_RESET"))
+        print(hevclient.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
     
@@ -104,7 +105,7 @@ def live_data():
 
     list_variables = []
     list_variables.append("created_at")
-    list_variables.extend(getList(dataFormat().getDict()))
+    list_variables.extend(getList(DataFormat().getDict()))
 
     data = {key: None for key in list_variables}
 
@@ -132,6 +133,46 @@ def live_data():
     #return Response(json.dumps(data),  mimetype='application/json')
     return response
 
+@WEBAPP.route('/last_N_data', methods=['GET'])
+def last_N_data():
+    """
+    Query the sqlite3 table for variables
+    Output in json format
+    """
+    N = 30
+    list_variables = []
+    list_variables.append("created_at")
+    list_variables.extend(getList(dataFormat().getDict()))
+
+
+    united_var = ','.join(list_variables)
+
+    sqlite_file = 'database/HEC_monitoringDB.sqlite'
+    fetched_all = []
+
+    with sqlite3.connect(sqlite_file) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT {var} "
+        "FROM hec_monitor ORDER BY ROWID DESC LIMIT {entries}".format(var=united_var, entries=N))
+        
+        fetched = cursor.fetchall()
+        for el in fetched:
+          data = {key: None for key in list_variables}
+
+          for index, item in enumerate(list_variables):
+              if item == 'created_at':
+                  data[item] = el[index]
+              else:
+                  data[item] = round(el[index],2)   
+          fetched_all.append(data)
+          #print(fetched_all)
+
+    response = make_response(json.dumps(fetched_all).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
+
+
 @WEBAPP.route('/live-alarms', methods=['GET'])
 def live_alarms():
     """
@@ -157,6 +198,28 @@ def live_alarms():
 
     return response
 
+
+@WEBAPP.route('/last_N_alarms', methods=['GET'])
+def last_N_alarms():
+    """
+    Query the sqlite3 table for the last N alarms
+    Output in json format
+    """
+    N = 10
+    data = {'created_at' : None, 'alarms' : None}
+
+    sqlite_file = 'database/HEC_monitoringDB.sqlite'
+    with sqlite3.connect(sqlite_file) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT created_at, alarms "
+        "FROM hec_monitor ORDER BY ROWID DESC LIMIT {}".format(N))
+
+        fetched = cursor.fetchall()
+
+    response = make_response(json.dumps(fetched).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
 
 
 if __name__ == '__main__':

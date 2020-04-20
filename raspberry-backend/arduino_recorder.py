@@ -12,7 +12,7 @@ import sqlite3
 from datetime import datetime
 import threading
 from hevclient import HEVClient
-from commsConstants import dataFormat
+from commsConstants import DataFormat
 
 SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
 TABLE_NAME = 'hec_monitor'  # name of the table to be created
@@ -21,7 +21,7 @@ def getList(dict):
     return [*dict] 
 
 # List of data variables in the data packet from the Arduino
-data_format = getList(dataFormat().getDict())
+data_format = getList(DataFormat().getDict())
 
 
 def database_setup():

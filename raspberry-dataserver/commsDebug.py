@@ -28,7 +28,7 @@ start = 0x1
 stop =  0x2
 
 # initialise as start command, automatically executes toByteArray()
-cmd = commandFormat(cmdCode=start)
+cmd = CommandFormat(cmdCode=start)
 
 time.sleep(4)
 comms.writePayload(cmd)
