@@ -124,6 +124,7 @@ $(document).ready(function() {
             scales: {
             xAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true
                 },
                 //type: 'time',
@@ -134,11 +135,12 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                   },
 				scaleLabel: {
-					display: true,
+					display: false,
                     labelString: 'Pressure [mbar]'
 				}
 			}]            
@@ -183,12 +185,14 @@ $(document).ready(function() {
                 curve: 'smooth'
               },
             title: {
-              display: false,
-              text: 'Pressure [mbar]'
+              display: true,
+              text: 'Flow [mL/min]',
+              fontSize: 25
             },
             scales: {
             xAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true
                 },
                 //type: 'time',
@@ -199,11 +203,12 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                   },
 				scaleLabel: {
-					display: true,
+					display: false,
                     labelString: 'Flow [mL/min]'
 				}
 			}]            
@@ -252,6 +257,7 @@ $(document).ready(function() {
             scales: {
             xAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true
                 },
                 //type: 'time',
@@ -262,11 +268,12 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                   },
 				scaleLabel: {
-					display: true,
+					display: false,
                     labelString: 'Volume [mL]'
 				}
 			}]            

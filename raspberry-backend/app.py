@@ -142,7 +142,7 @@ def last_N_data():
     N = 30
     list_variables = []
     list_variables.append("created_at")
-    list_variables.extend(getList(dataFormat().getDict()))
+    list_variables.extend(getList(DataFormat().getDict()))
 
 
     united_var = ','.join(list_variables)
