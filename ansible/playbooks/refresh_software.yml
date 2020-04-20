@@ -1,0 +1,45 @@
+---
+- hosts: rpi
+  remote_user: pi
+  vars:
+        download_dir: /home/pi/Downloads
+
+  tasks: 
+        - name: include vars
+          include_vars: lists.yml
+
+        - name: install software via apt
+          apt: 
+              name: "{{ item }}"
+              state: present
+          with_items: "{{ rpi_swlist }}"  
+          become: yes
+        
+        - name: remove old hev-sw
+          file:
+              path: "{{ ansible_env.HOME }}/hev-sw"
+              state: absent
+
+        - name: remove old hev-display
+          file:
+              path: "{{ ansible_env.HOME }}/hev-display"
+              state: absent
+
+        - name: clone git repo - hev-sw
+          git: 
+              repo: https://github.com/hev-sw/hev-sw.git
+              dest: "{{ ansible_env.HOME }}/hev-sw"
+
+        - name: clone git repo - hev-display
+          git: 
+              repo: https://github.com/hev-sw/hev-display.git
+              dest: "{{ ansible_env.HOME }}/hev-display"
+
+
+
+        - name: upgrade hev-display via apt
+          apt: 
+              name: hev-display
+              state: latest
+              update_cache: yes
+          become: yes

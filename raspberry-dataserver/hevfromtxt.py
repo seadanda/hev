@@ -38,7 +38,7 @@ class hevfromtxt():
             increment = int(round(self._delay / 0.2))
             increment = 1 if increment < 1 else increment
             self._pos = self._pos + increment if self._pos + increment < self._length else 0
-            payload = commsConstants.dataFormat()
+            payload = commsConstants.DataFormat()
             
             # directly setting private member variables in this edge case
             payload._version = payload._RPI_VERSION

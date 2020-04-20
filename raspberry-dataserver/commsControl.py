@@ -106,11 +106,11 @@ class commsControl():
                         self.sendPacket(queue[0])
                     
     def getQueue(self, payloadType):
-        if   payloadType == commsConstants.payloadType.payloadAlarm:
+        if   payloadType == commsConstants.PAYLOAD_TYPE.ALARM:
             return self._alarms
-        elif payloadType == commsConstants.payloadType.payloadCmd:
+        elif payloadType == commsConstants.PAYLOAD_TYPE.CMD:
             return self._commands
-        elif payloadType == commsConstants.payloadType.payloadData:
+        elif payloadType == commsConstants.PAYLOAD_TYPE.DATA:
             return self._data
         else:
             return None
@@ -118,13 +118,13 @@ class commsControl():
     def getInfoType(self, address):
         address &= 0xC0
         if address == 0xC0:
-            return commsConstants.payloadType.payloadAlarm
+            return commsConstants.PAYLOAD_TYPE.ALARM
         elif address == 0x80:
-            return commsConstants.payloadType.payloadCmd
+            return commsConstants.PAYLOAD_TYPE.CMD
         elif address == 0x40:
-            return commsConstants.payloadType.payloadData
+            return commsConstants.PAYLOAD_TYPE.DATA
         else:
-            return commsConstants.payloadType.payloadUnset
+            return commsConstants.PAYLOAD_TYPE.UNSET
 
     def processPacket(self, data):
         for byte in data:
@@ -180,11 +180,11 @@ class commsControl():
         
     def writePayload(self, payload):
         payloadType = payload.getType()
-        if   payloadType == commsConstants.payloadType.payloadAlarm:
+        if   payloadType == commsConstants.PAYLOAD_TYPE.ALARM:
             tmpComms = commsFormat.generateAlarm(payload)
-        elif payloadType == commsConstants.payloadType.payloadCmd:
+        elif payloadType == commsConstants.PAYLOAD_TYPE.CMD:
             tmpComms = commsFormat.generateCmd(payload)
-        elif payloadType == commsConstants.payloadType.payloadData:
+        elif payloadType == commsConstants.PAYLOAD_TYPE.DATA:
             tmpComms = commsFormat.generateData(payload)
         else:
             return False        
@@ -214,12 +214,12 @@ class commsControl():
             logging.debug("Queue is probably empty")
             
     def receivePacket(self, payloadType, commsPacket):
-        if   payloadType == commsConstants.payloadType.payloadAlarm:
-            payload = commsConstants.alarmFormat()
-        elif payloadType == commsConstants.payloadType.payloadCmd:
-            payload = commsConstants.commandFormat()
-        elif payloadType == commsConstants.payloadType.payloadData:
-            payload = commsConstants.dataFormat()
+        if   payloadType == commsConstants.PAYLOAD_TYPE.ALARM:
+            payload = commsConstants.AlarmFormat()
+        elif payloadType == commsConstants.PAYLOAD_TYPE.CMD:
+            payload = commsConstants.CommandFormat()
+        elif payloadType == commsConstants.PAYLOAD_TYPE.DATA:
+            payload = commsConstants.DataFormat()
         else:
             return False
         
@@ -307,7 +307,7 @@ if __name__ == "__main__" :
     commsCtrl = commsControl(port = port)
     example = Dependant(commsCtrl)
     
-    payloadSend = commsConstants.commandFormat()
+    payloadSend = commsConstants.CommandFormat()
     payloadSend.cmdCode = 3
     payloadSend.toByteArray()
     
