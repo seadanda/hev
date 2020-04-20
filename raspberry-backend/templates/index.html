@@ -19,7 +19,7 @@
 		<option value='pressure_o2_regulated' selected>O2 (regulated)</option>
         <option value='pressure_buffer' selected>Buffer</option>
         <option value='pressure_inhale' selected>Inhale</option>
-		<option value='temperature_buffer' selected>temperature_buffer</option>
+		<option value='temperature_buffer' selected>temperature_buffer</option> 
 		<option value='pressure_patient' selected>Patient</option>
 		<option value='pressure_diff_patient' selected>Patient (diff)</option>
 		
@@ -27,6 +27,7 @@
 		<option value='pressure_buffer' selected>Pressure</option>
 		<option value='pressure_inhale' selected>Flow</option>
 		<option value='temperature_buffer' selected>Volume</option>
+
 
 
 	</select>
@@ -48,7 +49,7 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">State</a>
+		      <a class="small text-dark stretched-link col-center" href="#">State</a>
               </div>
               <div class="card-body px-1 py-3"><span class = "reading-main" id="fsm_state">000.00</span></div>
 	    </div>
@@ -125,6 +126,15 @@
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_diff_patient">000.00</span> cmH2O</div>
 	  </div>
 	</div>
+
+	<div class="col-xl-4 px-1 py-0">
+		<div class="card bg-primary text-dark mb-2">
+			  <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
+			<a class="small text-dark stretched-link col-center" href="#">Temperature buffer (example)</a>
+			  </div>
+			  <div class="card-body px-1 py-3"><span class = "reading-main" id = "temperature_buffer">000.00</span></div>
+		</div>
+	  </div>
 
 	</div>
 
@@ -225,13 +235,14 @@
 		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
 		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
 		document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
+		document.getElementById("pressure_air_supply").innerHTML = data.pressure_air_supply;
+		document.getElementById("pressure_air_regulated").innerHTML = data.pressure_air_regulated;		
 		document.getElementById("pressure_o2_supply").innerHTML = data.pressure_o2_supply;
 		document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
-		document.getElementById("pressure_patient").innerHTML = data.pressure_atient;
-		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient;
-		
+		document.getElementById("pressure_patient").innerHTML = data.pressure_patient;
+		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient;		
 		document.getElementById("fsm_state").innerHTML = data.fsm_state;
-		document.getElementById("version").innerHTML = data.version;
+		//document.getElementById("version").innerHTML = data.version; //Commented because not included in the html part
 		}
 	);
 	}
@@ -240,22 +251,6 @@
   </script>
   
 
-	<script type=text/javascript>
-	  function update_variables() {
-	  $.getJSON("live-data",
-          function (data) {
-          document.getElementById("pressure").innerHTML = data.pressure;
-          document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
-          document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
-          document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
-          document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
-          document.getElementById("fsm_state").innerHTML = data.fsm_state;
-          document.getElementById("version").innerHTML = data.version;
-          }
-	  );
-	  }
-	  setInterval('update_variables()', 2000);
-	</script>
 
 	{% endblock %}
 	{% block body_scripts %}
