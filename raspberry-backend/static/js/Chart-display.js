@@ -91,7 +91,7 @@ function requestChartVar() {
         cache: false
     });
     // call it again after one second
-    setTimeout(requestChartVar, 1000);
+    setTimeout(requestChartVar, 200);
 }
 
 requestChartVar();

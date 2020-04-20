@@ -13,7 +13,7 @@ from flask import json
 import chardet
 from hevclient import HEVClient
 from commsConstants import DataFormat
-
+from datetime import datetime
 
 WEBAPP = Flask(__name__)
 
@@ -99,39 +99,13 @@ def data_handler():
 @WEBAPP.route('/live-data', methods=['GET'])
 def live_data():
     """
-    Query the sqlite3 table for variables
+    Get live data from the hevserver
     Output in json format
     """
-
-    list_variables = []
-    list_variables.append("created_at")
-    list_variables.extend(getList(DataFormat().getDict()))
-
-    data = {key: None for key in list_variables}
-
-    united_var = ','.join(list_variables)
-
-    sqlite_file = 'database/HEC_monitoringDB.sqlite'
-    with sqlite3.connect(sqlite_file) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT {var} "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1".format(var=united_var))
-        
-        fetched = cursor.fetchone()
-
-        for index, item in enumerate(list_variables):
-            if item == 'created_at':
-                data[item] = fetched[index]
-            else:
-                data[item] = round(fetched[index],2)   
-
-
-    response = make_response(json.dumps(data).encode('utf-8') )
+    response = make_response(json.dumps(hevclient.get_values()).encode('utf-8') )
     response.content_type = 'application/json'
-
-    
-    #return Response(json.dumps(data),  mimetype='application/json')
     return response
+
 
 @WEBAPP.route('/last_N_data', methods=['GET'])
 def last_N_data():
@@ -176,26 +150,12 @@ def last_N_data():
 @WEBAPP.route('/live-alarms', methods=['GET'])
 def live_alarms():
     """
-    Query the sqlite3 table for alarms
+    Get live alarms from the hevserver
     Output in json format
     """
 
-    data = {'created_at' : None, 'alarms' : None}
-
-    sqlite_file = 'database/HEC_monitoringDB.sqlite'
-    with sqlite3.connect(sqlite_file) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT created_at, alarms "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1")
-
-        fetched = cursor.fetchone()
-
-        data['created_at'] = fetched[0]
-        data['alarms'] = fetched[1]
-
-    response = make_response(json.dumps(data).encode('utf-8') )
+    response = make_response(json.dumps(hevclient.get_alarms()).encode('utf-8') )
     response.content_type = 'application/json'
-
     return response
 
 
@@ -224,6 +184,7 @@ def last_N_alarms():
 
 if __name__ == '__main__':
     WEBAPP.run(debug=True, host='127.0.0.1', port=5000)
+
 
 
 
