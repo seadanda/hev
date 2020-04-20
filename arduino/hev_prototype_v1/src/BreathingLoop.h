@@ -32,19 +32,19 @@ public:
 
     // states
     enum BL_STATES : uint8_t {
-            IDLE,
-            CALIBRATION,
-            BUFF_PREFILL,
-            BUFF_FILL,
-            BUFF_LOADED,
-            BUFF_PRE_INHALE,
-            INHALE,
-            PAUSE,
-            EXHALE_FILL,
-            EXHALE,
-            STOP,
-            BUFF_PURGE,
-            BUFF_FLUSH
+            IDLE            =  1,
+            CALIBRATION     =  2,
+            BUFF_PREFILL    =  3,
+            BUFF_FILL       =  4,
+            BUFF_LOADED     =  5,
+            BUFF_PRE_INHALE =  6,
+            INHALE          =  7,
+            PAUSE           =  8,
+            EXHALE_FILL     =  9,
+            EXHALE          = 10,
+            STOP            = 11,
+            BUFF_PURGE      = 12,
+            BUFF_FLUSH      = 13
     };
 
 
