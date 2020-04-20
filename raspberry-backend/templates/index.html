@@ -43,9 +43,8 @@
 	</div>
       </div>
     
-      <div class = "col-md-5 py-0 px-0  mr-0 pl-1">
+      <div class = "col-md-5 py-0 px-0 mr-0 pl-1">
 	<div class="row">
-	  
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
@@ -90,7 +89,7 @@
 				</div>
 			  </div>	  	  
 	  
-	  <div class="col-xl-4 col-md-8 px-1 py-0">
+	  <div class="col-xl-4 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark stretched-link col-center" href="#">Buffer</a>
@@ -98,10 +97,11 @@
               <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_buffer">000.00</span> cmH2O</div>
 	    </div>
 	  </div>
+	  
 	</div>
 	
 	<div class="row">
-	<div class="col-xl-4 px-1 py-0 col-md-5">
+	<div class="col-xl-4 px-1 py-0">
 	  <div class="card bg-primary text-dark mb-2">
             <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 	      <a class="small text-dark stretched-link col-center" href="#">Inhale</a>
@@ -109,7 +109,7 @@
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_inhale">000.00</span> mBar</div>
 	  </div>
 	</div>
-	<div class="col-xl-4 col-md-8 px-1 py-0">
+	<div class="col-xl-4 px-1 py-0">
 	  <div class="card bg-primary text-dark mb-2">
             <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 	      <a class="small text-dark stretched-link col-center" href="#">Patient</a>
@@ -117,7 +117,7 @@
             <div class="card-body px-1 py-3"><span class = "reading-main" id = "pressure_patient">000.00</span> cmH2O</div>
 	  </div>
 	</div>
-	<div class="col-xl-4 px-1 py-0 col-md-8">
+	<div class="col-xl-4 px-1 py-0">
 	  <div class="card bg-primary text-dark mb-2">
             <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
 	      <a class="small text-dark stretched-link col-center" href="#">Patient (diff)</a>
@@ -240,7 +240,22 @@
   </script>
   
 
-
+	<script type=text/javascript>
+	  function update_variables() {
+	  $.getJSON("live-data",
+          function (data) {
+          document.getElementById("pressure").innerHTML = data.pressure;
+          document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
+          document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
+          document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
+          document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
+          document.getElementById("fsm_state").innerHTML = data.fsm_state;
+          document.getElementById("version").innerHTML = data.version;
+          }
+	  );
+	  }
+	  setInterval('update_variables()', 2000);
+	</script>
 
 	{% endblock %}
 	{% block body_scripts %}

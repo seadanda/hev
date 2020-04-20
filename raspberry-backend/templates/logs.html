@@ -97,23 +97,9 @@ function requestAlarms() {
 function update_logs() {
     //clearInterval(alarmInterval);
     requestAlarms();
-  }
-
-var obj = {{result.data|tojson|safe}}
-// Reversing array so that the most recent number is on top
-var last_results = JSON.parse(obj).reverse();
-
-var table = document.getElementById("HEV_logs");
-var i;
-for (i=0; i<last_results.length; i++) {
-  var row = table.insertRow(1);
-  var cell1 = row.insertCell(0);
-  var cell2 = row.insertCell(1);
-  cell1.innerHTML = convertTimestamp(last_results[i][0]);
-  cell2.innerHTML = last_results[i][1];
 }
 
-var button_state = false ;
+var button_state = false;
 
 document.getElementById('update_button').onclick = function(){
   if (button_state == false) {
@@ -132,5 +118,24 @@ document.getElementById('update_button').onclick = function(){
 
 </script>
 
+
+{% endblock %}
+
+{% block body_scripts %}
+<script>
+  $( document ).ready($.getJSON({
+  url: '/last_N_alarms',
+  success: function(data) {
+  var table = document.getElementById("HEV_logs");
+  for (let i = data.length-1; i >= 0; i--) {
+    var row = table.insertRow(1);
+    var cell1 = row.insertCell(0);
+    var cell2 = row.insertCell(1);
+    cell1.innerHTML = convertTimestamp(data[i][0]);
+    cell2.innerHTML = data[i][1];
+    }
+    }
+    }));
+    </script>
 
 {% endblock %}
