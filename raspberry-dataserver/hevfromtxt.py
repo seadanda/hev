@@ -63,7 +63,7 @@ class hevfromtxt():
             callback(self._payloadrecv[0])
 
     def writePayload(self, payload):
-        logging.info(payload)
+        logging.info(f"CMD received: {payload}")
 
     def bind_to(self, callback):
         self._observers.append(callback)

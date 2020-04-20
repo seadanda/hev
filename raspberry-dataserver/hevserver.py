@@ -153,9 +153,6 @@ class HEVServer(object):
         while self._broadcasting:
             # wait for data from serial port
             try:
-                # make sure client is still connected
-                writer.write(json.dumps({"type": "keepalive"}).encode())
-                await writer.drain()
                 # set timeout such that there is never pileup
                 await asyncio.wait_for(self._datavalid.wait(), timeout=0.05)
 
@@ -164,23 +161,33 @@ class HEVServer(object):
                     values: List[float] = self._values
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
+            except asyncio.TimeoutError:
+                # make sure client is still connected
+                broadcast_packet = {"type": "keepalive"}
+            except (ConnectionResetError, BrokenPipeError):
+                # Connection lost, stop trying to broadcast and free up socket
+                logging.warning(f"Connection lost with {addr!r}")
+                self._broadcasting = False
+                continue
+            else:
                 broadcast_packet = {"type": "broadcast"}
                 broadcast_packet["sensors"] = values
                 broadcast_packet["alarms"] = alarms # add alarms key/value pair
 
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
+                # take control of datavalid and reset it
+                with self._dvlock:
+                    self._datavalid.clear()
+
+            try:
                 writer.write(json.dumps(broadcast_packet).encode())
                 await writer.drain()
-            except asyncio.TimeoutError:
-                continue
             except (ConnectionResetError, BrokenPipeError):
                 # Connection lost, stop trying to broadcast and free up socket
                 logging.warning(f"Connection lost with {addr!r}")
                 self._broadcasting = False
-            # take control of datavalid and reset it
-            with self._dvlock:
-                self._datavalid.clear()
+                continue
 
         self._broadcasting = True
         writer.close()
@@ -237,7 +244,7 @@ if __name__ == "__main__":
             # assume hex dump
             lli = svpi.svpi(args.inputFile)
 
-        logging.info(f"Serving data from {args.inputFile}")
+        logging.info(f"Reading data from {args.inputFile}")
     else:
         # get arduino serial port
         for port in list_ports.comports():
