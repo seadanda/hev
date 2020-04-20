@@ -153,24 +153,27 @@ class HEVServer(object):
         while self._broadcasting:
             # wait for data from serial port
             try:
+                # make sure client is still connected
+                writer.write(json.dumps({"type": "keepalive"}).encode())
+                await writer.drain()
                 # set timeout such that there is never pileup
                 await asyncio.wait_for(self._datavalid.wait(), timeout=0.05)
-            except asyncio.TimeoutError:
-                continue
-            # take lock of db and prepare packet
-            with self._dblock:
-                values: List[float] = self._values
-                alarms = self._alarms if len(self._alarms) > 0 else None
 
-            broadcast_packet = {}
-            broadcast_packet["sensors"] = values
-            broadcast_packet["alarms"] = alarms # add alarms key/value pair
+                # take lock of db and prepare packet
+                with self._dblock:
+                    values: List[float] = self._values
+                    alarms = self._alarms if len(self._alarms) > 0 else None
 
-            logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
+                broadcast_packet = {"type": "broadcast"}
+                broadcast_packet["sensors"] = values
+                broadcast_packet["alarms"] = alarms # add alarms key/value pair
 
-            try:
+                logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
+
                 writer.write(json.dumps(broadcast_packet).encode())
                 await writer.drain()
+            except asyncio.TimeoutError:
+                continue
             except (ConnectionResetError, BrokenPipeError):
                 # Connection lost, stop trying to broadcast and free up socket
                 logging.warning(f"Connection lost with {addr!r}")
