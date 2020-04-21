@@ -142,7 +142,7 @@ if __name__ == "__main__":
     except:
         logging.info("No alarms received")
 
-    time.sleep(1)
+    time.sleep(2)
     print(f"Alarms: {hevclient.get_alarms()}")
 
     # send commands:

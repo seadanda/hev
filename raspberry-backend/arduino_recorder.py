@@ -3,7 +3,7 @@
 # HEV monitoring application
 # USAGE:  python3 arduino_recorder.py
 #
-# Last update: April 4, 2020
+# Last update: April 21, 2020
 
 import sys
 import time
@@ -12,16 +12,20 @@ import sqlite3
 from datetime import datetime
 import threading
 from hevclient import HEVClient
-from commsConstants import dataFormat
+from commsConstants import DataFormat
 
 SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
 TABLE_NAME = 'hec_monitor'  # name of the table to be created
+
+# Instantiating the client
+hevclient = HEVClient()
+
 
 def getList(dict): 
     return [*dict] 
 
 # List of data variables in the data packet from the Arduino
-data_format = getList(dataFormat().getDict())
+data_format = getList(DataFormat().getDict())
 
 
 def database_setup():
@@ -60,9 +64,6 @@ def monitoring(source_address):
     Store arduino data in the sqlite3 table. 
     '''
 
-    # Instantiating the client
-    hevclient = HEVClient()
-
     epoch = datetime(1970, 1, 1)
 
     with sqlite3.connect(SQLITE_FILE) as conn:
@@ -72,10 +73,10 @@ def monitoring(source_address):
 
             # Computing the time in seconds since the epoch because easier to manipulate. 
             timestamp = (current_time -epoch).total_seconds() * 1000
-  
+           
             data_receiver = hevclient.get_values()
             data_alarms = hevclient.get_alarms()
-            
+           
             if data_receiver != None:
 
                 # data alarms can have length of 6, joining all the strings
@@ -107,7 +108,7 @@ def monitoring(source_address):
                      raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
                 finally:                  
                     sys.stdout.flush()
-                    time.sleep(1)
+                    time.sleep(0.2)
 
 def progress(status, remaining, total):
     print(f'Copied {total-remaining} of {total} pages...')

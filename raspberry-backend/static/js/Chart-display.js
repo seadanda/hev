@@ -21,7 +21,10 @@ function last_results() {
             size_data = data.length
             var date = new Date(data[i]["created_at"]);
             var seconds = date.getSeconds();
-            initial_xaxis.push(-i);
+            // terrible hack to show the time in reverse order
+            var time_x = (-i/5).toFixed(2)
+            initial_xaxis.push(time_x);
+            //initial_xaxis.push(data[i]["timestamp"]);
             initial_yaxis_pressure.push(data[i]["pressure_buffer"]);
             initial_yaxis_volume.push(data[i]["pressure_inhale"]);
             initial_yaxis_flow.push(data[i]["temperature_buffer"]);
@@ -31,15 +34,13 @@ function last_results() {
           initial_yaxis_pressure.reverse();
           initial_yaxis_volume.reverse();
           initial_yaxis_flow.reverse();
-
-
-
         },
         cache: false
     });
 }
 
-
+// Calling the function here to retrive 
+// the initial values to be plotted on the charts
 last_results();
 
 
@@ -49,29 +50,31 @@ function requestChartVar() {
         url: '/live-data',
         success: function(point) {
 
-            if(chart_pressure.data.datasets[0].data.length > 30){
+            if(chart_pressure.data.datasets[0].data.length > 300){
                 chart_pressure.data.labels.shift();
                 chart_pressure.data.datasets[0].data.shift();
             }
 
-            if(chart_flow.data.datasets[0].data.length > 30){
+            if(chart_flow.data.datasets[0].data.length > 300){
                 //chart_flow.data.labels.shift();
                 chart_flow.data.datasets[0].data.shift();
             }
 
  
-            if(chart_volume.data.datasets[0].data.length > 30){
+            if(chart_volume.data.datasets[0].data.length > 300){
                 //chart_volume.data.labels.shift();
                 chart_volume.data.datasets[0].data.shift();
             }
 
-            for (var i=0; i<30; i++) {
-                chart_pressure.data.labels[i] -= 1 ;
-           }
+            for (var i=0; i<300; i++) {
+                var x = chart_pressure.data.labels[i] - 0.20 ;
+                chart_pressure.data.labels[i] = x.toFixed(1);
+            }
 
 
             // add the point           
             chart_pressure.data.labels.push(0);
+            //chart_pressure.data.labels.push(point["timestamp"]);
             chart_pressure.data.datasets[0].data.push(point["pressure_buffer"]);
 
             // add the point
@@ -85,13 +88,12 @@ function requestChartVar() {
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
-
             
         },
         cache: false
     });
-    // call it again after one second
-    setTimeout(requestChartVar, 1000);
+    // call it again after time in ms
+    setTimeout(requestChartVar, 200);
 }
 
 requestChartVar();
@@ -118,12 +120,14 @@ $(document).ready(function() {
                 curve: 'smooth'
               },
             title: {
-              display: false,
-              text: 'Pressure [mbar]'
-            },
+                display: true,
+                text: 'Pressure [mbar]',
+                fontSize: 25
+              },            
             scales: {
             xAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true
                 },
                 //type: 'time',
@@ -134,11 +138,12 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                   },
 				scaleLabel: {
-					display: true,
+					display: false,
                     labelString: 'Pressure [mbar]'
 				}
 			}]            
@@ -183,12 +188,14 @@ $(document).ready(function() {
                 curve: 'smooth'
               },
             title: {
-              display: false,
-              text: 'Pressure [mbar]'
+              display: true,
+              text: 'Flow [mL/min]',
+              fontSize: 25
             },
             scales: {
             xAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true
                 },
                 //type: 'time',
@@ -199,11 +206,12 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                   },
 				scaleLabel: {
-					display: true,
+					display: false,
                     labelString: 'Flow [mL/min]'
 				}
 			}]            
@@ -246,12 +254,14 @@ $(document).ready(function() {
                 curve: 'smooth'
               },
             title: {
-              display: false,
-              text: 'Volume [mL]'
+              display: true,
+              text: 'Volume [mL]',
+              fontSize: 25
             },
             scales: {
             xAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true
                 },
                 //type: 'time',
@@ -262,11 +272,12 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
+                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                   },
 				scaleLabel: {
-					display: true,
+					display: false,
                     labelString: 'Volume [mL]'
 				}
 			}]            

@@ -3,7 +3,7 @@
 # Python monitoring code
 # USAGE:  python3 app.py
 #
-# Last update: April 7, 2020
+# Last update: April 20, 2020
 
 from time import time
 from flask import Flask, render_template, make_response, jsonify, Response, request
@@ -12,8 +12,8 @@ import sqlite3
 from flask import json
 import chardet
 from hevclient import HEVClient
-from commsConstants import dataFormat
-
+from commsConstants import DataFormat
+from datetime import datetime
 
 WEBAPP = Flask(__name__)
 
@@ -28,6 +28,9 @@ def getList(dict):
 def hello_world():
    return render_template('index.html', result=live_data())
 
+@WEBAPP.route('/prototype', methods=['GET', 'POST'])
+def prototype():
+   return render_template('index_prototype.html', result=live_data())
 
 @WEBAPP.route('/settings')
 def settings():
@@ -60,11 +63,11 @@ def send_cmd():
     """ 
     web_form = request.form
     if web_form.get('start') == "START":
-        print(hevclient.send_cmd("CMD_START"))
+        print(hevclient.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
-        print(hevclient.send_cmd("CMD_STOP"))
+        print(hevclient.send_cmd("GENERAL", "STOP"))
     elif web_form.get('reset') == "RESET":
-        print(hevclient.send_cmd("CMD_RESET"))
+        print(hevclient.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
     
@@ -99,39 +102,13 @@ def data_handler():
 @WEBAPP.route('/live-data', methods=['GET'])
 def live_data():
     """
-    Query the sqlite3 table for variables
+    Get live data from the hevserver
     Output in json format
     """
-
-    list_variables = []
-    list_variables.append("created_at")
-    list_variables.extend(getList(dataFormat().getDict()))
-
-    data = {key: None for key in list_variables}
-
-    united_var = ','.join(list_variables)
-
-    sqlite_file = 'database/HEC_monitoringDB.sqlite'
-    with sqlite3.connect(sqlite_file) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT {var} "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1".format(var=united_var))
-        
-        fetched = cursor.fetchone()
-
-        for index, item in enumerate(list_variables):
-            if item == 'created_at':
-                data[item] = fetched[index]
-            else:
-                data[item] = round(fetched[index],2)   
-
-
-    response = make_response(json.dumps(data).encode('utf-8') )
+    response = make_response(json.dumps(hevclient.get_values()).encode('utf-8') )
     response.content_type = 'application/json'
-
-    
-    #return Response(json.dumps(data),  mimetype='application/json')
     return response
+
 
 @WEBAPP.route('/last_N_data', methods=['GET'])
 def last_N_data():
@@ -139,10 +116,10 @@ def last_N_data():
     Query the sqlite3 table for variables
     Output in json format
     """
-    N = 30
+    N = 300 #update interval is 200 ms and there are 300 entries in 60 seconds
     list_variables = []
     list_variables.append("created_at")
-    list_variables.extend(getList(dataFormat().getDict()))
+    list_variables.extend(getList(DataFormat().getDict()))
 
 
     united_var = ','.join(list_variables)
@@ -176,12 +153,12 @@ def last_N_data():
 @WEBAPP.route('/live-alarms', methods=['GET'])
 def live_alarms():
     """
-    Query the sqlite3 table for alarms
+    Get live alarms from the hevserver
     Output in json format
     """
-
     data = {'created_at' : None, 'alarms' : None}
-
+#    data["alarms"] = hevclient.get_alarms()
+ 
     sqlite_file = 'database/HEC_monitoringDB.sqlite'
     with sqlite3.connect(sqlite_file) as conn:
         cursor = conn.cursor()
@@ -193,9 +170,9 @@ def live_alarms():
         data['created_at'] = fetched[0]
         data['alarms'] = fetched[1]
 
+
     response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'
-
     return response
 
 
@@ -224,6 +201,7 @@ def last_N_alarms():
 
 if __name__ == '__main__':
     WEBAPP.run(debug=True, host='127.0.0.1', port=5000)
+
 
 
 
