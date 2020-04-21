@@ -49,7 +49,7 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		      <a class="small text-dark stretched-link col-center" href="#">State</a>
+		      <a class="small text-dark stretched-link col-center" href="#">Mode</a>
               </div>
               <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id="fsm_state">0</span></div>
 	    </div>
@@ -58,7 +58,7 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">Air (supply)</a>
+		<a class="small text-dark stretched-link col-center" href="#">FIO<sub>2</sub></a>
               </div>
               <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_air_supply">000.00</span>cmH2O</div>
 	    </div>
@@ -67,7 +67,7 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">Air (regulated)</a>
+		<a class="small text-dark stretched-link col-center" href="#">Peak Pressure</a>
 	      </div>
 	      <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id="pressure_air_regulated">000.00</span>cmH2O</div>
 	    </div>
@@ -76,7 +76,7 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">O2 (supply)</a>
+		<a class="small text-dark stretched-link col-center" href="#">Plateau Pressure</a>
 	      </div>
 	      <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_o2_supply">000.00</span>cmH2O</div>
 	    </div>
@@ -84,7 +84,7 @@
 	  <div class="col-xl-4 px-1 py-0 mr-0">
 	    <div class="card bg-primary text-dark mb-2">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">O2 (regulated)</a>
+		<a class="small text-dark stretched-link col-center" href="#">Mean Pressure</a>
 	      </div>
 	      <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_o2_regulated">000.00</span>cmH2O</div>
 	    </div>
@@ -93,7 +93,7 @@
 	  <div class="col-xl-4 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">Buffer</a>
+		<a class="small text-dark stretched-link col-center" href="#">PEEP</a>
 	      </div>
 	      <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_buffer">000.00</span> cmH2O</div>
 	    </div>
@@ -104,82 +104,51 @@
 	<div class="row">
 	  <div class="col-xl-4 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">Inhale</a>
+              <div class="card-header d-flex align-items-center justify-content-between small py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">Tidal Volume Inhaled</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_inhale">000.00</span> mBar</div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_inhale">000.00</span> mL</div>
 	    </div>
 	  </div>
 	  <div class="col-xl-4 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
-              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">Patient</a>
+              <div class="card-header d-flex align-items-center justify-content-between small py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">Tidal Volume Exhaled</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_patient">000.00</span> cmH2O</div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_patient">000.00</span> mL</div>
 	    </div>
 	  </div>
 	  <div class="col-xl-4 px-1 py-0">
 	    <div class="card bg-primary text-dark mb-2">
               <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-		<a class="small text-dark stretched-link col-center" href="#">Patient (diff)</a>
+		<a class="small text-dark stretched-link col-center" href="#">Minute Volume Inhaled</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_diff_patient">000.00</span> cmH2O</div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_diff_patient">000.00</span> mL</div>
 	    </div>
 	  </div>
-	  
 	</div>
-
-	<div class="col-xl-4 px-1 py-0">
-		<div class="card bg-primary text-dark mb-2">
-			  <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-			<a class="small text-dark stretched-link col-center" href="#">Temperature buffer (example)</a>
-			  </div>
-			  <div class="card-body px-1 py-3"><span class = "reading-main" id = "temperature_buffer">000.00</span></div>
-		</div>
-	  </div>
-
-	</div>
-
 	
-	<div class="row no-gutters w-100">
-	  <form action="{{ url_for('data_handler') }}" method="post" class="w-95">
-	    <div class="card rounded-lg small px-0">
-	      <div class="card-header align-items-center justify-content-between pl-3 pr-1 py-1">
-		Settings
-		<div class = "float-right mr-1"><a class="unlock thresholds" id="toggle_thresholds" onclick="toggle_lock_settings()">
-		    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="svg-inline--fa fa-lock fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-		      <path class="path-icon" id = "path-locked" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
-		      <path class="path-icon transparent" id="path-unlocked" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
-		    </svg>
-		  </a>
-		</div>
-	      </div>
-	      <div class="card-body px-0 py-1">
-		<table class="text-align-right py-0 my-0 small">
-		  <tr class="br-red">
-		    <td class="br-red px-0 tiny"><span class="form-group"><label class="small" for="inputInhale">Inhale Time (ms): </label><input class="form-control" id="inputThres1" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
-		    <td class="br-red px-0"><span class="form-group"><label class="small" for="inputFill">Fill Time (ms): </label><input class="form-control" id="inputFill" type="number" value=1 name="variable1" readOnly min=0 max = 100 onclick="show_easy_numpad_wrapper(this);"/></span></td>
-		    <td class="br-red px-0"><span class="form-group"><label class="small" for="inputPause">Pause (ms): </label><input class="form-control" id="inputPause" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);"/></span></td>
-		    <td></td>
-		  </tr> 
-		  <tr class="">
-		    <td><span class="form-group">  <label class="small" for="inputExhale">Exhale/Inhale: </label><input class="form-control lh-1" id="inputExInhale" type="number" value=1 max=100 min=0 name="" readOnly onclick="show_easy_numpad_wrapper(this);"/></span></td>
-		    <td><span class="form-group"> <label class="small" for="inputVar1">PEEP (cmH2O): </label><input class="form-control" id="inputPEEP" type="number" value=1 name="inputPEEP" readOnly min=0 max = 100 /></span></td>
-		    <td><span class="form-group"> <label class="small" for="inputVar1">Exhale Time (ms): </label><input class="form-control" id="inputExhaleTime" type="number" value=1 name="variable1" readOnly min=0 max=100 /></span></td>
-		    <td><span class="form-group"> <label class="small" for="inputVar1">RPM: </label><input class="form-control" id="inputRPM" type="number" value=1 name="variable1" readOnly min=0 max=100 onclick="show_easy_numpad_wrapper(this);" /></span></td>
-		  </tr>
-		</table>
-	      </div>
-	      <div class="card-footer px-0 py-0">
-		<div class="col-center"><input class="form-button float-right" id="form_submit" type="submit" value="Update" disabled /></div>
-	      </div>
+	<div class="row">
+	  <div class="col-xl-4 px-1 py-0">
+	    <div class="card bg-primary text-dark mb-2">
+              <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">Minute Volume Exhaled</a>
+              </div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_inhale">000.00</span> mL</div>
 	    </div>
-	  </form>
+	  </div>
+	  <div class="col-xl-4 px-1 py-0">
+	    <div class="card bg-primary text-dark mb-2">
+              <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+		<a class="small text-dark stretched-link col-center" href="#">I:E Ratio</a>
+              </div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_patient">000.00</span> </div>
+	    </div>
+	  </div>
+	  <div class="col-xl-4 px-1 py-0">
+	  </div>
 	</div>
-	
 	<div class = "row no-gutters ml-auto mr-auto py-2">
-	    <a> <button class="sb-control-button py-3 rounded-lg mr-1">INHALE</button></a>
-	    <a> <button class="sb-control-button sb-control-button-pressed py-1 rounded-lg ml-1">EXHALE</button></a>
 	</div>
       </div>
     </div>
@@ -234,17 +203,17 @@
 	function update_variables() {
 	$.getJSON("live-data",
 		function (data) {
-		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer;
-		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale;
-		document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer;
-		document.getElementById("pressure_air_supply").innerHTML = data.pressure_air_supply;
-		document.getElementById("pressure_air_regulated").innerHTML = data.pressure_air_regulated;		
-		document.getElementById("pressure_o2_supply").innerHTML = data.pressure_o2_supply;
-		document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated;
-		document.getElementById("pressure_patient").innerHTML = data.pressure_patient;
-		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient;		
-		document.getElementById("fsm_state").innerHTML = data.fsm_state;
-		//document.getElementById("version").innerHTML = data.version; //Commented because not included in the html part
+		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer.toPrecision(5);
+		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale.toPrecision(5);
+	//document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer.toPrecision(5);
+		document.getElementById("pressure_air_supply").innerHTML = data.pressure_air_supply.toPrecision(5);
+		document.getElementById("pressure_air_regulated").innerHTML = data.pressure_air_regulated.toPrecision(5);		
+		document.getElementById("pressure_o2_supply").innerHTML = data.pressure_o2_supply.toPrecision(5);
+		document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated.toPrecision(5);
+		document.getElementById("pressure_patient").innerHTML = data.pressure_patient.toPrecision(5);
+		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient.toPrecision(5);		
+		document.getElementById("fsm_state").innerHTML = data.fsm_state.toPrecision(1);
+		//document.getElementById("version").innerHTML = data.version.toPrecision(1); //Commented because not included in the html part
 		}
 	);
 	}

@@ -29,11 +29,35 @@
 
 	<!-- User-->
         <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
-          <li class="nav-item dropdown">
-            <!--<i class="fas fa-user fa-fw"></i>-->
-	  </li>
-	  <span class="patient">{{patient}}</span>
+	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="user" class="svg-inline--fa fa-user fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="path-icon" d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"></path></svg>
 	</ul>
+	<span class="patient small">John Smith, M, 66, 173cm, 78kg</span>
+
+	<!-- Battery -->
+        <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
+	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="battery-full" class="svg-inline--fa fa-battery-full fa-w-20" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+	    <!-- Full -->
+	    <path class="path-icon" id = "battery-full" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-48 96H96v128h416V192z"></path>
+	    <!-- Empty -->
+	    <path class="path-icon-alarm transparent" id = "battery-empty" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48z"></path>
+	    <!--Three Quarter -->
+	    <path class="path-icon transparent" id = "battery-three-quarter" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-144 96H96v128h320V192z"></path>
+	    <!-- Half -->
+	    <path class="path-icon transparent" id = "battery-half" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-240 96H96v128h224V192z"></path>
+	    <!-- One Quarter -->
+	    <path class="path-icon-alarm transparent" id ="battery-one-quarter" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-336 96H96v128h128V192z">
+	  </svg>
+	</ul>
+	<ul class = "navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
+	  <a class="unlock" id="toggle_lock" onclick="toggle_lock()">
+		    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="svg-inline--fa fa-lock fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+		      <path class="path-icon" id = "path-locked-main" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
+		      <path class="path-icon transparent" id="path-unlocked-main" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
+		    </svg>
+		  </a>
+	   </ul>
+
+	
       </nav>
         <div id="layoutSidenav">
           <div id="layoutSidenav_nav" class="py-1">
@@ -109,7 +133,7 @@
 
 	  function update_alarms() {
         $.getJSON("live-alarms", function (data) {
-	       if (data.alarms !== 'none') {
+	       if (data != null && data.alarms !== 'none') {
 	          document.getElementById("alarms").innerHTML = data.alarms;
 	          var el = document.getElementById("alarm_ul");
 	          el.classList.add("alarm-red");
@@ -135,7 +159,64 @@
 	       show_easy_numpad(thisElement);
 	    }
 	  }
+
+	  function unlock(){
+	  var x = document.getElementsByClassName("form-control");
+	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;}
+			  var el = document.getElementById("path-locked-main");
+			  el.classList.add("transparent");
+			  var el2 = document.getElementById("path-unlocked-main");
+			  el2.classList.remove("transparent");
+
+			  setTimeout(lock(),1000);
+			  }
+	  
+	  function lock() {
+	  var x = document.getElementsByClassName("form-control");
+			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;}
+			  var el = document.getElementById("path-locked-main");
+			  el.classList.remove("transparent");
+			  var el2 = document.getElementById("path-unlocked-main");
+			  el2.classList.add("transparent");
+
+					  }
+			  function toggle_lock() {
+			  setTimeout(function(){
+					  var x = document.getElementsByClassName("form-control");
+			  if ( x.length > 0 && x[0].readOnly == false ){lock();}
+			  else{ unlock() ; }
+			  },500);
+			  }
+						  
+	  
+	  var battery = 100;
+	  function update_battery() {
+	  // set all transparent
+	  var full = document.getElementById("battery-full");
+          full.classList.add("transparent");
+	  three_qtr = document.getElementById("battery-three-quarter");
+          three_qtr.classList.add("transparent");
+	  var half = document.getElementById("battery-half");
+          half.classList.add("transparent");
+	  var one_qtr = document.getElementById("battery-one-quarter");
+          one_qtr.classList.add("transparent");
+	  var empty = document.getElementById("battery-empty");
+          empty.classList.add("transparent");
+
+	  
+	  // find the one to show
+	  if ( battery >=87.5 ) {full.classList.remove("transparent");}
+		  else  if (battery >= 67.5 && battery < 87.5) { three_qtr.classList.remove("transparent"); }
+							 else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
+												else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
+																      else  { empty.classList.remove("transparent"); }
+																      battery = battery - 1;
+																      if (battery  <= 0 ) battery = 100;
+																      }						 
+							 var batteryInterval = setInterval('update_battery()', 1000);
 	</script>
+
+	
 	
     </body>
 </html>
