@@ -42,6 +42,7 @@ class HEVClient(object):
                 payload = json.loads(data.decode("utf-8"))
             except json.decoder.JSONDecodeError:
                 logging.warning(f"Could not decode packet: {data}")
+                raise
             with self._lock:
                 self._values = payload["sensors"]
                 self._alarms = payload["alarms"]

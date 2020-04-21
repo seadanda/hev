@@ -23,6 +23,7 @@ function last_results() {
             var seconds = date.getSeconds();
             // terrible hack to show the time in reverse order
             initial_xaxis.push(-i);
+            //initial_xaxis.push(data[i]["timestamp"]);
             initial_yaxis_pressure.push(data[i]["pressure_buffer"]);
             initial_yaxis_volume.push(data[i]["pressure_inhale"]);
             initial_yaxis_flow.push(data[i]["temperature_buffer"]);
@@ -71,6 +72,7 @@ function requestChartVar() {
 
             // add the point           
             chart_pressure.data.labels.push(0);
+            //chart_pressure.data.labels.push(point["timestamp"]);
             chart_pressure.data.datasets[0].data.push(point["pressure_buffer"]);
 
             // add the point
@@ -84,7 +86,6 @@ function requestChartVar() {
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
-
             
         },
         cache: false

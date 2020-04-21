@@ -79,14 +79,14 @@ $(document).ready(function() {
       label: 'A',
       yAxisID: 'A',
                 data: [],
-                label: "pressure_buffer",
+                label: "Buffer",
                 borderColor: "#0000FF",
                 fill: false,
               },{ 
       label: 'B',
       yAxisID: 'B',
                 data: [],
-                label: "pressure_inhale",
+                label: "Inhale",
                 borderColor: "#000000",
                 fill: false,
               } 
@@ -203,7 +203,7 @@ function updateChartType() {
             },
             scales: {
 		xAxes: [{
-                    type: 'time',
+                    //type: 'time',
                     time: {
 			unit: 'second',
 			displayFormat: 'second'

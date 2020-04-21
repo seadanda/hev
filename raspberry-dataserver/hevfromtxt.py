@@ -19,6 +19,7 @@ class hevfromtxt():
     def __init__(self, inputFile):
         # use input file for testing
         h = np.loadtxt(inputFile,skiprows = 1, delimiter = ',')
+        self._timestamp = h[:,0].tolist()
         self._pressure = h[:,1].tolist()
         self._flow = h[:,2].tolist()
         self._volume = h[:,3].tolist()
@@ -42,6 +43,7 @@ class hevfromtxt():
             
             # directly setting private member variables in this edge case
             payload._version = payload._RPI_VERSION
+            payload._timestamp = self._timestamp[self._pos]
             payload._pressure_buffer = self._pressure[self._pos]
             payload._pressure_inhale = self._volume[self._pos]
             payload._temperature_buffer = self._flow[self._pos]
@@ -76,3 +78,4 @@ class hevfromtxt():
             # purge full queue if Dependant goes down when it comes back up
             for callback in self._observers:
                 callback(self._payloadrecv[0])
+
