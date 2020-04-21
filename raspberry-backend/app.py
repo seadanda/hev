@@ -28,6 +28,9 @@ def getList(dict):
 def hello_world():
    return render_template('index.html', result=live_data())
 
+@WEBAPP.route('/prototype', methods=['GET', 'POST'])
+def prototype():
+   return render_template('index_prototype.html', result=live_data())
 
 @WEBAPP.route('/settings')
 def settings():
@@ -113,7 +116,7 @@ def last_N_data():
     Query the sqlite3 table for variables
     Output in json format
     """
-    N = 30
+    N = 60
     list_variables = []
     list_variables.append("created_at")
     list_variables.extend(getList(DataFormat().getDict()))

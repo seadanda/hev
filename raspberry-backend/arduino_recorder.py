@@ -17,6 +17,10 @@ from commsConstants import DataFormat
 SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
 TABLE_NAME = 'hec_monitor'  # name of the table to be created
 
+# Instantiating the client
+hevclient = HEVClient()
+
+
 def getList(dict): 
     return [*dict] 
 
@@ -60,9 +64,6 @@ def monitoring(source_address):
     Store arduino data in the sqlite3 table. 
     '''
 
-    # Instantiating the client
-    hevclient = HEVClient()
-
     epoch = datetime(1970, 1, 1)
 
     with sqlite3.connect(SQLITE_FILE) as conn:
@@ -72,9 +73,12 @@ def monitoring(source_address):
 
             # Computing the time in seconds since the epoch because easier to manipulate. 
             timestamp = (current_time -epoch).total_seconds() * 1000
-  
-            data_receiver = hevclient.get_values()
-            data_alarms = hevclient.get_alarms()
+           
+            try: 
+              data_receiver = hevclient.get_values()
+              data_alarms = hevclient.get_alarms()
+            except:
+              raise "PIRLA"
             
             if data_receiver != None:
 

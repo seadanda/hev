@@ -49,23 +49,23 @@ function requestChartVar() {
         url: '/live-data',
         success: function(point) {
 
-            if(chart_pressure.data.datasets[0].data.length > 30){
+            if(chart_pressure.data.datasets[0].data.length > 60){
                 chart_pressure.data.labels.shift();
                 chart_pressure.data.datasets[0].data.shift();
             }
 
-            if(chart_flow.data.datasets[0].data.length > 30){
+            if(chart_flow.data.datasets[0].data.length > 60){
                 //chart_flow.data.labels.shift();
                 chart_flow.data.datasets[0].data.shift();
             }
 
  
-            if(chart_volume.data.datasets[0].data.length > 30){
+            if(chart_volume.data.datasets[0].data.length > 60){
                 //chart_volume.data.labels.shift();
                 chart_volume.data.datasets[0].data.shift();
             }
 
-            for (var i=0; i<30; i++) {
+            for (var i=0; i<60; i++) {
                 chart_pressure.data.labels[i] -= 1 ;
            }
 
