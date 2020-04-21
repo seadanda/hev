@@ -8,6 +8,8 @@ else {
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/include"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/src"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/../common/lib/CommsControl"
+INCLUDEPATH += "$${_PRO_FILE_PWD_}/.pio/libdeps/nodemcu-32s/INA2xx_ID5574/src"
+INCLUDEPATH += "$${_PRO_FILE_PWD_}/.pio/libdeps/nodemcu-32s/Adafruit MCP9808 Library_ID820"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/.pio/libdeps/nodemcu-32s/uCRC16Lib_ID5390/src"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/.pio/libdeps/nodemcu-32s/RingBuffer_ID5418/src"
 INCLUDEPATH += "$${_PRO_FILE_PWD_}/../common/include"
