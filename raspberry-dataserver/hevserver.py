@@ -10,8 +10,8 @@ import threading
 import argparse
 import svpi
 import hevfromtxt
-import commsControl
-from commsConstants import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
+import CommsControl
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
@@ -259,7 +259,7 @@ if __name__ == "__main__":
 
         # initialise low level interface
         try:
-            lli = commsControl.commsControl(port=port_device)
+            lli = CommsControl.CommsControl(port=port_device)
             logging.info(f"Serving data from device {port_device}")
         except NameError:
             logging.error("Arduino not connected")

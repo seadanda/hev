@@ -7,10 +7,10 @@ import time
 import numpy as np
 import argparse
 from collections import deque
-import commsFormat
+import CommsFormat
 import threading
-import commsConstants
-from commsConstants import ALARM_CODES
+import CommsCommon
+from CommsCommon import ALARM_CODES
 from typing import List, Dict
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -35,7 +35,7 @@ class svpi():
             alarm = self.getAlarms()
             if alarm is not None:
                 byteArray = alarm
-                payload = commsConstants.AlarmFormat()
+                payload = CommsCommon.AlarmFormat()
             else:
                 # grab next array from filedump
                 fullArray = self._bytestore[0+self._pos*27:27+self._pos*27]
@@ -43,7 +43,7 @@ class svpi():
                 byteArray = fullArray[:1] + fullArray[-1-3:] + fullArray[2:]
                 # go to next byte array. if at the end, loop
                 self._pos = self._pos + 1 if self._pos < 99 else 0
-                payload = commsConstants.DataFormat()
+                payload = CommsCommon.DataFormat()
             
             payload.fromByteArray(byteArray)
             self.payloadrecv = payload

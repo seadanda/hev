@@ -5,7 +5,7 @@
 # author Dónal Murray <donal.murray@cern.ch>
 
 import threading
-import commsConstants
+import CommsCommon
 import time
 import numpy as np
 from typing import List
@@ -38,7 +38,7 @@ class hevfromtxt():
             increment = int(round(self._delay / 0.2))
             increment = 1 if increment < 1 else increment
             self._pos = self._pos + increment if self._pos + increment < self._length else 0
-            payload = commsConstants.DataFormat()
+            payload = CommsCommon.DataFormat()
             
             # directly setting private member variables in this edge case
             payload._version = payload._RPI_VERSION
