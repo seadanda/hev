@@ -95,4 +95,4 @@ if __name__ == "__main__":
 
     generator = svpi(args.inputFile)
     while True:
-        pass
+        time.sleep(60)
