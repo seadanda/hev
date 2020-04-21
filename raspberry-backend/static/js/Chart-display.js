@@ -21,6 +21,7 @@ function last_results() {
             size_data = data.length
             var date = new Date(data[i]["created_at"]);
             var seconds = date.getSeconds();
+            // terrible hack to show the time in reverse order
             initial_xaxis.push(-i);
             initial_yaxis_pressure.push(data[i]["pressure_buffer"]);
             initial_yaxis_volume.push(data[i]["pressure_inhale"]);
@@ -31,15 +32,13 @@ function last_results() {
           initial_yaxis_pressure.reverse();
           initial_yaxis_volume.reverse();
           initial_yaxis_flow.reverse();
-
-
-
         },
         cache: false
     });
 }
 
-
+// Calling the function here to retrive 
+// the initial values to be plotted on the charts
 last_results();
 
 
@@ -90,7 +89,7 @@ function requestChartVar() {
         },
         cache: false
     });
-    // call it again after one second
+    // call it again after time in ms
     setTimeout(requestChartVar, 200);
 }
 

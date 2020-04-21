@@ -142,6 +142,7 @@
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark stretched-link col-center" href="#">I:E Ratio</a>
               </div>
+	      
               <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "pressure_patient">000.00</span> </div>
 	    </div>
 	  </div>
@@ -203,6 +204,7 @@
 	function update_variables() {
 	$.getJSON("live-data",
 		function (data) {
+<!--
 		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer.toPrecision(5);
 		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale.toPrecision(5);
 	//document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer.toPrecision(5);
@@ -214,6 +216,18 @@
 		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient.toPrecision(5);		
 		document.getElementById("fsm_state").innerHTML = data.fsm_state.toPrecision(1);
 		//document.getElementById("version").innerHTML = data.version.toPrecision(1); //Commented because not included in the html part
+-->
+		document.getElementById("pressure_buffer").innerHTML = (data.pressure_buffer).toFixed(2);
+		document.getElementById("pressure_inhale").innerHTML = (data.pressure_inhale).toFixed(2);
+//document.getElementById("temperature_buffer").innerHTML = (data.temperature_buffer).toFixed(2);
+		document.getElementById("pressure_air_supply").innerHTML = (data.pressure_air_supply).toFixed(2);
+		document.getElementById("pressure_air_regulated").innerHTML = (data.pressure_air_regulated).toFixed(2);		
+		document.getElementById("pressure_o2_supply").innerHTML = (data.pressure_o2_supply).toFixed(2);
+		document.getElementById("pressure_o2_regulated").innerHTML = (data.pressure_o2_regulated).toFixed(2);
+		document.getElementById("pressure_patient").innerHTML = (data.pressure_patient).toFixed(2);
+		document.getElementById("pressure_diff_patient").innerHTML = (data.pressure_diff_patient).toFixed(2);		
+		document.getElementById("fsm_state").innerHTML = (data.fsm_state).toFixed(2);
+		//document.getElementById("version").innerHTML = (data.version).toFixed(2); //Commented because not included in the html part
 		}
 	);
 	}

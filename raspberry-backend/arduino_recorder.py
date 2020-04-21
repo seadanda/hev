@@ -3,7 +3,7 @@
 # HEV monitoring application
 # USAGE:  python3 arduino_recorder.py
 #
-# Last update: April 4, 2020
+# Last update: April 21, 2020
 
 import sys
 import time
@@ -74,11 +74,9 @@ def monitoring(source_address):
             # Computing the time in seconds since the epoch because easier to manipulate. 
             timestamp = (current_time -epoch).total_seconds() * 1000
            
-            try: 
-              data_receiver = hevclient.get_values()
-              data_alarms = hevclient.get_alarms()
-            except:
-              raise "PIRLA"
+            data_receiver = hevclient.get_values()
+            data_alarms = hevclient.get_alarms()
+
             
             if data_receiver != None:
 
