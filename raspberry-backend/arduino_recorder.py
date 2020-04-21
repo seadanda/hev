@@ -3,7 +3,7 @@
 # HEV monitoring application
 # USAGE:  python3 arduino_recorder.py
 #
-# Last update: April 4, 2020
+# Last update: April 21, 2020
 
 import sys
 import time

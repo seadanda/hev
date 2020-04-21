@@ -158,7 +158,6 @@ def live_alarms():
     """
     data = {'created_at' : None, 'alarms' : None}
 #    data["alarms"] = hevclient.get_alarms()
-    print(hevclient.get_alarms())
  
     sqlite_file = 'database/HEC_monitoringDB.sqlite'
     with sqlite3.connect(sqlite_file) as conn:
