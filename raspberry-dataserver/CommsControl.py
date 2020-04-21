@@ -296,7 +296,9 @@ if __name__ == "__main__" :
             self._lli.bind_to(self.update_llipacket)
 
         def update_llipacket(self, payload):
-#             logging.debug(f"payload received: {payload!r}")
+            if payload.getType() == CommsCommon.PAYLOAD_TYPE.DATA:
+                logging.info(f"payload received: {payload._fsm_state}")
+
             self._llipacket = payload
             # pop from queue - protects against Dependant going down and not receiving packets
             self._lli.pop_payloadrecv()
@@ -312,7 +314,7 @@ if __name__ == "__main__" :
     comms_ctrl = CommsControl(port = port)
     example = Dependant(comms_ctrl)
     
-    payload_send = CommsCommon.CommandFormat(CommsCommon.CMD_TYPE.GENERAL, CommsCommon.CMD_GENERAL.START, param=0)
+    payload_send = CommsCommon.CommandFormat(CommsCommon.CMD_TYPE.GENERAL.value, CommsCommon.CMD_GENERAL.START.value, param=0)
     comms_ctrl.writePayload(payload_send)
 
 #     commsCtrl.payloadrecv = "testpacket1"
