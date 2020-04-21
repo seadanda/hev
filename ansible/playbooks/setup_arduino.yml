@@ -1,4 +1,4 @@
-- hosts: rpi
+- hosts: hevpi
   vars:
     download_dir: /home/pi/Downloads
 
