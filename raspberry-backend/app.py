@@ -12,7 +12,7 @@ import sqlite3
 from flask import json
 import chardet
 from hevclient import HEVClient
-from commsConstants import DataFormat
+from CommsCommon import DataFormat
 from datetime import datetime
 
 WEBAPP = Flask(__name__)

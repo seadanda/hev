@@ -12,7 +12,7 @@ import sqlite3
 from datetime import datetime
 import threading
 from hevclient import HEVClient
-from commsConstants import DataFormat
+from CommsCommon import DataFormat
 
 SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
 TABLE_NAME = 'hec_monitor'  # name of the table to be created
