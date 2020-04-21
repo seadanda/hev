@@ -156,8 +156,23 @@ def live_alarms():
     Get live alarms from the hevserver
     Output in json format
     """
+    data = {'created_at' : None, 'alarms' : None}
+#    data["alarms"] = hevclient.get_alarms()
+    print(hevclient.get_alarms())
+ 
+    sqlite_file = 'database/HEC_monitoringDB.sqlite'
+    with sqlite3.connect(sqlite_file) as conn:
+        cursor = conn.cursor()
+        cursor.execute("SELECT created_at, alarms "
+        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1")
 
-    response = make_response(json.dumps(hevclient.get_alarms()).encode('utf-8') )
+        fetched = cursor.fetchone()
+
+        data['created_at'] = fetched[0]
+        data['alarms'] = fetched[1]
+
+
+    response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'
     return response
 
