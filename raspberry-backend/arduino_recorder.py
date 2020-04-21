@@ -76,8 +76,7 @@ def monitoring(source_address):
            
             data_receiver = hevclient.get_values()
             data_alarms = hevclient.get_alarms()
-
-            
+           
             if data_receiver != None:
 
                 # data alarms can have length of 6, joining all the strings
