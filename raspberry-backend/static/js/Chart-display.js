@@ -22,7 +22,8 @@ function last_results() {
             var date = new Date(data[i]["created_at"]);
             var seconds = date.getSeconds();
             // terrible hack to show the time in reverse order
-            initial_xaxis.push(-i);
+            var time_x = (-i/5).toFixed(2)
+            initial_xaxis.push(time_x);
             //initial_xaxis.push(data[i]["timestamp"]);
             initial_yaxis_pressure.push(data[i]["pressure_buffer"]);
             initial_yaxis_volume.push(data[i]["pressure_inhale"]);
@@ -49,25 +50,26 @@ function requestChartVar() {
         url: '/live-data',
         success: function(point) {
 
-            if(chart_pressure.data.datasets[0].data.length > 60){
+            if(chart_pressure.data.datasets[0].data.length > 300){
                 chart_pressure.data.labels.shift();
                 chart_pressure.data.datasets[0].data.shift();
             }
 
-            if(chart_flow.data.datasets[0].data.length > 60){
+            if(chart_flow.data.datasets[0].data.length > 300){
                 //chart_flow.data.labels.shift();
                 chart_flow.data.datasets[0].data.shift();
             }
 
  
-            if(chart_volume.data.datasets[0].data.length > 60){
+            if(chart_volume.data.datasets[0].data.length > 300){
                 //chart_volume.data.labels.shift();
                 chart_volume.data.datasets[0].data.shift();
             }
 
-            for (var i=0; i<60; i++) {
-                chart_pressure.data.labels[i] -= 1 ;
-           }
+            for (var i=0; i<300; i++) {
+                var x = chart_pressure.data.labels[i] - 0.20 ;
+                chart_pressure.data.labels[i] = x.toFixed(1);
+            }
 
 
             // add the point           

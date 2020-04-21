@@ -1,26 +1,59 @@
 var chart;
 var refreshIntervalId;
-
+var initial_xaxis = [];
+var initial_yaxis_var1 = [];
+var initial_yaxis_var2 = [];
 
 
 /**
  * Request data from the server, add it to the graph and set a timeout
  * to request again
  */
+
+
+function last_results() {
+  $.getJSON({
+      url: '/last_N_data',
+      success: function(data) {
+        for (i=0; i<data.length; i++) {
+          // terrible hack to show the time in reverse order
+          var time_x = (-i/5).toFixed(2)
+          initial_xaxis.push(time_x);
+          //initial_xaxis.push(data[i]["timestamp"]);
+          initial_yaxis_var1.push(data[i]["pressure_buffer"]);
+          initial_yaxis_var2.push(data[i]["pressure_inhale"]);
+        }
+        //reverse because data is read from the other way
+        initial_xaxis.reverse();
+        initial_yaxis_var1.reverse();
+        initial_yaxis_var2.reverse();
+      },
+      cache: false
+  });
+}
+
+last_results();
+
+
 function requestDataVar1(var1, var2) {
     $.ajax({
         url: '/live-data',
         success: function(point) {
 
-            if(chart.data.datasets[0].data.length > 60){
+            if(chart.data.datasets[0].data.length > 300){
                 chart.data.labels.shift();
                 chart.data.datasets[0].data.shift();
             }
 
-            if(chart.data.datasets[1].data.length > 60){
+            if(chart.data.datasets[1].data.length > 300){
                 //chart.data.labels.shift();
                 chart.data.datasets[1].data.shift();
             }
+
+            for (var i=0; i<300; i++) {
+              var x = chart.data.labels[i] - 0.20 ;
+              chart.data.labels[i] = x.toFixed(1);
+          }
 
             // add the point
             //chart.data.labels.push(point.created_at);
@@ -36,18 +69,18 @@ function requestDataVar1(var1, var2) {
     refreshIntervalId = setTimeout(requestDataVar1, 200, var1, var2);
 }
 
-
+/*
 function requestDataVar(var1, var2) {
     $.ajax({
         url: '/live-data',
         success: function(point) {
 
-            if(chart_new.data.datasets[0].data.length > 60){
+            if(chart_new.data.datasets[0].data.length > 300){
                 chart_new.data.labels.shift();
                 chart_new.data.datasets[0].data.shift();
             }
 
-            if(chart_new.data.datasets[1].data.length > 60){
+            if(chart_new.data.datasets[1].data.length > 300){
                 //chart.data.labels.shift();
                 chart_new.data.datasets[1].data.shift();
             }
@@ -64,7 +97,7 @@ function requestDataVar(var1, var2) {
     // call it again after one second
     //setTimeout(requestDataVar, 1000, var1, var2);
 }
-
+*/
 
 
 
@@ -74,18 +107,18 @@ $(document).ready(function() {
   chart = new Chart(ctx, {
         type: 'line',
         data: {
-            labels: [],
+            labels: initial_xaxis,
             datasets: [{ 
       label: 'A',
       yAxisID: 'A',
-                data: [],
+                data: initial_yaxis_var1,
                 label: "Buffer",
                 borderColor: "#0000FF",
                 fill: false,
               },{ 
       label: 'B',
       yAxisID: 'B',
-                data: [],
+                data: initial_yaxis_var2,
                 label: "Inhale",
                 borderColor: "#000000",
                 fill: false,
@@ -106,8 +139,9 @@ $(document).ready(function() {
               type: 'realtime'
                     },
 		    ticks: {
-			maxTicksLimit: 5,
-			maxRotation: 0
+          fontSize: 25,
+			    maxTicksLimit: 5,
+			    maxRotation: 0
 		    }
 		}],
                 yAxes: [{
@@ -116,26 +150,25 @@ $(document).ready(function() {
                    position: 'left',
 		    ticks: {
                   fontColor: "#0000FF", // this here
+                  fontSize: 25,
                 },
                 }, {
                     id: 'B',
                     type: 'linear',
                     position: 'right',
 		    ticks: {
-			fontColor: "#000000", // this here
-                    },
-		    ticks: {
-			min: 0,
-			max: 200,
-			stepSize: 20
-		    }
+                  fontColor: "#000000", // this here
+                  fontSize: 25,
+                },
 		}
 		       ]
 	  },
-      legend : {
-	  display: true
-      }
-	  }
+		legend : {
+      display: true,
+      "labels": {
+        "fontSize": 20,
+    }        } 
+        }
   });
     requestDataVar1("pressure_buffer", "pressure_inhale");
 });
@@ -233,7 +266,10 @@ function updateChartType() {
                 }]
 	        },
 		legend : {
-		    display: true}
+        display: true,
+        "labels": {
+          "fontSize": 20,
+      }        } 
           }
 
 

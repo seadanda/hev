@@ -3,7 +3,7 @@
 # Python monitoring code
 # USAGE:  python3 app.py
 #
-# Last update: April 7, 2020
+# Last update: April 20, 2020
 
 from time import time
 from flask import Flask, render_template, make_response, jsonify, Response, request
@@ -116,7 +116,7 @@ def last_N_data():
     Query the sqlite3 table for variables
     Output in json format
     """
-    N = 60
+    N = 300 #update interval is 200 ms and there are 300 entries in 60 seconds
     list_variables = []
     list_variables.append("created_at")
     list_variables.extend(getList(DataFormat().getDict()))

@@ -108,7 +108,7 @@ def monitoring(source_address):
                      raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
                 finally:                  
                     sys.stdout.flush()
-                    time.sleep(1)
+                    time.sleep(0.2)
 
 def progress(status, remaining, total):
     print(f'Copied {total-remaining} of {total} pages...')
