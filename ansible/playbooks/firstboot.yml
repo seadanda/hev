@@ -1,0 +1,15 @@
+---
+- hosts: hevpi
+  remote_user: pi
+  vars:
+        download_dir: /home/pi/Downloads
+
+  tasks: 
+
+        - name: copy firstboot script
+          template: src=firstboot.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+
+        - name: run firstboot 
+          command: "{{ download_dir }}/firstboot.sh"
+          become: yes
+

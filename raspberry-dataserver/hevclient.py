@@ -15,9 +15,8 @@ logging.basicConfig(level=logging.INFO,
 polling = True
 setflag = False
 
-# alarms: manual, gas supply, apnea, expired minute volume,
-#         upper pressure limit, power failure
-
+class HEVPacketError(Exception):
+    pass
 
 class HEVClient(object):
     def __init__(self):
@@ -37,15 +36,20 @@ class HEVClient(object):
 
         # grab data from the socket as soon as it is available and dump it in the db
         while self._polling:
-            data = await reader.read(600)
             try:
+                data = await reader.read(600)
                 payload = json.loads(data.decode("utf-8"))
+                if payload["type"] == "broadcast":
+                    with self._lock:
+                        self._values = payload["sensors"]
+                        self._alarms = payload["alarms"]
+                elif payload["type"] == "keepalive":
+                    #Still alive
+                    pass
+                else:
+                    raise HEVPacketError(f"Invalid packet type: {payload['type']}")
             except json.decoder.JSONDecodeError:
                 logging.warning(f"Could not decode packet: {data}")
-                raise
-            with self._lock:
-                self._values = payload["sensors"]
-                self._alarms = payload["alarms"]
 
         # close connection
         writer.close()
@@ -138,13 +142,13 @@ if __name__ == "__main__":
     except:
         logging.info("No alarms received")
 
-    time.sleep(1)
+    time.sleep(2)
     print(f"Alarms: {hevclient.get_alarms()}")
 
     # send commands:
     time.sleep(1)
-    print("This one will fail since foo is not in the command_codes enum:")
-    print(hevclient.send_cmd("general", "foo"))
+    print("This one will fail since foo is not in the CMD_GENERAL enum:")
+    print(hevclient.send_cmd("GENERAL", "foo"))
 
     # print some more values
     for i in range(10):

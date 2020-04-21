@@ -1,11 +1,35 @@
 #include "CommsFormat.h"
 
 // constructor to init variables
-CommsFormat::CommsFormat(uint8_t infoSize, uint8_t address, uint16_t control) {
+CommsFormat::CommsFormat(uint8_t info_size, uint8_t address, uint16_t control) {
+    init(info_size, address, control);
+}
+
+CommsFormat::CommsFormat(Payload &pl) {
+    uint8_t address;
+    switch (pl.getType()) {
+        case PAYLOAD_TYPE::ALARM:
+            address = PACKET_ALARM;
+            break;
+        case PAYLOAD_TYPE::CMD:
+            address = PACKET_CMD;
+            break;
+        case PAYLOAD_TYPE::DATA:
+            address = PACKET_DATA;
+            break;
+        default:
+            address = 0;
+            break;
+    }
+    init(pl.getSize(), address);
+    setInformation(&pl);
+}
+
+void CommsFormat::init(uint8_t info_size, uint8_t address, uint16_t control) {
     memset(_data, 0, sizeof(_data));
 
-    _info_size   = infoSize;
-    _packet_size = infoSize + CONST_MIN_SIZE_PACKET ; // minimum size (start,address,control,fcs,stop)
+    _info_size   = info_size;
+    _packet_size = info_size + CONST_MIN_SIZE_PACKET ; // minimum size (start,address,control,fcs,stop)
     if (_packet_size > CONST_MAX_SIZE_PACKET) {
         return;
     }
@@ -19,6 +43,7 @@ CommsFormat::CommsFormat(uint8_t infoSize, uint8_t address, uint16_t control) {
 
     generateCrc();
 }
+
 
 void CommsFormat::assignBytes(uint8_t* target, uint8_t* source, uint8_t size, bool calcCrc) {
     memcpy(target, source, size);
@@ -89,23 +114,3 @@ void CommsFormat::copyData(uint8_t* data, uint8_t dataSize) {
 
     assignBytes(getData(), data, dataSize);
 }
-
-
-// STATIC METHODS
-// TODO rewrite in a slightly better way using the enum
-CommsFormat* CommsFormat::generateALARM(Payload *pl) {
-    CommsFormat *tmpComms = new CommsFormat(pl->getSize(), PACKET_ALARM);
-    tmpComms->setInformation(pl);
-    return tmpComms;
-}
-CommsFormat* CommsFormat::generateCMD  (Payload *pl) {
-    CommsFormat *tmpComms = new CommsFormat(pl->getSize(), PACKET_CMD  );
-    tmpComms->setInformation(pl);
-    return tmpComms;
-}
-CommsFormat* CommsFormat::generateDATA (Payload *pl) {
-    CommsFormat *tmpComms = new CommsFormat(pl->getSize(), PACKET_DATA );
-    tmpComms->setInformation(pl);
-    return tmpComms;
-}
-

@@ -9,8 +9,8 @@ from serial.tools import list_ports
 import threading
 import time
 
-import commsFormat
-import commsConstants
+import CommsFormat
+import CommsCommon
 from collections import deque
 
 import binascii
@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %
 
 
 # communication class that governs talking between devices
-class commsControl():
+class CommsControl():
     def __init__(self, port, baudrate = 115200, queueSizeReceive = 16, queueSizeSend = 16):
         
         self._serial = None
@@ -87,6 +87,10 @@ class commsControl():
 
     def receiver(self):
         while self._receiving:
+            # sleep 1 ms in order not to ramp the CPU to 100%
+            # - safe since arduino sends data in O(10ms) steps
+            # - 1 ms due to prompt catch of the ACK/NACK
+            time.sleep(0.001)
             if self._serial is not None:
                 if self._serial.in_waiting > 0:
                     with self._lockSerial:
@@ -105,12 +109,12 @@ class commsControl():
                         queue[0].setSequenceSend(self._sequenceSend)
                         self.sendPacket(queue[0])
                     
-    def getQueue(self, payloadType):
-        if   payloadType == commsConstants.PAYLOAD_TYPE.ALARM:
+    def getQueue(self, payload_type):
+        if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
             return self._alarms
-        elif payloadType == commsConstants.PAYLOAD_TYPE.CMD:
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
             return self._commands
-        elif payloadType == commsConstants.PAYLOAD_TYPE.DATA:
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
             return self._data
         else:
             return None
@@ -118,13 +122,13 @@ class commsControl():
     def getInfoType(self, address):
         address &= 0xC0
         if address == 0xC0:
-            return commsConstants.PAYLOAD_TYPE.ALARM
+            return CommsCommon.PAYLOAD_TYPE.ALARM
         elif address == 0x80:
-            return commsConstants.PAYLOAD_TYPE.CMD
+            return CommsCommon.PAYLOAD_TYPE.CMD
         elif address == 0x40:
-            return commsConstants.PAYLOAD_TYPE.DATA
+            return CommsCommon.PAYLOAD_TYPE.DATA
         else:
-            return commsConstants.PAYLOAD_TYPE.UNSET
+            return CommsCommon.PAYLOAD_TYPE.UNSET
 
     def processPacket(self, data):
         for byte in data:
@@ -142,36 +146,36 @@ class commsControl():
                 decoded = self.decoder(self._received, self._receivedStart)
                 if decoded is not None:
                     logging.debug(binascii.hexlify(decoded))
-                    tmpComms = commsFormat.commsFromBytes(decoded)
-                    if tmpComms.compareCrc():
-                        control     = tmpComms.getData()[tmpComms.getControl()+1]
-                        self._sequenceReceive = (tmpComms.getData()[tmpComms.getControl()] >> 1) & 0x7F
+                    tmp_comms = CommsFormat.commsFromBytes(decoded)
+                    if tmp_comms.compareCrc():
+                        control     = tmp_comms.getData()[tmp_comms.getControl()+1]
+                        self._sequenceReceive = (tmp_comms.getData()[tmp_comms.getControl()] >> 1) & 0x7F
                         
                         # get type of payload and corresponding queue
-                        payloadType = self.getInfoType(tmpComms.getData()[tmpComms.getAddress()])
-                        tmpQueue   = self.getQueue(payloadType)
+                        payload_type = self.getInfoType(tmp_comms.getData()[tmp_comms.getAddress()])
+                        tmpQueue   = self.getQueue(payload_type)
 
                         # get type of packet
-                        ctrlFlag    = control & 0x0F
-                        if ctrlFlag == 0x05:
+                        ctrl_flag    = control & 0x0F
+                        if ctrl_flag == 0x05:
                             logging.debug("Received NACK")
                             # received NACK
-                        elif ctrlFlag == 0x01:
+                        elif ctrl_flag == 0x01:
                             logging.debug("Received ACK")
                             # received ACK
                             self.finishPacket(tmpQueue)
                         else:
                             sequenceReceive = ((control >> 1) & 0x7F) + 1
-                            address = tmpComms.getData()[tmpComms.getAddress():tmpComms.getControl()]
+                            address = tmp_comms.getData()[tmp_comms.getAddress():tmp_comms.getControl()]
                             
-                            if self.receivePacket(payloadType, tmpComms):
+                            if self.receivePacket(payload_type, tmp_comms):
                                 logging.debug("Preparing ACK")
-                                commsResponse = commsFormat.commsACK(address = address[0])
+                                comms_response = CommsFormat.CommsACK(address = address[0])
                             else:
                                 logging.debug("Preparing NACK")
-                                commsResponse = commsFormat.commsNACK(address = address)
-                            commsResponse.setSequenceReceive(sequenceReceive)
-                            self.sendPacket(commsResponse)
+                                comms_response = CommsFormat.CommsNACK(address = address)
+                            comms_response.setSequenceReceive(sequenceReceive)
+                            self.sendPacket(comms_response)
                     
                 self._received.clear()
                 
@@ -179,20 +183,20 @@ class commsControl():
                 self._receivedStart = -1
         
     def writePayload(self, payload):
-        payloadType = payload.getType()
-        if   payloadType == commsConstants.PAYLOAD_TYPE.ALARM:
-            tmpComms = commsFormat.generateAlarm(payload)
-        elif payloadType == commsConstants.PAYLOAD_TYPE.CMD:
-            tmpComms = commsFormat.generateCmd(payload)
-        elif payloadType == commsConstants.PAYLOAD_TYPE.DATA:
-            tmpComms = commsFormat.generateData(payload)
+        payload_type = payload.getType()
+        if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
+            tmp_comms = CommsFormat.generateAlarm(payload)
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
+            tmp_comms = CommsFormat.generateCmd(payload)
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
+            tmp_comms = CommsFormat.generateData(payload)
         else:
             return False        
-        tmpComms.setInformation(payload)
+        tmp_comms.setInformation(payload)
         
         with self._dvlock:
-            queue = self.getQueue(payloadType)
-            queue.append(tmpComms)
+            queue = self.getQueue(payload_type)
+            queue.append(tmp_comms)
             self._datavalid.set()
             
         return True
@@ -213,13 +217,13 @@ class commsControl():
         except:
             logging.debug("Queue is probably empty")
             
-    def receivePacket(self, payloadType, commsPacket):
-        if   payloadType == commsConstants.PAYLOAD_TYPE.ALARM:
-            payload = commsConstants.AlarmFormat()
-        elif payloadType == commsConstants.PAYLOAD_TYPE.CMD:
-            payload = commsConstants.CommandFormat()
-        elif payloadType == commsConstants.PAYLOAD_TYPE.DATA:
-            payload = commsConstants.DataFormat()
+    def receivePacket(self, payload_type, commsPacket):
+        if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
+            payload = CommsCommon.AlarmFormat()
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
+            payload = CommsCommon.CommandFormat()
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
+            payload = CommsCommon.DataFormat()
         else:
             return False
         
@@ -282,6 +286,7 @@ class commsControl():
             for callback in self._observers:
                 callback(self._payloadrecv[0])
         
+# start as interactive session to be able to send and receive
 if __name__ == "__main__" :
     # example dependant
     class Dependant(object):
@@ -291,7 +296,9 @@ if __name__ == "__main__" :
             self._lli.bind_to(self.update_llipacket)
 
         def update_llipacket(self, payload):
-#             logging.debug(f"payload received: {payload!r}")
+            if payload.getType() == CommsCommon.PAYLOAD_TYPE.DATA:
+                logging.info(f"payload received: {payload._fsm_state}")
+
             self._llipacket = payload
             # pop from queue - protects against Dependant going down and not receiving packets
             self._lli.pop_payloadrecv()
@@ -304,18 +311,11 @@ if __name__ == "__main__" :
         except:
             pass
 
-    commsCtrl = commsControl(port = port)
-    example = Dependant(commsCtrl)
+    comms_ctrl = CommsControl(port = port)
+    example = Dependant(comms_ctrl)
     
-    payloadSend = commsConstants.CommandFormat()
-    payloadSend.cmdCode = 3
-    payloadSend.toByteArray()
-    
-    def burst(payload):
-        for _ in range(16):
-            commsCtrl.writePayload(payload)
-    
-#     commsCtrl.writePayload(payloadSend)
+    payload_send = CommsCommon.CommandFormat(CommsCommon.CMD_TYPE.GENERAL.value, CommsCommon.CMD_GENERAL.START.value, param=0)
+    comms_ctrl.writePayload(payload_send)
 
 #     commsCtrl.payloadrecv = "testpacket1"
 #     commsCtrl.payloadrecv = "testpacket2"
@@ -327,4 +327,4 @@ if __name__ == "__main__" :
 #         time.sleep(5)
 
 #     while True:
-#         pass
+#         time.sleep(60)

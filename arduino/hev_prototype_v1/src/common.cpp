@@ -1,7 +1,7 @@
 #include "common.h"
 
 
-void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value) {
+void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value) {
     switch (alarm) {
         case ALARM_CODES::APNEA                         :
             thresholds.apnea = value;
@@ -83,7 +83,7 @@ void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t valu
     }
 }
 
-void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t value) {
+void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t &value) {
     switch (cmd) {
         case CMD_SET_TIMEOUT::CALIBRATION:
             timeouts.calibration     = value;

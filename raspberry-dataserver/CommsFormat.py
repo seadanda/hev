@@ -6,29 +6,29 @@
 import libscrc
 
 def commsFromBytes(byteArray):
-    comms = commsFormat()
+    comms = CommsFormat()
     comms.copyBytes(byteArray)
     
     return comms
 
 def generateAlarm(payload):
-    comms = commsFormat(infoSize = payload.getSize(), address = 0xC0)
+    comms = CommsFormat(infoSize = payload.getSize(), address = 0xC0)
     comms.setInformation(payload)
     return comms
 
 def generateCmd(payload):
-    comms = commsFormat(infoSize = payload.getSize(), address = 0x80)
+    comms = CommsFormat(infoSize = payload.getSize(), address = 0x80)
     comms.setInformation(payload)
     return comms
 
 def generateData(payload):
-    comms = commsFormat(infoSize = payload.getSize(), address = 0x40)
+    comms = CommsFormat(infoSize = payload.getSize(), address = 0x40)
     comms.setInformation(payload)
     return comms
 
 
 # basic format based on HDLC
-class commsFormat:
+class CommsFormat:
     def __init__(self, infoSize = 0, address = 0x00, control = [0x00, 0x00]):
         self._data = bytearray(7 + infoSize)
         self._infoSize = infoSize
@@ -113,11 +113,11 @@ class commsFormat:
         self._data     = bytesArray
 
 # ACK specific formating
-class commsACK(commsFormat):
+class CommsACK(CommsFormat):
     def __init__(self, address):
         super().__init__(control = [0x00, 0x01], address = address)
         
 # NACK specific formating
-class commsNACK(commsFormat):
+class CommsNACK(CommsFormat):
     def __init__(self, address):
         super().__init__(control = [0x00, 0x05], address = address)

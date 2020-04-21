@@ -5,7 +5,7 @@
 # author Dónal Murray <donal.murray@cern.ch>
 
 import threading
-import commsConstants
+import CommsCommon
 import time
 import numpy as np
 from typing import List
@@ -39,7 +39,7 @@ class hevfromtxt():
             increment = int(round(self._delay / 0.2))
             increment = 1 if increment < 1 else increment
             self._pos = self._pos + increment if self._pos + increment < self._length else 0
-            payload = commsConstants.DataFormat()
+            payload = CommsCommon.DataFormat()
             
             # directly setting private member variables in this edge case
             payload._version = payload._RPI_VERSION
@@ -65,7 +65,7 @@ class hevfromtxt():
             callback(self._payloadrecv[0])
 
     def writePayload(self, payload):
-        logging.info(payload)
+        logging.info(f"CMD received: {payload}")
 
     def bind_to(self, callback):
         self._observers.append(callback)
@@ -78,4 +78,3 @@ class hevfromtxt():
             # purge full queue if Dependant goes down when it comes back up
             for callback in self._observers:
                 callback(self._payloadrecv[0])
-
