@@ -9,11 +9,12 @@
         <title>High Energy Ventilator</title>
 	<link href="{{ url_for('static', filename='css/style_v3.css') }}" rel="stylesheet" />
         <link href="{{ url_for('static', filename='css/multiselect.css') }}" rel="stylesheet">
-        <link href="{{ url_for('static', filename='css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-		<link href="{{ url_for('static', filename='css/easy-numpad.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/easy-numpad.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/pickout.css') }}" rel="stylesheet">
         <script src="{{ url_for('static', filename='js/all.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/multiselect.min.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/pickout.js') }}"></script>
 	{% block scripts %}
 	{% endblock %}
     </head>
@@ -61,7 +62,7 @@
       </nav>
         <div id="layoutSidenav">
           <div id="layoutSidenav_nav" class="py-1">
-                <nav class="sb-sidenav accordion sb-sidenav-dark px-1" id="sidenavAccordion">
+                <nav class="sb-sidenav br-red accordion sb-sidenav-dark px-1" id="sidenavAccordion">
                   <div class="sb-sidenav-menu">
                     <div class="nav">
 		      <a href="/"> <div id="fan-icon" class = "sb-nav-link-icon border-invisible {{'active' if fan_active }}">
@@ -93,14 +94,11 @@
                 </nav>
 	  </div>
 
-	  <div id="layoutSidenav_content" class="mx-0 my-0 mr-0">
+	  <div id="layoutSidenav_content" class="mx-0 my-0 mr-0 vh-25 br-red">
 	    {% block content %}
 	    {% endblock %}
           </div>
 	</div>
-        <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
-
         <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
@@ -127,10 +125,9 @@
 	  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
 									return i;
 									}
-									</script>
-	
-	<script type=text/javascript>
-          var alarmLogs;
+
+									
+									var alarmLogs;
           clearInterval(alarmLogs);
 
 	  function update_alarms() {
@@ -151,11 +148,7 @@
 	    });
 	  }
 	  var alarmInterval = setInterval('update_alarms()', 1000);
-	</script>
 
-	
-
-	<script type = text/javascript>
 	  function show_easy_numpad_wrapper(thisElement){
 	    if (thisElement.disabled == false && thisElement.readOnly == false) {
 	       show_easy_numpad(thisElement);
@@ -163,19 +156,19 @@
 	  }
 
 	  function unlock(){
-	  var x = document.getElementsByClassName("form-control");
-	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;}
+	  var x = document.getElementsByClassName("input-editable");
+	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
 			  var el = document.getElementById("path-locked-main");
 			  el.classList.add("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.remove("transparent");
-
-			  setTimeout(lock(),1000);
+			  
+			  //setTimeout(lock(),1000);
 			  }
 	  
 	  function lock() {
-	  var x = document.getElementsByClassName("form-control");
-			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;}
+	  var x = document.getElementsByClassName("input-editable");
+			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
 			  var el = document.getElementById("path-locked-main");
 			  el.classList.remove("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
@@ -183,8 +176,8 @@
 
 					  }
 			  function toggle_lock() {
-			  setTimeout(function(){
-					  var x = document.getElementsByClassName("form-control");
+					  setTimeout(function(){
+					  var x = document.getElementsByClassName("input-editable");
 			  if ( x.length > 0 && x[0].readOnly == false ){lock();}
 			  else{ unlock() ; }
 			  },500);
