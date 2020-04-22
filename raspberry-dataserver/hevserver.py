@@ -16,8 +16,8 @@ from collections import deque
 from serial.tools import list_ports
 from typing import List
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger().setLevel(logging.INFO)
 
 class HEVPacketError(Exception):
     pass
@@ -173,12 +173,12 @@ class HEVServer(object):
                 broadcast_packet = {"type": "broadcast"}
                 broadcast_packet["sensors"] = values
                 broadcast_packet["alarms"] = alarms # add alarms key/value pair
-
-                logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
-
                 # take control of datavalid and reset it
                 with self._dvlock:
                     self._datavalid.clear()
+
+                logging.info(f"Send data for timestamp: {broadcast_packet['sensors']['timestamp']}")
+                logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
                 writer.write(json.dumps(broadcast_packet).encode())
@@ -209,7 +209,7 @@ class HEVServer(object):
 
         # get address for log
         addr = server.sockets[0].getsockname()
-        logging.info(f"Serving on {addr}")
+        logging.debug(f"Serving on {addr}")
 
         async with server:
             await server.serve_forever()
@@ -233,7 +233,10 @@ if __name__ == "__main__":
     #parser to allow us to pass arguments to hevserver
     parser = argparse.ArgumentParser(description='Arguments to run hevserver')
     parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
+    parser.add_argument('-d', '--debug', action='store_true', help='Show debug output')
     args = parser.parse_args()
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
     
     # check if input file was specified
     if args.inputFile != '':
