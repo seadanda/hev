@@ -128,22 +128,16 @@ class HEVServer(object):
                     raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
             else:
                 raise HEVPacketError(f"Invalid request type")
-
-            packet = json.dumps(payload).encode()
-
-            # send reply and close connection
-            writer.write(packet)
-            await writer.drain()
-            writer.close()
-
         except (NameError, KeyError, HEVPacketError) as e:
             # invalid request: reject immediately
             logging.warning(f"Invalid packet: {e}")
             payload = {"type": "nack"}
-            packet = json.dumps(payload).encode()
-            writer.write(packet)
-            await writer.drain()
-            writer.close()
+
+        # send reply and close connection
+        packet = json.dumps(payload).encode()
+        writer.write(packet)
+        await writer.drain()
+        writer.close()
 
     async def handle_broadcast(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # log address
@@ -181,7 +175,7 @@ class HEVServer(object):
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
-                writer.write(json.dumps(broadcast_packet).encode())
+                writer.write(json.dumps(broadcast_packet).encode() + b"\0")
                 await writer.drain()
             except (ConnectionResetError, BrokenPipeError):
                 # Connection lost, stop trying to broadcast and free up socket
