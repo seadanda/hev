@@ -181,7 +181,7 @@ class HEVServer(object):
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
-                writer.write(json.dumps(broadcast_packet).encode())
+                writer.write(json.dumps(broadcast_packet).encode() + b"\0")
                 await writer.drain()
             except (ConnectionResetError, BrokenPipeError):
                 # Connection lost, stop trying to broadcast and free up socket
