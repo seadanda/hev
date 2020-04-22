@@ -3,7 +3,7 @@ var refreshIntervalId;
 var initial_xaxis = [];
 var initial_yaxis_var1 = [];
 var initial_yaxis_var2 = [];
-
+var time_x;
 
 /**
  * Request data from the server, add it to the graph and set a timeout
@@ -17,7 +17,7 @@ function last_results() {
       success: function(data) {
         for (i=0; i<data.length; i++) {
           // terrible hack to show the time in reverse order
-          var time_x = (-i/5).toFixed(2)
+          time_x = (-i/5).toFixed(2)
           initial_xaxis.push(time_x);
           //initial_xaxis.push(data[i]["timestamp"]);
           initial_yaxis_var1.push(data[i]["pressure_buffer"]);

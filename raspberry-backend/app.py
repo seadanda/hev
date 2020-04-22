@@ -140,9 +140,10 @@ def last_N_data():
               if item == 'created_at':
                   data[item] = el[index]
               else:
-                  data[item] = round(el[index],2)   
+                  data[item] = el[index]   
           fetched_all.append(data)
           #print(fetched_all)
+    print(len(fetched_all))
 
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
