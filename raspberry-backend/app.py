@@ -20,6 +20,11 @@ WEBAPP = Flask(__name__)
 # Instantiating the client
 hevclient = HEVClient()
 
+sqlite_file = 'database/HEV_monitoringDB.sqlite'
+TABLE_NAME = 'hev_monitor'  # name of the table to be created
+N = 300 # number of entries to request for alarms and data (300 = 60 s of data divided by 0.2 s interval)
+
+
 
 def getList(dict):
     return [*dict]
@@ -96,6 +101,26 @@ def data_handler():
 
     return render_template('index.html', result=live_data(), patient=patient_name)
 
+def check_table(table_name):
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()    			
+    #get the count of tables with the name
+    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=table_name))
+    
+    existence = False
+
+    #if the count is 1, then table exists
+    if c.fetchone()[0]==1 : 
+        existence = True
+        print('Table exists.')
+    else :
+    	print('Table does not exist.')
+    			
+    #commit the changes to db			
+    conn.commit()
+    #close the connection
+    conn.close()
+    return existence
 
 
 
@@ -117,33 +142,38 @@ def last_N_data():
     Output in json format
     """
     N = 300 #update interval is 200 ms and there are 300 entries in 60 seconds
+
     list_variables = []
     list_variables.append("created_at")
     list_variables.extend(getList(DataFormat().getDict()))
 
-
     united_var = ','.join(list_variables)
 
-    sqlite_file = 'database/HEC_monitoringDB.sqlite'
     fetched_all = []
+    
+    if check_table(TABLE_NAME):
+        with sqlite3.connect(sqlite_file) as conn:
+            cursor = conn.cursor()
+            cursor.execute(" SELECT {var} "
+            " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=N))
+            
+            fetched = cursor.fetchall()
+            for el in fetched:
+              data = {key: None for key in list_variables}
+    
+              for index, item in enumerate(list_variables):
+                      data[item] = el[index]
 
-    with sqlite3.connect(sqlite_file) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT {var} "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT {entries}".format(var=united_var, entries=N))
-        
-        fetched = cursor.fetchall()
-        for el in fetched:
-          data = {key: None for key in list_variables}
+              fetched_all.append(data)
+    else:
+        for i in range(N):
+              data = {key: None for key in list_variables}
+              for index, item in enumerate(list_variables):
+                      data[item] = ""
 
-          for index, item in enumerate(list_variables):
-              if item == 'created_at':
-                  data[item] = el[index]
-              else:
-                  data[item] = el[index]   
-          fetched_all.append(data)
-          #print(fetched_all)
-    print(len(fetched_all))
+              fetched_all.append(data)
+
+
 
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
@@ -157,20 +187,18 @@ def live_alarms():
     Get live alarms from the hevserver
     Output in json format
     """
-    data = {'created_at' : None, 'alarms' : None}
-#    data["alarms"] = hevclient.get_alarms()
- 
-    sqlite_file = 'database/HEC_monitoringDB.sqlite'
-    with sqlite3.connect(sqlite_file) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT created_at, alarms "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT 1")
+    data = {'timestamp' : None, 'alarms' : None}
+    data_alarms = hevclient.get_alarms()
+    data_receiver = hevclient.get_values()
 
-        fetched = cursor.fetchone()
 
-        data['created_at'] = fetched[0]
-        data['alarms'] = fetched[1]
+    if data_alarms != None:
+        data_alarms = ','.join(data_alarms)
+    else:
+        data_alarms = "none"
 
+    data["alarms"] = data_alarms
+    data["timestamp"] = data_receiver['timestamp']
 
     response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'
@@ -183,20 +211,24 @@ def last_N_alarms():
     Query the sqlite3 table for the last N alarms
     Output in json format
     """
-    N = 10
-    data = {'created_at' : None, 'alarms' : None}
+    data = {'timestamp' : None, 'alarms' : None}
 
-    sqlite_file = 'database/HEC_monitoringDB.sqlite'
-    with sqlite3.connect(sqlite_file) as conn:
-        cursor = conn.cursor()
-        cursor.execute("SELECT created_at, alarms "
-        "FROM hec_monitor ORDER BY ROWID DESC LIMIT {}".format(N))
+    if check_table(TABLE_NAME):
+        with sqlite3.connect(sqlite_file) as conn:
+            cursor = conn.cursor()
+            cursor.execute("SELECT timestamp, alarms "
+            "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=TABLE_NAME, size=N))
+            fetched = cursor.fetchall()
+    else:
+        fetched = []
+        for i in range(N):
+              data['timestamp'] = "none"
+              data['alarms'] = "none"
+              fetched.append(data)
 
-        fetched = cursor.fetchall()
 
     response = make_response(json.dumps(fetched).encode('utf-8') )
     response.content_type = 'application/json'
-
     return response
 
 

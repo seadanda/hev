@@ -14,8 +14,8 @@ import threading
 from hevclient import HEVClient
 from CommsCommon import DataFormat
 
-SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
-TABLE_NAME = 'hec_monitor'  # name of the table to be created
+SQLITE_FILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite database file
+TABLE_NAME = 'hev_monitor'  # name of the table to be created
 
 # Instantiating the client
 hevclient = HEVClient()
