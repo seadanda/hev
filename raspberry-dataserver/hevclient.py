@@ -38,6 +38,8 @@ class HEVClient(object):
         while self._polling:
             try:
                 data = await reader.read(600)
+                if data[-1] == 0x00:
+                    data = data[:-1]
                 payload = json.loads(data.decode("utf-8"))
                 if payload["type"] == "broadcast":
                     with self._lock:
@@ -83,6 +85,8 @@ class HEVClient(object):
 
         # wait for acknowledge
         data = await reader.read(300)
+        if data[-1] == 0x00:
+            data = data[:-1]
         try:
             data = json.loads(data.decode("utf-8"))
         except json.decoder.JSONDecodeError:
