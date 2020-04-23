@@ -264,7 +264,8 @@ function updateChartType() {
 			        displayFormat: 'second'
             },
 		        ticks: {
-		        	maxTicksLimit: 5,
+              maxTicksLimit: 5,
+              fontSize: 25,
 		        	maxRotation: 0
 		        }
 		      }],
@@ -273,8 +274,9 @@ function updateChartType() {
             type: 'linear',
             position: 'left',
 		        color: "#0000FF",
-		        ticks: {
-			        fontColor: "#0000FF", // this here
+            ticks: {
+              fontColor: "#0000FF", // this here
+              fontSize: 25,
             },
           }, 
           {
@@ -282,8 +284,9 @@ function updateChartType() {
             type: 'linear',
             position: 'right',
 		        color: "#000000",
-		        ticks: {
+            ticks: {
               fontColor: "#000000", // this here
+              fontSize: 25,
             },
           }]
 	      },

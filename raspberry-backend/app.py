@@ -179,7 +179,6 @@ def last_N_data():
 
               fetched_all.append(data)
     else:
-        print("BENZINAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
         for i in range(N):
               data = {key: None for key in list_variables}
               for index, item in enumerate(list_variables):
