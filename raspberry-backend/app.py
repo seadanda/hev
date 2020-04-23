@@ -50,7 +50,7 @@ def charts2():
     return render_template('charts2.html')
 
 @WEBAPP.route('/chartsLoop')
-def charts3():
+def chartsLoop():
     return render_template('chartsLoop.html')
 
 @WEBAPP.route('/logs')
