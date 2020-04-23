@@ -6023,3 +6023,25 @@ div.active{
     position: absolute; 
     bottom: 0;
 }
+.pickout{
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    text-indent: 1px;
+    text-overflow: '';
+}
+.pk-input.-MySelector{
+    //-webkit-appearance: none;
+    //-moz-appearance: none;
+    //min-width:6em;
+    //padding:0;
+    //text-indent: 1px;
+    //text-overflow: '';
+}
+.pk-arrow.-MySelector{
+    //-webkit-appearance: none;
+    //-moz-appearance: none;
+    //text-indent: 1px;
+    //text-overflow: '';
+
+}
+.app-none{appearance:none;}
