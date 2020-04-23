@@ -89,9 +89,11 @@
             <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
 		    <input type="submit" name="start" value="START" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
-		    <input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+
 		    <!-- <input type="submit" name="reset" value="RESET" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input> -->
-		    </div>
+			</div>
+			
                     </form>
 		  </div>
                 </nav>
