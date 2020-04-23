@@ -33,7 +33,7 @@ function requestChartVar() {
         },
         cache: false
     });
-    setTimeout(requestChartVar, 2000);
+    setTimeout(requestChartVar, 200);
 }
 
 requestChartVar()
