@@ -109,7 +109,8 @@ $(document).ready(function() {
             datasets: [{
                 data: initial_yaxis_pressure,
                 label: "Var1",
-                borderColor: "#3e95cd",
+                borderColor: "#0049b8",
+                borderWidth: 4,
                 fill: false
               }
             ]
@@ -185,7 +186,9 @@ $(document).ready(function() {
             datasets: [{
                 data: initial_yaxis_flow,
                 label: "Var1",
-                borderColor: "#3e95cd",
+                //borderColor: "#3e95cd",
+                borderColor: "#000000",
+                borderWidth: 4,
                 fill: false
             }]
         },
@@ -259,7 +262,8 @@ $(document).ready(function() {
             datasets: [{
                 data: initial_yaxis_volume,
                 label: "Var1",
-                borderColor: "#3e95cd",
+                borderColor: "#ba0202",
+                borderWidth: 4,
                 fill: false
             }]
         },
