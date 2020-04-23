@@ -113,17 +113,20 @@ $(document).ready(function() {
                 fill: false
               }
             ]
-          },
-          options: {
+        },
+        options: {
             responsive: true,
             stroke: {
                 curve: 'smooth'
-              },
+            },
+            tooltips: {
+                enabled: false
+            },
             title: {
                 display: true,
                 text: 'Pressure [mbar]',
                 fontSize: 25
-              },            
+            },            
             scales: {
             xAxes: [{
                 ticks: {
@@ -141,24 +144,24 @@ $(document).ready(function() {
                     fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
-                  },
+                },
 				scaleLabel: {
 					display: false,
                     labelString: 'Pressure [mbar]'
 				}
 			}]            
             },
-                legend : {
+            legend : {
                     display: false}
-          },
-          plugins: {
-              streaming: {
-                  duration: 20000,
-                  refresh: 1000,
-                  delay: 2000
-                 // onRefresh:     requestChartVar()
-              }
-          }
+        },
+        plugins: {
+            streaming: {
+                duration: 20000,
+                refresh: 1000,
+                delay: 2000
+                // onRefresh:     requestChartVar()
+            }
+        }
     });
 });
 
@@ -179,14 +182,16 @@ $(document).ready(function() {
                 label: "Var1",
                 borderColor: "#3e95cd",
                 fill: false
-              }
-            ]
-          },
-          options: {
+            }]
+        },
+        options: {
             responsive: true,
             stroke: {
                 curve: 'smooth'
-              },
+            },
+            tooltips: {
+                enabled: false
+            },
             title: {
               display: true,
               text: 'Flow [mL/min]',
@@ -209,24 +214,25 @@ $(document).ready(function() {
                     fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
-                  },
+                },
 				scaleLabel: {
 					display: false,
                     labelString: 'Flow [mL/min]'
 				}
 			}]            
             },
-                legend : {
-                    display: false}
-          },
-          plugins: {
-              streaming: {
-                  duration: 20000,
-                  refresh: 1000,
-                  delay: 2000
-                  //onRefresh:     requestChartVar2()
-              }
-          }
+            legend : {
+                display: false
+            }
+        },
+        plugins: {
+            streaming: {
+                duration: 20000,
+                refresh: 1000,
+                delay: 2000
+                //onRefresh:     requestChartVar2()
+            }
+        }
     });
 });
 
@@ -245,18 +251,20 @@ $(document).ready(function() {
                 label: "Var1",
                 borderColor: "#3e95cd",
                 fill: false
-              }
-            ]
-          },
-          options: {
+            }]
+        },
+        options: {
             responsive: true,
             stroke: {
                 curve: 'smooth'
-              },
+            },
+            tooltips: {
+                enabled: false
+            },
             title: {
-              display: true,
-              text: 'Volume [mL]',
-              fontSize: 25
+                display: true,
+                text: 'Volume [mL]',
+                fontSize: 25
             },
             scales: {
             xAxes: [{
@@ -275,24 +283,25 @@ $(document).ready(function() {
                     fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
-                  },
+                },
 				scaleLabel: {
 					display: false,
                     labelString: 'Volume [mL]'
 				}
 			}]            
             },
-                legend : {
-                    display: false}
-          },
-          plugins: {
-              streaming: {
-                  duration: 20000,
-                  refresh: 1000,
-                  delay: 2000
-                  //onRefresh:     requestChartVar3()
-              }
-          }
+            legend : {
+                display: false
+            }
+        },
+        plugins: {
+            streaming: {
+                duration: 20000,
+                refresh: 1000,
+                delay: 2000
+                //onRefresh:     requestChartVar3()
+            }
+        }
     });
 });
 
