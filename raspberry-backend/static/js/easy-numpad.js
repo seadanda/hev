@@ -169,8 +169,9 @@ function easy_numpad_done()
         {
             easy_numpad_output_val = easy_numpad_output_val.substring(0,easy_numpad_output_val.length - 1);
         }
-
-        document.getElementById(_outputID).value = easy_numpad_output_val;
+	var element = document.getElementById(_outputID);
+	var success = confirm('Are you sure you want to change the ' + element.name + " from" + element.value + " to " + easy_numpad_output_val);
+	if(success) document.getElementById(_outputID).value = easy_numpad_output_val;
         easy_numpad_close();
     }
 }

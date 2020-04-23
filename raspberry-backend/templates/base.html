@@ -11,10 +11,13 @@
         <link href="{{ url_for('static', filename='css/multiselect.css') }}" rel="stylesheet">
 	<link href="{{ url_for('static', filename='css/easy-numpad.css') }}" rel="stylesheet">
 	<link href="{{ url_for('static', filename='css/pickout.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/notifications.css') }}" rel="stylesheet">
+
         <script src="{{ url_for('static', filename='js/all.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/multiselect.min.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/pickout.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
 	{% block scripts %}
 	{% endblock %}
     </head>
@@ -86,11 +89,11 @@
   
 			  
 		    </div>
-                    <form action="{{ url_for('send_cmd') }}" method="post">
+            <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
-		    <input type="submit" name="start" value="START" class="sb-nav-button py-1 mb-1"></input>
-		    <input type="submit" name="stop" value="STOP" class="sb-nav-button py-1 mb-1"></input>
-		    <input type="submit" name="reset" value="RESET" class="sb-nav-button py-1 mb-1"></input>
+		    <input type="submit" name="start" value="START" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+		    <input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+		    <!-- <input type="submit" name="reset" value="RESET" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input> -->
 		    </div>
                     </form>
 		  </div>
@@ -113,6 +116,37 @@
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
+	  function cmdNotification(input_cmd){
+		window.createNotification({
+			closeOnClick: 1,
+			displayCloseButton: 0,
+			positionClass: "nfc-bottom-right",
+			showDuration: false,
+			theme: "info"
+		})({
+			title: "Issuing command",
+			message: "Sent the command " + input_cmd 
+	  });
+	  }
+
+
+	  var lockTimer;
+	  var unlocked = Boolean(false);
+
+	  function timeOutLock(){
+		window.createNotification({
+			closeOnClick: 1,
+			displayCloseButton: 0,
+			positionClass: "nfc-bottom-right",
+			showDuration: false,
+			theme: "info"
+		})({
+			title: "Screen Lock",
+			message: "Screen has locked due to timeout"
+	  });
+	  lock();
+	  }
+	  
 	  function startTime() {
 	  var today = new Date();
 	  var h = today.getHours();
@@ -165,18 +199,20 @@
 			  el.classList.add("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.remove("transparent");
-			  
-			  //setTimeout(lock(),1000);
+			  unlocked = 1;
+			  clearTimeout(lockTimer);
+			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  }
 	  
-	  function lock() {
+			  function lock() {
+
 	  var x = document.getElementsByClassName("input-editable");
 			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
 			  var el = document.getElementById("path-locked-main");
 			  el.classList.remove("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.add("transparent");
-
+					  unlocked = 0;
 					  }
 			  function toggle_lock() {
 					  setTimeout(function(){
@@ -186,7 +222,22 @@
 			  },500);
 			  }
 						  
+
+			  
 	  
+	$(this).mousemove(function (e) {
+			  if (unlocked) {
+			  clearTimeout(lockTimer);
+			  lockTimer = setTimeout('timeOutLock()', 10000);
+			  }
+			  })
+	$(this).keypress(function (e) {
+			  if (unlocked) {
+			  clearTimeout(lockTimer);
+			  lockTimer = setTimeout('timeOutLock()', 10000);}
+			  })
+
+			  
 	  var battery = 100;
 	  function update_battery() {
 	  // set all transparent

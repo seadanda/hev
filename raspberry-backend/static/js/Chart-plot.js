@@ -95,6 +95,11 @@ $(document).ready(function() {
       }]
     },
     options: {
+      elements: {
+        point: { 
+            radius: 0
+        }
+      },       
       responsive: true,
       stroke: {
           curve: 'smooth'
@@ -202,6 +207,11 @@ function updateChartType() {
       }]
     },
       options: {
+        elements: {
+          point: { 
+              radius: 0
+          }
+        },        
         responsive: true,
         stroke: {
             curve: 'smooth'
