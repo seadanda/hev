@@ -43,7 +43,7 @@ $(document).ready(function() {
     chart_PV = new Chart(ctx_PV, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Loop Pressure:Volme",
+			   label: "Loop Pressure:Volme (last 20s)",
 			   borderColor: "rgb(51,99,255)",
 			   fill: false }]}
 	,options: {scales: {xAxes: [{type: 'linear',
@@ -64,7 +64,7 @@ $(document).ready(function() {
     chart_FV = new Chart(ctx_FV, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Loop Flow:Volme",
+			   label: "Loop Flow:Volme  (last 20s)",
 			   borderColor: "rgb(51,99,255)",
 			   fill: false }]}
 	,options: {scales: {xAxes: [{type: 'linear',
@@ -85,7 +85,7 @@ $(document).ready(function() {
     chart_PF = new Chart(ctx_PF, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Loop Pressure:Flow",
+			   label: "Loop Pressure:Flow (last 20s)",
 			   borderColor: "rgb(51,99,255)",
 			   fill: false }]}
 	,options: {scales: {xAxes: [{type: 'linear',
