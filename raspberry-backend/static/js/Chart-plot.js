@@ -5,6 +5,9 @@ var initial_yaxis_var1 = [];
 var initial_yaxis_var2 = [];
 var time_x;
 
+var updated_xaxis = [];
+var updated_yaxis_var1 = [];
+var updated_yaxis_var2 = [];
 
 /**
  * Request last N data from the server, add it to the graph
@@ -173,6 +176,28 @@ function getSelectValues(select) {
 }
 
 
+function updated_last_results(var1, var2) {
+  $.getJSON({
+      url: '/last_N_data',
+      success: function(data) {
+        for (i=0; i<data.length; i++) {
+          // terrible hack to show the time in reverse order
+          time_x = (-i/5).toFixed(2)
+          updated_xaxis.push(time_x);
+          //initial_xaxis.push(data[i]["timestamp"]);
+          updated_yaxis_var1.push(data[i]["pressure_buffer"]);
+          updated_yaxis_var2.push(data[i]["pressure_buffer"]);
+        }
+        console.log(updated_xaxis);
+        //reverse because data is read from the other way
+        updated_xaxis.reverse();
+        updated_yaxis_var1.reverse();
+        updated_yaxis_var2.reverse();
+      },
+      cache: false
+  });
+}
+
 
 
 // Function runs on chart type select update
@@ -180,19 +205,27 @@ function updateChartType() {
   var selection = document.multiselect('#chart_variables')._item
   var selection_results = getSelectValues(selection)
   console.log("selected variables: ", selection_results);
- 
-  //here we destroy/delete the old or previous chart and redraw it again
-  clearInterval(refreshIntervalId);
   chart.destroy();
+  //chart.data.labels = [];
+  //chart.data.datasets[0].data = [];
+  //chart.data.datasets[1].data = [];
+  //here we destroy/delete the old or previous chart and redraw it again
+  updated_xaxis = [];
+  updated_yaxis_var1 = [];
+  updated_yaxis_var2 = [];
+  clearInterval(refreshIntervalId);
+  updated_last_results(selection_results[0], selection_results[1]);
+  
+
   var ctx = document.getElementById('pressure_air_supply');
   chart = new Chart(ctx, {
     type: 'line',
     data: {
-      labels: [],
+      labels: updated_xaxis,
       datasets: [{ 
         label: 'A',
         yAxisID: 'A',
-        data: [],
+        data: updated_yaxis_var1,
         label: selection_results[0],
         borderColor: "#0000FF",
         fill: false,
@@ -200,7 +233,7 @@ function updateChartType() {
       { 
         label: 'B',
         yAxisID: 'B',
-        data: [],
+        data: updated_yaxis_var2,
         label: selection_results[1],
         borderColor: "#000000",
         fill: false,
