@@ -8,8 +8,8 @@
 #define CONST_TIMEOUT_CMD   50
 
 
-#define CONST_MAX_SIZE_RB_RECEIVING 10
-#define CONST_MAX_SIZE_RB_SENDING 5
+#define CONST_MAX_SIZE_RB_RECEIVING 2
+#define CONST_MAX_SIZE_RB_SENDING 2
 #define CONST_MAX_SIZE_PACKET 64
 #define CONST_MAX_SIZE_BUFFER 128
 #define CONST_MIN_SIZE_PACKET 7
@@ -34,11 +34,11 @@
 #define HEV_FORMAT_VERSION 0xA1
 
 // struct for all data sent
+#pragma pack(1)
 struct data_format {
     uint8_t  version                = HEV_FORMAT_VERSION;
-    uint8_t  fsm_state              = 0;
-    uint16_t dummy                  = 0;
     uint32_t timestamp              = 0;
+    uint8_t  fsm_state              = 0;
     uint16_t pressure_air_supply    = 0;
     uint16_t pressure_air_regulated = 0;
     uint16_t pressure_o2_supply     = 0;
@@ -55,7 +55,9 @@ struct data_format {
     uint8_t  readback_valve_purge   = 0;
     uint8_t  readback_mode          = 0;
 };
+#pragma pack()
 
+#pragma pack(1)
 struct cmd_format {
     uint8_t  version   = HEV_FORMAT_VERSION;
     uint32_t timestamp = 0;
@@ -63,7 +65,9 @@ struct cmd_format {
     uint8_t  cmd_code  = 0;
     uint32_t param     = 0;
 };
+#pragma pack()
 
+#pragma pack(1)
 struct alarm_format {
     uint8_t  version    = HEV_FORMAT_VERSION;
     uint32_t timestamp  = 0;
@@ -71,6 +75,7 @@ struct alarm_format {
     uint8_t  alarm_code = 0;
     uint32_t param      = 0;
 };
+#pragma pack()
 
 // enum of all transfer types
 enum PAYLOAD_TYPE {

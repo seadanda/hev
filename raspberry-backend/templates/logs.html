@@ -35,7 +35,7 @@
             <tr>
                 <th>Date and time</th>
                 <th>Alarm message</th>
-                <th>Acknowledge</th>
+                <th>Acknowledgement</th>
 
 
             </tr>
@@ -73,13 +73,15 @@ function requestAlarms() {
       url: '/live-alarms',
       success: function(data) {
          if (data.alarms != "none") {
+            console.log(data.alarms);
             var table = document.getElementById("HEV_logs");
             var row = table.insertRow(1);
             var cell1 = row.insertCell(0);
             var cell2 = row.insertCell(1);
             var cell3 = row.insertCell(2);
 
-            cell1.innerHTML = convertTimestamp(data.created_at)
+            //cell1.innerHTML = convertTimestamp(data.created_at)
+            cell1.innerHTML = data.timestamp;
             cell2.innerHTML = data.alarms;
             cell3.innerHTML =  '<button type="button" id="ack"   style="background-color:gray; border-color:blue; color:white">Ack</button>';
 
@@ -126,16 +128,18 @@ document.getElementById('update_button').onclick = function(){
   $( document ).ready($.getJSON({
   url: '/last_N_alarms',
   success: function(data) {
-  var table = document.getElementById("HEV_logs");
-  for (let i = data.length-1; i >= 0; i--) {
-    var row = table.insertRow(1);
-    var cell1 = row.insertCell(0);
-    var cell2 = row.insertCell(1);
-    cell1.innerHTML = convertTimestamp(data[i][0]);
-    cell2.innerHTML = data[i][1];
+    var table = document.getElementById("HEV_logs");
+    for (let i = data.length-1; i >= data.length-10; i--) {
+      if (data[i]['alarms'] != "Anone") {
+        var row = table.insertRow(1);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = data[i]['timestamp'];
+        cell2.innerHTML = data[i]['alarms'];
+      }
     }
-    }
-    }));
-    </script>
+  }
+  }));
+</script>
 
 {% endblock %}

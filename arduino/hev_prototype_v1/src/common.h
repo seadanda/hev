@@ -147,17 +147,13 @@ struct alarm_thresholds {
     uint32_t arduino_fail;
 };
 
-// default values definitions
-static alarm_thresholds alarm_threshold_min;
-static alarm_thresholds alarm_threshold_max;
-
 // static uint32_t valve_port_states = 0x0; 
 // static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
 // static int chan_to_pin[50];  
 
 
-void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value);
-void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t value);
+void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
+void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t &value);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{

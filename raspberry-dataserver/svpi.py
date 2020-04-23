@@ -7,10 +7,10 @@ import time
 import numpy as np
 import argparse
 from collections import deque
-import commsFormat
+import CommsFormat
 import threading
-import commsConstants
-from commsConstants import ALARM_CODES
+import CommsCommon
+from CommsCommon import ALARM_CODES
 from typing import List, Dict
 import logging
 logging.basicConfig(level=logging.INFO,
@@ -35,15 +35,15 @@ class svpi():
             alarm = self.getAlarms()
             if alarm is not None:
                 byteArray = alarm
-                payload = commsConstants.AlarmFormat()
+                payload = CommsCommon.AlarmFormat()
             else:
                 # grab next array from filedump
                 fullArray = self._bytestore[0+self._pos*27:27+self._pos*27]
-                # current byte dump (20200411) has wrong format 27 bytes, new format expects 26. snip out second byte
-                byteArray = fullArray[:1] + fullArray[2:]
+                # currently (20200420) the byte dump has the wrong format of 27 bytes, expects 30. snip out second byte and add four more bytes for zeroed timestamp
+                byteArray = fullArray[:1] + fullArray[-1-3:] + fullArray[2:]
                 # go to next byte array. if at the end, loop
                 self._pos = self._pos + 1 if self._pos < 99 else 0
-                payload = commsConstants.DataFormat()
+                payload = CommsCommon.DataFormat()
             
             payload.fromByteArray(byteArray)
             self.payloadrecv = payload
@@ -54,7 +54,8 @@ class svpi():
         if np.random.randint(0, 20) == 0:
             # send alarm
             alarm = 1 + np.random.randint(0, len(ALARM_CODES))
-            return bytearray((0xA0,alarm,0x00,0x00,0x00,0x00))
+            # give all simulated alarms low priority for the minute
+            return bytearray((0xA0,0x00,0x00,0x00,0x00,0x01,alarm,0x00,0x00,0x00,0x00))
         return None
 
     # callback to dependants to read the received payload
@@ -94,4 +95,4 @@ if __name__ == "__main__":
 
     generator = svpi(args.inputFile)
     while True:
-        pass
+        time.sleep(60)

@@ -5,7 +5,7 @@
 # author Dónal Murray <donal.murray@cern.ch>
 
 import threading
-import commsConstants
+import CommsCommon
 import time
 import numpy as np
 from typing import List
@@ -19,12 +19,13 @@ class hevfromtxt():
     def __init__(self, inputFile):
         # use input file for testing
         h = np.loadtxt(inputFile,skiprows = 1, delimiter = ',')
+        self._timestamp = h[:,0].tolist()
         self._pressure = h[:,1].tolist()
         self._flow = h[:,2].tolist()
         self._volume = h[:,3].tolist()
         self._length = len(self._pressure)
         self._pos = 0 # position within sample
-        self._delay = 0.2 # time period
+        self._increment = 1
 
         # received queue and observers to be notified on update
         self._payloadrecv = deque(maxlen = 16)
@@ -33,21 +34,26 @@ class hevfromtxt():
         sendingWorker.start()
         
     def generate(self) -> None:
+        time_offset = 0
         while True:
-            # grab next array from filedump
-            increment = int(round(self._delay / 0.2))
-            increment = 1 if increment < 1 else increment
-            self._pos = self._pos + increment if self._pos + increment < self._length else 0
-            payload = commsConstants.DataFormat()
-            
             # directly setting private member variables in this edge case
+            payload = CommsCommon.DataFormat()
             payload._version = payload._RPI_VERSION
+            payload._timestamp = time_offset + self._timestamp[self._pos]
             payload._pressure_buffer = self._pressure[self._pos]
             payload._pressure_inhale = self._volume[self._pos]
             payload._temperature_buffer = self._flow[self._pos]
-
             self.payloadrecv = payload
-            time.sleep(self._delay)
+
+            if self._pos + self._increment < self._length:
+                delay = self._timestamp[self._pos+self._increment] - self._timestamp[self._pos]
+                self._pos = self._pos + self._increment
+            else:
+                delay = self._timestamp[self._pos] - self._timestamp[self._pos-self._increment]
+                time_offset += self._timestamp[self._pos]
+                self._pos = 0
+
+            time.sleep(delay)
 
     # callback to dependants to read the received payload
     @property
@@ -63,7 +69,7 @@ class hevfromtxt():
             callback(self._payloadrecv[0])
 
     def writePayload(self, payload):
-        logging.info(payload)
+        logging.info(f"CMD received: {payload}")
 
     def bind_to(self, callback):
         self._observers.append(callback)

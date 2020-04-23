@@ -1,5 +1,5 @@
 ---
-- hosts: rpi 
+- hosts: hevpi
   remote_user: pi
   vars:
         download_dir: /home/pi/Downloads
@@ -7,6 +7,12 @@
   tasks: 
         - name: include vars
           include_vars: lists.yml
+
+        - name: apt update, apt upgrade
+          apt: 
+              upgrade: yes
+              update_cache: yes
+          become: yes
 
         - name: install software via apt
           apt: 

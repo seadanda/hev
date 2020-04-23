@@ -2,10 +2,17 @@
 List of missing features and/or improvements
 
 
--- arduino_recorder.py and app.py: template the list of variables to plot
 
--- Add backup of the DB every X minutes
+-- Alarms flashing lights and colors 
 
--- UI: sideabar reduce and show only icons; test on 16 inch display; insert alarms (flashing lights and text) 
+-- Check status of the HEV server
 
--- Check if alarms are just one string in the list or multiple entries in a list 
+
+-- Increase update frequency
+
+-- CSS adapt to any screen size
+
+
+-- Make one alarm http request 
+
+

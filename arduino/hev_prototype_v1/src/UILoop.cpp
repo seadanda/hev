@@ -1,9 +1,10 @@
 #include "UILoop.h"
 // #include "BreathingLoop.h"
 
-UILoop::UILoop(BreathingLoop *bl)
+UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al)
 {
     _breathing_loop = bl;
+    _alarm_loop     = al;
 }
 
 UILoop::~UILoop()
@@ -35,9 +36,9 @@ int UILoop::doCommand(cmd_format *cf)
 
 void UILoop::cmdGeneral(cmd_format *cf) {
     switch (cf->cmd_code) {
-        case 0x1 : _breathing_loop->doStart();
+        case CMD_GENERAL::START : _breathing_loop->doStart();
             break;
-        case 0x2 : _breathing_loop->doStop();
+        case CMD_GENERAL::STOP : _breathing_loop->doStop();
             break;
         default:
             break;
@@ -53,11 +54,11 @@ void UILoop::cmdSetMode(cmd_format *cf) {
 }
 
 void UILoop::cmdSetThresholdMin(cmd_format *cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf->cmd_code), alarm_threshold_min, cf->param);
+    setThreshold(static_cast<ALARM_CODES>(cf->cmd_code), _alarm_loop->getThresholdsMin(), cf->param);
 }
 
 void UILoop::cmdSetThresholdMax(cmd_format *cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf->cmd_code), alarm_threshold_max, cf->param);
+    setThreshold(static_cast<ALARM_CODES>(cf->cmd_code), _alarm_loop->getThresholdsMax(), cf->param);
 }
 
 

@@ -26,31 +26,31 @@ public:
     void receiver();
 
 private:
-    RingBuf<CommsFormat *,CONST_MAX_SIZE_RB_SENDING> *getQueue(PAYLOAD_TYPE &type);
+    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *getQueue(PAYLOAD_TYPE &type);
     PAYLOAD_TYPE getInfoType(uint8_t *address);
 
-    void sendQueue    (RingBuf<CommsFormat *, CONST_MAX_SIZE_RB_SENDING> *queue);
-    void resendPacket (RingBuf<CommsFormat *, CONST_MAX_SIZE_RB_SENDING> *queue);
+    void sendQueue    (RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue);
+    void resendPacket (RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue);
     bool receivePacket(PAYLOAD_TYPE &type);
     void finishPacket (PAYLOAD_TYPE &type);
 
-    bool encoder(uint8_t* payload, uint8_t dataSize);
-    bool decoder(uint8_t* payload, uint8_t dataStart, uint8_t dataStop);
+    bool encoder(uint8_t* payload, uint8_t data_size);
+    bool decoder(uint8_t* payload, uint8_t dataStart, uint8_t data_stop);
 
-    void sendPacket(CommsFormat* packet);
+    void sendPacket(CommsFormat &packet);
 
 private:
     uint8_t _sequence_send;
     uint8_t _sequence_receive;
 
-    CommsFormat* _comms_ack;
-    CommsFormat* _comms_nck;
+    CommsFormat _comms_ack;
+    CommsFormat _comms_nck;
 
-    RingBuf<CommsFormat *, CONST_MAX_SIZE_RB_SENDING> *_ring_buff_alarm;
-    RingBuf<CommsFormat *, CONST_MAX_SIZE_RB_SENDING> *_ring_buff_data;
-    RingBuf<CommsFormat *, CONST_MAX_SIZE_RB_SENDING> *_ring_buff_cmd;
+    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> _ring_buff_alarm;
+    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> _ring_buff_data;
+    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> _ring_buff_cmd;
 
-    RingBuf<Payload, CONST_MAX_SIZE_RB_RECEIVING> *_ring_buff_received;
+    RingBuf<Payload, CONST_MAX_SIZE_RB_RECEIVING> _ring_buff_received;
 
     Payload     _payload_tmp;
     CommsFormat _comms_tmp;

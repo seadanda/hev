@@ -1,9 +1,11 @@
+[hevpi]
+hevpi
+
 [local]
 localhost
-
-[rpi]
-10.0.0.13
 
 [cernpi]
 nuliv.dyndns.cern.ch
 
+[hevpi0]
+hevpi0

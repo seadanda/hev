@@ -38,8 +38,8 @@ Payload plSend;
 
 // loops
 BreathingLoop breathing_loop;
-UILoop        ui_loop(&breathing_loop);
 AlarmLoop     alarm_loop;
+UILoop        ui_loop(&breathing_loop, &alarm_loop);
 
 // bool start_fsm = false;
 
@@ -185,5 +185,5 @@ void loop()
     }
 
     // run value readings
-    breathing_loop.updateReadings(); 
+    breathing_loop.updateReadings();
 }

@@ -9,11 +9,12 @@
         <title>High Energy Ventilator</title>
 	<link href="{{ url_for('static', filename='css/style_v3.css') }}" rel="stylesheet" />
         <link href="{{ url_for('static', filename='css/multiselect.css') }}" rel="stylesheet">
-        <link href="{{ url_for('static', filename='css/dataTables.bootstrap4.min.css') }}" rel="stylesheet" />
-        <link href="{{ url_for('static', filename='css/easy-numpad.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/easy-numpad.css') }}" rel="stylesheet">
+	<link href="{{ url_for('static', filename='css/pickout.css') }}" rel="stylesheet">
         <script src="{{ url_for('static', filename='js/all.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/multiselect.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
+	<script src="{{ url_for('static', filename='js/pickout.js') }}"></script>
 	{% block scripts %}
 	{% endblock %}
     </head>
@@ -29,11 +30,35 @@
 
 	<!-- User-->
         <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
-          <li class="nav-item dropdown">
-            <!--<i class="fas fa-user fa-fw"></i>-->
-	  </li>
-	  <span class="patient">{{patient}}</span>
+	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="user" class="svg-inline--fa fa-user fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="path-icon" d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"></path></svg>
 	</ul>
+	<span class="patient small">John Smith, M, 66, 173cm, 78kg</span>
+
+	<!-- Battery -->
+        <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
+	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="battery-full" class="svg-inline--fa fa-battery-full fa-w-20" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+	    <!-- Full -->
+	    <path class="path-icon" id = "battery-full" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-48 96H96v128h416V192z"></path>
+	    <!-- Empty -->
+	    <path class="path-icon-alarm transparent" id = "battery-empty" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48z"></path>
+	    <!--Three Quarter -->
+	    <path class="path-icon transparent" id = "battery-three-quarter" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-144 96H96v128h320V192z"></path>
+	    <!-- Half -->
+	    <path class="path-icon transparent" id = "battery-half" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-240 96H96v128h224V192z"></path>
+	    <!-- One Quarter -->
+	    <path class="path-icon-alarm transparent" id ="battery-one-quarter" d="M544 160v64h32v64h-32v64H64V160h480m16-64H48c-26.51 0-48 21.49-48 48v224c0 26.51 21.49 48 48 48h512c26.51 0 48-21.49 48-48v-16h8c13.255 0 24-10.745 24-24V184c0-13.255-10.745-24-24-24h-8v-16c0-26.51-21.49-48-48-48zm-336 96H96v128h128V192z">
+	  </svg>
+	</ul>
+	<ul class = "navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
+	  <a class="unlock" id="toggle_lock" onclick="toggle_lock()">
+		    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="svg-inline--fa fa-lock fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+		      <path class="path-icon" id = "path-locked-main" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
+		      <path class="path-icon transparent" id="path-unlocked-main" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
+		    </svg>
+		  </a>
+	   </ul>
+
+	
       </nav>
         <div id="layoutSidenav">
           <div id="layoutSidenav_nav" class="py-1">
@@ -41,17 +66,19 @@
                   <div class="sb-sidenav-menu">
                     <div class="nav">
 		      <a href="/"> <div id="fan-icon" class = "sb-nav-link-icon border-invisible {{'active' if fan_active }}">
-			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="fan" class="fa-fan fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M352.57 128c-28.09 0-54.09 4.52-77.06 12.86l12.41-123.11C289 7.31 279.81-1.18 269.33.13 189.63 10.13 128 77.64 128 159.43c0 28.09 4.52 54.09 12.86 77.06L17.75 224.08C7.31 223-1.18 232.19.13 242.67c10 79.7 77.51 141.33 159.3 141.33 28.09 0 54.09-4.52 77.06-12.86l-12.41 123.11c-1.05 10.43 8.11 18.93 18.59 17.62 79.7-10 141.33-77.51 141.33-159.3 0-28.09-4.52-54.09-12.86-77.06l123.11 12.41c10.44 1.05 18.93-8.11 17.62-18.59-10-79.7-77.51-141.33-159.3-141.33zM256 288a32 32 0 1 1 32-32 32 32 0 0 1-32 32z"></path></svg>
-
-		      </div></a>
+			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="user-md" class="fa-user-md fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="path-icon"  d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zM104 424c0 13.3 10.7 24 24 24s24-10.7 24-24-10.7-24-24-24-24 10.7-24 24zm216-135.4v49c36.5 7.4 64 39.8 64 78.4v41.7c0 7.6-5.4 14.2-12.9 15.7l-32.2 6.4c-4.3.9-8.5-1.9-9.4-6.3l-3.1-15.7c-.9-4.3 1.9-8.6 6.3-9.4l19.3-3.9V416c0-62.8-96-65.1-96 1.9v26.7l19.3 3.9c4.3.9 7.1 5.1 6.3 9.4l-3.1 15.7c-.9 4.3-5.1 7.1-9.4 6.3l-31.2-4.2c-7.9-1.1-13.8-7.8-13.8-15.9V416c0-38.6 27.5-70.9 64-78.4v-45.2c-2.2.7-4.4 1.1-6.6 1.9-18 6.3-37.3 9.8-57.4 9.8s-39.4-3.5-57.4-9.8c-7.4-2.6-14.9-4.2-22.6-5.2v81.6c23.1 6.9 40 28.1 40 53.4 0 30.9-25.1 56-56 56s-56-25.1-56-56c0-25.3 16.9-46.5 40-53.4v-80.4C48.5 301 0 355.8 0 422.4v44.8C0 491.9 20.1 512 44.8 512h358.4c24.7 0 44.8-20.1 44.8-44.8v-44.8c0-72-56.8-130.3-128-133.8z"></path></svg>
+			  </div></a>
+			  <a href="prototype"> <div class = "sb-nav-link-icon border-invisible {{'active' if prototype_active}}">
+				<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="fan" class="fa-fan fa-w-15" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M352.57 128c-28.09 0-54.09 4.52-77.06 12.86l12.41-123.11C289 7.31 279.81-1.18 269.33.13 189.63 10.13 128 77.64 128 159.43c0 28.09 4.52 54.09 12.86 77.06L17.75 224.08C7.31 223-1.18 232.19.13 242.67c10 79.7 77.51 141.33 159.3 141.33 28.09 0 54.09-4.52 77.06-12.86l-12.41 123.11c-1.05 10.43 8.11 18.93 18.59 17.62 79.7-10 141.33-77.51 141.33-159.3 0-28.09-4.52-54.09-12.86-77.06l123.11 12.41c10.44 1.05 18.93-8.11 17.62-18.59-10-79.7-77.51-141.33-159.3-141.33zM256 288a32 32 0 1 1 32-32 32 32 0 0 1-32 32z"></path></svg>
+			  </div></a>
 		      <a href="charts"> <div class = "sb-nav-link-icon border-invisible {{'active' if charts_active}}">
-			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chart-area" class="fa-chart-area fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M500 384c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v308h436zM372.7 159.5L288 216l-85.3-113.7c-5.1-6.8-15.5-6.3-19.9 1L96 248v104h384l-89.9-187.8c-3.2-6.5-11.4-8.7-17.4-4.7z"></path></svg>
+			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="chart-area" class="fa-chart-area fa-w-15" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M500 384c6.6 0 12 5.4 12 12v40c0 6.6-5.4 12-12 12H12c-6.6 0-12-5.4-12-12V76c0-6.6 5.4-12 12-12h40c6.6 0 12 5.4 12 12v308h436zM372.7 159.5L288 216l-85.3-113.7c-5.1-6.8-15.5-6.3-19.9 1L96 248v104h384l-89.9-187.8c-3.2-6.5-11.4-8.7-17.4-4.7z"></path></svg>
 		      </div></a>
 		      <a href="logs"> <div class = "sb-nav-link-icon border-invisible {{'active' if logs_active}}">
-			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-circle" class="fa-chart-area fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" fill="currentColor" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path></svg>
+			  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-circle" class="fa-chart-area fa-w-15" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" fill="currentColor" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path></svg>
 			  </div></a>
 		      <a href="settings"> <div class = "sb-nav-link-icon border-invisible {{'active' if settings_active}}">
-              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
+              <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-15" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
 			  </div></a>
   
 			  
@@ -72,9 +99,6 @@
 	    {% endblock %}
           </div>
 	</div>
-        <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
-        <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
-
         <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
@@ -101,15 +125,14 @@
 	  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
 									return i;
 									}
-									</script>
-	
-	<script type=text/javascript>
-          var alarmLogs;
+
+									
+									var alarmLogs;
           clearInterval(alarmLogs);
 
 	  function update_alarms() {
         $.getJSON("live-alarms", function (data) {
-	       if (data.alarms !== 'none') {
+	       if (data != null && data.alarms !== 'none') {
 	          document.getElementById("alarms").innerHTML = data.alarms;
 	          var el = document.getElementById("alarm_ul");
 	          el.classList.add("alarm-red");
@@ -125,17 +148,70 @@
 	    });
 	  }
 	  var alarmInterval = setInterval('update_alarms()', 1000);
-	</script>
 
-	
-
-	<script type = text/javascript>
 	  function show_easy_numpad_wrapper(thisElement){
 	    if (thisElement.disabled == false && thisElement.readOnly == false) {
 	       show_easy_numpad(thisElement);
 	    }
 	  }
+
+	  function unlock(){
+	  var x = document.getElementsByClassName("input-editable");
+	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
+			  var el = document.getElementById("path-locked-main");
+			  el.classList.add("transparent");
+			  var el2 = document.getElementById("path-unlocked-main");
+			  el2.classList.remove("transparent");
+			  
+			  //setTimeout(lock(),1000);
+			  }
+	  
+	  function lock() {
+	  var x = document.getElementsByClassName("input-editable");
+			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
+			  var el = document.getElementById("path-locked-main");
+			  el.classList.remove("transparent");
+			  var el2 = document.getElementById("path-unlocked-main");
+			  el2.classList.add("transparent");
+
+					  }
+			  function toggle_lock() {
+					  setTimeout(function(){
+					  var x = document.getElementsByClassName("input-editable");
+			  if ( x.length > 0 && x[0].readOnly == false ){lock();}
+			  else{ unlock() ; }
+			  },500);
+			  }
+						  
+	  
+	  var battery = 100;
+	  function update_battery() {
+	  // set all transparent
+	  var full = document.getElementById("battery-full");
+          full.classList.add("transparent");
+	  three_qtr = document.getElementById("battery-three-quarter");
+          three_qtr.classList.add("transparent");
+	  var half = document.getElementById("battery-half");
+          half.classList.add("transparent");
+	  var one_qtr = document.getElementById("battery-one-quarter");
+          one_qtr.classList.add("transparent");
+	  var empty = document.getElementById("battery-empty");
+          empty.classList.add("transparent");
+
+	  
+	  // find the one to show
+	  if ( battery >=87.5 ) {full.classList.remove("transparent");}
+		  else  if (battery >= 67.5 && battery < 87.5) { three_qtr.classList.remove("transparent"); }
+							 else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
+												else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
+																      else  { empty.classList.remove("transparent"); }
+																      battery = battery - 1;
+																      if (battery  <= 0 ) battery = 100;
+																      }						 
+							 var batteryInterval = setInterval('update_battery()', 1000);
 	</script>
+
+	
 	
     </body>
 </html>

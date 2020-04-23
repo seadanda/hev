@@ -10,14 +10,14 @@ import threading
 import argparse
 import svpi
 import hevfromtxt
-import commsControl
-from commsConstants import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
+import CommsControl
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
 import logging
-logging.basicConfig(level=logging.DEBUG,
-                    format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger().setLevel(logging.INFO)
 
 class HEVPacketError(Exception):
     pass
@@ -54,12 +54,12 @@ class HEVServer(object):
             with self._dblock:
                 try:
                     alarm = ALARM_CODES(alarmCode).name
+                    if alarm not in self._alarms:
+                        self._alarms.append(alarm)
                 except ValueError as e:
                     # alarmCode does not exist in the enum, this is serious!
                     logging.error(e)
                     self._alarms.append("ARDUINO_FAIL") # assume Arduino is broken
-                if alarm not in self._alarms:
-                    self._alarms.append(alarm)
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
@@ -128,22 +128,16 @@ class HEVServer(object):
                     raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
             else:
                 raise HEVPacketError(f"Invalid request type")
-
-            packet = json.dumps(payload).encode()
-
-            # send reply and close connection
-            writer.write(packet)
-            await writer.drain()
-            writer.close()
-
         except (NameError, KeyError, HEVPacketError) as e:
             # invalid request: reject immediately
             logging.warning(f"Invalid packet: {e}")
             payload = {"type": "nack"}
-            packet = json.dumps(payload).encode()
-            writer.write(packet)
-            await writer.drain()
-            writer.close()
+
+        # send reply and close connection
+        packet = json.dumps(payload).encode()
+        writer.write(packet)
+        await writer.drain()
+        writer.close()
 
     async def handle_broadcast(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # log address
@@ -155,29 +149,39 @@ class HEVServer(object):
             try:
                 # set timeout such that there is never pileup
                 await asyncio.wait_for(self._datavalid.wait(), timeout=0.05)
+
+                # take lock of db and prepare packet
+                with self._dblock:
+                    values: List[float] = self._values
+                    alarms = self._alarms if len(self._alarms) > 0 else None
+
             except asyncio.TimeoutError:
+                # make sure client is still connected
+                broadcast_packet = {"type": "keepalive"}
+            except (ConnectionResetError, BrokenPipeError):
+                # Connection lost, stop trying to broadcast and free up socket
+                logging.warning(f"Connection lost with {addr!r}")
+                self._broadcasting = False
                 continue
-            # take lock of db and prepare packet
-            with self._dblock:
-                values: List[float] = self._values
-                alarms = self._alarms if len(self._alarms) > 0 else None
+            else:
+                broadcast_packet = {"type": "broadcast"}
+                broadcast_packet["sensors"] = values
+                broadcast_packet["alarms"] = alarms # add alarms key/value pair
+                # take control of datavalid and reset it
+                with self._dvlock:
+                    self._datavalid.clear()
 
-            broadcast_packet = {}
-            broadcast_packet["sensors"] = values
-            broadcast_packet["alarms"] = alarms # add alarms key/value pair
-
-            logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
+                logging.info(f"Send data for timestamp: {broadcast_packet['sensors']['timestamp']}")
+                logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
-                writer.write(json.dumps(broadcast_packet).encode())
+                writer.write(json.dumps(broadcast_packet).encode() + b"\0")
                 await writer.drain()
             except (ConnectionResetError, BrokenPipeError):
                 # Connection lost, stop trying to broadcast and free up socket
                 logging.warning(f"Connection lost with {addr!r}")
                 self._broadcasting = False
-            # take control of datavalid and reset it
-            with self._dvlock:
-                self._datavalid.clear()
+                continue
 
         self._broadcasting = True
         writer.close()
@@ -199,7 +203,7 @@ class HEVServer(object):
 
         # get address for log
         addr = server.sockets[0].getsockname()
-        logging.info(f"Serving on {addr}")
+        logging.debug(f"Serving on {addr}")
 
         async with server:
             await server.serve_forever()
@@ -223,7 +227,10 @@ if __name__ == "__main__":
     #parser to allow us to pass arguments to hevserver
     parser = argparse.ArgumentParser(description='Arguments to run hevserver')
     parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
+    parser.add_argument('-d', '--debug', action='store_true', help='Show debug output')
     args = parser.parse_args()
+    if args.debug:
+        logging.getLogger().setLevel(logging.DEBUG)
     
     # check if input file was specified
     if args.inputFile != '':
@@ -234,7 +241,7 @@ if __name__ == "__main__":
             # assume hex dump
             lli = svpi.svpi(args.inputFile)
 
-        logging.info(f"Serving data from {args.inputFile}")
+        logging.info(f"Reading data from {args.inputFile}")
     else:
         # get arduino serial port
         for port in list_ports.comports():
@@ -249,7 +256,7 @@ if __name__ == "__main__":
 
         # initialise low level interface
         try:
-            lli = commsControl.commsControl(port=port_device)
+            lli = CommsControl.CommsControl(port=port_device)
             logging.info(f"Serving data from device {port_device}")
         except NameError:
             logging.error("Arduino not connected")
@@ -258,5 +265,8 @@ if __name__ == "__main__":
     hevsrv = HEVServer(lli)
 
     # serve forever
-    while True:
-        pass
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_forever()
+    finally:
+        loop.close()
