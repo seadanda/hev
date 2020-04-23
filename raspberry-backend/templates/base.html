@@ -86,11 +86,11 @@
   
 			  
 		    </div>
-                    <form action="{{ url_for('send_cmd') }}" method="post">
+            <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
-		    <input type="submit" name="start" value="START" class="sb-nav-button py-1 mb-1"></input>
-		    <input type="submit" name="stop" value="STOP" class="sb-nav-button py-1 mb-1"></input>
-		    <input type="submit" name="reset" value="RESET" class="sb-nav-button py-1 mb-1"></input>
+		    <input type="submit" name="start" value="START" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+		    <input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+		    <!-- <input type="submit" name="reset" value="RESET" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input> -->
 		    </div>
                     </form>
 		  </div>
@@ -113,6 +113,20 @@
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
+	  function cmdNotification(input_cmd){
+		window.createNotification({
+			closeOnClick: 1,
+			displayCloseButton: 0,
+			positionClass: "nfc-bottom-right",
+			showDuration: false,
+			theme: "info"
+		})({
+			title: "Issuing command",
+			message: "Sent the command " + input_cmd 
+	  });
+	  }
+
+
 	  var lockTimer;
 	  var unlocked = Boolean(false);
 
