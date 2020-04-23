@@ -79,11 +79,11 @@ function requestChartVar() {
 
             // add the point
             //chart_pressure.data.labels.push(0);
-            chart_flow.data.datasets[0].data.push(point["pressure_inhale"]);
+            chart_flow.data.datasets[0].data.push(point["temperature_buffer"]);
 
             // add the point
             //chart_pressure.data.labels.push(0);
-            chart_volume.data.datasets[0].data.push(point["temperature_buffer"]);
+            chart_volume.data.datasets[0].data.push(point["pressure_inhale"]);
             
             chart_pressure.update();
             chart_flow.update();
@@ -115,6 +115,11 @@ $(document).ready(function() {
             ]
         },
         options: {
+            elements: {
+                point: { 
+                    radius: 0
+                }
+            },            
             responsive: true,
             stroke: {
                 curve: 'smooth'
@@ -185,6 +190,11 @@ $(document).ready(function() {
             }]
         },
         options: {
+            elements: {
+                point: { 
+                    radius: 0
+                }
+            },            
             responsive: true,
             stroke: {
                 curve: 'smooth'
@@ -254,6 +264,11 @@ $(document).ready(function() {
             }]
         },
         options: {
+            elements: {
+                point: { 
+                    radius: 0
+                }
+            },            
             responsive: true,
             stroke: {
                 curve: 'smooth'
