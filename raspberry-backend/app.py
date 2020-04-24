@@ -48,6 +48,10 @@ def charts():
 def charts2():
     return render_template('charts2.html')
 
+@WEBAPP.route('/chartsLoop')
+def chartsLoop():
+    return render_template('chartsLoop.html')
+
 @WEBAPP.route('/logs')
 def logs():
     return render_template('logs.html', result=last_N_alarms())    
@@ -186,8 +190,6 @@ def last_N_data():
 
               fetched_all.append(data)
 
-
-
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
 
@@ -211,7 +213,11 @@ def live_alarms():
         data_alarms = "none"
 
     data["alarms"] = data_alarms
-    data["timestamp"] = data_receiver['timestamp']
+
+    if data_receiver is not None:
+        data["timestamp"] = data_receiver['timestamp']
+    else:
+        data["timestamp"] = "none"
 
     response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'

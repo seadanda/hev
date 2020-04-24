@@ -2,7 +2,7 @@
 
 # HEV database dump for debugging
 # USAGE:  python3 database_dump.py --backup_db=True --start_date=20200408-1834
-# 
+#
 # Dumps the data from the backup or main db for debugging purposes.
 #
 
@@ -13,18 +13,14 @@ import sqlite3
 from datetime import datetime, timedelta
 import threading
 
-SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
+#SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
 SQLITE_BACKUPFILE = 'database/HEC_monitoringDB_backup.sqlite'  # name of the sqlite backup database file
 TABLE_NAME = 'hec_monitor'  # name of the table to be created
 
-def load_data(sqBackup, startTime):
+def load_data(sqFile, startTime):
     """
     Load the database table and select data between a time+date and the end of the file
     """
-    if( sqBackup ):
-        sqFile = SQLITE_BACKUPFILE
-    else:
-        sqFile = SQLITE_FILE
     try:
         conn = sqlite3.connect(sqFile)
     except sqlite3.Error as err:
@@ -32,13 +28,13 @@ def load_data(sqBackup, startTime):
     finally:
         print("Loaded {} ".format(sqFile))
     #
-    # load data 
+    # load data
     #
     cursor = conn.cursor()
     try:
         cursor.execute('PRAGMA table_info({tablename})'.format(tablename=TABLE_NAME))
         tableInfo = cursor.fetchall()
-        # Computing the time in seconds since the epoch because easier to manipulate. 
+        # Computing the time in seconds since the epoch because easier to manipulate.
         epoch = datetime(1970, 1, 1, 0, 0)
         startFromEpoch = (startTime - epoch).total_seconds() * 1000
         cursor.execute('SELECT * FROM {tablename} WHERE created_at > {startFromEpoch};'.\
@@ -64,22 +60,38 @@ def printRows(dataTable):
     # others added later
     for col in tableInfo[4:]:
         if( col[2] == "FLOAT" ):
-            fmtOther.append(" {:6.2f}")
+            fmtOther.append(" {:8.2f}")
         if( col[2] == "INTEGER" ):
-            fmtOther.append(" {:6i}")
+            fmtOther.append(" {:8i}")
     fmt += " {other} : {alarm}"
     epoch = datetime(1970, 1, 1, 0, 0)
     #
     # header
     #
-    header = "#  Date    Time  Temp.  Pres. "
+    header = "#  Date    Time   Temp.  Pres. "
     for col in tableInfo[4:]:
-        header += " {:6s}".format(col[1][:6])
-    header += "  : Alarm state"
+        colNameFull = col[1]
+        colNameShort = col[1]
+        if(len(colNameFull)>8):
+            underScorePos = [] # count underscores
+            for p in range(len(colNameFull)):
+                if colNameFull[p] == '_' :
+                    underScorePos.append(p)
+            if( len(underScorePos) == 0 ):
+                colNameShort = colNameFull[:8] # first 8 chars only
+            elif(len(underScorePos) == 1 ):
+                p = underScorePos[0]
+                colNameShort = colNameFull[:4] + colNameFull[p+1].upper()+colNameFull[p+2:p+5] # Two groups of 4
+            else:
+                colNameShort = colNameFull[:2] # first two char + 2 after each _
+                for p in underScorePos[:3]: # first three only if more
+                    colNameShort += colNameFull[p+1].upper()+colNameFull[p+2]
+        header += " {:>8s}".format(colNameShort)
+    header += " : Alarm state"
     #
     # Loop over rows passed and print
     #
-    nPrint = 0 
+    nPrint = 0
     for r in rows:
         if( nPrint%50 == 0 ): print(header) # header every 50 rows
         nPrint += 1
@@ -97,19 +109,21 @@ def printRows(dataTable):
                          other=otherTxt,
                          alarm=r[1]))
 
+
 def parse_args():
+    global SQLITE_BACKUPFILE
     parser = argparse.ArgumentParser(description='Python script for checking monitoring database')
-    parser.add_argument('--backup_db', type=bool, default=True, 
-                        help="Check the backup dd if True (default), or current db if False")
-    parser.add_argument("-s", "--start_date", dest="start_date", 
-                        default=datetime.today() - timedelta(days = 1, seconds=0), 
+    parser.add_argument("-db", "--database", type=str, default=SQLITE_BACKUPFILE,
+                        help=f"Database to check, it missing assumes backup db {SQLITE_BACKUPFILE}")
+    parser.add_argument("-s", "--start_date", dest="start_date",
+                        default=datetime.today() - timedelta(days = 1, seconds=0),
                         type=lambda d: datetime.strptime(d, '%Y%m%d-%H%M'),
                         help="Date in the format yyyymmdd-HHMM (for example 20200409-14:30)")
     return parser.parse_args()
 
 if __name__ == "__main__":
     ARGS = parse_args()
-    dataTable = load_data(ARGS.backup_db, ARGS.start_date)
+    dataTable = load_data(ARGS.database, ARGS.start_date)
     print("dataTable Info =")
     print("\n".join("  {} \t: {}".format(t[1],t[2]) for t in dataTable['tableInfo']))
     print("Num rows = ",len(dataTable['rows']))
