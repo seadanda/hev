@@ -11,25 +11,35 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-	    if( chart_PV.data.datasets[0].data.length > 100 ){
-		chart_PV.data.datasets[0].data.shift();
-		chart_FV.data.datasets[0].data.shift();
-		chart_PF.data.datasets[0].data.shift();
+	    if( chart_PV.data.datasets[1].data.length > 100 ){
+		chart_PV.data.datasets[1].data.shift();
+		chart_FV.data.datasets[1].data.shift();
+		chart_PF.data.datasets[1].data.shift();
 	    }
 	    // point labelled as: (stealing definitions from Chart-display.js)
 	    // Pressure = pressure_buffer
 	    // Flow = pressure_inhale ??
 	    // Volume = temperature_buffer !!?
-	    chart_PV.data.datasets[0].data.push({x: point["temperature_buffer"],
+	    chart_PV.data.datasets[1].data.push({x: point["temperature_buffer"],
 						 y: point["pressure_buffer"]});
-	    chart_FV.data.datasets[0].data.push({x: point["temperature_buffer"],
+	    chart_FV.data.datasets[1].data.push({x: point["temperature_buffer"],
 						 y: point["pressure_inhale"]});
-	    chart_PF.data.datasets[0].data.push({x: point["pressure_inhale"],
+	    chart_PF.data.datasets[1].data.push({x: point["pressure_inhale"],
 						 y: point["pressure_buffer"]});
+	    chart_PV.data.datasets[0].data = 
+		[{x: point["temperature_buffer"],y: point["pressure_buffer"]}];
+
+	    chart_FV.data.datasets[0].data = 
+		[{x: point["temperature_buffer"], y: point["pressure_inhale"]}];
+
+	    chart_PF.data.datasets[0].data = 
+		[{x: point["pressure_inhale"], y: point["pressure_buffer"]}];
+
 	    chart_PV.update();
 	    chart_FV.update();
 	    chart_PF.update();
 	    
+	    console.info("chart_PV.data", chart_PV.data);
         },
         cache: false
     });
@@ -43,10 +53,16 @@ $(document).ready(function() {
     chart_PV = new Chart(ctx_PV, {
         type: 'scatter',
         data: {datasets: [{data: [],
+			   label: "Pressure:Volme (current)",
+			   borderColor: "rgb(128,0,0)",
+			   fillColor: "rgb(200,0,0)",
+			   fill: true}, 
+			  {data: [],
 			   label: "Loop Pressure:Volme (last 20s)",
 			   borderColor: "rgb(51,99,255)",
-			   fill: false }]}
-	,options: {scales: {xAxes: [{type: 'linear',
+			   fill: false },
+			  ]},
+	options: {scales: {xAxes: [{type: 'linear',
 				     position: 'bottom',
 				     lablelString: 'temperature_buffer??',
 				     display: true,
@@ -64,6 +80,10 @@ $(document).ready(function() {
     chart_FV = new Chart(ctx_FV, {
         type: 'scatter',
         data: {datasets: [{data: [],
+			   label: "Flow:Volme  (current)",
+			   borderColor: "rgb(128,0,0)",
+			   fill: true },
+			  {data: [],
 			   label: "Loop Flow:Volme  (last 20s)",
 			   borderColor: "rgb(51,99,255)",
 			   fill: false }]}
@@ -85,6 +105,10 @@ $(document).ready(function() {
     chart_PF = new Chart(ctx_PF, {
         type: 'scatter',
         data: {datasets: [{data: [],
+			   label: "Pressure:Flow (current)",
+			   borderColor: "rgb(128,0,0)",
+			   fill: true },
+			  {data: [],
 			   label: "Loop Pressure:Flow (last 20s)",
 			   borderColor: "rgb(51,99,255)",
 			   fill: false }]}
