@@ -27,6 +27,26 @@ def getList(dict):
 # List of data variables in the data packet from the Arduino
 data_format = getList(DataFormat().getDict())
 
+def check_table(tableName):
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()    			
+    #get the count of tables with the name
+    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=tableName))  
+    existence = False
+
+    #if the count is 1, then table exists
+    if c.fetchone()[0]==1 : 
+        existence = True
+        print('Table exists.')
+    else :
+    	print('Table does not exist.')
+    			
+    #commit the changes to db			
+    conn.commit()
+    #close the connection
+    conn.close()
+    return existence
+
 
 def database_setup():
     '''
@@ -59,7 +79,7 @@ def database_setup():
     finally:
         print('Table ' + TABLE_NAME + ' created successfully!')
 
-def monitoring(source_address):
+def monitoring(interval):
     '''
     Store arduino data in the sqlite3 table. 
     '''
@@ -103,12 +123,11 @@ def monitoring(source_address):
 
                     conn.commit()
 
-
                 except sqlite3.Error as err:
                      raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
                 finally:                  
                     sys.stdout.flush()
-                    time.sleep(0.2)
+                    time.sleep(interval)
 
 def progress(status, remaining, total):
     print(f'Copied {total-remaining} of {total} pages...')
@@ -135,7 +154,7 @@ def db_backup(backup_time):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Python script monitorign Arduino data')
-    parser.add_argument('--source', default='ttys0 or similar')
+    parser.add_argument('--interval', type=float, default=1)
     parser.add_argument('--backup_time', type=int, default=600)
     return parser.parse_args()
 
@@ -143,4 +162,4 @@ if __name__ == "__main__":
     ARGS = parse_args()
     database_setup()
     db_backup(ARGS.backup_time)
-    monitoring(ARGS.source)
+    monitoring(ARGS.interval)

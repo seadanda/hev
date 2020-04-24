@@ -25,7 +25,6 @@ TABLE_NAME = 'hev_monitor'  # name of the table to be created
 N = 300 # number of entries to request for alarms and data (300 = 60 s of data divided by 0.2 s interval)
 
 
-
 def getList(dict):
     return [*dict]
 
@@ -105,12 +104,27 @@ def data_handler():
 
     return render_template('index.html', result=live_data(), patient=patient_name)
 
+def number_rows(table_name):
+    conn = sqlite3.connect(sqlite_file)
+    c = conn.cursor()    			
+    #get the count of tables with the name
+    c.execute(''' SELECT count(*) FROM {tn} '''.format(tn=table_name))  
+
+    values = c.fetchone()
+    print(values[0])
+
+    #commit the changes to db			
+    conn.commit()
+    #close the connection
+    conn.close()
+    return values[0]
+
+
 def check_table(table_name):
     conn = sqlite3.connect(sqlite_file)
     c = conn.cursor()    			
     #get the count of tables with the name
-    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=table_name))
-    
+    c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=table_name))  
     existence = False
 
     #if the count is 1, then table exists
@@ -145,7 +159,6 @@ def last_N_data():
     Query the sqlite3 table for variables
     Output in json format
     """
-    N = 300 #update interval is 200 ms and there are 300 entries in 60 seconds
 
     list_variables = []
     list_variables.append("created_at")
@@ -155,7 +168,7 @@ def last_N_data():
 
     fetched_all = []
     
-    if check_table(TABLE_NAME):
+    if check_table(TABLE_NAME) and number_rows(TABLE_NAME) > N:
         with sqlite3.connect(sqlite_file) as conn:
             cursor = conn.cursor()
             cursor.execute(" SELECT {var} "
