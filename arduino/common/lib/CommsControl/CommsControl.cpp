@@ -288,7 +288,7 @@ PAYLOAD_TYPE CommsControl::getInfoType(uint8_t *address) {
         case PACKET_CMD:
             return PAYLOAD_TYPE::CMD;
         case PACKET_DATA:
-            return PAYLOAD_TYPE::DATA;
+            return PAYLOAD_TYPE::FASTDATA;
         default:
             return PAYLOAD_TYPE::UNSET;
     }
@@ -301,7 +301,7 @@ RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *CommsControl::getQueue(PAYLOAD_
             return &_ring_buff_alarm;
         case PAYLOAD_TYPE::CMD:
             return &_ring_buff_cmd;
-        case PAYLOAD_TYPE::DATA:
+        case PAYLOAD_TYPE::FASTDATA:
             return &_ring_buff_data;
         default:
             return nullptr;

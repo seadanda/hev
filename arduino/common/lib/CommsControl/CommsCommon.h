@@ -60,7 +60,7 @@ struct fast_data_format {
 
 #pragma pack(1)
 // readback values
-struct readback_format {
+struct readback_data_format {
     uint8_t  version                  = HEV_FORMAT_VERSION;
     uint32_t timestamp                = 0;
     uint16_t duration_calibration     = 0;
@@ -151,7 +151,9 @@ struct alarm_format {
 
 // enum of all transfer types
 enum PAYLOAD_TYPE {
-    DATA,
+    FASTDATA,
+    READBACKDATA,
+    CYCLEDATA,
     CMD,
     ALARM,
     UNSET
@@ -165,13 +167,17 @@ public:
     Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {_type = type; } //data_ = nullptr; cmd_ = nullptr; alarm_ = nullptr; }
     Payload(const Payload &other) {
         _type = other._type;
-        memcpy(& _data, &other. _data, sizeof( fast_data_format));
+        memcpy(& _fast_data, &other. _fast_data, sizeof( fast_data_format));
+        memcpy(& _fast_data, &other. _fast_data, sizeof( readback_data_format));
+        memcpy(& _fast_data, &other. _fast_data, sizeof( cycle_data_format));
         memcpy(&  _cmd, &other.  _cmd, sizeof(  cmd_format));
         memcpy(&_alarm, &other._alarm, sizeof(alarm_format));
     }
     Payload& operator=(const Payload& other) {
         _type = other._type;
-        memcpy(& _data, &other. _data, sizeof( fast_data_format));
+        memcpy(& _fast_data, &other. _fast_data, sizeof( fast_data_format));
+        memcpy(& _fast_data, &other. _fast_data, sizeof( readback_data_format));
+        memcpy(& _fast_data, &other. _fast_data, sizeof( cycle_data_format));
         memcpy(&  _cmd, &other.  _cmd, sizeof(  cmd_format));
         memcpy(&_alarm, &other._alarm, sizeof(alarm_format));
         return *this;
@@ -183,17 +189,23 @@ public:
     PAYLOAD_TYPE getType() {return _type; }
 
     // requires argument as new struct
-    void setData (fast_data_format   *data) { _type = PAYLOAD_TYPE::DATA;  memcpy(& _data,  data, sizeof( fast_data_format)); }
+    void setFastData (fast_data_format   *data)     { _type = PAYLOAD_TYPE::FASTDATA;  memcpy(& _fast_data,  data, sizeof( fast_data_format)); }
+    void setReadbackData (readback_data_format   *data) { _type = PAYLOAD_TYPE::READBACKDATA;  memcpy(& _readback_data,  data, sizeof( readback_data_format)); }
+    void setCycleData (cycle_data_format   *data)    { _type = PAYLOAD_TYPE::CYCLEDATA;  memcpy(& _cycle_data,  data, sizeof( cycle_data_format)); }
     void setCmd  (cmd_format     *cmd) { _type = PAYLOAD_TYPE::CMD;   memcpy(&  _cmd,   cmd, sizeof(  cmd_format)); }
     void setAlarm(alarm_format *alarm) { _type = PAYLOAD_TYPE::ALARM; memcpy(&_alarm, alarm, sizeof(alarm_format)); }
 
     // get pointers to particular payload types
-    fast_data_format  *getData () {return & _data; }
+    fast_data_format  *getFastData () {return & _fast_data; }
+    readback_data_format  *getReadbackData () {return & _readback_data; }
+    cycle_data_format  *getCycleData () {return & _cycle_data; }
     cmd_format   *getCmd  () {return &  _cmd; }
     alarm_format *getAlarm() {return &_alarm; }
 
-    void unsetAll()   { unsetData(); unsetAlarm(); unsetCmd(); _type = PAYLOAD_TYPE::UNSET; }
-    void unsetData()  { memset(& _data, 0, sizeof( fast_data_format)); }
+    void unsetAll()   {unsetFastData(); unsetReadbackData(); unsetCycleData(); unsetAlarm(); unsetCmd(); _type = PAYLOAD_TYPE::UNSET; }
+    void unsetFastData()  { memset(& _fast_data, 0, sizeof( fast_data_format)); }
+    void unsetReadbackData()  { memset(& _readback_data, 0, sizeof( readback_data_format)); }
+    void unsetCycleData()  { memset(& _cycle_data, 0, sizeof( cycle_data_format)); }
     void unsetCmd()   { memset(&  _cmd, 0, sizeof(  cmd_format)); }
     void unsetAlarm() { memset(&_alarm, 0, sizeof(alarm_format)); }
 
@@ -204,8 +216,14 @@ public:
 
     void setInformation(void* information) {
         switch (_type) {
-            case PAYLOAD_TYPE::DATA:
-                setData (reinterpret_cast< fast_data_format*>(information));
+            case PAYLOAD_TYPE::FASTDATA:
+                setFastData (reinterpret_cast< fast_data_format*>(information));
+                break;
+            case PAYLOAD_TYPE::READBACKDATA:
+                setReadbackData (reinterpret_cast< readback_data_format*>(information));
+                break;
+            case PAYLOAD_TYPE::CYCLEDATA:
+                setCycleData (reinterpret_cast< cycle_data_format*>(information));
                 break;
             case PAYLOAD_TYPE::CMD:
                 setCmd  (reinterpret_cast<  cmd_format*>(information));
@@ -221,8 +239,12 @@ public:
     // returns void pointer, in case you know what to do with data or dont care what the format is
     void *getInformation() {
         switch (_type) {
-            case PAYLOAD_TYPE::DATA:
-                return reinterpret_cast<void*>(getData ());
+            case PAYLOAD_TYPE::FASTDATA:
+                return reinterpret_cast<void*>(getFastData ());
+            case PAYLOAD_TYPE::READBACKDATA:
+                return reinterpret_cast<void*>(getReadbackData ());
+            case PAYLOAD_TYPE::CYCLEDATA:
+                return reinterpret_cast<void*>(getCycleData ());
             case PAYLOAD_TYPE::CMD:
                 return reinterpret_cast<void*>(getCmd  ());
             case PAYLOAD_TYPE::ALARM:
@@ -235,8 +257,12 @@ public:
     // returns payload information size
     uint8_t getSize()  {
         switch (_type) {
-            case PAYLOAD_TYPE::DATA:
+            case PAYLOAD_TYPE::FASTDATA:
                 return static_cast<uint8_t>(sizeof( fast_data_format));
+            case PAYLOAD_TYPE::READBACKDATA:
+                return static_cast<uint8_t>(sizeof( readback_data_format));
+            case PAYLOAD_TYPE::CYCLEDATA:
+                return static_cast<uint8_t>(sizeof( cycle_data_format));
             case PAYLOAD_TYPE::CMD:
                 return static_cast<uint8_t>(sizeof(  cmd_format));
             case PAYLOAD_TYPE::ALARM:
@@ -249,9 +275,11 @@ public:
 private:
     PAYLOAD_TYPE _type;
 
-    fast_data_format   _data;
-    cmd_format     _cmd;
-    alarm_format _alarm;
+    fast_data_format       _fast_data;
+    readback_data_format   _readback_data;
+    cycle_data_format      _cycle_data;
+    cmd_format             _cmd;
+    alarm_format           _alarm;
 };
 
 #endif

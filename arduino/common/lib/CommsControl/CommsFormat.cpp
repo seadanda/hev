@@ -14,7 +14,7 @@ CommsFormat::CommsFormat(Payload &pl) {
         case PAYLOAD_TYPE::CMD:
             address = PACKET_CMD;
             break;
-        case PAYLOAD_TYPE::DATA:
+        case PAYLOAD_TYPE::FASTDATA:
             address = PACKET_DATA;
             break;
         default:
