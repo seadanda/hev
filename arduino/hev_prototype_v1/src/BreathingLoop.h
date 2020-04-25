@@ -32,7 +32,7 @@ public:
     float getMinuteVolume();
     ValvesController * getValvesController();
 
-    states_durations &getTimespans();
+    states_durations &getDurations();
 
     // states
     enum BL_STATES : uint8_t {

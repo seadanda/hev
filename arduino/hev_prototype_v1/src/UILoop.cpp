@@ -16,7 +16,7 @@ int UILoop::doCommand(cmd_format *cf)
         case CMD_TYPE::GENERAL:
             cmdGeneral(cf);
             break;
-        case CMD_TYPE::SET_TIMESPAN:
+        case CMD_TYPE::SET_DURATION:
             cmdSetDuration(cf);
             break;
         case CMD_TYPE::SET_MODE:
@@ -46,7 +46,7 @@ void UILoop::cmdGeneral(cmd_format *cf) {
 }
 
 void UILoop::cmdSetDuration(cmd_format *cf) {
-    setDuration(static_cast<CMD_SET_DURATION>(cf->cmd_code), _breathing_loop->getTimespans(), cf->param);
+    setDuration(static_cast<CMD_SET_DURATION>(cf->cmd_code), _breathing_loop->getDurations(), cf->param);
 }
 
 void UILoop::cmdSetMode(cmd_format *cf) {

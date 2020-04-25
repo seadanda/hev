@@ -403,7 +403,7 @@ float BreathingLoop::getCalibrationOffset()
     return _calib_avg_pressure;
 }
 
-states_durations &BreathingLoop::getTimespans() {
+states_durations &BreathingLoop::getDurations() {
     return _states_durations;
 }
 
