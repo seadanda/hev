@@ -55,25 +55,27 @@ $(document).ready(function() {
         data: {datasets: [{data: [],
 			   label: "Pressure:Volme (current)",
 			   borderColor: "rgb(128,0,0)",
-			   fillColor: "rgb(200,0,0)",
+			   pointBackgroundColor : "rgb(128,0,0)",
 			   fill: true}, 
 			  {data: [],
 			   label: "Loop Pressure:Volme (last 20s)",
 			   borderColor: "rgb(51,99,255)",
+			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false },
 			  ]},
-	options: {scales: {xAxes: [{type: 'linear',
+	options: {elements: { point: { radius: 5}},
+		scales: {xAxes: [{type: 'linear',
 				     position: 'bottom',
 				     lablelString: 'temperature_buffer??',
 				     display: true,
 				     ticks: {min: -1000, max: 1500, 
-					     stepSize: 500 }}],
+					     stepSize: 500, fontSize:25 }}],
 			    yAxes: [{type: 'linear',
 				     position: 'left',
 				     lablelString: 'pressure_buffer??',
 				     display: true,
 				     ticks: {min: 0, max: 25, 
-					     stepSize: 5 }}]}}
+					     stepSize: 5, fontSize: 25 }}]}}
     });
 
     var ctx_FV = document.getElementById('flow_volume_chart');
@@ -82,23 +84,26 @@ $(document).ready(function() {
         data: {datasets: [{data: [],
 			   label: "Flow:Volme  (current)",
 			   borderColor: "rgb(128,0,0)",
+			   pointBackgroundColor : "rgb(128,0,0)",
 			   fill: true },
 			  {data: [],
 			   label: "Loop Flow:Volme  (last 20s)",
 			   borderColor: "rgb(51,99,255)",
+			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false }]}
-	,options: {scales: {xAxes: [{type: 'linear',
+	,options: {elements: { point: { radius: 5}},
+		scales: {xAxes: [{type: 'linear',
 				     position: 'bottom',
 				     lablelString: 'temperature_buffer??',
 				     display: true,
 				     ticks: {min: -1000, max: 1500, 
-					     stepSize: 500 }}],
+					     stepSize: 500, fontSize: 25 }}],
 			    yAxes: [{type: 'linear',
 				     position: 'left',
 				     lablelString: 'pressure_inhale??',
 				     display: true,
 				     ticks: {min: 0, max: 300, 
-					     stepSize: 100 }}]}}
+					     stepSize: 100, fontSize: 25 }}]}}
     });
 	
     var ctx_PF = document.getElementById('pressure_flow_chart');
@@ -107,23 +112,26 @@ $(document).ready(function() {
         data: {datasets: [{data: [],
 			   label: "Pressure:Flow (current)",
 			   borderColor: "rgb(128,0,0)",
+			   pointBackgroundColor : "rgb(128,0,0)",
 			   fill: true },
 			  {data: [],
 			   label: "Loop Pressure:Flow (last 20s)",
 			   borderColor: "rgb(51,99,255)",
+			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false }]}
-	,options: {scales: {xAxes: [{type: 'linear',
+	,options: {elements: { point: { radius: 5, fill: true}},
+	    scales: {xAxes: [{type: 'linear',
 				     position: 'bottom',
 				     lablelString: 'pressure_inhale??',
 				     display: true,
 				     ticks: {min: 0, max: 300, 
-					     stepSize: 100 }}],
+					     stepSize: 100, fontSize: 25 }}],
 			    yAxes: [{type: 'linear',
 				     position: 'left',
 				     lablelString: 'pressure_buffer??',
 				     display: true,
 				     ticks: {min: 0, max: 25, 
-					     stepSize: 5 }}]}}
+					     stepSize: 5, fontSize: 25 }}]}}
     });
 });
 
