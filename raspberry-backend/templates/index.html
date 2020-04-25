@@ -25,7 +25,15 @@
 		<div class="col-md-12">
 		  <div class = "main-chart-container"><canvas id="volume_chart"></canvas></div>
 		</div>
-	</div>
+	      </div>
+	      
+	      <div class = "row">
+		  <div class = "range-button-container ml-auto mr-auto">
+		    <input type="button" class="sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange(-30,0)">
+		    <input type="button" class="sb-nav-button" name="thirtysecs" value="60s" onclick="setChartXaxisRange(-60,0)">
+		    <input type="button" class="sb-nav-button" name="thirtysecs" value="90s" onclick="setChartXaxisRange(-90,0)">
+		  </div>
+	      </div>
       </div>
       <div class = "col-cards-main">
 	<div class = "row">

@@ -13,6 +13,50 @@ var initial_yaxis_flow = [];
  * to request again
  */
 
+var current_timestamp = -1;
+
+function setChartXaxisRange(min,max){
+    chart_volume.options.scales.xAxes[0].ticks.min = min;
+    chart_volume.options.scales.xAxes[0].ticks.max = max;
+    chart_flow.options.scales.xAxes[0].ticks.min = min;
+    chart_flow.options.scales.xAxes[0].ticks.max = max;
+    chart_pressure.options.scales.xAxes[0].ticks.min = min;
+    chart_pressure.options.scales.xAxes[0].ticks.max = max;
+
+    
+}
+
+function init_results(){
+    $.getJSON({
+        url: '/last_N_data',
+        success: function(data) {
+            for (i=0; i<data.length; i++) {
+		var seconds = data[i]["timestamp"];
+		if ( seconds == "" ) continue;
+		console.log(seconds);
+		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
+		initial_yaxis_volume.push({x : seconds, y : data[i]["pressure_inhale"]});
+		initial_yaxis_flow.push({x : seconds, y : data[i]["temperature_buffer"]});
+            }
+            //reverse because data is read from the other way
+            initial_xaxis.reverse();
+            initial_yaxis_pressure.reverse();
+            initial_yaxis_volume.reverse();
+            initial_yaxis_flow.reverse();
+
+	    if (initial_yaxis_pressure.length > 0) current_timestamp = initial_yaxis_pressure[0][0];
+	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		initial_yaxis_pressure[i][0] = initial_yaxis_pressure[i][0] - current_timestamp;
+		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
+		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
+	    }
+	    
+        },
+        cache: false
+    });
+}
+
+/*
 function last_results() {
     $.getJSON({
         url: '/last_N_data',
@@ -38,10 +82,11 @@ function last_results() {
         cache: false
     });
 }
-
+*/
 // Calling the function here to retrive 
 // the initial values to be plotted on the charts
-last_results();
+//last_results();
+init_results();
 
 
 
@@ -49,46 +94,41 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-
+	    var seconds = point["timestamp"];
+	    // get difference between last time stamp and this and apply to existing points
+	    var diff = 0;
+	    if ( current_timestamp == -1 ){
+		diff = seconds;
+	    }
+	    else {
+		diff = seconds - current_timestamp;
+	    }
+	    current_timestamp = seconds;
+	    
             if(chart_pressure.data.datasets[0].data.length > 300){
-                chart_pressure.data.labels.shift();
                 chart_pressure.data.datasets[0].data.shift();
             }
 
             if(chart_flow.data.datasets[0].data.length > 300){
-                //chart_flow.data.labels.shift();
                 chart_flow.data.datasets[0].data.shift();
             }
-
  
             if(chart_volume.data.datasets[0].data.length > 300){
-                //chart_volume.data.labels.shift();
                 chart_volume.data.datasets[0].data.shift();
             }
-
-            for (var i=0; i<300; i++) {
-                var x = chart_pressure.data.labels[i] - 0.20 ;
-                chart_pressure.data.labels[i] = x.toFixed(1);
-            }
-
-
-            // add the point           
-            chart_pressure.data.labels.push(0);
-            //chart_pressure.data.labels.push(point["timestamp"]);
-            chart_pressure.data.datasets[0].data.push(point["pressure_buffer"]);
-
-            // add the point
-            //chart_pressure.data.labels.push(0);
-            chart_flow.data.datasets[0].data.push(point["temperature_buffer"]);
-
-            // add the point
-            //chart_pressure.data.labels.push(0);
-            chart_volume.data.datasets[0].data.push(point["pressure_inhale"]);
+	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - diff;
+		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - diff;
+		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - diff;
+	    }
+	    
+            chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
+            chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
+            chart_volume.data.datasets[0].data.push({ x : 0, y : point["pressure_inhale"]});
             
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
-            
         },
         cache: false
     });
@@ -103,15 +143,15 @@ requestChartVar();
 $(document).ready(function() {
     var ctx_pressure = document.getElementById('pressure_chart');
     chart_pressure = new Chart(ctx_pressure, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: initial_xaxis,
             datasets: [{
                 data: initial_yaxis_pressure,
                 label: "Var1",
                 borderColor: "#0049b8",
                 borderWidth: 4,
-                fill: false
+                fill: false,
+		showLine: true,
               }
             ]
         },
@@ -134,19 +174,14 @@ $(document).ready(function() {
                 text: 'Pressure [mbar]',
             },            
             scales: {
+		
             xAxes: [{
                 ticks: {
-                    beginAtZero: true,
-		    maxTicksLimit: 12,
+		        maxTicksLimit: 13,
 		    maxRotation: 0,
-                },
-                //type: 'time',
-                time: {
-                    unit: 'second',
-                    displayFormat: 'second'
-                }
-            }],
-			yAxes: [{
+                    min: -60,
+                    max: 0}}],
+		yAxes: [{
                 ticks: {
                     beginAtZero: true,
                     suggestedMax: 25
@@ -180,16 +215,17 @@ $(document).ready(function() {
 $(document).ready(function() {
     var ctx_flow = document.getElementById('flow_chart');
     chart_flow = new Chart(ctx_flow, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: initial_xaxis,
+            //labels: initial_xaxis,
             datasets: [{
                 data: initial_yaxis_flow,
                 label: "Var1",
                 //borderColor: "#3e95cd",
                 borderColor: "#000000",
                 borderWidth: 4,
-                fill: false
+                fill: false,
+		showLine: true,
             }]
         },
         options: {
@@ -211,19 +247,13 @@ $(document).ready(function() {
               text: 'Flow [mL/min]',
             },
             scales: {
+		
             xAxes: [{
                 ticks: {
-                    beginAtZero: true,
-		    maxTicksLimit: 12,
+		        maxTicksLimit: 13,
 		    maxRotation: 0,
-
-                },
-                //type: 'time',
-                time: {
-                    unit: 'second',
-                    displayFormat: 'second'
-                }
-            }],
+                    min: -60,
+                    max: 0}}],
 			yAxes: [{
                 ticks: {
                     beginAtZero: true,
@@ -257,17 +287,19 @@ $(document).ready(function() {
 $(document).ready(function() {
     var ctx_volume = document.getElementById('volume_chart');
     chart_volume = new Chart(ctx_volume, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: initial_xaxis,
+            //labels: initial_xaxis,
             datasets: [{
                 data: initial_yaxis_volume,
                 label: "Var1",
                 borderColor: "#ba0202",
                 borderWidth: 4,
-                fill: false
+                fill: false,
+		showLine: true,
             }]
         },
+	
         options: {
             elements: {
                 point: { 
@@ -287,20 +319,16 @@ $(document).ready(function() {
                 text: 'Volume [mL]',
             },
             scales: {
+		
             xAxes: [{
                 ticks: {
-                    beginAtZero: true,
-		    maxTicksLimit: 12,
+		    maxTicksLimit: 13,
 		    maxRotation: 0,
-                },
-                //type: 'time',
-                time: {
-                    unit: 'second',
-                    displayFormat: 'second'
-                }
-            }],
-			yAxes: [{
-                ticks: {
+                    min: -60,
+                    max: 0}}],
+		
+		yAxes: [{
+                    ticks: {
                     beginAtZero: true,
                     suggestedMax: 25
                 },
@@ -319,7 +347,6 @@ $(document).ready(function() {
                 duration: 20000,
                 refresh: 1000,
                 delay: 2000
-                //onRefresh:     requestChartVar3()
             }
         }
     });
