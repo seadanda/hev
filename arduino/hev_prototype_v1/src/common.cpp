@@ -83,40 +83,40 @@ void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &val
     }
 }
 
-void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t &value) {
+void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t &value) {
     switch (cmd) {
-        case CMD_SET_TIMEOUT::CALIBRATION:
-            timeouts.calibration     = value;
+        case CMD_SET_DURATION::CALIBRATION:
+            durations.calibration     = value;
             break;
-        case CMD_SET_TIMEOUT::BUFF_PURGE:
-            timeouts.buff_purge      = value;
+        case CMD_SET_DURATION::BUFF_PURGE:
+            durations.buff_purge      = value;
             break;
-        case CMD_SET_TIMEOUT::BUFF_FLUSH:
-            timeouts.buff_flush      = value;
+        case CMD_SET_DURATION::BUFF_FLUSH:
+            durations.buff_flush      = value;
             break;
-        case CMD_SET_TIMEOUT::BUFF_PREFILL:
-            timeouts.buff_prefill    = value;
+        case CMD_SET_DURATION::BUFF_PREFILL:
+            durations.buff_prefill    = value;
             break;
-        case CMD_SET_TIMEOUT::BUFF_FILL:
-            timeouts.buff_fill       = value;
+        case CMD_SET_DURATION::BUFF_FILL:
+            durations.buff_fill       = value;
             break;
-        case CMD_SET_TIMEOUT::BUFF_LOADED:
-            timeouts.buff_loaded     = value;
+        case CMD_SET_DURATION::BUFF_LOADED:
+            durations.buff_loaded     = value;
             break;
-        case CMD_SET_TIMEOUT::BUFF_PRE_INHALE:
-            timeouts.buff_pre_inhale = value;
+        case CMD_SET_DURATION::BUFF_PRE_INHALE:
+            durations.buff_pre_inhale = value;
             break;
-        case CMD_SET_TIMEOUT::INHALE:
-            timeouts.inhale          = value;
+        case CMD_SET_DURATION::INHALE:
+            durations.inhale          = value;
             break;
-        case CMD_SET_TIMEOUT::PAUSE:
-            timeouts.pause           = value;
+        case CMD_SET_DURATION::PAUSE:
+            durations.pause           = value;
             break;
-        case CMD_SET_TIMEOUT::EXHALE_FILL:
-            timeouts.exhale_fill     = value;
+        case CMD_SET_DURATION::EXHALE_FILL:
+            durations.exhale_fill     = value;
             break;
-        case CMD_SET_TIMEOUT::EXHALE:
-            timeouts.exhale          = value;
+        case CMD_SET_DURATION::EXHALE:
+            durations.exhale          = value;
             break;
         default:
             break;

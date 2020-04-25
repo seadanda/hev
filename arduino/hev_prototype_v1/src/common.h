@@ -31,7 +31,7 @@ const float MAX_VALVE_FRAC_OPEN = 0.68;
 // input params
 enum CMD_TYPE  : uint8_t {
     GENERAL           =  1,
-    SET_TIMEOUT       =  2,
+    SET_TIMESPAN       =  2,
     SET_MODE          =  3,
     SET_THRESHOLD_MIN =  4,
     SET_THRESHOLD_MAX =  5
@@ -45,7 +45,7 @@ enum CMD_GENERAL : uint8_t {
 };
 
 // Taken from the FSM doc. Correct as of 1400 on 20200417
-enum CMD_SET_TIMEOUT : uint8_t {
+enum CMD_SET_DURATION : uint8_t {
     CALIBRATION     =  1,
     BUFF_PURGE      =  2,
     BUFF_FLUSH      =  3,
@@ -105,7 +105,7 @@ enum VALVE_STATES : bool {
     V_CLOSED = LOW
 };
 
-struct states_timeouts {
+struct states_durations {
     uint32_t calibration;
     uint32_t buff_purge;
     uint32_t buff_flush;
@@ -153,7 +153,7 @@ struct alarm_thresholds {
 
 
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
-void setTimeout(CMD_SET_TIMEOUT cmd, states_timeouts &timeouts, uint32_t &value);
+void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{

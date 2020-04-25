@@ -16,7 +16,7 @@ public:
     int doCommand(cmd_format *cf);
 private:
     void cmdGeneral(cmd_format *cf);
-    void cmdSetTimeout(cmd_format *cf);
+    void cmdSetDuration(cmd_format *cf);
     void cmdSetMode(cmd_format *cf);
     void cmdSetThresholdMin(cmd_format *cf);
     void cmdSetThresholdMax(cmd_format *cf);

@@ -26,9 +26,13 @@ public:
     bool getRunning();
     void updateReadings();
     readings<uint16_t> getReadingAverages();
+    float getRespitoryRate();
+    float getFlow();
+    float getIERatio();
+    float getMinuteVolume();
     ValvesController * getValvesController();
 
-    states_timeouts &getTimeouts();
+    states_durations &getTimespans();
 
     // states
     enum BL_STATES : uint8_t {
@@ -78,7 +82,7 @@ private:
 
     // timeouts
     uint32_t calculateTimeoutExhale();
-    states_timeouts _states_timeouts = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
+    states_durations _states_durations = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
 
     // readings
     void resetReadingSums();
@@ -90,6 +94,9 @@ private:
     uint32_t _readings_timeout;
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
+
+    // calculations
+    uint16_t _total_cycle_duration;
 };
 
 

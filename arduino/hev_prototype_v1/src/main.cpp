@@ -30,8 +30,8 @@ uint32_t report_time = 0;
 // float trigger_sensitivity;
 
 // comms
-data_format data;
-// data_format data2;
+fast_data_format data;
+// fast_data_format data2;
 CommsControl comms;
 Payload plReceive;
 Payload plSend;
@@ -132,17 +132,17 @@ void loop()
     // data2.readback_valve_inhale  =0xe ;
     // data2.readback_valve_exhale  =0xf ;
     // data2.readback_valve_purge   = 0x10;
-    // data2.readback_mode          =0x11;
+    // data2.ventilation_mode          =0x11;
 
     bool vin_air, vin_o2, vpurge ;
     float vinhale, vexhale;
     ValvesController *valves_controller = breathing_loop.getValvesController();
     valves_controller->getValves(vin_air, vin_o2, vinhale, vexhale, vpurge);
-    data.readback_valve_air_in  = vin_air;
-    data.readback_valve_o2_in   = vin_o2;
-    data.readback_valve_inhale  = vinhale;
-    data.readback_valve_exhale  = vexhale;
-    data.readback_valve_purge   = vpurge;
+    // data.readback_valve_air_in  = vin_air;
+    // data.readback_valve_o2_in   = vin_o2;
+    // data.readback_valve_inhale  = vinhale;
+    // data.readback_valve_exhale  = vexhale;
+    // data.readback_valve_purge   = vpurge;
 
     readings<uint16_t> readings_avgs = breathing_loop.getReadingAverages();
     data.timestamp              = static_cast<uint32_t>(readings_avgs.timestamp);
@@ -157,7 +157,7 @@ void loop()
     data.pressure_diff_patient  = readings_avgs.pressure_diff_patient;
 
     data.fsm_state              = breathing_loop.getFsmState();
-    data.readback_mode          = breathing_loop.getVentilationMode();
+    // data.ventilation_mode          = breathing_loop.getVentilationMode();
 
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
@@ -166,7 +166,7 @@ void loop()
     if(tnow - report_time > report_timeout) {
         plSend.setType(PAYLOAD_TYPE::DATA);
         plSend.setData(&data);
-        // data2.readback_mode = plSend.getSize();
+        // data2.ventilation_mode = plSend.getSize();
         comms.writePayload(plSend);
         report_time = tnow;
     }

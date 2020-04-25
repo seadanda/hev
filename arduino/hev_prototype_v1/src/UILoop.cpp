@@ -16,8 +16,8 @@ int UILoop::doCommand(cmd_format *cf)
         case CMD_TYPE::GENERAL:
             cmdGeneral(cf);
             break;
-        case CMD_TYPE::SET_TIMEOUT:
-            cmdSetTimeout(cf);
+        case CMD_TYPE::SET_TIMESPAN:
+            cmdSetDuration(cf);
             break;
         case CMD_TYPE::SET_MODE:
             cmdSetMode(cf);
@@ -45,8 +45,8 @@ void UILoop::cmdGeneral(cmd_format *cf) {
     }
 }
 
-void UILoop::cmdSetTimeout(cmd_format *cf) {
-    setTimeout(static_cast<CMD_SET_TIMEOUT>(cf->cmd_code), _breathing_loop->getTimeouts(), cf->param);
+void UILoop::cmdSetDuration(cmd_format *cf) {
+    setDuration(static_cast<CMD_SET_DURATION>(cf->cmd_code), _breathing_loop->getTimespans(), cf->param);
 }
 
 void UILoop::cmdSetMode(cmd_format *cf) {
