@@ -122,6 +122,7 @@ $(document).ready(function() {
                 }
             },            
             responsive: true,
+	    maintainAspectRatio: false,
             stroke: {
                 curve: 'smooth'
             },
@@ -131,13 +132,13 @@ $(document).ready(function() {
             title: {
                 display: true,
                 text: 'Pressure [mbar]',
-                fontSize: 25
             },            
             scales: {
             xAxes: [{
                 ticks: {
-                    fontSize: 25,
-                    beginAtZero: true
+                    beginAtZero: true,
+		    maxTicksLimit: 12,
+		    maxRotation: 0,
                 },
                 //type: 'time',
                 time: {
@@ -147,7 +148,6 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
-                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                 },
@@ -199,6 +199,7 @@ $(document).ready(function() {
                 }
             },            
             responsive: true,
+	    maintainAspectRatio: false,
             stroke: {
                 curve: 'smooth'
             },
@@ -208,13 +209,14 @@ $(document).ready(function() {
             title: {
               display: true,
               text: 'Flow [mL/min]',
-              fontSize: 25
             },
             scales: {
             xAxes: [{
                 ticks: {
-                    fontSize: 25,
-                    beginAtZero: true
+                    beginAtZero: true,
+		    maxTicksLimit: 12,
+		    maxRotation: 0,
+
                 },
                 //type: 'time',
                 time: {
@@ -224,7 +226,6 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
-                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                 },
@@ -274,6 +275,7 @@ $(document).ready(function() {
                 }
             },            
             responsive: true,
+	    maintainAspectRatio: false,
             stroke: {
                 curve: 'smooth'
             },
@@ -283,13 +285,13 @@ $(document).ready(function() {
             title: {
                 display: true,
                 text: 'Volume [mL]',
-                fontSize: 25
             },
             scales: {
             xAxes: [{
                 ticks: {
-                    fontSize: 25,
-                    beginAtZero: true
+                    beginAtZero: true,
+		    maxTicksLimit: 12,
+		    maxRotation: 0,
                 },
                 //type: 'time',
                 time: {
@@ -299,7 +301,6 @@ $(document).ready(function() {
             }],
 			yAxes: [{
                 ticks: {
-                    fontSize: 25,
                     beginAtZero: true,
                     suggestedMax: 25
                 },
