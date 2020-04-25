@@ -31,7 +31,7 @@ const float MAX_VALVE_FRAC_OPEN = 0.68;
 // input params
 enum CMD_TYPE  : uint8_t {
     GENERAL           =  1,
-    SET_TIMESPAN       =  2,
+    SET_DURATION      =  2,
     SET_MODE          =  3,
     SET_THRESHOLD_MIN =  4,
     SET_THRESHOLD_MAX =  5
