@@ -26,6 +26,8 @@
 #include <Arduino_Yun_pinout.h>
 #endif
 
+#define HEV_FORMAT_VERSION 0xA2
+
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
 // input params
@@ -66,6 +68,17 @@ enum CMD_SET_MODE : uint8_t {
     HEV_MODE_TEST
 };
 
+#pragma pack(1)
+struct cmd_format {
+    uint8_t  version   = HEV_FORMAT_VERSION;
+    uint32_t timestamp = 0;
+    uint8_t  cmd_type  = 0;
+    uint8_t  cmd_code  = 0;
+    uint32_t param     = 0;
+};
+#pragma pack()
+
+
 enum ALARM_TYPE: uint8_t {
     LP   = 1,
     MP   = 2,
@@ -99,6 +112,119 @@ enum ALARM_CODES: uint8_t {
     PRESSURE_SENSOR_FAULT          = 24,  // HP
     ARDUINO_FAIL                   = 25   // HP
 };
+
+#pragma pack(1)
+struct alarm_format {
+    uint8_t  version    = HEV_FORMAT_VERSION;
+    uint32_t timestamp  = 0;
+    uint8_t  alarm_type = 0;
+    uint8_t  alarm_code = 0;
+    uint32_t param      = 0;
+};
+#pragma pack()
+
+enum DATA_TYPE: uint8_t  {
+    FAST        =  1,
+    READBACK    =  2,
+    CYCLE       =  3
+};
+
+// struct for all data sent
+#pragma pack(1)
+struct fast_data_format {
+// fast values - read every ~10 ms
+    uint8_t  version                = HEV_FORMAT_VERSION;
+    uint32_t timestamp              = 0;
+    uint8_t  data_type              = DATA_TYPE::FAST;
+    uint8_t  fsm_state              = 0;
+    uint16_t pressure_air_supply    = 0;
+    uint16_t pressure_air_regulated = 0;
+    uint16_t pressure_o2_supply     = 0;
+    uint16_t pressure_o2_regulated  = 0;
+    uint16_t pressure_buffer        = 0;
+    uint16_t pressure_inhale        = 0;
+    uint16_t pressure_patient       = 0;
+    uint16_t temperature_buffer     = 0;
+    uint16_t pressure_diff_patient  = 0;
+    uint16_t ambient_pressure       = 0;
+    uint16_t ambient_temperature    = 0;
+    float airway_pressure           = 0;
+    float flow                      = 0;
+    float volume                    = 0;
+};
+#pragma pack()
+
+#pragma pack(1)
+struct readback_data_format {
+// readback values
+    uint8_t  version                  = HEV_FORMAT_VERSION;
+    uint32_t timestamp                = 0;
+    uint8_t  data_type                = DATA_TYPE::READBACK;
+    uint16_t duration_calibration     = 0;
+    uint16_t duration_buff_purge      = 0;
+    uint16_t duration_buff_flush      = 0;
+    uint16_t duration_buff_prefill    = 0;
+    uint16_t duration_buff_fill       = 0;
+    uint16_t duration_buff_loaded     = 0;
+    uint16_t duration_buff_pre_inhale = 0;
+    uint16_t duration_inhale          = 0;
+    uint16_t duration_pause           = 0;
+    uint16_t duration_exhale_fill     = 0;
+    uint16_t duration_exhale          = 0;
+
+    uint8_t  valve_air_in             = 0;
+    uint8_t  valve_o2_in              = 0;
+    uint8_t  valve_inhale             = 0;
+    uint8_t  valve_exhale             = 0;
+    uint8_t  valve_purge              = 0;
+    uint8_t  ventilation_mode         = 0;
+
+    uint8_t valve_inhale_percent      = 0;
+    uint8_t valve_exhale_percent      = 0;
+    uint8_t valve_air_in_enable       = 0;
+    uint8_t valve_o2_in_enable        = 0;
+    uint8_t valve_purge_enable        = 0;
+    uint8_t inhale_trigger_enable     = 0;
+    uint8_t exhale_trigger_enable     = 0;
+    uint8_t peep                      = 0;
+    float   inhale_exhate_ratio       = 0.0;
+};
+#pragma pack()
+
+#pragma pack(1)
+struct cycle_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  data_type                  = DATA_TYPE::CYCLE;
+
+    float respiratory_rate              = 0;
+
+    float tidal_volume                  = 0;
+    float exhaled_tidal_volume          = 0;
+    float inhaled_tidal_volume          = 0;
+
+    float minute_volume                 = 0;
+    float exhaled_minute_volume         = 0;
+    float inhaled_minute_volume         = 0;
+
+    float lung_compliance               = 0;
+    float static_compliance             = 0;
+
+    uint16_t inhalation_pressure        = 0;
+    uint16_t peak_inspiratory_pressure  = 0;
+    uint16_t plateau_pressure           = 0;
+    uint16_t mean_airway_pressure       = 0;
+
+    uint8_t  fi02_percent               = 0;
+
+    uint16_t apnea_index                = 0;
+    uint16_t apnea_time                 = 0;
+
+    uint8_t mandatory_breath            = 0;
+};
+#pragma pack()
+
 
 enum VALVE_STATES : bool {
     V_OPEN = HIGH,

@@ -26,11 +26,11 @@ public:
     void receiver();
 
 private:
-    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *getQueue(PAYLOAD_TYPE &type);
+    RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *getQueue(PAYLOAD_TYPE &type);
     PAYLOAD_TYPE getInfoType(uint8_t *address);
 
-    void sendQueue    (RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue);
-    void resendPacket (RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue);
+    void sendQueue    (RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);
+    void resendPacket (RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);
     bool receivePacket(PAYLOAD_TYPE &type);
     void finishPacket (PAYLOAD_TYPE &type);
 
@@ -46,11 +46,11 @@ private:
     CommsFormat _comms_ack;
     CommsFormat _comms_nck;
 
-    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> _ring_buff_alarm;
-    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> _ring_buff_data;
-    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> _ring_buff_cmd;
+    RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_alarm;
+    RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_data;
+    RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_cmd;
 
-    RingBuf<Payload, CONST_MAX_SIZE_RB_RECEIVING> _ring_buff_received;
+    RingBuf<Payload, COMMS_MAX_SIZE_RB_RECEIVING> _ring_buff_received;
 
     Payload     _payload_tmp;
     CommsFormat _comms_tmp;
@@ -59,12 +59,12 @@ private:
 
     uint32_t _last_trans_time;
 
-    uint8_t _comms_received[CONST_MAX_SIZE_BUFFER];
+    uint8_t _comms_received[COMMS_MAX_SIZE_BUFFER];
     uint8_t _comms_received_size;
-    uint8_t _comms_send    [CONST_MAX_SIZE_BUFFER];
+    uint8_t _comms_send    [COMMS_MAX_SIZE_BUFFER];
     uint8_t _comms_send_size;
 
-    uint8_t _last_trans[CONST_MAX_SIZE_BUFFER];
+    uint8_t _last_trans[COMMS_MAX_SIZE_BUFFER];
     uint8_t _start_trans_index;
     uint8_t _last_trans_index;
 

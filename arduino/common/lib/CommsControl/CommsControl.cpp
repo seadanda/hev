@@ -15,13 +15,13 @@ CommsControl::CommsControl(uint32_t baudrate) {
     memset(_comms_received, 0, sizeof(_comms_received));
     memset(_comms_send    , 0, sizeof(_comms_send    ));
 
-    _ring_buff_alarm = RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING>();
-    _ring_buff_data  = RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING>();
-    _ring_buff_cmd   = RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING>();
+//    _ring_buff_alarm = RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING>();
+//    _ring_buff_data  = RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING>();
+//    _ring_buff_cmd   = RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING>();
 
-    _ring_buff_received = RingBuf<Payload, CONST_MAX_SIZE_RB_RECEIVING>();
+//    _ring_buff_received = RingBuf<Payload, COMMS_MAX_SIZE_RB_RECEIVING>();
 
-    _comms_tmp   = CommsFormat(CONST_MAX_SIZE_PACKET - CONST_MIN_SIZE_PACKET );
+//    _comms_tmp   = CommsFormat(COMMS_MAX_SIZE_PACKET - COMMS_MIN_SIZE_PACKET );
 
     CommsFormat::generateACK(_comms_ack);
     CommsFormat::generateNACK(_comms_nck);
@@ -41,16 +41,15 @@ void CommsControl::beginSerial() {
 // main function to always call and try and send data
 // _last_trans_time is changed when transmission occurs in sendQueue
 void CommsControl::sender() {
-    uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _last_trans_time > CONST_TIMEOUT_ALARM) {
+    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_ALARM) {
         sendQueue(&_ring_buff_alarm);
     }
 
-    if (tnow - _last_trans_time > CONST_TIMEOUT_CMD) {
+    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_CMD) {
         sendQueue(&_ring_buff_cmd);
     }
 
-    if (tnow - _last_trans_time > CONST_TIMEOUT_DATA) {
+    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_DATA) {
         sendQueue(&_ring_buff_data);
     }
 }
@@ -70,7 +69,7 @@ void CommsControl::receiver() {
             _last_trans_index += Serial.readBytes(_last_trans + _last_trans_index, 1);
 
             // if managed to read at least 1 byte
-            if (_last_trans_index > 0 && _last_trans_index < CONST_MAX_SIZE_BUFFER) {
+            if (_last_trans_index > 0 && _last_trans_index < COMMS_MAX_SIZE_BUFFER) {
                 current_trans_index = _last_trans_index - 1;
 
                 // find the boundary of frames
@@ -102,15 +101,18 @@ void CommsControl::receiver() {
                                     finishPacket(type);
                                     break;
                                 default:
+                                    Serial.print("add: ");
                                     uint8_t sequence_receive = (control >> 1 ) & 0x7F;
                                     sequence_receive += 1;
+                                    uint8_t address = *_comms_tmp.getAddress();
                                     // received DATA
                                     if (receivePacket(type)) {
-                                        _comms_ack.setAddress(_comms_tmp.getAddress());
+                                        _comms_ack.setAddress(&address);
+                                        Serial.println(*_comms_ack.getAddress());
                                         _comms_ack.setSequenceReceive(sequence_receive);
                                         sendPacket(_comms_ack);
                                     } else {
-                                        _comms_nck.setAddress(_comms_tmp.getAddress());
+                                        _comms_nck.setAddress(&address);
                                         _comms_nck.setSequenceReceive(sequence_receive);
                                         sendPacket(_comms_nck);
                                     }
@@ -128,7 +130,7 @@ void CommsControl::receiver() {
                         break;
                     }
                 }
-            } else if (_last_trans_index >= CONST_MAX_SIZE_BUFFER) {
+            } else if (_last_trans_index >= COMMS_MAX_SIZE_BUFFER) {
                 _last_trans_index = 0;
             }
         }
@@ -138,10 +140,10 @@ void CommsControl::receiver() {
 bool CommsControl::writePayload(Payload &pl) {
     PAYLOAD_TYPE payload_type = pl.getType();
     if (payload_type != PAYLOAD_TYPE::UNSET) {
-        // create comms format using payload, the type is actually deduced from the payload
+        // create comms format using payload, the type is deduced from the payload itself
         CommsFormat comms = CommsFormat(pl);
 
-        RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue = getQueue(payload_type);
+        RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue = getQueue(payload_type);
         // add new entry to the queue
         if (queue->isFull()) {
             CommsFormat comms_rm;
@@ -188,7 +190,6 @@ bool CommsControl::encoder(uint8_t *data, uint8_t data_size) {
     return false;
 }
 
-
 // general decoder of any transmission
 bool CommsControl::decoder(uint8_t* data, uint8_t data_start, uint8_t data_stop) {
     // need to have more than 1 byte transferred
@@ -216,7 +217,7 @@ bool CommsControl::decoder(uint8_t* data, uint8_t data_start, uint8_t data_stop)
 }
 
 // sending anything of commsDATA format
-void CommsControl::sendQueue(RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue) {
+void CommsControl::sendQueue(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue) {
     // if have data to send
     if (!queue->isEmpty()) {
         queue->operator [](0).setSequenceSend(_sequence_send);
@@ -238,35 +239,29 @@ void CommsControl::sendPacket(CommsFormat &packet) {
 
 // resending the packet, can lower the timeout since either NACK or wrong FCS already checked
 //WIP
-void CommsControl::resendPacket(RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue) {
+void CommsControl::resendPacket(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue) {
     ;
 }
 
 
 // receiving anything of commsFormat
 bool CommsControl::receivePacket(PAYLOAD_TYPE &type) {
-    _payload_tmp.unsetAll();
-    _payload_tmp.setType(type);
-    void *information = _payload_tmp.getInformation();
-    // if type is definet, copy information from comms to payload
-    if (information != nullptr) {
-        memcpy(information, _comms_tmp.getInformation(), _comms_tmp.getInfoSize());
+    _payload_tmp.unset();
+    _payload_tmp.setPayload(type, _comms_tmp.getInformation(), _comms_tmp.getInfoSize());
 
-        // remove first entry if queue is full
-        if (_ring_buff_received.isFull()) {
-            Payload payload_rm;
-            if (_ring_buff_received.pop(payload_rm)) {
-                ;
-            }
+    // remove first entry if queue is full
+    if (_ring_buff_received.isFull()) {
+        Payload payload_rm;
+        if (_ring_buff_received.pop(payload_rm)) {
+            ;
         }
-        return _ring_buff_received.push(_payload_tmp);
     }
-    return false;
+    return _ring_buff_received.push(_payload_tmp);
 }
 
 // if FCS is ok, remove from queue
 void CommsControl::finishPacket(PAYLOAD_TYPE &type) {
-    RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *queue = getQueue(type);
+    RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue = getQueue(type);
 
     if (queue != nullptr && !queue->isEmpty()) {
         // get the sequence send from first entry in the queue, add one as that should be return
@@ -288,20 +283,20 @@ PAYLOAD_TYPE CommsControl::getInfoType(uint8_t *address) {
         case PACKET_CMD:
             return PAYLOAD_TYPE::CMD;
         case PACKET_DATA:
-            return PAYLOAD_TYPE::FASTDATA;
+            return PAYLOAD_TYPE::DATA;
         default:
             return PAYLOAD_TYPE::UNSET;
     }
 }
 
 // get link to queue according to packet format
-RingBuf<CommsFormat, CONST_MAX_SIZE_RB_SENDING> *CommsControl::getQueue(PAYLOAD_TYPE &type) {
+RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *CommsControl::getQueue(PAYLOAD_TYPE &type) {
     switch (type) {
         case PAYLOAD_TYPE::ALARM:
             return &_ring_buff_alarm;
         case PAYLOAD_TYPE::CMD:
             return &_ring_buff_cmd;
-        case PAYLOAD_TYPE::FASTDATA:
+        case PAYLOAD_TYPE::DATA:
             return &_ring_buff_data;
         default:
             return nullptr;

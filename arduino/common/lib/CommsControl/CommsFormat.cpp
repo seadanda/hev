@@ -14,7 +14,7 @@ CommsFormat::CommsFormat(Payload &pl) {
         case PAYLOAD_TYPE::CMD:
             address = PACKET_CMD;
             break;
-        case PAYLOAD_TYPE::FASTDATA:
+        case PAYLOAD_TYPE::DATA:
             address = PACKET_DATA;
             break;
         default:
@@ -29,13 +29,13 @@ void CommsFormat::init(uint8_t info_size, uint8_t address, uint16_t control) {
     memset(_data, 0, sizeof(_data));
 
     _info_size   = info_size;
-    _packet_size = info_size + CONST_MIN_SIZE_PACKET ; // minimum size (start,address,control,fcs,stop)
-    if (_packet_size > CONST_MAX_SIZE_PACKET) {
+    _packet_size = info_size + COMMS_MIN_SIZE_PACKET ; // minimum size (start,address,control,fcs,stop)
+    if (_packet_size > COMMS_MAX_SIZE_PACKET) {
         return;
     }
 
-    assignBytes(getAddress(), &address, 1, false);
-    assignBytes(getControl(), reinterpret_cast<uint8_t*>(&control), 2, false);
+    setAddress(&address, false);
+    setControl(reinterpret_cast<uint8_t*>(&control), false);
 
     // hardcoded defaults
     *getStart()   = COMMS_FRAME_BOUNDARY; // fixed start flag
@@ -46,7 +46,7 @@ void CommsFormat::init(uint8_t info_size, uint8_t address, uint16_t control) {
 
 
 void CommsFormat::assignBytes(uint8_t* target, uint8_t* source, uint8_t size, bool calcCrc) {
-    memcpy(target, source, size);
+    memcpy(reinterpret_cast<void *>(target), reinterpret_cast<void *>(source), size);
     if (calcCrc) {
         generateCrc();
     }
@@ -103,13 +103,18 @@ void CommsFormat::generateCrc(bool assign) {
 }
 
 // assign received information to packet
+// NOTE: possible confusion when using set information, the address or control are not changed!
 void CommsFormat::setInformation(Payload *pl) {
-    assignBytes(getInformation(), reinterpret_cast<uint8_t*>(pl->getInformation()), getInfoSize());
+    // if the info size changed only the info size
+    if (_info_size != pl->getSize()) {
+        init(pl->getSize(), _address, _control);
+    }
+    assignBytes(getInformation(), reinterpret_cast<uint8_t*>(pl->getInformation()), _info_size);
 }
 
 void CommsFormat::copyData(uint8_t* data, uint8_t dataSize) {
     _packet_size = dataSize;
-    _info_size = dataSize - CONST_MIN_SIZE_PACKET;
+    _info_size = dataSize - COMMS_MIN_SIZE_PACKET;
     memset(getData(),    0, sizeof(_data));
 
     assignBytes(getData(), data, dataSize);

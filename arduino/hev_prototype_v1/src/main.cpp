@@ -105,9 +105,8 @@ void setup()
     pinMode(pin_buzzer, OUTPUT);
     pinMode(pin_button_0, INPUT);
 
-    while (!Serial) ;
+//    while (!Serial) ;
     comms.beginSerial();
-
 }
 
 void loop()
@@ -164,8 +163,7 @@ void loop()
 
     uint32_t tnow = static_cast<uint32_t>(millis());
     if(tnow - report_time > report_timeout) {
-        plSend.setType(PAYLOAD_TYPE::FASTDATA);
-        plSend.setFastData(&data);
+        plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&data), sizeof(data));
         // data2.ventilation_mode = plSend.getSize();
         comms.writePayload(plSend);
         report_time = tnow;
@@ -177,11 +175,16 @@ void loop()
 
     // check any received payload
     if(comms.readPayload(plReceive)) {
+
       if (plReceive.getType() == PAYLOAD_TYPE::CMD) {
           // apply received cmd to ui loop
-          ui_loop.doCommand(plReceive.getCmd());
-          plReceive.setType(PAYLOAD_TYPE::UNSET);
+          cmd_format cmd;
+          memcpy(reinterpret_cast<void*>(&cmd), plReceive.getInformation(), plReceive.getSize());
+          ui_loop.doCommand(&cmd);
       }
+
+      // unset received type not to read it again
+      plReceive.setType(PAYLOAD_TYPE::UNSET);
     }
 
     // run value readings
