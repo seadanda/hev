@@ -67,7 +67,7 @@ $(document).ready(function() {
     chart_PV = new Chart(ctx_PV, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Pressure (x) :Volme (y) (current)",
+			   label: "Pressure (x) :Volume (y) (current)",
 			   borderColor: "rgb(128,0,0)",
 			   pointBackgroundColor : "rgb(128,0,0)",
 			   fill: true}, 
@@ -90,7 +90,7 @@ $(document).ready(function() {
     chart_VF = new Chart(ctx_VF, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Volme (x) : Flow (y)  (current)",
+			   label: "Volume (x) : Flow (y)  (current)",
 			   borderColor: "rgb(128,0,0)",
 			   pointBackgroundColor : "rgb(128,0,0)",
 			   fill: true },
