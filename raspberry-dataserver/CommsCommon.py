@@ -1,5 +1,7 @@
 from struct import Struct 
 from enum import Enum, auto, unique
+from dataclasses import dataclass, asdict, field, fields
+from typing import Any, ClassVar, Dict
 import logging
 import binascii
 logging.basicConfig(level=logging.INFO,
@@ -10,323 +12,300 @@ logging.basicConfig(level=logging.INFO,
 # i.e. if and of DataFormat, CommandFormat or AlarmFormat change
 # then change the RPI_VERSION
 
+class PAYLOAD_TYPE(Enum):
+    DATA       = auto()
+    READBACK   = auto()
+    CYCLE      = auto()
+    THRESHOLDS = auto()
+    CMD        = auto()
+    ALARM      = auto()
+    UNSET      = auto()
+
+
+@dataclass
 class BaseFormat():
-    def __init__(self):
-        self._RPI_VERSION = 0xA2
-        self._byteArray = None
-        self._type = PAYLOAD_TYPE.UNSET
-        self._version = 0
+    # class variables excluded from init args and output dict
+    _RPI_VERSION: ClassVar[int] = field(default=0xA2, init=False, repr=False)
+    _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
+    _dataStruct:  ClassVar[Any] = field(default=Struct("<BI"), init=False, repr=False)
+    _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
-    @property
-    def byteArray(self):
-        return self._byteArray
+    # class variables
+    version:   int = 0
+    timestamp: int = 0
     
-    @byteArray.setter
-    def byteArray(self):
-        print("Use fromByteArray to change this")
-
     # check for mismatch between pi and microcontroller version
-    def checkVersion(self):
-        if self._RPI_VERSION == self._version :
-            self._version_error = True
-        else : 
-            self._version_error = False
+    def checkVersion(self) -> bool:
+        return self._RPI_VERSION == self.version
 
-    def getSize(self):
+    def getSize(self) -> int:
         return len(self._byteArray)
-            
-    def getType(self):
+
+    def getType(self) -> Any:
         return self._type
-
     
+    def getDict(self) -> Dict:
+        return asdict(self)
+
+    # at the minute not generalised. needs to be overridden
+    def fromByteArray(self, byteArray) -> None:
+        (self.version,
+        self.timestamp) = self._dataStruct.unpack(byteArray) 
+        self._byteArray = byteArray
+
+    # generalised
+    def toByteArray(self):
+        self.version = self._RPI_VERSION
+        loaddict = asdict(self)
+        load = [ loaddict[key] for key in loaddict ]
+        self._byteArray = self._dataStruct.pack(*load) 
+
 # =======================================
-# data type payload
+# fast data payload
 # =======================================
+@dataclass
 class DataFormat(BaseFormat):
+    # subclass dataformat
+    _dataStruct = Struct("<BIBBHHHHHHHHHHHIII")
+    _type = PAYLOAD_TYPE.DATA
 
-    # define the format here, including version
-    def __init__(self):
-        super().__init__()
-        # struct will set the num bytes per variable
-        # B = unsigned char = 1 byte
-        # H = unsigned short = 2 bytes
-        # I = unsigned int = 4 bytes
-        # < = little endian
-        # > = big endian
-        # ! = network format (big endian)
-        self._dataStruct = Struct("<BIBBHHHHHHHHHHHIII")
-        self._byteArray = None
-        self._type = PAYLOAD_TYPE.DATA
+    # subclass member variables
+    data_type: int              = 1
+    fsm_state: str              = "IDLE"
+    pressure_air_supply: int    = 0
+    pressure_air_regulated: int = 0
+    pressure_o2_supply: int     = 0
+    pressure_o2_regulated: int  = 0
+    pressure_buffer: int        = 0
+    pressure_inhale: int        = 0
+    pressure_patient: int       = 0
+    temperature_buffer: int     = 0
+    pressure_diff_patient: int  = 0
+    ambient_pressure: int       = 0
+    ambient_temperature: int    = 0
+    airway_pressure: float      = 0
+    flow: float                 = 0
+    volume: float               = 0
 
 
-        # make all zero to start with
-        self._version                = 0;
-        self._timestamp              = 0;
-        self._data_type              = 0;
-        self._fsm_state              = "IDLE";
-        self._pressure_air_supply    = 0;
-        self._pressure_air_regulated = 0;
-        self._pressure_o2_supply     = 0;
-        self._pressure_o2_regulated  = 0;
-        self._pressure_buffer        = 0;
-        self._pressure_inhale        = 0;
-        self._pressure_patient       = 0;
-        self._temperature_buffer     = 0;
-        self._pressure_diff_patient  = 0;
-        self._ambient_pressure       = 0;
-        self._ambient_temperature    = 0;
-        self._airway_pressure        = 0;
-        self._flow                   = 0;
-        self._volume                 = 0;
-        
-    def __repr__(self):
-        return f"""{{
-    "version"                : {self._version               },
-    "timestamp"              : {self._timestamp             },
-    "data_type"              : {self._data_type             },
-    "fsm_state"              : {self._fsm_state             },
-    "pressure_air_supply"    : {self._pressure_air_supply   },
-    "pressure_air_regulated" : {self._pressure_air_regulated},
-    "pressure_o2_supply"     : {self._pressure_o2_supply    },
-    "pressure_o2_regulated"  : {self._pressure_o2_regulated },
-    "pressure_buffer"        : {self._pressure_buffer       },
-    "pressure_inhale"        : {self._pressure_inhale       },
-    "pressure_patient"       : {self._pressure_patient      },
-    "temperature_buffer"     : {self._temperature_buffer    },
-    "pressure_diff_patient"  : {self._pressure_diff_patient },
-    "ambient_pressure"       : {self._ambient_pressure      },
-    "ambient_temperature"    : {self._ambient_temperature   },
-    "airway_pressure"        : {self._airway_pressure       },
-    "flow"                   : {self._flow                  },
-    "volume"                 : {self._volume                }
-}}"""
-        
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
     def fromByteArray(self, byteArray):
-        self._byteArray = byteArray
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
-        (self._version              ,
-        self._timestamp             ,
-        self._data_type             ,
-        self._fsm_state             ,
-        self._pressure_air_supply   ,
-        self._pressure_air_regulated,
-        self._pressure_o2_supply    ,
-        self._pressure_o2_regulated ,
-        self._pressure_buffer       ,
-        self._pressure_inhale       ,
-        self._pressure_patient      ,
-        self._temperature_buffer    ,
-        self._pressure_diff_patient ,
-        self._ambient_pressure      ,
-        self._ambient_temperature   ,
-        self._airway_pressure       ,
-        self._flow                  ,
-        self._volume                ) = self._dataStruct.unpack(self._byteArray) 
+        tmp_state = 0
+        (self.version,
+        self.timestamp,
+        _, # dummy to skip datatype
+        tmp_state,
+        self.pressure_air_supply,
+        self.pressure_air_regulated,
+        self.pressure_o2_supply,
+        self.pressure_o2_regulated,
+        self.pressure_buffer,
+        self.pressure_inhale,
+        self.pressure_patient,
+        self.temperature_buffer,
+        self.pressure_diff_patient,
+        self.ambient_pressure,
+        self.ambient_temperature,
+        self.airway_pressure,
+        self.flow,
+        self.volume) = self._dataStruct.unpack(byteArray) 
         try:
-            self._fsm_state = BL_STATES(self._fsm_state).name
-        except ValueError:
-            self._fsm_state = BL_STATES(1).name
+            self.fsm_state = BL_STATES(tmp_state).name
+        except Exception:
+            # no longer silently die, catch Exceptions higher up
+            raise
+        self._byteArray = byteArray
 
 
-    # for sending DataFormat to microcontroller
-    # this is for completeness.  Probably we never send this data
-    # to the microcontroller
-    def toByteArray(self):
-        # since pi is sender
-        self._version = self._RPI_VERSION
+# =======================================
+# readback data payload
+# =======================================
+@dataclass
+class ReadbackFormat(BaseFormat):
+    _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBI")
+    _type = PAYLOAD_TYPE.READBACK
 
-        self._byteArray = self._dataStruct.pack(
-            self._RPI_VERSION           ,
-            self._timestamp             ,
-            self._data_type             ,
-            self._fsm_state             ,
-            self._pressure_air_supply   ,
-            self._pressure_air_regulated,
-            self._pressure_o2_supply    ,
-            self._pressure_o2_regulated ,
-            self._pressure_buffer       ,
-            self._pressure_inhale       ,
-            self._pressure_patient      ,
-            self._temperature_buffer    ,
-            self._pressure_diff_patient ,
-            self._ambient_pressure      ,
-            self._ambient_temperature   ,
-            self._airway_pressure       ,
-            self._flow                  ,
-            self._volume
-        ) 
+    data_type: int                = 2
+    duration_calibration: int     = 0
+    duration_buff_purge: int      = 0
+    duration_buff_flush: int      = 0
+    duration_buff_prefill: int    = 0
+    duration_buff_fill: int       = 0
+    duration_buff_loaded: int     = 0
+    duration_buff_pre_inhale: int = 0
+    duration_inhale: int          = 0
+    duration_pause: int           = 0
+    duration_exhale_fill: int     = 0
+    duration_exhale: int          = 0
 
-    def getDict(self):
-        data = {
-            "version"                : self._version               ,
-            "timestamp"              : self._timestamp             ,
-            "data_type"              : self._data_type             ,
-            "fsm_state"              : self._fsm_state             ,
-            "pressure_air_supply"    : self._pressure_air_supply   ,
-            "pressure_air_regulated" : self._pressure_air_regulated,
-            "pressure_o2_supply"     : self._pressure_o2_supply    ,
-            "pressure_o2_regulated"  : self._pressure_o2_regulated ,
-            "pressure_buffer"        : self._pressure_buffer       ,
-            "pressure_inhale"        : self._pressure_inhale       ,
-            "pressure_patient"       : self._pressure_patient      ,
-            "temperature_buffer"     : self._temperature_buffer    ,
-            "pressure_diff_patient"  : self._pressure_diff_patient ,
-            "ambient_pressure"       : self._ambient_pressure      ,
-            "ambient_temperature"    : self._ambient_temperature   ,
-            "airway_pressure"        : self._airway_pressure       ,
-            "flow"                   : self._flow                  ,
-            "volume"                 : self._volume                
-        }
-        return data
+    valve_air_in: int             = 0
+    valve_o2_in: int              = 0
+    valve_inhale: int             = 0
+    valve_exhale: int             = 0
+    valve_purge: int              = 0
+    ventilation_mode: int         = 0
+
+    valve_inhale_percent: int     = 0
+    valve_exhale_percent: int     = 0
+    valve_air_in_enable: int      = 0
+    valve_o2_in_enable: int       = 0
+    valve_purge_enable: int       = 0
+    inhale_trigger_enable: int    = 0
+    exhale_trigger_enable: int    = 0
+    peep: int                     = 0
+    inhale_exhate_ratio: float    = 0.0
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        (self.version,
+        self.timestamp,
+        _, # dummy to skip datatype
+        self.duration_calibration,
+        self.duration_buff_purge,
+        self.duration_buff_flush,
+        self.duration_buff_prefill,
+        self.duration_buff_fill,
+        self.duration_buff_loaded,
+        self.duration_buff_pre_inhale,
+        self.duration_inhale,
+        self.duration_pause,
+        self.duration_exhale_fill,
+        self.duration_exhale,
+        self.valve_air_in,
+        self.valve_o2_in,
+        self.valve_inhale,
+        self.valve_exhale,
+        self.valve_purge,
+        self.ventilation_mode,
+        self.valve_inhale_percent,
+        self.valve_exhale_percent,
+        self.valve_air_in_enable,
+        self.valve_o2_in_enable,
+        self.valve_purge_enable,
+        self.inhale_trigger_enable,
+        self.exhale_trigger_enable,
+        self.peep,
+        self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
+        self._byteArray = byteArray
+
+
+# =======================================
+# cycle data payload
+# =======================================
+@dataclass
+class CycleFormat(BaseFormat):
+    # subclass dataformat
+    _dataStruct = Struct("<BIBIIIIIIIIIHHHHBHHB")
+    _type = PAYLOAD_TYPE.CYCLE
+
+    data_type: int                 = 3
+    respiratory_rate: float        = 0.0
+    tidal_volume: float            = 0.0
+    exhaled_tidal_volume: float    = 0.0
+    inhaled_tidal_volume: float    = 0.0
+    minute_volume: float           = 0.0
+    exhaled_minute_volume: float   = 0.0
+    inhaled_minute_volume: float   = 0.0
+    lung_compliance: float         = 0.0
+    static_compliance: float       = 0.0
+    inhalation_pressure: int       = 0
+    peak_inspiratory_pressure: int = 0
+    plateau_pressure: int          = 0
+    mean_airway_pressure: int      = 0
+    fi02_percent: int              = 0
+    apnea_index: int               = 0
+    apnea_time: int                = 0
+    mandatory_breath: int          = 0
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        (self.version,
+        self.timestamp,
+        _, # dummy to skip datatype
+        self.respiratory_rate,
+        self.tidal_volume,
+        self.exhaled_tidal_volume,
+        self.inhaled_tidal_volume,
+        self.minute_volume,
+        self.exhaled_minute_volume,
+        self.inhaled_minute_volume,
+        self.lung_compliance,
+        self.static_compliance,
+        self.inhalation_pressure,
+        self.peak_inspiratory_pressure,
+        self.plateau_pressure,
+        self.mean_airway_pressure,
+        self.fi02_percent,
+        self.apnea_index,
+        self.apnea_time,
+        self.mandatory_breath) = self._dataStruct.unpack(byteArray) 
+        self._byteArray = byteArray
+
+
+# =======================================
+# thresholds eata payload
+# =======================================
+# TODO
 
 # =======================================
 # cmd type payload
 # =======================================
+@dataclass
 class CommandFormat(BaseFormat):
-    def __init__(self, cmd_type=0, cmd_code=0, param=0):
-        super().__init__()
-        self._dataStruct = Struct("<BIBBI")
-        self._byteArray = None
-        self._type = PAYLOAD_TYPE.CMD
+    _dataStruct = Struct("<BIBBI")
+    _type = PAYLOAD_TYPE.CMD
 
-        self._version   = 0
-        self._timestamp = 0
-        self._cmd_type  = cmd_type
-        self._cmd_code  = cmd_code
-        self._param     = param
+    cmd_type: int = 0
+    cmd_code: int = 0
+    param: int    = 0
+
+    def __post_init__(self):
         self.toByteArray()
 
-    # manage direct reading and writing of member variables
-    @property
-    def cmd_type(self):
-        return self._cmd_type
-    
-    @cmd_type.setter
-    def cmd_type(self, cmd_typeIn):
-        self._cmd_type = cmd_typeIn
-        self.toByteArray()
-
-    @property
-    def cmd_code(self):
-        return self._cmd_code
-    
-    @cmd_code.setter
-    def cmd_code(self, cmd_codeIn):
-        self._cmd_code = cmd_codeIn
-        self.toByteArray()
-
-    @property
-    def param(self):
-        return self._param
-    
-    @param.setter
-    def param(self, paramIn):
-        self._param = paramIn
-        self.toByteArray()
-
-    # print nicely
-    def __repr__(self):
-        return f"""{{
-    "version"   : {self._version  },
-    "timestamp" : {self._timestamp},
-    "cmd_type"  : {self._cmd_type },
-    "cmd_code"  : {self._cmd_code },
-    "param"     : {self._param    }
-}}"""
-        
     def fromByteArray(self, byteArray):
+        (self.version,
+        self.timestamp,
+        self.cmd_type,
+        self.cmd_code,
+        self.param) = self._dataStruct.unpack(byteArray) 
         self._byteArray = byteArray
-        (self._version,
-        self._timestamp,
-        self._cmd_type,
-        self._cmd_code,
-        self._param) = self._dataStruct.unpack(self._byteArray) 
 
-    def toByteArray(self):
-        # since pi is sender
-        self._byteArray = self._dataStruct.pack(
-            self._RPI_VERSION,
-            self._timestamp  ,
-            self._cmd_type   ,
-            self._cmd_code   ,
-            self._param
-        )
 
-    def getDict(self):
-        data = {
-            "version"   : self._version  ,
-            "timestamp" : self._timestamp,
-            "cmd_type"  : self._cmd_type ,
-            "cmd_code"  : self._cmd_code ,
-            "param"     : self._param
-        }
-        return data
-        
 # =======================================
 # alarm type payload
 # =======================================
+@dataclass
 class AlarmFormat(BaseFormat):
-    def __init__(self):
-        super().__init__()
-        self._dataStruct = Struct("<BIBBI")
-        self._byteArray = None
-        self._type = PAYLOAD_TYPE.ALARM
+    _dataStruct = Struct("<BIBBI")
+    _type = PAYLOAD_TYPE.ALARM
 
-        self._version    = 0
-        self._timestamp  = 0
-        self._alarm_type = 0
-        self._alarm_code = 0
-        self._param      = 0
+    alarm_type: int = 0
+    alarm_code: int = 0
+    param: int      = 0
 
-    def __repr__(self):
-        return f"""{{
-    "version"    : {self._version   },
-    "timestamp"  : {self._timestamp },
-    "alarm_type" : {self._alarm_type},
-    "alarm_code" : {self._alarm_code},
-    "param"      : {self._param     }
-}}"""
-        
     def fromByteArray(self, byteArray):
+        alarm = 0
+        (self.version,
+        self.timestamp,
+        self.alarm_type,
+        alarm,
+        self.param) = self._dataStruct.unpack(byteArray)
+        self.alarm_code = ALARM_CODES(alarm).name
         self._byteArray = byteArray
-        (self._version  ,
-        self._timestamp ,
-        self._alarm_type,
-        self._alarm_code,
-        self._param) = self._dataStruct.unpack(self._byteArray)
-
-    def toByteArray(self):
-        self._byteArray = self._dataStruct.pack(
-            self._RPI_VERSION,
-            self._timestamp  ,
-            self._alarm_type ,
-            self._alarm_code ,
-            self._param
-        ) 
     
-    def getDict(self):
-        data = {
-            "version"    : self._version   ,
-            "timestamp"  : self._timestamp ,
-            "alarm_type" : self._alarm_type,
-            "alarm_code" : self._alarm_code,
-            "param"      : self._param
-        }
-        return data
-
 
 # =======================================
 # Enum definitions
 # =======================================
-class PAYLOAD_TYPE(Enum):
-    DATA  = auto()
-    CMD   = auto()
-    ALARM = auto()
-    UNSET = auto()
-
 @unique
 class CMD_TYPE(Enum):
     GENERAL           =  1
@@ -375,7 +354,7 @@ class ALARM_CODES(Enum):
     CHECK_VALVE_EXHALE             =  2  # HP
     CHECK_P_PATIENT                =  3  # HP
     EXPIRATION_SENSE_FAULT_OR_LEAK =  4  #   MP
-    EXPIRATION_VALVE_Leak          =  5  #   MP
+    EXPIRATION_VALVE_LEAK          =  5  #   MP
     HIGH_FIO2                      =  6  #   MP
     HIGH_PRESSURE                  =  7  # HP
     HIGH_RR                        =  8  #   MP

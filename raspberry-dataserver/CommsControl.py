@@ -218,7 +218,7 @@ class CommsControl():
         except:
             logging.debug("Queue is probably empty")
             
-    def receivePacket(self, payload_type, commsPacket):
+    def receivePacket(self, payload_type, comms_packet):
         if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
             payload = CommsCommon.AlarmFormat()
         elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
@@ -228,9 +228,14 @@ class CommsControl():
         else:
             return False
         
-        payload.fromByteArray(commsPacket.getData()[commsPacket.getInformation():commsPacket.getFcs()])
-        self.payloadrecv = payload
-        return True
+        try:
+            payload.fromByteArray(comms_packet.getData()[comms_packet.getInformation():comms_packet.getFcs()])
+        except Exception:
+            raise
+        else:
+            self.payloadrecv = payload
+            return True
+        return False
 
     # escape any 0x7D or 0x7E with 0x7D and swap bit 5
     def escapeByte(self, byte):
@@ -298,7 +303,7 @@ if __name__ == "__main__" :
 
         def update_llipacket(self, payload):
             if payload.getType() == CommsCommon.PAYLOAD_TYPE.DATA:
-                logging.info(f"payload received: {payload._fsm_state}")
+                logging.info(f"payload received: {payload.fsm_state}")
 
             self._llipacket = payload
             # pop from queue - protects against Dependant going down and not receiving packets

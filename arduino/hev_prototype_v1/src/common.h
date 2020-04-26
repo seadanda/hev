@@ -124,9 +124,10 @@ struct alarm_format {
 #pragma pack()
 
 enum DATA_TYPE: uint8_t  {
-    FAST        =  1,
-    READBACK    =  2,
-    CYCLE       =  3
+    FAST       =  1,
+    READBACK   =  2,
+    CYCLE      =  3,
+    THRESHOLDS =  4
 };
 
 // struct for all data sent
