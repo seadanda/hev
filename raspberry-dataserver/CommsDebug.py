@@ -24,18 +24,16 @@ class Dependant(object):
         self._lli.pop_payloadrecv()
 
 dep = Dependant(comms)
-start = 0x1
-stop =  0x2
 
 # initialise as start command, automatically executes toByteArray()
-cmd = CommandFormat(cmdType=CMD_TYPE.GENERAL.value, cmdCode=CMD_GENERAL.START.value, param=0)
-
+cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
+print(cmd)
 time.sleep(4)
 comms.writePayload(cmd)
 print('sent cmd start')
 while True:
     time.sleep(20)
-    cmd.cmdCode = stop # automatically executes toByteArray()
+    cmd.cmd_code = CMD_GENERAL.STOP.value # automatically executes toByteArray()
     comms.writePayload(cmd)
     print('sent cmd stop')
     pass

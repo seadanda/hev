@@ -50,10 +50,10 @@ class HEVServer(object):
         if payload_type == PAYLOAD_TYPE.ALARM:
             # Alarm is latched until acknowledged in GUI
             alarm_packet = payload.getDict()
-            alarmCode = alarm_packet["alarmCode"]
+            alarm_code = alarm_packet["alarm_code"]
             with self._dblock:
                 try:
-                    alarm = ALARM_CODES(alarmCode).name
+                    alarm = ALARM_CODES(alarm_code).name
                     if alarm not in self._alarms:
                         self._alarms.append(alarm)
                 except ValueError as e:
@@ -105,8 +105,8 @@ class HEVServer(object):
                     reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                command = CommandFormat(cmdType=CMD_TYPE[reqcmdtype].value,
-                                        cmdCode=CMD_MAP[reqcmdtype].value[reqcmd].value,
+                command = CommandFormat(cmd_type=CMD_TYPE[reqcmdtype].value,
+                                        cmd_code=CMD_MAP[reqcmdtype].value[reqcmd].value,
                                         param=reqparam)
 
                 self._lli.writePayload(command)
