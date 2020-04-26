@@ -27,7 +27,7 @@ public:
 
 private:
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *getQueue(PAYLOAD_TYPE &type);
-    PAYLOAD_TYPE getInfoType(uint8_t *address);
+    PAYLOAD_TYPE getInfoType(uint8_t &address);
 
     void sendQueue    (RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);
     void resendPacket (RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);

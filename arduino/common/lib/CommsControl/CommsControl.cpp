@@ -85,9 +85,10 @@ void CommsControl::receiver() {
                             _sequence_receive = (*(_comms_tmp.getControl()) >> 1 ) & 0x7F;
                             // to decide ACK/NACK/other; for other gain sequenceReceive
                             uint8_t control = *(_comms_tmp.getControl() + 1);
+                            uint8_t address = *_comms_tmp.getAddress();
 
                             // to decide what kind of packets received
-                            PAYLOAD_TYPE type = getInfoType(_comms_tmp.getAddress());
+                            PAYLOAD_TYPE type = getInfoType(address);
 
                             // switch on received data to know what to do - received ACK/NACK or other
                             switch(control & COMMS_CONTROL_TYPES) {
@@ -101,14 +102,11 @@ void CommsControl::receiver() {
                                     finishPacket(type);
                                     break;
                                 default:
-                                    Serial.print("add: ");
                                     uint8_t sequence_receive = (control >> 1 ) & 0x7F;
                                     sequence_receive += 1;
-                                    uint8_t address = *_comms_tmp.getAddress();
-                                    // received DATA
+                                    // received INFORMATION
                                     if (receivePacket(type)) {
                                         _comms_ack.setAddress(&address);
-                                        Serial.println(*_comms_ack.getAddress());
                                         _comms_ack.setSequenceReceive(sequence_receive);
                                         sendPacket(_comms_ack);
                                     } else {
@@ -247,7 +245,7 @@ void CommsControl::resendPacket(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> 
 // receiving anything of commsFormat
 bool CommsControl::receivePacket(PAYLOAD_TYPE &type) {
     _payload_tmp.unset();
-    _payload_tmp.setPayload(type, _comms_tmp.getInformation(), _comms_tmp.getInfoSize());
+    _payload_tmp.setPayload(type, reinterpret_cast<void *>(_comms_tmp.getInformation()), _comms_tmp.getInfoSize());
 
     // remove first entry if queue is full
     if (_ring_buff_received.isFull()) {
@@ -276,8 +274,8 @@ void CommsControl::finishPacket(PAYLOAD_TYPE &type) {
     }
 }
 
-PAYLOAD_TYPE CommsControl::getInfoType(uint8_t *address) {
-    switch (*address & PACKET_TYPE) {
+PAYLOAD_TYPE CommsControl::getInfoType(uint8_t &address) {
+    switch (address & PACKET_TYPE) {
         case PACKET_ALARM:
             return PAYLOAD_TYPE::ALARM;
         case PACKET_CMD:

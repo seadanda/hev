@@ -10,9 +10,9 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al)
 UILoop::~UILoop()
 {;}
 
-int UILoop::doCommand(cmd_format *cf)
+int UILoop::doCommand(cmd_format &cf)
 {
-    switch(cf->cmd_type) {
+    switch(cf.cmd_type) {
         case CMD_TYPE::GENERAL:
             cmdGeneral(cf);
             break;
@@ -34,31 +34,31 @@ int UILoop::doCommand(cmd_format *cf)
     return 0;
 }
 
-void UILoop::cmdGeneral(cmd_format *cf) {
-    switch (cf->cmd_code) {
+void UILoop::cmdGeneral(cmd_format &cf) {
+    switch (cf.cmd_code) {
         case CMD_GENERAL::START : _breathing_loop->doStart();
             break;
-        case CMD_GENERAL::STOP : _breathing_loop->doStop();
+        case CMD_GENERAL::STOP  : _breathing_loop->doStop();
             break;
         default:
             break;
     }
 }
 
-void UILoop::cmdSetDuration(cmd_format *cf) {
-    setDuration(static_cast<CMD_SET_DURATION>(cf->cmd_code), _breathing_loop->getDurations(), cf->param);
+void UILoop::cmdSetDuration(cmd_format &cf) {
+    setDuration(static_cast<CMD_SET_DURATION>(cf.cmd_code), _breathing_loop->getDurations(), cf.param);
 }
 
-void UILoop::cmdSetMode(cmd_format *cf) {
+void UILoop::cmdSetMode(cmd_format &cf) {
     ;
 }
 
-void UILoop::cmdSetThresholdMin(cmd_format *cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf->cmd_code), _alarm_loop->getThresholdsMin(), cf->param);
+void UILoop::cmdSetThresholdMin(cmd_format &cf) {
+    setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
 }
 
-void UILoop::cmdSetThresholdMax(cmd_format *cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf->cmd_code), _alarm_loop->getThresholdsMax(), cf->param);
+void UILoop::cmdSetThresholdMax(cmd_format &cf) {
+    setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
 }
 
 

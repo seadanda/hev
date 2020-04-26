@@ -11,11 +11,11 @@
 
 // UNO struggles with the RAM size for ring buffers
 #ifdef ARDUINO_AVR_UNO
-#define COMMS_MAX_SIZE_RB_RECEIVING 1
-#define COMMS_MAX_SIZE_RB_SENDING 1
+#define COMMS_MAX_SIZE_RB_RECEIVING  1
+#define COMMS_MAX_SIZE_RB_SENDING    1
 #else
 #define COMMS_MAX_SIZE_RB_RECEIVING 10
-#define COMMS_MAX_SIZE_RB_SENDING 5
+#define COMMS_MAX_SIZE_RB_SENDING    5
 #endif
 
 #define COMMS_MAX_SIZE_PACKET 64
@@ -55,16 +55,18 @@ public:
     Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {_type = type; }
     Payload(const Payload &other) {
         _type = other._type;
-        memcpy(&_buffer, &other._buffer, sizeof (other._size));
+        _size = other._size;
+        memcpy(_buffer, other._buffer, other._size);
     }
     Payload& operator=(const Payload& other) {
         _type = other._type;
-        memcpy(&_buffer, &other._buffer, sizeof (other._size));
+        _size = other._size;
+        memcpy(_buffer, other._buffer, other._size);
         return *this;
     }
 
     ~Payload() { unset(); }
-    void unset() { memset( _buffer, 0, COMMS_MAX_SIZE_BUFFER); _type = PAYLOAD_TYPE::UNSET; }
+    void unset() { memset( _buffer, 0, PAYLOAD_MAX_SIZE_BUFFER); _type = PAYLOAD_TYPE::UNSET; _size = 0;}
 
     void setType(PAYLOAD_TYPE type) { _type = type; }
     PAYLOAD_TYPE getType() {return _type; }
@@ -72,10 +74,34 @@ public:
     void setSize(uint8_t size) { _size = size; }
     uint8_t getSize() { return _size; }
 
-    void setPayload(PAYLOAD_TYPE type, void* information, uint8_t size) {
+    bool setPayload(PAYLOAD_TYPE type, void* information, uint8_t size) {
+        if (information == nullptr) {
+            return false;
+        }
+
         setType(type);
         setSize(size);
         setInformation(information);
+
+        return true;
+    }
+
+    bool getPayload(void* information) {
+        PAYLOAD_TYPE type;
+        uint8_t size;
+        return getPayload(information, type, size);
+    }
+
+    bool getPayload(void* information, PAYLOAD_TYPE &type, uint8_t &size) {
+        if (information == nullptr) {
+            return false;
+        }
+
+        type = getType();
+        size = getSize();
+        memcpy(information, getInformation(), _size);
+
+        return true;
     }
 
     void setInformation(void* information) { memcpy(_buffer, information, _size); }

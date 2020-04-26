@@ -13,13 +13,13 @@ class UILoop
 public:
     UILoop(BreathingLoop *bl, AlarmLoop *al);
     ~UILoop();
-    int doCommand(cmd_format *cf);
+    int doCommand(cmd_format &cf);
 private:
-    void cmdGeneral(cmd_format *cf);
-    void cmdSetDuration(cmd_format *cf);
-    void cmdSetMode(cmd_format *cf);
-    void cmdSetThresholdMin(cmd_format *cf);
-    void cmdSetThresholdMax(cmd_format *cf);
+    void cmdGeneral(cmd_format &cf);
+    void cmdSetDuration(cmd_format &cf);
+    void cmdSetMode(cmd_format &cf);
+    void cmdSetThresholdMin(cmd_format &cf);
+    void cmdSetThresholdMax(cmd_format &cf);
 
     BreathingLoop *_breathing_loop;
     AlarmLoop     *_alarm_loop    ;

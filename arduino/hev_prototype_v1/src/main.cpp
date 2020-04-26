@@ -15,6 +15,7 @@
 
 int ventilation_mode = HEV_MODE_PS;
 
+uint8_t prev_state = LOW;
 uint32_t report_timeout = 50; //ms
 uint32_t report_time = 0;
 
@@ -179,8 +180,8 @@ void loop()
       if (plReceive.getType() == PAYLOAD_TYPE::CMD) {
           // apply received cmd to ui loop
           cmd_format cmd;
-          memcpy(reinterpret_cast<void*>(&cmd), plReceive.getInformation(), plReceive.getSize());
-          ui_loop.doCommand(&cmd);
+          plReceive.getPayload(reinterpret_cast<void*>(&cmd));
+          ui_loop.doCommand(cmd);
       }
 
       // unset received type not to read it again
