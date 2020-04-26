@@ -12,32 +12,32 @@ def commsFromBytes(byteArray):
     return comms
 
 def generateAlarm(payload):
-    comms = CommsFormat(infoSize = payload.getSize(), address = 0xC0)
-    comms.setInformation(payload)
+    comms = CommsFormat(info_size = payload.getSize(), address = 0xC0)
+    comms.setInformation(payload.getByteArray())
     return comms
 
 def generateCmd(payload):
-    comms = CommsFormat(infoSize = payload.getSize(), address = 0x80)
-    comms.setInformation(payload)
+    comms = CommsFormat(info_size = payload.getSize(), address = 0x80)
+    comms.setInformation(payload.getByteArray())
     return comms
 
 def generateData(payload):
-    comms = CommsFormat(infoSize = payload.getSize(), address = 0x40)
-    comms.setInformation(payload)
+    comms = CommsFormat(info_size = payload.getSize(), address = 0x40)
+    comms.setInformation(payload.getByteArray())
     return comms
 
 
 # basic format based on HDLC
 class CommsFormat:
-    def __init__(self, infoSize = 0, address = 0x00, control = [0x00, 0x00]):
-        self._data = bytearray(7 + infoSize)
-        self._infoSize = infoSize
+    def __init__(self, info_size = 0, address = 0x00, control = [0x00, 0x00]):
+        self._data = bytearray(7 + info_size)
+        self._info_size = info_size
         self._crc = None
         
-        self.assignBytes(self.getStart()  , bytes([0x7E])   , calcCrc = False)
-        self.assignBytes(self.getAddress(), bytes([address]), calcCrc = False)
-        self.assignBytes(self.getControl(), bytes(control)  , calcCrc = False)
-        self.assignBytes(self.getStop()   , bytes([0x7E])   , calcCrc = False)
+        self.assignBytes(self.getStart()  , bytes([0x7E])   , calc_crc = False)
+        self.assignBytes(self.getAddress(), bytes([address]), calc_crc = False)
+        self.assignBytes(self.getControl(), bytes(control)  , calc_crc = False)
+        self.assignBytes(self.getStop()   , bytes([0x7E])   , calc_crc = False)
         
         self.generateCrc()
         
@@ -50,9 +50,9 @@ class CommsFormat:
     def getInformation(self):
         return 4
     def getFcs(self):
-        return 4 + self._infoSize
+        return 4 + self._info_size
     def getStop(self):
-        return 4 + self._infoSize + 2
+        return 4 + self._info_size + 2
     
     def setAddress(self, address):
         self.assignBytes(self.getAddress(), bytes([address]), 1)
@@ -60,9 +60,9 @@ class CommsFormat:
     def setControl(self, control):
         self.assignBytes(self.getControl(), bytes(control), 2)
     
-    def setInformation(self, payload):
+    def setInformation(self, bytes_array):
         # convert provided value
-        self.assignBytes(self.getInformation(), payload.byteArray)
+        self.assignBytes(self.getInformation(), bytes_array)
         
     def setSequenceSend(self, value):
         # sequence sent valid only for info frames (not supervisory ACK/NACK)
@@ -84,17 +84,17 @@ class CommsFormat:
     def getSequenceReceive(self):
         return (self._data[self.getControl()] >> 1) & 0x7F
         
-    def assignBytes(self, start, values, calcCrc = True):
+    def assignBytes(self, start, values, calc_crc = True):
         for idx in range(len(values)):
             self._data[start + idx] = values[idx]
-        if calcCrc:
+        if calc_crc:
             self.generateCrc()
         
     # generate checksum
     def generateCrc(self, assign = True):
         self._crc = libscrc.x25(bytes(self._data[self.getAddress():self.getFcs()])).to_bytes(2, byteorder='little')
         if assign:
-            self.assignBytes(self.getFcs(), self._crc, calcCrc = False)
+            self.assignBytes(self.getFcs(), self._crc, calc_crc = False)
             
     def compareCrc(self):
         self.generateCrc(False)
@@ -105,12 +105,12 @@ class CommsFormat:
     def getData(self):
         return self._data
 
-    def copyData(self, dataArray):
-        self.copyBytes(dataArray.to_bytes(self._infoSize, byteorder='little'))
+    def copyData(self, data_array):
+        self.copyBytes(data_array.to_bytes(self._info_size, byteorder='little'))
         
-    def copyBytes(self, bytesArray):
-        self._infoSize = len(bytesArray) - 7
-        self._data     = bytesArray
+    def copyBytes(self, bytes_array):
+        self._info_size = len(bytes_array) - 7
+        self._data     = bytes_array
 
 # ACK specific formating
 class CommsACK(CommsFormat):

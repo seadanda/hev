@@ -46,6 +46,10 @@ class BaseFormat():
     
     def getDict(self) -> Dict:
         return asdict(self)
+    
+    def getByteArray(self) -> bytearray:
+        self.toByteArray()
+        return self._byteArray
 
     # at the minute not generalised. needs to be overridden
     def fromByteArray(self, byteArray) -> None:
