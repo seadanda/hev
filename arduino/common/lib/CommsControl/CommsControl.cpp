@@ -74,8 +74,8 @@ void CommsControl::receiver() {
 
                 // find the boundary of frames
                 if (_last_trans[current_trans_index] == COMMS_FRAME_BOUNDARY) {
-                    // if not found start or if read the same byte as last time
-                    if (!_found_start || _start_trans_index == current_trans_index) {
+                    // if not found start or if read the same byte as last time or if read a random end first
+                    if (!_found_start || current_trans_index < _start_trans_index + 6 ) {
                         _found_start = true;
                         _start_trans_index = current_trans_index;
                     } else {

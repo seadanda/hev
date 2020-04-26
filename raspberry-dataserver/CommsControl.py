@@ -36,6 +36,7 @@ class CommsControl():
         
         # needed to find packet frames
         self._received = []
+        self._receivedStart = 0
         self._foundStart = False
         self._timeLastTransmission = int(round(time.time() * 1000))
         
@@ -136,9 +137,9 @@ class CommsControl():
             # TODO: this could be written in more pythonic way
             # force read byte by byte
             self._received.append(byte)
-#             logging.debug(byte)
+#             logging.info(byte)
             # find starting flag of the packet
-            if not self._foundStart and byte == bytes([0x7E]):
+            if byte == bytes([0x7E]) and ((len(self._received) < self._receivedStart + 6) or not self._foundStart ):
                 self._foundStart    = True
                 self._receivedStart = len(self._received)
             # find ending flag of the packet
