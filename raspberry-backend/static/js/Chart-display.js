@@ -33,7 +33,6 @@ function init_results(){
             for (i=0; i<data.length; i++) {
 		var seconds = data[i]["timestamp"]/1000;
 		if ( seconds == "" ) continue;
-		console.log(seconds);
 		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
 		initial_yaxis_volume.push({x : seconds, y : data[i]["pressure_inhale"]});
 		initial_yaxis_flow.push({x : seconds, y : data[i]["temperature_buffer"]});
@@ -50,7 +49,6 @@ function init_results(){
 		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
 		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
         }
-        console.log(initial_yaxis_pressure);
 	    
         },
         cache: false
@@ -354,4 +352,21 @@ $(document).ready(function() {
 });
 
 
-
+var ctx = document.getElementById("example_gauge").getContext("2d");
+new Chart(ctx, {
+	type: "tsgauge",
+	data: {
+		datasets: [{
+			backgroundColor: ["#0fdc63", "#fd9704", "#ff7143"],
+			borderWidth: 0,
+			gaugeData: {
+				value: 7777,
+				valueColor: "#ff7143"
+			},
+			gaugeLimits: [0, 3000, 7000, 10000]
+		}]
+	},
+	options: {
+		events: []
+	}
+});
