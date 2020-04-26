@@ -31,7 +31,7 @@ function init_results(){
         url: '/last_N_data',
         success: function(data) {
             for (i=0; i<data.length; i++) {
-		var seconds = data[i]["timestamp"];
+		var seconds = data[i]["timestamp"]/1000;
 		if ( seconds == "" ) continue;
 		console.log(seconds);
 		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
@@ -49,7 +49,8 @@ function init_results(){
 		initial_yaxis_pressure[i][0] = initial_yaxis_pressure[i][0] - current_timestamp;
 		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
 		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
-	    }
+        }
+        console.log(initial_yaxis_pressure);
 	    
         },
         cache: false
@@ -94,7 +95,7 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-	    var seconds = point["timestamp"];
+	    var seconds = point["timestamp"]/1000;
 	    // get difference between last time stamp and this and apply to existing points
 	    var diff = 0;
 	    if ( current_timestamp == -1 ){
