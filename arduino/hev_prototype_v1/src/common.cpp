@@ -122,3 +122,24 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t &va
             break;
     }
 }
+
+uint16_t adcToMillibar(uint16_t adc, uint16_t offset = 0)
+{
+    // TODO -  a proper calibration
+    // rough guess - ADP5111 spec sheet -Panasonic ADP5 pressure sensor
+    // range is 0.5 to 4.5V ==  100 kPA range == 1000 mbar ; but - voltage divide by 2 on PCB
+    // 12 bit ADC => range = 0-4095
+    float bits_per_millivolt = 3300/4096.0;
+    float max_p = 1000; //mbar
+    float min_p = 0;
+    float max_adc = 0.5 * 4500 * bits_per_millivolt;
+    float min_adc = 0.5 * 500 * bits_per_millivolt;
+    float m = (max_p - min_p) / (max_adc - min_adc );
+    float c = max_p - m * max_adc;
+    float mbar = m*(adc-offset) + c; 
+
+    //if (mbar < 0) return 0;
+    //else if (mbar > 1000 ) return 1000;
+
+    return static_cast<uint16_t>(mbar);
+} 

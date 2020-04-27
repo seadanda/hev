@@ -137,7 +137,7 @@ struct fast_data_format {
     uint8_t  version                = HEV_FORMAT_VERSION;
     uint32_t timestamp              = 0;
     uint8_t  data_type              = DATA_TYPE::FAST;
-    uint8_t  fsm_state              = 0;
+    uint8_t  fsm_state              = 0; //UNKNOWN
     uint16_t pressure_air_supply    = 0;
     uint16_t pressure_air_regulated = 0;
     uint16_t pressure_o2_supply     = 0;
@@ -180,15 +180,15 @@ struct readback_data_format {
     uint8_t  valve_purge              = 0;
     uint8_t  ventilation_mode         = 0;
 
-    uint8_t valve_inhale_percent      = 0;
+    uint8_t valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     uint8_t valve_exhale_percent      = 0;
     uint8_t valve_air_in_enable       = 0;
     uint8_t valve_o2_in_enable        = 0;
     uint8_t valve_purge_enable        = 0;
-    uint8_t inhale_trigger_enable     = 0;
+    uint8_t inhale_trigger_enable     = 0;   // params - associated val of peak flow
     uint8_t exhale_trigger_enable     = 0;
     uint8_t peep                      = 0;
-    float   inhale_exhate_ratio       = 0.0;
+    float   inhale_exhale_ratio       = 0.0;
 };
 #pragma pack()
 
@@ -212,12 +212,12 @@ struct cycle_data_format {
     float lung_compliance               = 0;
     float static_compliance             = 0;
 
-    uint16_t inhalation_pressure        = 0;
-    uint16_t peak_inspiratory_pressure  = 0;
-    uint16_t plateau_pressure           = 0;
+    uint16_t inhalation_pressure        = 0;  // mean airway pressure
+    uint16_t peak_inspiratory_pressure  = 0;  
+    uint16_t plateau_pressure           = 0;  
     uint16_t mean_airway_pressure       = 0;
 
-    uint8_t  fi02_percent               = 0;
+    uint8_t  fi02_percent               = 0;  // device from Aurelio
 
     uint16_t apnea_index                = 0;
     uint16_t apnea_time                 = 0;
@@ -281,6 +281,7 @@ struct alarm_thresholds {
 
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
 void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
+uint16_t adcToMillibar(uint16_t adc, uint16_t offset = 0);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{

@@ -18,12 +18,21 @@ BreathingLoop::BreathingLoop()
     initCalib();
     resetReadingSums();
 
-    _total_cycle_duration = _states_durations.buff_loaded
+    _total_cycle_duration[0] = _states_durations.buff_loaded
                        +_states_durations.buff_pre_inhale
                        +_states_durations.inhale
                        +_states_durations.pause
                        +_states_durations.exhale_fill
                        +_states_durations.exhale;
+    _total_cycle_duration[2] = _total_cycle_duration[1] = _total_cycle_duration[0];
+
+    _valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
+    _valve_exhale_percent      = 0;
+    _valve_air_in_enable       = 1;
+    _valve_o2_in_enable        = 1;
+    _valve_purge_enable        = 1;
+    _inhale_trigger_enable     = 0;   // params - associated val of peak flow
+    _exhale_trigger_enable     = 0;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -69,20 +78,21 @@ void BreathingLoop::updateReadings()
         resetReadingSums();
     } else if (tnow - _readings_avgs_time > _readings_avgs_timeout) {
         _readings_avgs.timestamp                = static_cast<uint32_t>(_readings_sums.timestamp                / _readings_N);
-        _readings_avgs.pressure_air_supply      = static_cast<uint16_t>(_readings_sums.pressure_air_supply      / _readings_N);
-        _readings_avgs.pressure_air_regulated   = static_cast<uint16_t>(_readings_sums.pressure_air_regulated   / _readings_N);
-        _readings_avgs.pressure_buffer          = static_cast<uint16_t>(_readings_sums.pressure_buffer          / _readings_N);
-        _readings_avgs.pressure_inhale          = static_cast<uint16_t>(_readings_sums.pressure_inhale          / _readings_N);
-        _readings_avgs.pressure_patient         = static_cast<uint16_t>(_readings_sums.pressure_patient         / _readings_N);
-        _readings_avgs.temperature_buffer       = static_cast<uint16_t>(_readings_sums.temperature_buffer       / _readings_N);
+        _readings_avgs.pressure_air_supply      = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_air_supply      / _readings_N));
+        _readings_avgs.pressure_air_regulated   = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_air_regulated   / _readings_N));
+        _readings_avgs.pressure_buffer          = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_buffer          / _readings_N));
+        _readings_avgs.pressure_inhale          = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_inhale          / _readings_N));
+        _readings_avgs.pressure_patient         = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_patient         / _readings_N));
+        _readings_avgs.temperature_buffer       = adcToMillibar(static_cast<uint16_t>(_readings_sums.temperature_buffer       / _readings_N));
 #ifdef HEV_FULL_SYSTEM
-        _readings_avgs.pressure_o2_supply       = static_cast<uint16_t>(_readings_sums.pressure_o2_supply       / _readings_N);
-        _readings_avgs.pressure_o2_regulated    = static_cast<uint16_t>(_readings_sums.pressure_o2_regulated    / _readings_N);
-        _readings_avgs.pressure_diff_patient    = static_cast<uint16_t>(_readings_sums.pressure_diff_patient    / _readings_N);
+        _readings_avgs.pressure_o2_supply       = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_o2_supply       / _readings_N));
+        _readings_avgs.pressure_o2_regulated    = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_o2_regulated    / _readings_N));
+        _readings_avgs.pressure_diff_patient    = adcToMillibar(static_cast<uint16_t>(_readings_sums.pressure_diff_patient    / _readings_N));
 #endif
         resetReadingSums();
     }
 }
+
 
 readings<uint16_t> BreathingLoop::getReadingAverages()
 {
@@ -90,9 +100,10 @@ readings<uint16_t> BreathingLoop::getReadingAverages()
 
 }
 
-float BreathingLoop::getRespitoryRate(){
+float BreathingLoop::getRespiratoryRate(){
     // 60*1000ms / total time for a full cycle
-    return 60000.0/_total_cycle_duration;
+    float avg = (_total_cycle_duration[0]+_total_cycle_duration[1]+_total_cycle_duration[2])/3.0;
+    return 60000.0/avg;
 }
 
 float BreathingLoop::getFlow(){
@@ -333,12 +344,12 @@ void BreathingLoop::FSM_breathCycle()
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, 0.9 * VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
             //update total cycle time
-            _total_cycle_duration = _states_durations.buff_loaded
+            updateTotalCycleDuration(_states_durations.buff_loaded
                        +_states_durations.buff_pre_inhale
                        +_states_durations.inhale
                        +_states_durations.pause
                        +_states_durations.exhale_fill
-                       +_states_durations.exhale;
+                       +_states_durations.exhale);
             break;
         case BL_STATES::BUFF_PURGE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, 0.9 * VALVE_STATE::OPEN, VALVE_STATE::OPEN);
@@ -383,8 +394,16 @@ void BreathingLoop::calibrate()
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _calib_time > _calib_timeout) {
         _calib_N++;
-        _calib_sum_pressure += static_cast<uint32_t>(analogRead(pin_pressure_air_regulated));
-        _calib_avg_pressure  = static_cast<float   >(_calib_sum_pressure / _calib_N);
+        _calib_sums.pressure_air_regulated += static_cast<uint32_t>(analogRead(pin_pressure_air_regulated));
+        _calib_avgs.pressure_air_regulated  = static_cast<float   >(_calib_sums.pressure_air_regulated/ _calib_N);
+        _calib_sums.pressure_o2_regulated += static_cast<uint32_t>(analogRead(pin_pressure_o2_regulated));
+        _calib_avgs.pressure_o2_regulated  = static_cast<float   >(_calib_sums.pressure_o2_regulated/ _calib_N);
+        _calib_sums.pressure_buffer += static_cast<uint32_t>(analogRead(pin_pressure_buffer));
+        _calib_avgs.pressure_buffer  = static_cast<float   >(_calib_sums.pressure_buffer/ _calib_N);
+        _calib_sums.pressure_inhale += static_cast<uint32_t>(analogRead(pin_pressure_inhale));
+        _calib_avgs.pressure_inhale  = static_cast<float   >(_calib_sums.pressure_inhale/ _calib_N);
+        _calib_sums.pressure_patient += static_cast<uint32_t>(analogRead(pin_pressure_patient));
+        _calib_avgs.pressure_patient = static_cast<float   >(_calib_sums.pressure_patient/ _calib_N);
     }
 }
 
@@ -393,15 +412,19 @@ void BreathingLoop::initCalib()
 {
     _calib_timeout = 10;
     _calib_time = static_cast<uint32_t>(millis());
-    _calib_sum_pressure = 0;
-    _calib_avg_pressure = 0;
+    _calib_sums.pressure_air_regulated = 0;
+    _calib_sums.pressure_o2_regulated  = 0;
+    _calib_sums.pressure_buffer = 0;
+    _calib_sums.pressure_inhale = 0;
+    _calib_sums.pressure_patient = 0;
+    _calib_avgs.pressure_air_regulated = 0;
+    _calib_avgs.pressure_o2_regulated  = 0;
+    _calib_avgs.pressure_buffer = 0;
+    _calib_avgs.pressure_inhale = 0;
+    _calib_avgs.pressure_patient = 0;
     _calib_N = 0;
 }
 
-float BreathingLoop::getCalibrationOffset()
-{
-    return _calib_avg_pressure;
-}
 
 states_durations &BreathingLoop::getDurations() {
     return _states_durations;
@@ -415,4 +438,19 @@ uint32_t BreathingLoop::calculateTimeoutExhale() {
 ValvesController* BreathingLoop::getValvesController()
 {
     return &_valves_controller;
+}
+
+uint8_t BreathingLoop::getValveInhalePercent(){return _valve_inhale_percent;}
+uint8_t BreathingLoop::getValveExhalePercent(){return _valve_exhale_percent;}
+uint8_t BreathingLoop::valveAirInEnabled(){return _valve_air_in_enable;}
+uint8_t BreathingLoop::valveO2InEnabled(){return _valve_o2_in_enable;}
+uint8_t BreathingLoop::valvePurgeEnabled(){return _valve_purge_enable;}
+uint8_t BreathingLoop::inhaleTriggerEnabled(){return _inhale_trigger_enable;}
+uint8_t BreathingLoop::exhaleTriggerEnabled(){return _exhale_trigger_enable;}
+
+void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
+{
+    _total_cycle_duration[0] = _total_cycle_duration[1];
+    _total_cycle_duration[1] = _total_cycle_duration[2];
+    _total_cycle_duration[2] = newtotal;
 }
