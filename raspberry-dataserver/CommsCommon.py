@@ -36,6 +36,7 @@ class BaseFormat():
     timestamp: int = 0
 
     def __post_init__(self):
+        self.toByteArray()
         self._autogen = True
 
     def __setattr__(self, key, value):
