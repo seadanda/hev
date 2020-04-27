@@ -8,6 +8,8 @@ var initial_yaxis_pressure = [];
 var initial_yaxis_volume = [];
 var initial_yaxis_flow = [];
 
+var fio_reading;
+
 /**
  * Request data from the server, add it to the graph and set a timeout
  * to request again
@@ -93,6 +95,10 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
+        fio_reading = (point["pressure_buffer"]).toFixed(0) ;
+        //console.log(fio_reading);
+        fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
+
 	    var seconds = point["timestamp"]/1000;
 	    // get difference between last time stamp and this and apply to existing points
 	    var diff = 0;
@@ -128,6 +134,8 @@ function requestChartVar() {
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
+            fio_gauge.update();
+
         },
         cache: false
     });
@@ -353,20 +361,21 @@ $(document).ready(function() {
 
 
 var ctx = document.getElementById("example_gauge").getContext("2d");
-new Chart(ctx, {
+fio_gauge = new Chart(ctx, {
 	type: "tsgauge",
 	data: {
 		datasets: [{
 			backgroundColor: ["#0fdc63", "#fd9704", "#ff7143"],
 			borderWidth: 0,
 			gaugeData: {
-				value: 7777,
+				value: 0,
 				valueColor: "#ff7143"
 			},
-			gaugeLimits: [0, 3000, 7000, 10000]
+			gaugeLimits: [0, 50, 100]
 		}]
 	},
 	options: {
 		events: []
 	}
 });
+
