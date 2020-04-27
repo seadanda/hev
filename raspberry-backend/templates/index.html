@@ -29,9 +29,10 @@
 	      
 	      <div class = "row">
 		  <div class = "range-button-container ml-auto mr-auto">
+		    <input type="button" class="sb-nav-button" name="fivesecs" value="5s" onclick="setChartXaxisRange(-5,0)">
 		    <input type="button" class="sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange(-30,0)">
-		    <input type="button" class="sb-nav-button" name="thirtysecs" value="60s" onclick="setChartXaxisRange(-60,0)">
-		    <input type="button" class="sb-nav-button" name="thirtysecs" value="90s" onclick="setChartXaxisRange(-90,0)">
+		    <input type="button" class="sb-nav-button" name="sixtysecs" value="60s" onclick="setChartXaxisRange(-60,0)">
+		    <input type="button" class="sb-nav-button" name="ninetysecs" value="90s" onclick="setChartXaxisRange(-90,0)">
 		  </div>
 	      </div>
       </div>
@@ -60,16 +61,15 @@
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">FIO<sub>2</sub></a>
               </div>
-              <div class="card-body px-1 py-1 tiny ml-auto mr-auto br-red">
-		<div class = "reading-wrapper br-red"><input class = "input-reading py-0" id = "fio2" value="62" type="number" readOnly disabled>%</div>
-	      </div>
+			  <!-- <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading py-0" id = "fio2" value="62" type="number" readOnly disabled>%</div> -->
+			  <div class = "main-chart-container"><canvas id="example_gauge"></canvas></div>
 	  </div>
 
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">P<sub>Peak</sub></a>
 	      </div>
-	      <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading" id="p_peak" readOnly disabled value=20.0>cmH2O</div>
+		  <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading" id="p_peak" readOnly disabled value=20.0>cmH2O</div> 
 	    </div>
 	
 	<!--- end row 1 -->

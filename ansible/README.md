@@ -6,7 +6,8 @@
 - Boot as default and set your preferred options for country, password, etc.
 
 > From command line on your local PC (not the pi):
-- copy your ssh keys if you don't want a password every time
+- generate and copy your ssh keys if you don't want a password every time
+    - ssh-keygen
     - ssh-copy-id pi@MY-RPI-IPADDRESS
 - then setup ansible:
     - install ansible on your local PC with your package manager
@@ -18,7 +19,7 @@ cd hev-sw/ansible
 source hev-ansible.sh
 cd playbooks
 ```
-- add the address of your Raspberry Pi to the `hosts` file under the section `[hevpi]`
+- add the address of your Raspberry Pi to the `hosts` file under the section `[hevpi]`. The default host file is found at /etc/ansible/hosts
     - example : 
 ```
 [hevpi]

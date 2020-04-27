@@ -8,6 +8,8 @@ var initial_yaxis_pressure = [];
 var initial_yaxis_volume = [];
 var initial_yaxis_flow = [];
 
+var fio_reading;
+
 /**
  * Request data from the server, add it to the graph and set a timeout
  * to request again
@@ -31,9 +33,8 @@ function init_results(){
         url: '/last_N_data',
         success: function(data) {
             for (i=0; i<data.length; i++) {
-		var seconds = data[i]["timestamp"];
+		var seconds = data[i]["timestamp"]/1000;
 		if ( seconds == "" ) continue;
-		console.log(seconds);
 		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
 		initial_yaxis_volume.push({x : seconds, y : data[i]["pressure_inhale"]});
 		initial_yaxis_flow.push({x : seconds, y : data[i]["temperature_buffer"]});
@@ -49,7 +50,7 @@ function init_results(){
 		initial_yaxis_pressure[i][0] = initial_yaxis_pressure[i][0] - current_timestamp;
 		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
 		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
-	    }
+        }
 	    
         },
         cache: false
@@ -94,7 +95,11 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-	    var seconds = point["timestamp"];
+        fio_reading = (point["pressure_buffer"]).toFixed(0) ;
+        //console.log(fio_reading);
+        fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
+
+	    var seconds = point["timestamp"]/1000;
 	    // get difference between last time stamp and this and apply to existing points
 	    var diff = 0;
 	    if ( current_timestamp == -1 ){
@@ -129,6 +134,8 @@ function requestChartVar() {
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
+            fio_gauge.update();
+
         },
         cache: false
     });
@@ -353,4 +360,22 @@ $(document).ready(function() {
 });
 
 
+var ctx = document.getElementById("example_gauge").getContext("2d");
+fio_gauge = new Chart(ctx, {
+	type: "tsgauge",
+	data: {
+		datasets: [{
+			backgroundColor: ["#0fdc63", "#fd9704", "#ff7143"],
+			borderWidth: 0,
+			gaugeData: {
+				value: 0,
+				valueColor: "#ff7143"
+			},
+			gaugeLimits: [0, 50, 100]
+		}]
+	},
+	options: {
+		events: []
+	}
+});
 
