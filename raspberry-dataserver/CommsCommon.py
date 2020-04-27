@@ -405,6 +405,7 @@ class CMD_MAP(Enum):
     SET_THRESHOLD_MAX =  ALARM_CODES
 
 class BL_STATES(Enum):
+    UNKNOWN         =  0
     IDLE            =  1
     CALIBRATION     =  2
     BUFF_PREFILL    =  3

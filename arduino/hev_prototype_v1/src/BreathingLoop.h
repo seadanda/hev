@@ -36,6 +36,7 @@ public:
 
     // states
     enum BL_STATES : uint8_t {
+            UNKNOWN         =  0,
             IDLE            =  1,
             CALIBRATION     =  2,
             BUFF_PREFILL    =  3,
