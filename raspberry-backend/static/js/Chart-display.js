@@ -179,6 +179,7 @@ $(document).ready(function() {
             title: {
                 display: true,
                 text: 'Pressure [mbar]',
+		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
             },            
             scales: {
 		
@@ -187,11 +188,14 @@ $(document).ready(function() {
 		        maxTicksLimit: 13,
 		    maxRotation: 0,
                     min: -60,
-                    max: 0}}],
+                    max: 0,
+	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
 		yAxes: [{
                 ticks: {
                     beginAtZero: true,
-                    suggestedMax: 25
+                    suggestedMax: 25,
+	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+		    maxTicksLimit: 8,
                 },
 				scaleLabel: {
 					display: false,
@@ -251,20 +255,24 @@ $(document).ready(function() {
             },
             title: {
               display: true,
-              text: 'Flow [mL/min]',
+		text: 'Flow [mL/min]',
+		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
             },
             scales: {
 		
             xAxes: [{
                 ticks: {
 		        maxTicksLimit: 13,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
 		    maxRotation: 0,
                     min: -60,
-                    max: 0}}],
+                    max: 0,
+		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
 			yAxes: [{
                 ticks: {
                     beginAtZero: true,
-                    suggestedMax: 25
+                    maxTicksLimit: 8,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
                 },
 				scaleLabel: {
 					display: false,
@@ -324,6 +332,7 @@ $(document).ready(function() {
             title: {
                 display: true,
                 text: 'Volume [mL]',
+		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
             },
             scales: {
 		
@@ -332,12 +341,17 @@ $(document).ready(function() {
 		    maxTicksLimit: 13,
 		    maxRotation: 0,
                     min: -60,
-                    max: 0}}],
+                    max: 0,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
 		
 		yAxes: [{
                     ticks: {
                     beginAtZero: true,
-                    suggestedMax: 25
+			suggestedMax: 25,
+			maxTicksLimit: 8,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+			
+
                 },
 				scaleLabel: {
 					display: false,
