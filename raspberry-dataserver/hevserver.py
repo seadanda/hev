@@ -228,10 +228,14 @@ if __name__ == "__main__":
     #parser to allow us to pass arguments to hevserver
     parser = argparse.ArgumentParser(description='Arguments to run hevserver')
     parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
-    parser.add_argument('-d', '--debug', action='store_true', help='Show debug output')
+    parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
     parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
     args = parser.parse_args()
-    if args.debug:
+    if args.debug == 0:
+        logging.getLogger().setLevel(logging.WARNING)
+    elif args.debug == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    else:
         logging.getLogger().setLevel(logging.DEBUG)
     
     if args.use_test_data:
