@@ -56,11 +56,13 @@
 	      </div>
 	  </div>
 
-	    <div class="card-reading">
+	    <div class="card-reading br-red">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">FIO<sub>2</sub></a>
               </div>
-              <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading py-0" id = "fio2" value="62" type="number" readOnly disabled>%</div>
+              <div class="card-body px-1 py-1 tiny ml-auto mr-auto br-red">
+		<div class = "reading-wrapper br-red"><input class = "input-reading py-0" id = "fio2" value="62" type="number" readOnly disabled>%</div>
+	      </div>
 	  </div>
 
 	    <div class="card-reading">
@@ -191,37 +193,6 @@
 
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
 
-	<script>
-var prev_val;
-
-$('.input-editable').focus(function() {
-    prev_val = $(this).val();
-}).change(function() {
-$(this).blur() // Firefox fix as suggested by AgDude
-
-window.createNotification({
-  closeOnClick: 0,
-  displayCloseButton: 1,
-  positionClass: "nfc-bottom-right",
-  showDuration: false,
-  theme: "info"
-  })({
-    title: "Screen Lock",
-    message: "Screen has locked due to timeout"
-  });
-    var success = confirm('Are you sure you want to change the ' + $(this).name + " from" + prev_val + " to " + $(this).val());
-    if(success)
-{
-//send to hevserver
-$(this).val($(this).val());
-    }
-    else
-    {
-        $(this).val(prev_val);
-}
-lock();
-});
-	</script>
 	<script>
 pickout.to({
 el:'.pickout',
