@@ -12,6 +12,104 @@ logging.basicConfig(level=logging.INFO,
 # i.e. if and of DataFormat, CommandFormat or AlarmFormat change
 # then change the RPI_VERSION
 
+# =======================================
+# Enum definitions
+# =======================================
+@unique
+class CMD_TYPE(Enum):
+    GENERAL           =  1
+    SET_TIMEOUT       =  2
+    SET_MODE          =  3
+    SET_THRESHOLD_MIN =  4
+    SET_THRESHOLD_MAX =  5
+
+@unique
+class CMD_GENERAL(Enum):
+    START =  1
+    STOP  =  2
+    PURGE =  3
+    FLUSH =  4
+
+# Taken from the FSM doc. Correct as of 1400 on 20200417
+@unique
+class CMD_SET_TIMEOUT(Enum):
+    CALIBRATION     =  1
+    BUFF_PURGE      =  2
+    BUFF_FLUSH      =  3
+    BUFF_PREFILL    =  4
+    BUFF_FILL       =  5
+    BUFF_LOADED     =  6
+    BUFF_PRE_INHALE =  7
+    INHALE          =  8
+    PAUSE           =  9
+    EXHALE_FILL     = 10
+    EXHALE          = 11
+
+class CMD_SET_MODE(Enum):
+    HEV_MODE_PS   = auto()
+    HEV_MODE_CPAP = auto()
+    HEV_MODE_PRVC = auto()
+    HEV_MODE_TEST = auto()
+
+@unique
+class ALARM_TYPE(Enum):
+    LP   = 1
+    MP   = 2
+    HP   = 3
+
+@unique
+class ALARM_CODES(Enum):
+    UNKNOWN                        =  0
+    APNEA                          =  1  # HP
+    CHECK_VALVE_EXHALE             =  2  # HP
+    CHECK_P_PATIENT                =  3  # HP
+    EXPIRATION_SENSE_FAULT_OR_LEAK =  4  #   MP
+    EXPIRATION_VALVE_LEAK          =  5  #   MP
+    HIGH_FIO2                      =  6  #   MP
+    HIGH_PRESSURE                  =  7  # HP
+    HIGH_RR                        =  8  #   MP
+    HIGH_VTE                       =  9  #   MP
+    LOW_VTE                        = 10  #   MP
+    HIGH_VTI                       = 11  #   MP
+    LOW_VTI                        = 12  #   MP
+    INTENTIONAL_STOP               = 13  # HP
+    LOW_BATTERY                    = 14  # HP (LP) if AC power isn't (is) connected
+    LOW_FIO2                       = 15  # HP
+    OCCLUSION                      = 16  # HP
+    HIGH_PEEP                      = 17  # HP
+    LOW_PEEP                       = 18  # HP
+    AC_POWER_DISCONNECTION         = 19  #   MP
+    BATTERY_FAULT_SRVC             = 20  #   MP
+    BATTERY_CHARGE                 = 21  #   MP
+    AIR_FAIL                       = 22  # HP
+    O2_FAIL                        = 23  # HP
+    PRESSURE_SENSOR_FAULT          = 24  # HP
+    ARDUINO_FAIL                   = 25  # HP
+
+class CMD_MAP(Enum):
+    GENERAL           =  CMD_GENERAL
+    SET_TIMEOUT       =  CMD_SET_TIMEOUT
+    SET_MODE          =  CMD_SET_MODE
+    SET_THRESHOLD_MIN =  ALARM_CODES
+    SET_THRESHOLD_MAX =  ALARM_CODES
+
+@unique
+class BL_STATES(Enum):
+    UNKNOWN         =  0
+    IDLE            =  1
+    CALIBRATION     =  2
+    BUFF_PREFILL    =  3
+    BUFF_FILL       =  4
+    BUFF_LOADED     =  5
+    BUFF_PRE_INHALE =  6
+    INHALE          =  7
+    PAUSE           =  8
+    EXHALE_FILL     =  9
+    EXHALE          = 10
+    STOP            = 11
+    BUFF_PURGE      = 12
+    BUFF_FLUSH      = 13
+
 class PAYLOAD_TYPE(Enum):
     DATA       = auto()
     READBACK   = auto()
@@ -42,7 +140,7 @@ class BaseFormat():
     def __setattr__(self, key, value):
         self.__dict__[key] = value
         # if any other variable is modified outside init, regenerate the bytearray
-        if self._autogen == True and key[0] != "_" and key != "version":
+        if self._autogen and key[0] != "_" and key != "version":
             self.toByteArray()
 
     @property
@@ -58,12 +156,12 @@ class BaseFormat():
         except Exception:
             raise
 
-    # generalised
     def toByteArray(self) -> None:
         self.version = self._RPI_VERSION
-        loaddict = asdict(self)
-        load = [loaddict[key] for key in loaddict]
-        self._byteArray = self._dataStruct.pack(*load) 
+        self._byteArray = self._dataStruct.pack(*[
+            v.value if isinstance(v, Enum) else v
+            for v in asdict(self).values()
+        ])
 
     # at the minute not generalised. needs to be overridden
     def fromByteArray(self, byteArray: bytearray) -> None:
@@ -82,7 +180,7 @@ class BaseFormat():
         return self._type
     
     def getDict(self) -> Dict:
-        return asdict(self)
+        return {k: v.name if isinstance(v, Enum) else v for k, v in asdict(self).items()}
 
 
 # =======================================
@@ -96,7 +194,7 @@ class DataFormat(BaseFormat):
 
     # subclass member variables
     data_type: int              = 1
-    fsm_state: str              = "IDLE"
+    fsm_state: BL_STATES        = BL_STATES.IDLE
     pressure_air_supply: int    = 0
     pressure_air_regulated: int = 0
     pressure_o2_supply: int     = 0
@@ -138,7 +236,7 @@ class DataFormat(BaseFormat):
         self.flow,
         self.volume) = self._dataStruct.unpack(byteArray) 
         try:
-            self.fsm_state = BL_STATES(tmp_state).name
+            self.fsm_state = BL_STATES(tmp_state)
         except Exception:
             # no longer silently die, catch Exceptions higher up
             raise
@@ -311,7 +409,7 @@ class AlarmFormat(BaseFormat):
     _type = PAYLOAD_TYPE.ALARM
 
     alarm_type: int = 0
-    alarm_code: int = 0
+    alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
     param: int      = 0
 
     def fromByteArray(self, byteArray):
@@ -321,102 +419,5 @@ class AlarmFormat(BaseFormat):
         self.alarm_type,
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
-        self.alarm_code = ALARM_CODES(alarm).name
+        self.alarm_code = ALARM_CODES(alarm)
         self._byteArray = byteArray
-    
-
-# =======================================
-# Enum definitions
-# =======================================
-@unique
-class CMD_TYPE(Enum):
-    GENERAL           =  1
-    SET_TIMEOUT       =  2
-    SET_MODE          =  3
-    SET_THRESHOLD_MIN =  4
-    SET_THRESHOLD_MAX =  5
-
-@unique
-class CMD_GENERAL(Enum):
-    START =  1
-    STOP  =  2
-    PURGE =  3
-    FLUSH =  4
-
-# Taken from the FSM doc. Correct as of 1400 on 20200417
-@unique
-class CMD_SET_TIMEOUT(Enum):
-    CALIBRATION     =  1
-    BUFF_PURGE      =  2
-    BUFF_FLUSH      =  3
-    BUFF_PREFILL    =  4
-    BUFF_FILL       =  5
-    BUFF_LOADED     =  6
-    BUFF_PRE_INHALE =  7
-    INHALE          =  8
-    PAUSE           =  9
-    EXHALE_FILL     = 10
-    EXHALE          = 11
-
-class CMD_SET_MODE(Enum):
-    HEV_MODE_PS   = auto()
-    HEV_MODE_CPAP = auto()
-    HEV_MODE_PRVC = auto()
-    HEV_MODE_TEST = auto()
-
-@unique
-class ALARM_TYPE(Enum):
-    LP   = 1
-    MP   = 2
-    HP   = 3
-
-@unique
-class ALARM_CODES(Enum):
-    APNEA                          =  1  # HP
-    CHECK_VALVE_EXHALE             =  2  # HP
-    CHECK_P_PATIENT                =  3  # HP
-    EXPIRATION_SENSE_FAULT_OR_LEAK =  4  #   MP
-    EXPIRATION_VALVE_LEAK          =  5  #   MP
-    HIGH_FIO2                      =  6  #   MP
-    HIGH_PRESSURE                  =  7  # HP
-    HIGH_RR                        =  8  #   MP
-    HIGH_VTE                       =  9  #   MP
-    LOW_VTE                        = 10  #   MP
-    HIGH_VTI                       = 11  #   MP
-    LOW_VTI                        = 12  #   MP
-    INTENTIONAL_STOP               = 13  # HP
-    LOW_BATTERY                    = 14  # HP (LP) if AC power isn't (is) connected
-    LOW_FIO2                       = 15  # HP
-    OCCLUSION                      = 16  # HP
-    HIGH_PEEP                      = 17  # HP
-    LOW_PEEP                       = 18  # HP
-    AC_POWER_DISCONNECTION         = 19  #   MP
-    BATTERY_FAULT_SRVC             = 20  #   MP
-    BATTERY_CHARGE                 = 21  #   MP
-    AIR_FAIL                       = 22  # HP
-    O2_FAIL                        = 23  # HP
-    PRESSURE_SENSOR_FAULT          = 24  # HP
-    ARDUINO_FAIL                   = 25  # HP
-
-class CMD_MAP(Enum):
-    GENERAL           =  CMD_GENERAL
-    SET_TIMEOUT       =  CMD_SET_TIMEOUT
-    SET_MODE          =  CMD_SET_MODE
-    SET_THRESHOLD_MIN =  ALARM_CODES
-    SET_THRESHOLD_MAX =  ALARM_CODES
-
-class BL_STATES(Enum):
-    UNKNOWN         =  0
-    IDLE            =  1
-    CALIBRATION     =  2
-    BUFF_PREFILL    =  3
-    BUFF_FILL       =  4
-    BUFF_LOADED     =  5
-    BUFF_PRE_INHALE =  6
-    INHALE          =  7
-    PAUSE           =  8
-    EXHALE_FILL     =  9
-    EXHALE          = 10
-    STOP            = 11
-    BUFF_PURGE      = 12
-    BUFF_FLUSH      = 13
