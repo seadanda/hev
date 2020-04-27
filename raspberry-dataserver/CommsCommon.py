@@ -29,11 +29,47 @@ class BaseFormat():
     _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
     _dataStruct:  ClassVar[Any] = field(default=Struct("<BI"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
+    _autogen:     ClassVar[bool] = field(default=False, init=False, repr=False)
 
     # class variables
     version:   int = 0
     timestamp: int = 0
-    
+
+    def __post_init__(self):
+        self._autogen = True
+
+    def __setattr__(self, key, value):
+        self.__dict__[key] = value
+        # if any other variable is modified outside init, regenerate the bytearray
+        if self._autogen == True and key[0] != "_" and key != "version":
+            self.toByteArray()
+
+    @property
+    def byteArray(self) -> bytearray:
+        self.toByteArray()
+        return self._byteArray
+
+    @byteArray.setter
+    def byteArray(self, byte_array) -> None:
+        try:
+            self.fromByteArray(byte_array)
+            self._byteArray = byte_array
+        except Exception:
+            raise
+
+    # generalised
+    def toByteArray(self) -> None:
+        self.version = self._RPI_VERSION
+        loaddict = asdict(self)
+        load = [loaddict[key] for key in loaddict]
+        self._byteArray = self._dataStruct.pack(*load) 
+
+    # at the minute not generalised. needs to be overridden
+    def fromByteArray(self, byteArray: bytearray) -> None:
+        (self.version,
+        self.timestamp) = self._dataStruct.unpack(byteArray) 
+        self._byteArray = byteArray
+
     # check for mismatch between pi and microcontroller version
     def checkVersion(self) -> bool:
         return self._RPI_VERSION == self.version
@@ -46,23 +82,7 @@ class BaseFormat():
     
     def getDict(self) -> Dict:
         return asdict(self)
-    
-    def getByteArray(self) -> bytearray:
-        self.toByteArray()
-        return self._byteArray
 
-    # at the minute not generalised. needs to be overridden
-    def fromByteArray(self, byteArray) -> None:
-        (self.version,
-        self.timestamp) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
-
-    # generalised
-    def toByteArray(self):
-        self.version = self._RPI_VERSION
-        loaddict = asdict(self)
-        load = [ loaddict[key] for key in loaddict ]
-        self._byteArray = self._dataStruct.pack(*load) 
 
 # =======================================
 # fast data payload
@@ -271,9 +291,6 @@ class CommandFormat(BaseFormat):
     cmd_type: int = 0
     cmd_code: int = 0
     param: int    = 0
-
-    def __post_init__(self):
-        self.toByteArray()
 
     def fromByteArray(self, byteArray):
         (self.version,

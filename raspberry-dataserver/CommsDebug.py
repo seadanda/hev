@@ -33,8 +33,7 @@ comms.writePayload(cmd)
 print('sent cmd start')
 while True:
     time.sleep(20)
-    cmd.cmd_code = CMD_GENERAL.STOP.value # no longer automatically executes toByteArray() !
-    cmd.toByteArray()
+    cmd.cmd_code = CMD_GENERAL.STOP.value # automatically executes toByteArray()
     comms.writePayload(cmd)
     print('sent cmd stop')
     pass

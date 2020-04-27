@@ -13,17 +13,17 @@ def commsFromBytes(byteArray):
 
 def generateAlarm(payload):
     comms = CommsFormat(info_size = payload.getSize(), address = 0xC0)
-    comms.setInformation(payload.getByteArray())
+    comms.setInformation(payload.byteArray)
     return comms
 
 def generateCmd(payload):
     comms = CommsFormat(info_size = payload.getSize(), address = 0x80)
-    comms.setInformation(payload.getByteArray())
+    comms.setInformation(payload.byteArray)
     return comms
 
 def generateData(payload):
     comms = CommsFormat(info_size = payload.getSize(), address = 0x40)
-    comms.setInformation(payload.getByteArray())
+    comms.setInformation(payload.byteArray)
     return comms
 
 
