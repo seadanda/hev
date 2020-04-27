@@ -10,6 +10,7 @@ import threading
 import argparse
 import svpi
 import hevfromtxt
+from hevtestdata import HEVTestData
 import CommsControl
 from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
 from collections import deque
@@ -228,12 +229,15 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Arguments to run hevserver')
     parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
     parser.add_argument('-d', '--debug', action='store_true', help='Show debug output')
+    parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
     args = parser.parse_args()
     if args.debug:
         logging.getLogger().setLevel(logging.DEBUG)
     
-    # check if input file was specified
-    if args.inputFile != '':
+    if args.use_test_data:
+        lli = HEVTestData()
+        logging.info(f"Using test data source")
+    elif args.inputFile != '':
         if args.inputFile[-1-3:] == '.txt':
             # assume sample.txt format
             lli = hevfromtxt.hevfromtxt(args.inputFile)
