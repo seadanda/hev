@@ -39,7 +39,7 @@ class HEVTestData:
         self._send_message(self.current_timestamp)
         time.sleep(2)
         while self.current_timestamp < 5_000 or self.current_timestamp > 2**30:
-            interval = random.randint(-20, 100)
+            interval = random.randint(-20, 50)
             self._send_message(self.current_timestamp + interval)
             if interval > 0:
                 self.current_timestamp += interval
@@ -62,19 +62,24 @@ class HEVTestData:
             self._send_message(self.current_timestamp)
             time.sleep(interval / 1_000)
 
-        logging.critical("Rerunning tests with large jumps forward in time")
+        logging.critical("Running tests with device being reset 10 times with 2 seconds of unstable running inbetween")
         time.sleep(2)
-        for interval in [1_000, 10_000, 100_000, 1_000_000]:
-            self.current_timestamp += interval
+        for i in range(10):
+            self.current_timestamp = 0
             self._send_message(self.current_timestamp)
-            time.sleep(2)
+            while self.current_timestamp < 2_000:
+                interval = random.randint(-20, 50)
+                self._send_message(self.current_timestamp + interval)
+                if interval > 0:
+                    self.current_timestamp += interval
+                    time.sleep(interval / 1_000)
 
         logging.critical("Running tests for overflow with unstable steps for 10 seconds")
         time.sleep(2)
         self.current_timestamp = 2**32 - 5_000
         self._send_message(self.current_timestamp)
         while self.current_timestamp < 2**32 + 5_000:
-            interval = random.randint(-100, 100)
+            interval = random.randint(-100, 50)
             self._send_message(self.current_timestamp + interval)
             if interval > 0:
                 self.current_timestamp += interval
