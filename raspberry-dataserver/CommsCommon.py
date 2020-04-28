@@ -110,18 +110,15 @@ class BL_STATES(Enum):
     BUFF_PURGE      = 12
     BUFF_FLUSH      = 13
 
-class PAYLOAD_TYPE(Enum):
-    DATA       = auto()
-    CMD        = auto()
-    ALARM      = auto()
-    UNSET      = auto()
-
 @unique
-class DATA_TYPE(IntEnum):
-    FAST       = 0x01
-    READBACK   = 0x02
-    CYCLE      = 0x03
-    THRESHOLDS = 0x04
+class PAYLOAD_TYPE(IntEnum):
+    DATA       = 1
+    READBACK   = 2
+    CYCLE      = 3
+    THRESHOLDS = 4
+    CMD        = 5
+    ALARM      = 6
+    UNSET      = 7
 
 @dataclass
 class BaseFormat():
@@ -196,7 +193,7 @@ class DataFormat(BaseFormat):
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
-    data_type: int              = DATA_TYPE.FAST
+    data_type: int              = 1
     fsm_state: BL_STATES        = BL_STATES.IDLE
     pressure_air_supply: int    = 0
     pressure_air_regulated: int = 0
@@ -252,9 +249,9 @@ class DataFormat(BaseFormat):
 @dataclass
 class ReadbackFormat(BaseFormat):
     _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
-    _type = PAYLOAD_TYPE.DATA
+    _type = PAYLOAD_TYPE.READBACK
 
-    data_type: int                = DATA_TYPE.READBACK
+    data_type: int                = 2
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
     duration_buff_flush: int      = 0
@@ -328,9 +325,9 @@ class ReadbackFormat(BaseFormat):
 class CycleFormat(BaseFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBfffffffffHHHHBHHB")
-    _type = PAYLOAD_TYPE.DATA
+    _type = PAYLOAD_TYPE.CYCLE
 
-    data_type: int                 = DATA_TYPE.CYCLE
+    data_type: int                 = 3
     respiratory_rate: float        = 0.0
     tidal_volume: float            = 0.0
     exhaled_tidal_volume: float    = 0.0

@@ -226,13 +226,13 @@ class CommsControl():
         elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
             # decode data type
             data_type = comms_packet.getData()[comms_packet.getInformation() + 5]
-            if data_type == CommsCommon.DATA_TYPE.FAST:
+            if data_type == CommsCommon.PAYLOAD_TYPE.DATA:
                 payload = CommsCommon.DataFormat()
-            elif data_type == CommsCommon.DATA_TYPE.READBACK:
+            elif data_type == CommsCommon.PAYLOAD_TYPE.READBACK:
                 payload = CommsCommon.ReadbackFormat()
-            elif data_type == CommsCommon.DATA_TYPE.CYCLE:
+            elif data_type == CommsCommon.PAYLOAD_TYPE.CYCLE:
                 payload = CommsCommon.CycleFormat()
-            elif data_type == CommsCommon.DATA_TYPE.THRESHOLDS:
+            elif data_type == CommsCommon.PAYLOAD_TYPE.THRESHOLDS:
                 # FIXME: nothing yet defined, TBD!!
                 return False
             else:
@@ -241,7 +241,7 @@ class CommsControl():
             return False
         
         try:
-            payload.byteArray = comms_packet.getData()[comms_packet.getInformation():comms_packet.getFcs()]
+            payload.fromByteArray(comms_packet.getData()[comms_packet.getInformation():comms_packet.getFcs()])
         except Exception:
             raise
         else:
