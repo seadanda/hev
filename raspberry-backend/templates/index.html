@@ -39,21 +39,25 @@
       <div class = "col-cards-main">
 	<div class = "row">
 	<!---- row 1 -->
-	    <div class="card-reading br-red">
+	    <div class="card-reading px-0">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		      <span class="small text-dark col-center" href="#">Mode</span>
               </div>
+	      <!--<div class="small ml-auto mr-auto">PC-A/C</div>-->
               <div class="card-body px-1 py-1">
-		<select class = "input-reading input-editable" name="VentilatorMode" id="vent_mode" placeholder = "PC-A/C" disabled readOnly>
+		<div class = "select-container">
+		  <select class = "input-reading ml-auto mr-auto input-editable pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
+		  <option value = ""></option>
 		  <optgroup label = "Pressure Control Modes">
-		  <option value="opt1" selected>PC-A/C</option>
-		  <option value="opt2">PC-A/C-PRVC</option>
+		    <option value="opt1" selected>PC-A/C</option>
+		    <option value="opt2">PC-A/C-PRVC</option>
 		  </optgroup>
 		  <optgroup label = "Pressure Support Modes">
-		  <option value="opt3">PC-PSV</option>
-		  <option value="opt4">CPAP</option>
+		    <option value="opt3">PC-PSV</option>
+		    <option value="opt4">CPAP</option>
 		  </optgroup>
-		</select>
+		  </select>
+		  </div>
 	      </div>
 	  </div>
 
@@ -78,7 +82,7 @@
 	
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">P<sub>Plateau</sub></a>
+		<a class="small text-dark col-center" href="#">P<sub>Plateau</sub></a><br>
 	      </div>
 	      <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading" id = "p_plateau" value=4.0 readOnly disabled>cmH2O</div>
 	  </div>
@@ -93,7 +97,7 @@
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">PEEP</a>
 	      </div>
-	      <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading input-editable"  onclick="show_easy_numpad_wrapper(this);lock();" id = "pressure_buffer" value=5 readOnly disabled>cmH2O</div>
+	      <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading input-editable"  onclick="show_easy_numpad_wrapper(this);lock();" name = "PEEP" id = "pressure_buffer" value=5 readOnly disabled>cmH2O</div>
 	    </div>
 
 
@@ -193,7 +197,8 @@
 
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
 
-	<script>
+<script>
+
 pickout.to({
 el:'.pickout',
 theme:'MySelector'

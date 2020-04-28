@@ -5941,9 +5941,9 @@ html, body {
 .br-red{border: 1px solid #ff0000;}
 
 .reading{font-size:1.7rem;min-width:5rem;display:inline-block;text-align:right;}
-.reading-main{font-size:1.2rem;min-width:4rem;display:inline-block;text-align:right;}
+.reading-main{font-size:1.4rem;min-width:4rem;display:inline-block;text-align:right;}
 
-.input-reading{font-size:1.2rem;width:3.4em;text-align:center;background:transparent;border:0;text-align:right;}
+.input-reading{font-size:1.4rem;width:3.4em;text-align:center;background:transparent;border:0;text-align:right;}
 .input-reading:disabled{color:black;}
 .input-editable:enabled{border:1;background:white;}
 
@@ -5960,7 +5960,7 @@ html, body {
 .w-95{width:95%;}
 .w-99{width:99%;}
 
-.alarm-ok{border: 1px solid var(--cern); width:20rem;}
+.alarm-ok{border: 2px solid var(--cern); width:20rem;}
 .alarm-red{border-color:#ff0000;color:#ff0000}
 .text-align-right{text-align:right;}
 .text-align-center{text-align:center;}
@@ -6035,20 +6035,15 @@ div.active{
     text-indent: 1px;
     text-overflow: '';
 }
+.pk-field.-MySelector{
+    width:100%;
+    text-align:center;
+    margin-top:auto;
+    margin-bottom:auto;
+}
 .pk-input.-MySelector{
-    //-webkit-appearance: none;
-    //-moz-appearance: none;
-    //min-width:6em;
-    //padding:0;
-    //text-indent: 1px;
-    //text-overflow: '';
 }
 .pk-arrow.-MySelector{
-    //-webkit-appearance: none;
-    //-moz-appearance: none;
-    //text-indent: 1px;
-    //text-overflow: '';
-
 }
 .app-none{appearance:none;}
 
@@ -6095,8 +6090,8 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     flex-direction:column;
     flex: 0 0 31.8%;
     max-width: 31.8%;
-    padding-right: 0.15rem !important;
-    padding-left: 0.15rem !important;
+    padding-right: 0.0rem !important;
+    padding-left: 0.0rem !important;
     margin-right: 0.05rem !important;
     margin-left: 0.05rem !important;
     background-color: rgb(211,211,211);
@@ -6129,4 +6124,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 }
 .nav-link-disabled {
     pointer-events: none;
+}
+.select-container {
+    width:100%;
 }

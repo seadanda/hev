@@ -131,42 +131,54 @@ var pickout = (function(){
 		}
 
 		var parent = select.parentElement;
-		_.attr(parent, 'style', 'position:relative;float:left;');
+		_.attr(parent, 'style', 'position:relative;float:center;');
 		var placeholder = _.attr(select, 'placeholder');
 
 		// Visual element simule field input
 		var field = _.create('div');
 		_.addClass(field, 'pk-field -'+ config.theme + (!!isMultiple ? ' -multiple' : ''));
-		if(!!placeholder) field.innerHTML = placeholder;
+	    if(!!placeholder) field.innerHTML = placeholder;
+	    
+	    var opt;
+	    for ( var i = 0, len = select.options.length; i < len; i++ ) {
+		opt = select.options[i];
+		if ( opt.selected === true ) {
+		    field.innerHTML = opt.text;
+		    break;
+		}
+	    }
 
 		if(parent.hasAttribute('for')) _.attr(field, 'id', _.attr(parent, 'for'));
 		
 		parent.appendChild(field);
-
+	    /* sfarry - for our purposes
 		// Arrow
 		if (!isMultiple) {
 			var arrow = _.create('span');
 			_.addClass(arrow, 'pk-arrow -'+ config.theme);			
 			parent.appendChild(arrow);
 		}
+*/
 
 		// Event listener
-		_.events(parent, 'click', function(e){
-			e.preventDefault();
-			e.stopPropagation();
+	    _.events(parent, 'click', function(e){
+		if (!parent.disabled){
+		    e.preventDefault();
+		    e.stopPropagation();
 
-			console.time('BMPickoutFireModal');	
-
-			// Index do select
-			config.currentIndex = index;
-
-			// If is multiple
-			config.multiple = !!isMultiple ? true : false;
-
-			// Handle modal
-			fireModal(config);
-
-			console.timeEnd('BMPickoutFireModal');	
+		    console.time('BMPickoutFireModal');	
+		    
+		    // Index do select
+		    config.currentIndex = index;
+		    
+		    // If is multiple
+		    config.multiple = !!isMultiple ? true : false;
+		    console.log('firing up the modal, parent is ',parent.id);
+		    // Handle modal
+		    fireModal(config);
+		    
+		    console.timeEnd('BMPickoutFireModal');
+		}
 
 		});
 
@@ -206,7 +218,7 @@ var pickout = (function(){
 		_.addClass(modal, '-show');
 		_.addClass(overlay, '-show');
 
-		var title = select.hasAttribute('placeholder') ? _.attr(select, 'placeholder') : 'Select to option';
+		var title = select.hasAttribute('placeholder') ? _.attr(select, 'placeholder') : 'Select Ventilator Mode';
 		_.$('.head', modal).innerHTML = title;
 		
 		_.rmClass(modal, '-multiple');
@@ -325,7 +337,7 @@ var pickout = (function(){
 
 		var titleGroup = _.create('li');
 		_.addClass(titleGroup, 'pk-option-group -'+config.theme);
-		_.attr(titleGroup, 'data-opt-group', optGroup.label);
+		_.attr(titleGroup, 'data-opt-group', optGroup.label.replace(/\s/g,''));
 		_.attr(titleGroup, 'data-type', optGroup.localName);
 		titleGroup.innerHTML = optGroup.label.toUpperCase();
 		main.appendChild(titleGroup);
@@ -346,7 +358,8 @@ var pickout = (function(){
 			lists = [];
 
 		// Title Option Group
-		if (!!data.optGroup) {
+	    if (!!data.optGroup) {
+
 			var optCreated = _.$('li[data-opt-group='+data.optGroup.label.replace(/\s/g,'')+']', main);
 
 			// Created if not exists
@@ -501,19 +514,24 @@ var pickout = (function(){
 	 * @param {HTMLObject} select
 	 * @param {Object} data
 	 */
-	function setOptionSimple(select, data, txt){
+    function setOptionSimple(select, data, txt){
+	if (data.txt != select.parentElement.querySelector('.pk-field').innerHTML){
+	    var success = confirm("Are you sure you want to switch the ventilator mode to " + data.txt + "?");
+	    if (success){
 		_.toArray(select).map(function(option, index){
-			if (index === data.index) {
-				_.attr(option, 'selected', 'selected');
-				return;
-			}
-
-			option.removeAttribute('selected');
+		    if (index === data.index) {
+			_.attr(option, 'selected', 'selected');
+			return;
+		    }
+		    
+		    option.removeAttribute('selected');
 		});
-		
-		feedField(select, data.txt);		
-		closeModal();
+		feedField(select, data.txt);
+	    }
 	}
+	closeModal();
+	lock(); // added by S. Farry
+    }
 
 	function feedField(select, value){
 		select.parentElement.querySelector('.pk-field').innerHTML = value;

@@ -18,6 +18,10 @@
 	<script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/pickout.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
+	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
+	<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
+	<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
+	<link rel="manifest" href="/site.webmanifest">
 	{% block scripts %}
 	{% endblock %}
     </head>
@@ -127,6 +131,9 @@
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
+
+	  var select_fields = document.getElementsByClassName("select-container");
+	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = true;}
 	  function cmdNotification(input_cmd){
 		window.createNotification({
 			closeOnClick: 1,
@@ -214,6 +221,8 @@
 	  function unlock(){
 	  var x = document.getElementsByClassName("input-editable");
 	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
+	  var select_fields = document.getElementsByClassName("select-container");											
+	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = false;}
 	  var l = document.getElementsByClassName("nav-link-href");
 	  for (i = 0; i < l.length; i++) {l[i].classList.remove("nav-link-disabled");}
 
@@ -231,6 +240,9 @@
 			  clearTimeout(lockTimer);
 			  var x = document.getElementsByClassName("input-editable");
 			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
+					  
+	  var select_fields = document.getElementsByClassName("select-container");											
+	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = true;}
 					  var l = document.getElementsByClassName("nav-link-href");
 					  for (i = 0; i < l.length; i++) {l[i].classList.add("nav-link-disabled");}
 			  var el = document.getElementById("path-locked-main");
@@ -320,7 +332,7 @@ $(this).blur() // Firefox fix as suggested by AgDude
     title: "Screen Lock",
     message: "Screen has locked due to timeout"
   });*/
-    var success = confirm('Are you sure you want to change the ' + $(this).name + " from" + prev_val + " to " + $(this).val());
+    var success = confirm("Are you sure you want to change the " + $(this).name + " from " + prev_val + " to " + $(this).val());
     if(success)
 {
 //send to hevserver
