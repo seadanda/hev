@@ -1,5 +1,5 @@
 from struct import Struct 
-from enum import Enum, auto, unique
+from enum import Enum, IntEnum, auto, unique
 from dataclasses import dataclass, asdict, field, fields
 from typing import Any, ClassVar, Dict
 import logging
@@ -112,13 +112,16 @@ class BL_STATES(Enum):
 
 class PAYLOAD_TYPE(Enum):
     DATA       = auto()
-    READBACK   = auto()
-    CYCLE      = auto()
-    THRESHOLDS = auto()
     CMD        = auto()
     ALARM      = auto()
     UNSET      = auto()
 
+@unique
+class DATA_TYPE(IntEnum):
+    FAST       = 0x01
+    READBACK   = 0x02
+    CYCLE      = 0x03
+    THRESHOLDS = 0x04
 
 @dataclass
 class BaseFormat():
@@ -166,7 +169,7 @@ class BaseFormat():
     # at the minute not generalised. needs to be overridden
     def fromByteArray(self, byteArray: bytearray) -> None:
         (self.version,
-        self.timestamp) = self._dataStruct.unpack(byteArray) 
+        self.timestamp) = self._dataStruct.unpack(byteArray)
         self._byteArray = byteArray
 
     # check for mismatch between pi and microcontroller version
@@ -193,7 +196,7 @@ class DataFormat(BaseFormat):
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
-    data_type: int              = 1
+    data_type: int              = DATA_TYPE.FAST
     fsm_state: BL_STATES        = BL_STATES.IDLE
     pressure_air_supply: int    = 0
     pressure_air_regulated: int = 0
@@ -249,9 +252,9 @@ class DataFormat(BaseFormat):
 @dataclass
 class ReadbackFormat(BaseFormat):
     _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBI")
-    _type = PAYLOAD_TYPE.READBACK
+    _type = PAYLOAD_TYPE.DATA
 
-    data_type: int                = 2
+    data_type: int                = DATA_TYPE.READBACK
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
     duration_buff_flush: int      = 0
@@ -325,9 +328,9 @@ class ReadbackFormat(BaseFormat):
 class CycleFormat(BaseFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBIIIIIIIIIHHHHBHHB")
-    _type = PAYLOAD_TYPE.CYCLE
+    _type = PAYLOAD_TYPE.DATA
 
-    data_type: int                 = 3
+    data_type: int                 = DATA_TYPE.CYCLE
     respiratory_rate: float        = 0.0
     tidal_volume: float            = 0.0
     exhaled_tidal_volume: float    = 0.0

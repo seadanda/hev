@@ -217,18 +217,31 @@ class CommsControl():
         except:
             logging.debug("Queue is probably empty")
             
+    # WIP: will be reworked
     def receivePacket(self, payload_type, comms_packet):
         if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
             payload = CommsCommon.AlarmFormat()
         elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
             payload = CommsCommon.CommandFormat()
         elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
-            payload = CommsCommon.DataFormat()
+            # decode data type
+            data_type = comms_packet.getData()[comms_packet.getInformation() + 5]
+            if data_type == CommsCommon.DATA_TYPE.FAST:
+                payload = CommsCommon.DataFormat()
+            elif data_type == CommsCommon.DATA_TYPE.READBACK:
+                payload = CommsCommon.ReadbackFormat()
+            elif data_type == CommsCommon.DATA_TYPE.CYCLE:
+                payload = CommsCommon.CycleFormat()
+            elif data_type == CommsCommon.DATA_TYPE.THRESHOLD:
+                # FIXME: nothing yet defined, TBD!!
+                return False
+            else:
+                return False
         else:
             return False
         
         try:
-            payload.fromByteArray(comms_packet.getData()[comms_packet.getInformation():comms_packet.getFcs()])
+            payload.byteArray = comms_packet.getData()[comms_packet.getInformation():comms_packet.getFcs()]
         except Exception:
             raise
         else:
