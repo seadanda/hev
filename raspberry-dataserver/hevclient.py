@@ -50,15 +50,17 @@ class HEVClient(object):
                 if payload["type"] == "keepalive":
                     #Still alive
                     continue
-                elif payload["type"] == "DATA":
+                elif payload["type"] == "broadcast":
                     with self._lock:
-                        self._values = payload["DATA"]
+                        self._values = payload["sensors"]
                 elif payload["type"] == "READBACK":
-                    with self._lock:
-                        self._readback = payload["READBACK"]
+                    pass
+                    #with self._lock:
+                    #    self._readback = payload["READBACK"]
                 elif payload["type"] == "CYCLE":
-                    with self._lock:
-                        self._cycle = payload["CYCLE"]
+                    pass
+                    #with self._lock:
+                    #    self._cycle = payload["CYCLE"]
                 elif payload["type"] == "THRESHOLDS":
                     with self._lock:
                         self._thresholds = payload["THRESHOLDS"]
