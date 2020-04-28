@@ -162,15 +162,17 @@ class HEVServer(object):
                 continue
             else:
                 data_type = values.getType().name
+                if data_type == "DATA" : 
+                    data_type = "broadcast"
                 broadcast_packet = {"type": data_type}
-                broadcast_packet[str(data_type)] = values.getDict()
+                broadcast_packet["sensors"] = values.getDict()
 
                 broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
                 # take control of datavalid and reset it
                 with self._dvlock:
                     self._datavalid.clear()
 
-                logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
+                logging.info(f"Send data for timestamp: {broadcast_packet['sensors']['timestamp']}")
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
