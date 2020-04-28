@@ -8,11 +8,56 @@ var initial_yaxis_pressure = [];
 var initial_yaxis_volume = [];
 var initial_yaxis_flow = [];
 
+var fio_reading;
+
 /**
  * Request data from the server, add it to the graph and set a timeout
  * to request again
  */
 
+var current_timestamp = -1;
+
+function setChartXaxisRange(min,max){
+    chart_volume.options.scales.xAxes[0].ticks.min = min;
+    chart_volume.options.scales.xAxes[0].ticks.max = max;
+    chart_flow.options.scales.xAxes[0].ticks.min = min;
+    chart_flow.options.scales.xAxes[0].ticks.max = max;
+    chart_pressure.options.scales.xAxes[0].ticks.min = min;
+    chart_pressure.options.scales.xAxes[0].ticks.max = max;
+
+    
+}
+
+function init_results(){
+    $.getJSON({
+        url: '/last_N_data',
+        success: function(data) {
+            for (i=0; i<data.length; i++) {
+		var seconds = data[i]["timestamp"]/1000;
+		if ( seconds == "" ) continue;
+		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
+		initial_yaxis_volume.push({x : seconds, y : data[i]["pressure_inhale"]});
+		initial_yaxis_flow.push({x : seconds, y : data[i]["temperature_buffer"]});
+            }
+            //reverse because data is read from the other way
+            initial_xaxis.reverse();
+            initial_yaxis_pressure.reverse();
+            initial_yaxis_volume.reverse();
+            initial_yaxis_flow.reverse();
+
+	    if (initial_yaxis_pressure.length > 0) current_timestamp = initial_yaxis_pressure[0][0];
+	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		initial_yaxis_pressure[i][0] = initial_yaxis_pressure[i][0] - current_timestamp;
+		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
+		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
+        }
+	    
+        },
+        cache: false
+    });
+}
+
+/*
 function last_results() {
     $.getJSON({
         url: '/last_N_data',
@@ -38,10 +83,11 @@ function last_results() {
         cache: false
     });
 }
-
+*/
 // Calling the function here to retrive 
 // the initial values to be plotted on the charts
-last_results();
+//last_results();
+init_results();
 
 
 
@@ -49,46 +95,47 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
+        fio_reading = (point["pressure_buffer"]).toFixed(0) ;
+        //console.log(fio_reading);
+        fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
 
+	    var seconds = point["timestamp"]/1000;
+	    // get difference between last time stamp and this and apply to existing points
+	    var diff = 0;
+	    if ( current_timestamp == -1 ){
+		diff = seconds;
+	    }
+	    else {
+		diff = seconds - current_timestamp;
+	    }
+	    current_timestamp = seconds;
+	    
             if(chart_pressure.data.datasets[0].data.length > 300){
-                chart_pressure.data.labels.shift();
                 chart_pressure.data.datasets[0].data.shift();
             }
 
             if(chart_flow.data.datasets[0].data.length > 300){
-                //chart_flow.data.labels.shift();
                 chart_flow.data.datasets[0].data.shift();
             }
-
  
             if(chart_volume.data.datasets[0].data.length > 300){
-                //chart_volume.data.labels.shift();
                 chart_volume.data.datasets[0].data.shift();
             }
-
-            for (var i=0; i<300; i++) {
-                var x = chart_pressure.data.labels[i] - 0.20 ;
-                chart_pressure.data.labels[i] = x.toFixed(1);
-            }
-
-
-            // add the point           
-            chart_pressure.data.labels.push(0);
-            //chart_pressure.data.labels.push(point["timestamp"]);
-            chart_pressure.data.datasets[0].data.push(point["pressure_buffer"]);
-
-            // add the point
-            //chart_pressure.data.labels.push(0);
-            chart_flow.data.datasets[0].data.push(point["temperature_buffer"]);
-
-            // add the point
-            //chart_pressure.data.labels.push(0);
-            chart_volume.data.datasets[0].data.push(point["pressure_inhale"]);
+	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - diff;
+		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - diff;
+		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - diff;
+	    }
+	    
+            chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
+            chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
+            chart_volume.data.datasets[0].data.push({ x : 0, y : point["pressure_inhale"]});
             
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
-            
+            fio_gauge.update();
+
         },
         cache: false
     });
@@ -103,15 +150,15 @@ requestChartVar();
 $(document).ready(function() {
     var ctx_pressure = document.getElementById('pressure_chart');
     chart_pressure = new Chart(ctx_pressure, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: initial_xaxis,
             datasets: [{
                 data: initial_yaxis_pressure,
                 label: "Var1",
                 borderColor: "#0049b8",
                 borderWidth: 4,
-                fill: false
+                fill: false,
+		showLine: true,
               }
             ]
         },
@@ -122,6 +169,7 @@ $(document).ready(function() {
                 }
             },            
             responsive: true,
+	    maintainAspectRatio: false,
             stroke: {
                 curve: 'smooth'
             },
@@ -131,25 +179,23 @@ $(document).ready(function() {
             title: {
                 display: true,
                 text: 'Pressure [mbar]',
-                fontSize: 25
+		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
             },            
             scales: {
+		
             xAxes: [{
                 ticks: {
-                    fontSize: 25,
-                    beginAtZero: true
-                },
-                //type: 'time',
-                time: {
-                    unit: 'second',
-                    displayFormat: 'second'
-                }
-            }],
-			yAxes: [{
+		        maxTicksLimit: 13,
+		    maxRotation: 0,
+                    min: -60,
+                    max: 0,
+	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
+		yAxes: [{
                 ticks: {
-                    fontSize: 25,
                     beginAtZero: true,
-                    suggestedMax: 25
+                    suggestedMax: 25,
+	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+		    maxTicksLimit: 8,
                 },
 				scaleLabel: {
 					display: false,
@@ -180,16 +226,17 @@ $(document).ready(function() {
 $(document).ready(function() {
     var ctx_flow = document.getElementById('flow_chart');
     chart_flow = new Chart(ctx_flow, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: initial_xaxis,
+            //labels: initial_xaxis,
             datasets: [{
                 data: initial_yaxis_flow,
                 label: "Var1",
                 //borderColor: "#3e95cd",
                 borderColor: "#000000",
                 borderWidth: 4,
-                fill: false
+                fill: false,
+		showLine: true,
             }]
         },
         options: {
@@ -199,6 +246,7 @@ $(document).ready(function() {
                 }
             },            
             responsive: true,
+	    maintainAspectRatio: false,
             stroke: {
                 curve: 'smooth'
             },
@@ -207,26 +255,24 @@ $(document).ready(function() {
             },
             title: {
               display: true,
-              text: 'Flow [mL/min]',
-              fontSize: 25
+		text: 'Flow [mL/min]',
+		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
             },
             scales: {
+		
             xAxes: [{
                 ticks: {
-                    fontSize: 25,
-                    beginAtZero: true
-                },
-                //type: 'time',
-                time: {
-                    unit: 'second',
-                    displayFormat: 'second'
-                }
-            }],
+		        maxTicksLimit: 13,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+		    maxRotation: 0,
+                    min: -60,
+                    max: 0,
+		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
 			yAxes: [{
                 ticks: {
-                    fontSize: 25,
                     beginAtZero: true,
-                    suggestedMax: 25
+                    maxTicksLimit: 8,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
                 },
 				scaleLabel: {
 					display: false,
@@ -256,17 +302,19 @@ $(document).ready(function() {
 $(document).ready(function() {
     var ctx_volume = document.getElementById('volume_chart');
     chart_volume = new Chart(ctx_volume, {
-        type: 'line',
+        type: 'scatter',
         data: {
-            labels: initial_xaxis,
+            //labels: initial_xaxis,
             datasets: [{
                 data: initial_yaxis_volume,
                 label: "Var1",
                 borderColor: "#ba0202",
                 borderWidth: 4,
-                fill: false
+                fill: false,
+		showLine: true,
             }]
         },
+	
         options: {
             elements: {
                 point: { 
@@ -274,6 +322,7 @@ $(document).ready(function() {
                 }
             },            
             responsive: true,
+	    maintainAspectRatio: false,
             stroke: {
                 curve: 'smooth'
             },
@@ -283,25 +332,26 @@ $(document).ready(function() {
             title: {
                 display: true,
                 text: 'Volume [mL]',
-                fontSize: 25
+		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
             },
             scales: {
+		
             xAxes: [{
                 ticks: {
-                    fontSize: 25,
-                    beginAtZero: true
-                },
-                //type: 'time',
-                time: {
-                    unit: 'second',
-                    displayFormat: 'second'
-                }
-            }],
-			yAxes: [{
-                ticks: {
-                    fontSize: 25,
+		    maxTicksLimit: 13,
+		    maxRotation: 0,
+                    min: -60,
+                    max: 0,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
+		
+		yAxes: [{
+                    ticks: {
                     beginAtZero: true,
-                    suggestedMax: 25
+			suggestedMax: 25,
+			maxTicksLimit: 8,
+		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+			
+
                 },
 				scaleLabel: {
 					display: false,
@@ -318,11 +368,28 @@ $(document).ready(function() {
                 duration: 20000,
                 refresh: 1000,
                 delay: 2000
-                //onRefresh:     requestChartVar3()
             }
         }
     });
 });
 
 
+var ctx = document.getElementById("example_gauge").getContext("2d");
+fio_gauge = new Chart(ctx, {
+	type: "tsgauge",
+	data: {
+		datasets: [{
+			backgroundColor: ["#0fdc63", "#fd9704", "#ff7143"],
+			borderWidth: 0,
+			gaugeData: {
+				value: 0,
+				valueColor: "#ff7143"
+			},
+			gaugeLimits: [0, 50, 100]
+		}]
+	},
+	options: {
+		events: []
+	}
+});
 
