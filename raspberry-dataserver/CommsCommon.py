@@ -46,10 +46,10 @@ class CMD_SET_TIMEOUT(Enum):
     EXHALE          = 11
 
 class CMD_SET_MODE(Enum):
-    HEV_MODE_PS   = auto()
-    HEV_MODE_CPAP = auto()
-    HEV_MODE_PRVC = auto()
-    HEV_MODE_TEST = auto()
+    HEV_MODE_PS   = 1
+    HEV_MODE_CPAP = 2
+    HEV_MODE_PRVC = 3
+    HEV_MODE_TEST = 4
 
 @unique
 class ALARM_TYPE(Enum):
@@ -192,7 +192,7 @@ class BaseFormat():
 @dataclass
 class DataFormat(BaseFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHHHHHHHHHHHIII")
+    _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
@@ -251,7 +251,7 @@ class DataFormat(BaseFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(BaseFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBI")
+    _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
     _type = PAYLOAD_TYPE.DATA
 
     data_type: int                = DATA_TYPE.READBACK
@@ -272,7 +272,7 @@ class ReadbackFormat(BaseFormat):
     valve_inhale: int             = 0
     valve_exhale: int             = 0
     valve_purge: int              = 0
-    ventilation_mode: int         = 0
+    ventilation_mode: int         = 0 #CMD_SET_MODE.HEV_MODE_PS
 
     valve_inhale_percent: int     = 0
     valve_exhale_percent: int     = 0
@@ -327,7 +327,7 @@ class ReadbackFormat(BaseFormat):
 @dataclass
 class CycleFormat(BaseFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBIIIIIIIIIHHHHBHHB")
+    _dataStruct = Struct("<BIBfffffffffHHHHBHHB")
     _type = PAYLOAD_TYPE.DATA
 
     data_type: int                 = DATA_TYPE.CYCLE

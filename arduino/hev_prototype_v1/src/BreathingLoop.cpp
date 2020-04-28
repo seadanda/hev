@@ -115,8 +115,15 @@ float BreathingLoop::getFlow(){
     if ((dp_raw -0.5) == 0.000) 
         sign = 0.0;
     float dp = sign*pow(((dp_raw/0.4)-1.25),2) * 5.25; 
+    // 
     float flow = dp;
-    return dp;
+
+
+    // NLPM - normal litres per minute = 1 Si Litre per minute * (293.15/T)*(P/1013.25)
+    float T = 25+273.15; //_readings_avgs.temperature_buffer;
+    float P = _readings_avgs.pressure_patient;
+    float nlpm_factor = (293.15/T)*(P/1013.25); 
+    return flow;
     /*
     float R = 0.08206 * 1/0.98692 *1000; // mbar *l * mol-1 *K-1
     float T = 25+273.15; //_readings_avgs.temperature_buffer;
@@ -127,7 +134,7 @@ float BreathingLoop::getFlow(){
     float n1 = _readings_avgs.pressure_buffer * V_buffer/(R*T);
     float n2 = _readings_avgs.pressure_inhale * V_tube/(R*T);
     float M = 15.99; // molar mass O2 g.mol-1
-    float rho = 1.42 * 1000; // density ) 2kg/m3 @ 25 deg
+    float rho = 1.42 * 1000; // density  1.2kg/m3 @ 25 deg
     */
 
 }
@@ -135,7 +142,7 @@ float BreathingLoop::getFlow(){
 float    BreathingLoop::getIERatio(){
     // TODO : check with Oscar/Xavier
     float total_inhale_time = _states_durations.inhale + _states_durations.pause;
-    float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale_fill;
+    float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale;
     return total_inhale_time/total_exhale_time;
 }
 
@@ -339,8 +346,8 @@ void BreathingLoop::FSM_breathCycle()
             break;
         case BL_STATES::EXHALE:
             // TODO: exhale timeout based on 
-            // (inhale_time* (Exhale/Inhale ratio))  -  fill time
-            _states_durations.exhale = calculateTimeoutExhale();
+            // (inhale_time* (Exhale/Inhale ratio))  - exhale fill time
+            _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, 0.9 * VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
             //update total cycle time
@@ -430,9 +437,13 @@ states_durations &BreathingLoop::getDurations() {
     return _states_durations;
 }
 
-// FIXME 1/1 has to be replaced using exhale/inhale ratio
-uint32_t BreathingLoop::calculateTimeoutExhale() {
-    return static_cast<uint32_t>(_states_durations.inhale * ( 1/ 1) ) - _states_durations.buff_fill;
+uint32_t BreathingLoop::calculateDurationExhale() {
+    // TODO : should have sane minimum times
+    // for now min = 100ms
+    uint32_t exhale_duration = (_states_durations.inhale * getIERatio())  - _states_durations.exhale_fill ;
+    if (exhale_duration < 100)
+        exhale_duration = 100;
+    return static_cast<uint32_t>(exhale_duration);
 }
 
 ValvesController* BreathingLoop::getValvesController()

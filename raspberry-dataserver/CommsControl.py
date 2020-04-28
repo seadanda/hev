@@ -232,7 +232,7 @@ class CommsControl():
                 payload = CommsCommon.ReadbackFormat()
             elif data_type == CommsCommon.DATA_TYPE.CYCLE:
                 payload = CommsCommon.CycleFormat()
-            elif data_type == CommsCommon.DATA_TYPE.THRESHOLD:
+            elif data_type == CommsCommon.DATA_TYPE.THRESHOLDS:
                 # FIXME: nothing yet defined, TBD!!
                 return False
             else:

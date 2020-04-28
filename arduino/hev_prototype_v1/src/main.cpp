@@ -106,8 +106,8 @@ void loop()
     breathing_loop.FSM_breathCycle();
 
     ui_loop.reportFastReadings();
-    // ui_loop.reportReadbackValues();
-    // ui_loop.reportCycleReadings();
+    ui_loop.reportReadbackValues();
+    ui_loop.reportCycleReadings();
 
     // per cycle sender
     comms.sender();

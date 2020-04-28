@@ -88,7 +88,7 @@ private:
     readings<uint16_t> _calib_avgs;
 
     // timeouts
-    uint32_t calculateTimeoutExhale();
+    uint32_t calculateDurationExhale();
     states_durations _states_durations = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
 
     // readings
