@@ -7,12 +7,20 @@
 #define CONST_TIMEOUT_DATA  10
 #define CONST_TIMEOUT_CMD   50
 
+#define PAYLOAD_MAX_SIZE_BUFFER 64
 
-#define CONST_MAX_SIZE_RB_RECEIVING 2
-#define CONST_MAX_SIZE_RB_SENDING 2
-#define CONST_MAX_SIZE_PACKET 64
-#define CONST_MAX_SIZE_BUFFER 128
-#define CONST_MIN_SIZE_PACKET 7
+// UNO struggles with the RAM size for ring buffers
+#ifdef ARDUINO_AVR_UNO
+#define COMMS_MAX_SIZE_RB_RECEIVING  1
+#define COMMS_MAX_SIZE_RB_SENDING    1
+#else
+#define COMMS_MAX_SIZE_RB_RECEIVING 10
+#define COMMS_MAX_SIZE_RB_SENDING    5
+#endif
+
+#define COMMS_MAX_SIZE_PACKET 64
+#define COMMS_MAX_SIZE_BUFFER 128
+#define COMMS_MIN_SIZE_PACKET 7
 
 #define COMMS_FRAME_BOUNDARY 0x7E
 #define COMMS_FRAME_ESCAPE   0x7D
@@ -31,52 +39,6 @@
 #define PACKET_DATA  0x40
 #define PACKET_SET   0x20 //set vs get ?
 
-#define HEV_FORMAT_VERSION 0xA1
-
-// struct for all data sent
-#pragma pack(1)
-struct data_format {
-    uint8_t  version                = HEV_FORMAT_VERSION;
-    uint32_t timestamp              = 0;
-    uint8_t  fsm_state              = 0;
-    uint16_t pressure_air_supply    = 0;
-    uint16_t pressure_air_regulated = 0;
-    uint16_t pressure_o2_supply     = 0;
-    uint16_t pressure_o2_regulated  = 0;
-    uint16_t pressure_buffer        = 0;
-    uint16_t pressure_inhale        = 0;
-    uint16_t pressure_patient       = 0;
-    uint16_t temperature_buffer     = 0;
-    uint16_t pressure_diff_patient  = 0;
-    uint8_t  readback_valve_air_in  = 0;
-    uint8_t  readback_valve_o2_in   = 0;
-    uint8_t  readback_valve_inhale  = 0;
-    uint8_t  readback_valve_exhale  = 0;
-    uint8_t  readback_valve_purge   = 0;
-    uint8_t  readback_mode          = 0;
-};
-#pragma pack()
-
-#pragma pack(1)
-struct cmd_format {
-    uint8_t  version   = HEV_FORMAT_VERSION;
-    uint32_t timestamp = 0;
-    uint8_t  cmd_type  = 0;
-    uint8_t  cmd_code  = 0;
-    uint32_t param     = 0;
-};
-#pragma pack()
-
-#pragma pack(1)
-struct alarm_format {
-    uint8_t  version    = HEV_FORMAT_VERSION;
-    uint32_t timestamp  = 0;
-    uint8_t  alarm_type = 0;
-    uint8_t  alarm_code = 0;
-    uint32_t param      = 0;
-};
-#pragma pack()
-
 // enum of all transfer types
 enum PAYLOAD_TYPE {
     DATA,
@@ -90,96 +52,65 @@ enum PAYLOAD_TYPE {
 // information is set as information in the protocol
 class Payload {
 public:
-    Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {_type = type; } //data_ = nullptr; cmd_ = nullptr; alarm_ = nullptr; }
+    Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {_type = type; }
     Payload(const Payload &other) {
         _type = other._type;
-        memcpy(& _data, &other. _data, sizeof( data_format));
-        memcpy(&  _cmd, &other.  _cmd, sizeof(  cmd_format));
-        memcpy(&_alarm, &other._alarm, sizeof(alarm_format));
+        _size = other._size;
+        memcpy(_buffer, other._buffer, other._size);
     }
     Payload& operator=(const Payload& other) {
         _type = other._type;
-        memcpy(& _data, &other. _data, sizeof( data_format));
-        memcpy(&  _cmd, &other.  _cmd, sizeof(  cmd_format));
-        memcpy(&_alarm, &other._alarm, sizeof(alarm_format));
+        _size = other._size;
+        memcpy(_buffer, other._buffer, other._size);
         return *this;
     }
 
-    ~Payload() { unsetAll(); }
+    ~Payload() { unset(); }
+    void unset() { memset( _buffer, 0, PAYLOAD_MAX_SIZE_BUFFER); _type = PAYLOAD_TYPE::UNSET; _size = 0;}
 
     void setType(PAYLOAD_TYPE type) { _type = type; }
     PAYLOAD_TYPE getType() {return _type; }
 
-    // requires argument as new struct
-    void setData (data_format   *data) { _type = PAYLOAD_TYPE::DATA;  memcpy(& _data,  data, sizeof( data_format)); }
-    void setCmd  (cmd_format     *cmd) { _type = PAYLOAD_TYPE::CMD;   memcpy(&  _cmd,   cmd, sizeof(  cmd_format)); }
-    void setAlarm(alarm_format *alarm) { _type = PAYLOAD_TYPE::ALARM; memcpy(&_alarm, alarm, sizeof(alarm_format)); }
+    void setSize(uint8_t size) { _size = size; }
+    uint8_t getSize() { return _size; }
 
-    // get pointers to particular payload types
-    data_format  *getData () {return & _data; }
-    cmd_format   *getCmd  () {return &  _cmd; }
-    alarm_format *getAlarm() {return &_alarm; }
+    bool setPayload(PAYLOAD_TYPE type, void* information, uint8_t size) {
+        if (information == nullptr) {
+            return false;
+        }
 
-    void unsetAll()   { unsetData(); unsetAlarm(); unsetCmd(); _type = PAYLOAD_TYPE::UNSET; }
-    void unsetData()  { memset(& _data, 0, sizeof( data_format)); }
-    void unsetCmd()   { memset(&  _cmd, 0, sizeof(  cmd_format)); }
-    void unsetAlarm() { memset(&_alarm, 0, sizeof(alarm_format)); }
-
-    void setPayload(PAYLOAD_TYPE type, void* information) {
         setType(type);
+        setSize(size);
         setInformation(information);
+
+        return true;
     }
 
-    void setInformation(void* information) {
-        switch (_type) {
-            case PAYLOAD_TYPE::DATA:
-                setData (reinterpret_cast< data_format*>(information));
-                break;
-            case PAYLOAD_TYPE::CMD:
-                setCmd  (reinterpret_cast<  cmd_format*>(information));
-                break;
-            case PAYLOAD_TYPE::ALARM:
-                setAlarm(reinterpret_cast<alarm_format*>(information));
-                break;
-            default:
-                break;
-        }
+    bool getPayload(void* information) {
+        PAYLOAD_TYPE type;
+        uint8_t size;
+        return getPayload(information, type, size);
     }
 
-    // returns void pointer, in case you know what to do with data or dont care what the format is
-    void *getInformation() {
-        switch (_type) {
-            case PAYLOAD_TYPE::DATA:
-                return reinterpret_cast<void*>(getData ());
-            case PAYLOAD_TYPE::CMD:
-                return reinterpret_cast<void*>(getCmd  ());
-            case PAYLOAD_TYPE::ALARM:
-                return reinterpret_cast<void*>(getAlarm());
-            default:
-                return nullptr;
+    bool getPayload(void* information, PAYLOAD_TYPE &type, uint8_t &size) {
+        if (information == nullptr) {
+            return false;
         }
+
+        type = getType();
+        size = getSize();
+        memcpy(information, getInformation(), _size);
+
+        return true;
     }
 
-    // returns payload information size
-    uint8_t getSize()  {
-        switch (_type) {
-            case PAYLOAD_TYPE::DATA:
-                return static_cast<uint8_t>(sizeof( data_format));
-            case PAYLOAD_TYPE::CMD:
-                return static_cast<uint8_t>(sizeof(  cmd_format));
-            case PAYLOAD_TYPE::ALARM:
-                return static_cast<uint8_t>(sizeof(alarm_format));
-            default:
-                return 0;
-        }
-    }
+    void setInformation(void* information) { memcpy(_buffer, information, _size); }
+    void *getInformation() { return reinterpret_cast<void*>(_buffer); }
 
 private:
     PAYLOAD_TYPE _type;
-
-    data_format   _data;
-    cmd_format     _cmd;
-    alarm_format _alarm;
+    uint8_t      _buffer[PAYLOAD_MAX_SIZE_BUFFER];
+    uint8_t      _size;
 };
 
 #endif

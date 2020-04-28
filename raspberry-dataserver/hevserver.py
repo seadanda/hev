@@ -12,10 +12,11 @@ import svpi
 import hevfromtxt
 from hevtestdata import HEVTestData
 import CommsControl
-from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
+from struct import error as StructError
 import logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
@@ -39,10 +40,6 @@ class HEVServer(object):
         worker = threading.Thread(target=self.serve_all, daemon=True)
         worker.start()
 
-    def __repr__(self):
-        with self._dblock:
-            return f"Alarms: {self._alarms}.\nSensor values: {self._values}"
-
     def polling(self, payload):
         # get values when we get a callback from commsControl (lli)
         logging.debug(f"Payload received: {payload!r}")
@@ -50,24 +47,16 @@ class HEVServer(object):
         payload_type = payload.getType()
         if payload_type == PAYLOAD_TYPE.ALARM:
             # Alarm is latched until acknowledged in GUI
-            alarm_packet = payload.getDict()
-            alarmCode = alarm_packet["alarmCode"]
             with self._dblock:
-                try:
-                    alarm = ALARM_CODES(alarmCode).name
-                    if alarm not in self._alarms:
-                        self._alarms.append(alarm)
-                except ValueError as e:
-                    # alarmCode does not exist in the enum, this is serious!
-                    logging.error(e)
-                    self._alarms.append("ARDUINO_FAIL") # assume Arduino is broken
+                if payload not in self._alarms:
+                    self._alarms.append(payload)
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
-        elif payload_type == PAYLOAD_TYPE.DATA:
+        elif payload_type in [1,2,3,4] : 
             # pass data to db
             with self._dblock:
-                self._values = payload.getDict()
+                self._values = payload
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
@@ -106,8 +95,8 @@ class HEVServer(object):
                     reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                command = CommandFormat(cmdType=CMD_TYPE[reqcmdtype].value,
-                                        cmdCode=CMD_MAP[reqcmdtype].value[reqcmd].value,
+                command = CommandFormat(cmd_type=CMD_TYPE[reqcmdtype].value,
+                                        cmd_code=CMD_MAP[reqcmdtype].value[reqcmd].value,
                                         param=reqparam)
 
                 self._lli.writePayload(command)
@@ -115,15 +104,22 @@ class HEVServer(object):
                 # processed and sent to controller, send ack to GUI since it's in enum
                 payload = {"type": "ack"}
 
-            elif reqtype == "broadcast":
+            elif reqtype == "DATA":
+                # ignore for the minute
+                pass
+            elif reqtype == "READBACK":
+                # ignore for the minute
+                pass
+            elif reqtype == "CYCLE":
                 # ignore for the minute
                 pass
             elif reqtype == "alarm":
                 # acknowledgement of alarm from gui
+                alarm_to_ack = AlarmFormat(**request["ack"])
                 try:
                     # delete alarm if it exists
                     with self._dblock:
-                        self._alarms.remove(request["ack"])
+                        self._alarms.remove(alarm_to_ack)
                     payload = {"type": "ack"}
                 except NameError as e:
                     raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
@@ -165,14 +161,16 @@ class HEVServer(object):
                 self._broadcasting = False
                 continue
             else:
-                broadcast_packet = {"type": "broadcast"}
-                broadcast_packet["sensors"] = values
-                broadcast_packet["alarms"] = alarms # add alarms key/value pair
+                data_type = values.getType().name
+                broadcast_packet = {"type": data_type}
+                broadcast_packet[str(data_type)] = values.getDict()
+
+                broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
                 # take control of datavalid and reset it
                 with self._dvlock:
                     self._datavalid.clear()
 
-                logging.info(f"Send data for timestamp: {broadcast_packet['sensors']['timestamp']}")
+                logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
@@ -225,56 +223,57 @@ class HEVServer(object):
 
 
 if __name__ == "__main__":
-    #parser to allow us to pass arguments to hevserver
-    parser = argparse.ArgumentParser(description='Arguments to run hevserver')
-    parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
-    parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
-    parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
-    args = parser.parse_args()
-    if args.debug == 0:
-        logging.getLogger().setLevel(logging.WARNING)
-    elif args.debug == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    else:
-        logging.getLogger().setLevel(logging.DEBUG)
-    
-    if args.use_test_data:
-        lli = HEVTestData()
-        logging.info(f"Using test data source")
-    elif args.inputFile != '':
-        if args.inputFile[-1-3:] == '.txt':
-            # assume sample.txt format
-            lli = hevfromtxt.hevfromtxt(args.inputFile)
-        else:
-            # assume hex dump
-            lli = svpi.svpi(args.inputFile)
-
-        logging.info(f"Reading data from {args.inputFile}")
-    else:
-        # get arduino serial port
-        for port in list_ports.comports():
-            vidpid = ""
-            if port.pid != None and port.vid != None:
-                vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
-                logging.debug(vidpid)
-            if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
-                port_device = port.device 
-            elif vidpid == "10C4:EA60" :
-                port_device = port.device 
-
-        # initialise low level interface
-        try:
-            lli = CommsControl.CommsControl(port=port_device)
-            logging.info(f"Serving data from device {port_device}")
-        except NameError:
-            logging.error("Arduino not connected")
-            exit(1)
-
-    hevsrv = HEVServer(lli)
-
-    # serve forever
-    loop = asyncio.get_event_loop()
     try:
-        loop.run_forever()
-    finally:
-        loop.close()
+        #parser to allow us to pass arguments to hevserver
+        parser = argparse.ArgumentParser(description='Arguments to run hevserver')
+        parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
+        parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
+        parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
+        args = parser.parse_args()
+        if args.debug == 0:
+            logging.getLogger().setLevel(logging.WARNING)
+        elif args.debug == 1:
+            logging.getLogger().setLevel(logging.INFO)
+        else:
+            logging.getLogger().setLevel(logging.DEBUG)
+        
+        if args.use_test_data:
+            lli = HEVTestData()
+            logging.info(f"Using test data source")
+        elif args.inputFile != '':
+            if args.inputFile[-1-3:] == '.txt':
+                # assume sample.txt format
+                lli = hevfromtxt.hevfromtxt(args.inputFile)
+        else:
+            # get arduino serial port
+            for port in list_ports.comports():
+                vidpid = ""
+                if port.pid != None and port.vid != None:
+                    vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
+                    logging.debug(vidpid)
+                if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
+                    port_device = port.device 
+                elif vidpid == "10C4:EA60" :
+                    port_device = port.device 
+
+            # initialise low level interface
+            try:
+                lli = CommsControl.CommsControl(port=port_device)
+                logging.info(f"Serving data from device {port_device}")
+            except NameError:
+                logging.error("Arduino not connected")
+                exit(1)
+
+        hevsrv = HEVServer(lli)
+
+        # serve forever
+        loop = asyncio.get_event_loop()
+        try:
+            loop.run_forever()
+        finally:
+            loop.close()
+    except KeyboardInterrupt:
+        logging.info("Server stopped")
+    except StructError:
+        logging.error("Failed to parse packet")
+

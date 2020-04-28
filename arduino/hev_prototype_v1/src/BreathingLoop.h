@@ -26,12 +26,24 @@ public:
     bool getRunning();
     void updateReadings();
     readings<uint16_t> getReadingAverages();
+    float getRespiratoryRate();
+    float getFlow();
+    float getIERatio();
+    float getMinuteVolume();
     ValvesController * getValvesController();
+    uint8_t getValveInhalePercent();
+    uint8_t getValveExhalePercent();
+    uint8_t valveAirInEnabled();
+    uint8_t valveO2InEnabled();
+    uint8_t valvePurgeEnabled();
+    uint8_t inhaleTriggerEnabled();
+    uint8_t exhaleTriggerEnabled();
 
-    states_timeouts &getTimeouts();
+    states_durations &getDurations();
 
     // states
     enum BL_STATES : uint8_t {
+            UNKNOWN         =  0,
             IDLE            =  1,
             CALIBRATION     =  2,
             BUFF_PREFILL    =  3,
@@ -69,16 +81,15 @@ private:
     // calibration
     void calibrate();
     void initCalib();
-    float getCalibrationOffset();
     uint32_t _calib_N;
     uint32_t _calib_time;
     uint32_t _calib_timeout;
-    uint32_t _calib_sum_pressure; // 32 bit due to possible analog read overflow
-    float _calib_avg_pressure;
+    readings<uint32_t> _calib_sums;
+    readings<uint16_t> _calib_avgs;
 
     // timeouts
-    uint32_t calculateTimeoutExhale();
-    states_timeouts _states_timeouts = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
+    uint32_t calculateDurationExhale();
+    states_durations _states_durations = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
 
     // readings
     void resetReadingSums();
@@ -90,6 +101,17 @@ private:
     uint32_t _readings_timeout;
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
+ 
+    uint8_t _valve_inhale_percent  ;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
+    uint8_t _valve_exhale_percent  ;
+    uint8_t _valve_air_in_enable   ;
+    uint8_t _valve_o2_in_enable    ;
+    uint8_t _valve_purge_enable    ;
+    uint8_t _inhale_trigger_enable ;   // params - associated val of peak flow
+    uint8_t _exhale_trigger_enable ;
+    // calculations
+    void updateTotalCycleDuration(uint16_t newtotal);
+    uint16_t _total_cycle_duration[3];
 };
 
 
