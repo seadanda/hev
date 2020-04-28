@@ -174,7 +174,7 @@ class CommsControl():
                                 comms_response = CommsFormat.CommsACK(address = address[0])
                             else:
                                 logging.debug("Preparing NACK")
-                                comms_response = CommsFormat.CommsNACK(address = address)
+                                comms_response = CommsFormat.CommsNACK(address = address[0])
                             comms_response.setSequenceReceive(sequence_receive)
                             self.sendPacket(comms_response)
                     
