@@ -52,7 +52,7 @@ class HEVServer(object):
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
-        elif payload_type == PAYLOAD_TYPE.DATA:
+        elif payload_type in [1,2,3,4] : 
             # pass data to db
             with self._dblock:
                 self._values = payload
