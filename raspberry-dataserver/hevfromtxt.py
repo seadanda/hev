@@ -50,7 +50,7 @@ class hevfromtxt():
                 self._pos = self._pos + self._increment
             else:
                 delay = self._timestamp[self._pos] - self._timestamp[self._pos-self._increment]
-                time_offset += self._timestamp[self._pos]
+                time_offset += self._timestamp[self._pos] - self._timestamp[0]
                 self._pos = 0
 
             time.sleep(delay)
