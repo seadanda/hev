@@ -162,7 +162,7 @@ class BaseFormat():
     def toByteArray(self) -> None:
         self.version = self._RPI_VERSION
         self._byteArray = self._dataStruct.pack(*[
-            v.value if isinstance(v, Enum) else v
+            v.value if isinstance(v, IntEnum) or isinstance(v, Enum) else v
             for v in asdict(self).values()
         ])
 
@@ -183,7 +183,7 @@ class BaseFormat():
         return self._type
     
     def getDict(self) -> Dict:
-        return {k: v.name if isinstance(v, Enum) else v for k, v in asdict(self).items()}
+        return {k: v.name if isinstance(v, IntEnum) or isinstance(v, Enum) else v for k, v in asdict(self).items()}
 
 
 # =======================================
