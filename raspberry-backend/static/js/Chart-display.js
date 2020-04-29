@@ -36,8 +36,10 @@ function init_results(){
     $.getJSON({
         url: '/last_N_data',
         success: function(data) {
+	    var timestamp = 0;
             for (i=0; i<data.length; i++) {
 		var seconds = data[i]["timestamp"]/1000;
+		if (i==data.length-1) timestamp = seconds;
 		if ( seconds == "" ) continue;
 		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
 		initial_yaxis_volume.push({x : seconds, y : data[i]["pressure_inhale"]});
@@ -49,11 +51,12 @@ function init_results(){
             initial_yaxis_volume.reverse();
             initial_yaxis_flow.reverse();
 
-	    if (initial_yaxis_pressure.length > 0) current_timestamp = initial_yaxis_pressure[0][0];
+	    console.log('init results, timestamp: ',timestamp);
 	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
-		initial_yaxis_pressure[i][0] = initial_yaxis_pressure[i][0] - current_timestamp;
-		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
-		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
+		console.log('filling up with ',initial_yaxis_pressure[i]['x'], ' - ',timestamp);
+		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - timestamp;
+		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
+		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
         }
         },
         cache: false
@@ -90,7 +93,8 @@ function last_results() {
 // Calling the function here to retrive 
 // the initial values to be plotted on the charts
 //last_results();
-init_results();
+//Leave this out for now as there seems to be an issue with timestamps in the last data
+//init_results();
 
 
 
@@ -100,47 +104,53 @@ function requestChartVar() {
         success: function(point) {
         fio_reading = (point["pressure_buffer"]).toFixed(0) ;
         p_plateau_reading = (point["pressure_inhale"]).toFixed(0) ;
-        //console.log(fio_reading);
             if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
 
 
-        var seconds = point["timestamp"]/1000;
-	    // get difference between last time stamp and this and apply to existing points
-	    var diff = 0;
-	    if ( current_timestamp == -1 ){
-		diff = seconds;
-	    }
-	    else {
-        //diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
-        diff = 0.2;
-	    }
-	    current_timestamp = seconds;
-	    
-            if(chart_pressure.data.datasets[0].data.length > 300){
-                chart_pressure.data.datasets[0].data.shift();
-            }
+            var seconds = point["timestamp"]/1000;
 
-            if(chart_flow.data.datasets[0].data.length > 300){
-                chart_flow.data.datasets[0].data.shift();
-            }
- 
-            if(chart_volume.data.datasets[0].data.length > 300){
-                chart_volume.data.datasets[0].data.shift();
-            }
-	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
-		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - diff;
-		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - diff;
-		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - diff;
-        }
+	    // this is a hack for the test data so that we can cycle data
+	    if ( seconds < current_timestamp ) current_timestamp = seconds - 0.20;
 	    
-            chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
-            chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
-            chart_volume.data.datasets[0].data.push({ x : 0, y : point["pressure_inhale"]});
-            
-            chart_pressure.update();
-            chart_flow.update();
-            chart_volume.update();
+	    //protect against bogus timestamps, skip those that are earlier than we already have
+	    if (current_timestamp == -1 || seconds > current_timestamp )
+	    {
+		// get difference between last time stamp and this and apply to existing points
+		var diff = 0;
+		if ( current_timestamp == -1 ){
+		    diff = seconds;
+		}
+		else {
+		    diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
+		}
+		current_timestamp = seconds;
+		if(chart_pressure.data.datasets[0].data.length > 300){
+                    chart_pressure.data.datasets[0].data.shift();
+		}
+		
+		if(chart_flow.data.datasets[0].data.length > 300){
+                    chart_flow.data.datasets[0].data.shift();
+		}
+		
+		if(chart_volume.data.datasets[0].data.length > 300){
+                    chart_volume.data.datasets[0].data.shift();
+		}
+		for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		    chart_pressure.data.datasets[0].data[i]['x'] = chart_pressure.data.datasets[0].data[i]['x'] - diff;
+		    chart_flow.data.datasets[0].data[i]['x'] = chart_flow.data.datasets[0].data[i]['x'] - diff;
+		    chart_volume.data.datasets[0].data[i]['x'] = chart_volume.data.datasets[0].data[i]['x'] - diff;
+		}
+		
+		chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
+		chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
+		chart_volume.data.datasets[0].data.push({ x : 0, y : point["pressure_inhale"]});
+		
+		chart_pressure.update();
+		chart_flow.update();
+		chart_volume.update();
+	    }
+	    // we can update these with new value even if there is a timestamp issue
             if ("fio_gauge" in obj) obj["fio_gauge"].update();
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
         },
