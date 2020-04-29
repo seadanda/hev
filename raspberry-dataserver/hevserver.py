@@ -3,6 +3,7 @@
 #
 # Author: Dónal Murray <donal.murray@cern.ch>
 
+import copy
 import asyncio
 import json
 import time
@@ -56,7 +57,7 @@ class HEVServer(object):
         elif payload_type in [1,2,3,4] : 
             # pass data to db
             with self._dblock:
-                self._values = payload
+                self._values = copy.deepcopy(payload)
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
