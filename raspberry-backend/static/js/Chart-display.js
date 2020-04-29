@@ -51,7 +51,6 @@ function init_results(){
 		initial_yaxis_volume[i][0]   = initial_yaxis_volume[i][0] - current_timestamp;
 		initial_yaxis_flow[i][0]     = initial_yaxis_flow[i][0] - current_timestamp;
         }
-	    
         },
         cache: false
     });
@@ -99,14 +98,15 @@ function requestChartVar() {
         //console.log(fio_reading);
         fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
 
-	    var seconds = point["timestamp"]/1000;
+        var seconds = point["timestamp"]/1000;
 	    // get difference between last time stamp and this and apply to existing points
 	    var diff = 0;
 	    if ( current_timestamp == -1 ){
 		diff = seconds;
 	    }
 	    else {
-		diff = seconds - current_timestamp;
+        //diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
+        diff = 0.2;
 	    }
 	    current_timestamp = seconds;
 	    
@@ -125,7 +125,7 @@ function requestChartVar() {
 		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - diff;
 		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - diff;
 		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - diff;
-	    }
+        }
 	    
             chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
             chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
