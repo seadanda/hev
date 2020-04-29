@@ -40,11 +40,11 @@
 #define PACKET_SET   0x20 //set vs get ?
 
 // enum of all transfer types
-enum PAYLOAD_TYPE {
-    DATA,
-    CMD,
-    ALARM,
-    UNSET
+enum PRIORITY {
+    DATA  = PACKET_DATA,
+    CMD   = PACKET_CMD,
+    ALARM = PACKET_ALARM,
+    UNSET = 0x00
 };
 
 // payload consists of type and information
@@ -52,7 +52,7 @@ enum PAYLOAD_TYPE {
 // information is set as information in the protocol
 class Payload {
 public:
-    Payload(PAYLOAD_TYPE type = PAYLOAD_TYPE::UNSET)  {_type = type; }
+    Payload(PRIORITY type = PRIORITY::UNSET)  {_type = type; }
     Payload(const Payload &other) {
         _type = other._type;
         _size = other._size;
@@ -66,15 +66,15 @@ public:
     }
 
     ~Payload() { unset(); }
-    void unset() { memset( _buffer, 0, PAYLOAD_MAX_SIZE_BUFFER); _type = PAYLOAD_TYPE::UNSET; _size = 0;}
+    void unset() { memset( _buffer, 0, PAYLOAD_MAX_SIZE_BUFFER); _type = PRIORITY::UNSET; _size = 0;}
 
-    void setType(PAYLOAD_TYPE type) { _type = type; }
-    PAYLOAD_TYPE getType() {return _type; }
+    void setType(PRIORITY type) { _type = type; }
+    PRIORITY getType() {return _type; }
 
     void setSize(uint8_t size) { _size = size; }
     uint8_t getSize() { return _size; }
 
-    bool setPayload(PAYLOAD_TYPE type, void* information, uint8_t size) {
+    bool setPayload(PRIORITY type, void* information, uint8_t size) {
         if (information == nullptr) {
             return false;
         }
@@ -87,12 +87,12 @@ public:
     }
 
     bool getPayload(void* information) {
-        PAYLOAD_TYPE type;
+        PRIORITY type;
         uint8_t size;
         return getPayload(information, type, size);
     }
 
-    bool getPayload(void* information, PAYLOAD_TYPE &type, uint8_t &size) {
+    bool getPayload(void* information, PRIORITY &type, uint8_t &size) {
         if (information == nullptr) {
             return false;
         }
@@ -108,7 +108,7 @@ public:
     void *getInformation() { return reinterpret_cast<void*>(_buffer); }
 
 private:
-    PAYLOAD_TYPE _type;
+    PRIORITY _type;
     uint8_t      _buffer[PAYLOAD_MAX_SIZE_BUFFER];
     uint8_t      _size;
 };

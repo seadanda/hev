@@ -25,7 +25,7 @@ void UILoop::receiveCommands()
     // check any received payload
     if(_comms->readPayload(_plReceive)) {
 
-      if (_plReceive.getType() == PAYLOAD_TYPE::CMD) {
+      if (_plReceive.getType() == PRIORITY::CMD) {
           // apply received cmd to ui loop
           cmd_format cmd;
           _plReceive.getPayload(reinterpret_cast<void*>(&cmd));
@@ -33,7 +33,7 @@ void UILoop::receiveCommands()
       }
 
       // unset received type not to read it again
-      _plReceive.setType(PAYLOAD_TYPE::UNSET);
+      _plReceive.setType(PRIORITY::UNSET);
     }
 }
 
@@ -56,7 +56,7 @@ void UILoop::reportFastReadings()
         _fast_data.pressure_o2_regulated = readings_avgs.pressure_o2_regulated;
         _fast_data.pressure_diff_patient = readings_avgs.pressure_diff_patient;
 
-        _plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
+        _plSend.setPayload(PRIORITY::DATA, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_plSend);
         _fast_report_time = tnow;
     }
@@ -107,7 +107,7 @@ void UILoop::reportReadbackValues()
         // _readback_data.peep = _breathing_loop->peep();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
-        _plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
+        _plSend.setPayload(PRIORITY::DATA, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
         _comms->writePayload(_plSend);
         _readback_report_time = tnow;
     }
@@ -121,7 +121,7 @@ void UILoop::reportCycleReadings()
 
         _cycle_data.timestamp =  tnow;
 
-        _plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&_cycle_data), sizeof(_cycle_data));
+        _plSend.setPayload(PRIORITY::DATA, reinterpret_cast<void *>(&_cycle_data), sizeof(_cycle_data));
         _comms->writePayload(_plSend);
         _cycle_report_time = tnow;
     }

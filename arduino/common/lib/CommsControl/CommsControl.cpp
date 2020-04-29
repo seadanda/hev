@@ -88,7 +88,7 @@ void CommsControl::receiver() {
                             uint8_t address = *_comms_tmp.getAddress();
 
                             // to decide what kind of packets received
-                            PAYLOAD_TYPE type = getInfoType(address);
+                            PRIORITY type = getInfoType(address);
 
                             // switch on received data to know what to do - received ACK/NACK or other
                             switch(control & COMMS_CONTROL_TYPES) {
@@ -136,8 +136,8 @@ void CommsControl::receiver() {
 }
 
 bool CommsControl::writePayload(Payload &pl) {
-    PAYLOAD_TYPE payload_type = pl.getType();
-    if (payload_type != PAYLOAD_TYPE::UNSET) {
+    PRIORITY payload_type = pl.getType();
+    if (payload_type != PRIORITY::UNSET) {
         // create comms format using payload, the type is deduced from the payload itself
         CommsFormat comms = CommsFormat(pl);
 
@@ -243,7 +243,7 @@ void CommsControl::resendPacket(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> 
 
 
 // receiving anything of commsFormat
-bool CommsControl::receivePacket(PAYLOAD_TYPE &type) {
+bool CommsControl::receivePacket(PRIORITY &type) {
     _payload_tmp.unset();
     _payload_tmp.setPayload(type, reinterpret_cast<void *>(_comms_tmp.getInformation()), _comms_tmp.getInfoSize());
 
@@ -258,7 +258,7 @@ bool CommsControl::receivePacket(PAYLOAD_TYPE &type) {
 }
 
 // if FCS is ok, remove from queue
-void CommsControl::finishPacket(PAYLOAD_TYPE &type) {
+void CommsControl::finishPacket(PRIORITY &type) {
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue = getQueue(type);
 
     if (queue != nullptr && !queue->isEmpty()) {
@@ -274,27 +274,27 @@ void CommsControl::finishPacket(PAYLOAD_TYPE &type) {
     }
 }
 
-PAYLOAD_TYPE CommsControl::getInfoType(uint8_t &address) {
+PRIORITY CommsControl::getInfoType(uint8_t &address) {
     switch (address & PACKET_TYPE) {
         case PACKET_ALARM:
-            return PAYLOAD_TYPE::ALARM;
+            return PRIORITY::ALARM;
         case PACKET_CMD:
-            return PAYLOAD_TYPE::CMD;
+            return PRIORITY::CMD;
         case PACKET_DATA:
-            return PAYLOAD_TYPE::DATA;
+            return PRIORITY::DATA;
         default:
-            return PAYLOAD_TYPE::UNSET;
+            return PRIORITY::UNSET;
     }
 }
 
 // get link to queue according to packet format
-RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *CommsControl::getQueue(PAYLOAD_TYPE &type) {
+RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *CommsControl::getQueue(PRIORITY &type) {
     switch (type) {
-        case PAYLOAD_TYPE::ALARM:
+        case PRIORITY::ALARM:
             return &_ring_buff_alarm;
-        case PAYLOAD_TYPE::CMD:
+        case PRIORITY::CMD:
             return &_ring_buff_cmd;
-        case PAYLOAD_TYPE::DATA:
+        case PRIORITY::DATA:
             return &_ring_buff_data;
         default:
             return nullptr;
