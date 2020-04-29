@@ -63,10 +63,10 @@
 
 	    <div class="card-reading br-red">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">FIO<sub>2</sub></a>
+		<a class="small text-dark col-center" href="#">FIO<sub>2</sub> (cmH2O) </a>
               </div>
 			  <!-- <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading py-0" id = "fio2" value="62" type="number" readOnly disabled>%</div> -->
-			  <div class = "main-chart-container"><canvas id="example_gauge"></canvas></div>
+			  <div class = "main-chart-container"><canvas id="gauge_fio"></canvas></div>
 	  </div>
 
 	    <div class="card-reading">
@@ -82,9 +82,10 @@
 	
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">P<sub>Plateau</sub></a><br>
+		<a class="small text-dark col-center" href="#">P<sub>Plateau</sub> (cmH2O) </a><br>
 	      </div>
-	      <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading" id = "p_plateau" value=4.0 readOnly disabled>cmH2O</div>
+		  <!-- <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading" id = "p_plateau" value=4.0 readOnly disabled>cmH2O</div> -->
+		  <div class = "main-chart-container"><canvas id="gauge_p_plateau"></canvas></div>
 	  </div>
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
@@ -156,10 +157,10 @@
 {% block scripts %}
 
 <script type=text/javascript>
+/*
 	function update_variables() {
 	$.getJSON("live-data",
 		function (data) {
-/*
 		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer.toPrecision(5);
 		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale.toPrecision(5);
 	//document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer.toPrecision(5);
@@ -171,7 +172,7 @@
 		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient.toPrecision(5);
 		document.getElementById("fsm_state").innerHTML = data.fsm_state.toPrecision(1);
 		//document.getElementById("version").innerHTML = data.version.toPrecision(1); //Commented because not included in the html part
-*/
+
 	//document.getElementById("pressure_buffer").innerHTML = (data.pressure_buffer).toFixed(2);
 		//document.getElementById("pressure_inhale").innerHTML = (data.pressure_inhale).toFixed(2);
 //document.getElementById("temperature_buffer").innerHTML = (data.temperature_buffer).toFixed(2);
@@ -187,6 +188,7 @@
 	);
 	}
 	setInterval('update_variables()', 1000);
+*/	
 
   </script>
 
