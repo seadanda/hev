@@ -278,7 +278,7 @@
 			  
 	  
 	$(this).mousemove(function (e) {
-			  if (localStorage.getItem('unlocked')==1) {
+			  if (unlocked) {
 			  clearTimeout(lockTimer);
 			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  
