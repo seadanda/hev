@@ -40,7 +40,7 @@
 #define PACKET_SET   0x20 //set vs get ?
 
 // enum of all transfer types
-enum PRIORITY {
+enum PRIORITY : uint8_t {
     DATA  = PACKET_DATA,
     CMD   = PACKET_CMD,
     ALARM = PACKET_ALARM,

@@ -275,16 +275,8 @@ void CommsControl::finishPacket(PRIORITY &type) {
 }
 
 PRIORITY CommsControl::getInfoType(uint8_t &address) {
-    switch (address & PACKET_TYPE) {
-        case PACKET_ALARM:
-            return PRIORITY::ALARM;
-        case PACKET_CMD:
-            return PRIORITY::CMD;
-        case PACKET_DATA:
-            return PRIORITY::DATA;
-        default:
-            return PRIORITY::UNSET;
-    }
+    // return enum element corresponding to the address
+    return (PRIORITY)(address & PACKET_TYPE);
 }
 
 // get link to queue according to packet format
