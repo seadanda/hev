@@ -21,8 +21,8 @@ function last_results() {
           time_x = (-i/5).toFixed(2)
           initial_xaxis.push(time_x);
           //initial_xaxis.push(data[i]["timestamp"]);
-          initial_yaxis_var1.push(data[i]["pressure_buffer"]);
-          initial_yaxis_var2.push(data[i]["pressure_inhale"]);
+          initial_yaxis_var1.push(data[i]["airway_pressure"]);
+          initial_yaxis_var2.push(data[i]["volume"]);
         }
         //reverse because data is read from the other way
         initial_xaxis.reverse();
@@ -155,7 +155,7 @@ $(document).ready(function() {
       } 
     }
   });
-  requestDataVar1("pressure_buffer", "pressure_inhale");
+  requestDataVar1("airway_pressure", "volume");
 });
 
 
@@ -185,8 +185,8 @@ function updated_last_results(var1, var2) {
           time_x = (-i/5).toFixed(2)
           updated_xaxis.push(time_x);
           //initial_xaxis.push(data[i]["timestamp"]);
-          updated_yaxis_var1.push(data[i]["pressure_buffer"]);
-          updated_yaxis_var2.push(data[i]["pressure_buffer"]);
+          updated_yaxis_var1.push(data[i]["airway_pressure"]);
+          updated_yaxis_var2.push(data[i]["airway_pressure"]);
         }
         console.log(updated_xaxis);
         //reverse because data is read from the other way
