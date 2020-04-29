@@ -39,9 +39,9 @@ function init_results(){
             for (i=0; i<data.length; i++) {
 		var seconds = data[i]["timestamp"]/1000;
 		if ( seconds == "" ) continue;
-		initial_yaxis_pressure.push({x : seconds, y : data[i]["pressure_buffer"]});
-		initial_yaxis_volume.push({x : seconds, y : data[i]["pressure_inhale"]});
-		initial_yaxis_flow.push({x : seconds, y : data[i]["temperature_buffer"]});
+		initial_yaxis_pressure.push({x : seconds, y : data[i]["airway_pressure"]});
+		initial_yaxis_volume.push({x : seconds, y : data[i]["volume"]});
+		initial_yaxis_flow.push({x : seconds, y : data[i]["flow"]});
             }
             //reverse because data is read from the other way
             initial_xaxis.reverse();
@@ -73,9 +73,9 @@ function last_results() {
             var time_x = (-i/5).toFixed(2)
             initial_xaxis.push(time_x);
             //initial_xaxis.push(data[i]["timestamp"]);
-            initial_yaxis_pressure.push(data[i]["pressure_buffer"]);
-            initial_yaxis_volume.push(data[i]["pressure_inhale"]);
-            initial_yaxis_flow.push(data[i]["temperature_buffer"]);
+            initial_yaxis_pressure.push(data[i]["airway_pressure"]);
+            initial_yaxis_volume.push(data[i]["volume"]);
+            initial_yaxis_flow.push(data[i]["flow"]);
           }
           //reverse because data is read from the other way
           initial_xaxis.reverse();
@@ -98,8 +98,8 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-        fio_reading = (point["pressure_buffer"]).toFixed(0) ;
-        p_plateau_reading = (point["pressure_inhale"]).toFixed(0) ;
+        fio_reading = (point["airway_pressure"]).toFixed(0) ;
+        p_plateau_reading = (point["volume"]).toFixed(0) ;
         //console.log(fio_reading);
             if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
@@ -134,9 +134,9 @@ function requestChartVar() {
 		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - diff;
         }
 	    
-            chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
-            chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
-            chart_volume.data.datasets[0].data.push({ x : 0, y : point["pressure_inhale"]});
+            chart_pressure.data.datasets[0].data.push({x : 0, y : point["airway_pressure"]});
+            chart_flow.data.datasets[0].data.push({ x : 0, y : point["flow"]});
+            chart_volume.data.datasets[0].data.push({ x : 0, y : point["volume"]});
             
             chart_pressure.update();
             chart_flow.update();
