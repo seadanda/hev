@@ -22,6 +22,9 @@ class HEVClient(object):
     def __init__(self):
         self._alarms = []  # db for alarms
         self._values = None  # db for sensor values
+        self._readback = None  # db for sensor values
+        self._cycle = None  # db for sensor values
+        self._thresholds = None  # db for sensor values
         self._thresholds = []  # db for threshold settings
         self._polling = True  # keep reading data into db
         self._lock = threading.Lock()  # lock for the database
@@ -37,21 +40,38 @@ class HEVClient(object):
         # grab data from the socket as soon as it is available and dump it in the db
         while self._polling:
             try:
-                data = await reader.read(600)
-                if data[-1] == 0x00:
-                    data = data[:-1]
+                data = b''
+                while True:
+                    data += await reader.read(600)
+                    if data[-1] == 0x00:
+                        data = data[:-1]
+                        break
                 payload = json.loads(data.decode("utf-8"))
-                if payload["type"] == "broadcast":
+                if payload["type"] == "keepalive":
+                    #Still alive
+                    continue
+                elif payload["type"] == "broadcast":
                     with self._lock:
                         self._values = payload["sensors"]
-                        self._alarms = payload["alarms"]
-                elif payload["type"] == "keepalive":
-                    #Still alive
+                elif payload["type"] == "READBACK":
                     pass
+                    #with self._lock:
+                    #    self._readback = payload["READBACK"]
+                elif payload["type"] == "CYCLE":
+                    pass
+                    #with self._lock:
+                    #    self._cycle = payload["CYCLE"]
+                elif payload["type"] == "THRESHOLDS":
+                    with self._lock:
+                        self._thresholds = payload["THRESHOLDS"]
                 else:
-                    raise HEVPacketError(f"Invalid packet type: {payload['type']}")
+                    raise HEVPacketError("Invalid broadcast type")
+
+                self._alarms = payload["alarms"]
             except json.decoder.JSONDecodeError:
                 logging.warning(f"Could not decode packet: {data}")
+            except KeyError:
+                raise
 
         # close connection
         writer.close()
@@ -148,11 +168,6 @@ if __name__ == "__main__":
 
     time.sleep(2)
     print(f"Alarms: {hevclient.get_alarms()}")
-
-    # send commands:
-    time.sleep(1)
-    print("This one will fail since foo is not in the CMD_GENERAL enum:")
-    print(hevclient.send_cmd("GENERAL", "foo"))
 
     # print some more values
     for i in range(10):

@@ -16,26 +16,24 @@ class Dependant(object):
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
-        # logging.info(f"payload received: {payload}")
-        logging.info(f"payload received: {payload._fsm_state}")
-        #logging.info(f"payload received: {payload._readback_valve_o2_in} {payload._readback_valve_inhale} {payload._readback_valve_exhale} {payload._readback_valve_purge} {payload._fsm_state}")
+        logging.info(f"payload received: {payload}")
+        #logging.info(f"payload received: {payload.fsm_state}")
+        #logging.info(f"payload received: {payload.timestamp}")
+        #logging.info(f"payload received: {payload.readback_valve_o2_in} {payload.readback_valve_inhale} {payload.readback_valve_exhale} {payload.readback_valve_purge} {payload.fsm_state}")
         self._llipacket = payload.getDict() # returns a dict
         # pop from queue - protects against Dependant going down and not receiving packets
         self._lli.pop_payloadrecv()
 
 dep = Dependant(comms)
-start = 0x1
-stop =  0x2
 
 # initialise as start command, automatically executes toByteArray()
-cmd = CommandFormat(cmdType=CMD_TYPE.GENERAL.value, cmdCode=CMD_GENERAL.START.value, param=0)
-
+cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
 time.sleep(4)
 comms.writePayload(cmd)
 print('sent cmd start')
 while True:
     time.sleep(20)
-    cmd.cmdCode = stop # automatically executes toByteArray()
+    cmd.cmd_code = CMD_GENERAL.STOP.value # automatically executes toByteArray()
     comms.writePayload(cmd)
     print('sent cmd stop')
     pass

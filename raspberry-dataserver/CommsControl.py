@@ -36,12 +36,13 @@ class CommsControl():
         
         # needed to find packet frames
         self._received = []
+        self._receivedStart = 0
         self._foundStart = False
         self._timeLastTransmission = int(round(time.time() * 1000))
         
         # packet counter checker
-        self._sequenceSend    = 0
-        self._sequenceReceive = 0
+        self._sequence_send    = 0
+        self._sequence_receive = 0
         
         # initialize of the multithreading
         self._lockSerial = threading.Lock()
@@ -102,11 +103,11 @@ class CommsControl():
         with self._dvlock:
             if len(queue) > 0:
                 logging.debug(f'Queue length: {len(queue)}')
-                currentTime = int(round(time.time() * 1000))
-                if currentTime > (self._timeLastTransmission + timeout):
+                current_time = int(round(time.time() * 1000))
+                if current_time > (self._timeLastTransmission + timeout):
                     with self._lockSerial:
-                        self._timeLastTransmission = currentTime
-                        queue[0].setSequenceSend(self._sequenceSend)
+                        self._timeLastTransmission = current_time
+                        queue[0].setSequenceSend(self._sequence_send)
                         self.sendPacket(queue[0])
                     
     def getQueue(self, payload_type):
@@ -136,9 +137,9 @@ class CommsControl():
             # TODO: this could be written in more pythonic way
             # force read byte by byte
             self._received.append(byte)
-#             logging.debug(byte)
+#             logging.info(byte)
             # find starting flag of the packet
-            if not self._foundStart and byte == bytes([0x7E]):
+            if byte == bytes([0x7E]) and ((len(self._received) < self._receivedStart + 6) or not self._foundStart ):
                 self._foundStart    = True
                 self._receivedStart = len(self._received)
             # find ending flag of the packet
@@ -149,11 +150,11 @@ class CommsControl():
                     tmp_comms = CommsFormat.commsFromBytes(decoded)
                     if tmp_comms.compareCrc():
                         control     = tmp_comms.getData()[tmp_comms.getControl()+1]
-                        self._sequenceReceive = (tmp_comms.getData()[tmp_comms.getControl()] >> 1) & 0x7F
+                        self._sequence_receive = (tmp_comms.getData()[tmp_comms.getControl()] >> 1) & 0x7F
                         
                         # get type of payload and corresponding queue
                         payload_type = self.getInfoType(tmp_comms.getData()[tmp_comms.getAddress()])
-                        tmpQueue   = self.getQueue(payload_type)
+                        queue        = self.getQueue(payload_type)
 
                         # get type of packet
                         ctrl_flag    = control & 0x0F
@@ -163,9 +164,9 @@ class CommsControl():
                         elif ctrl_flag == 0x01:
                             logging.debug("Received ACK")
                             # received ACK
-                            self.finishPacket(tmpQueue)
+                            self.finishPacket(queue)
                         else:
-                            sequenceReceive = ((control >> 1) & 0x7F) + 1
+                            sequence_receive = ((control >> 1) & 0x7F) + 1
                             address = tmp_comms.getData()[tmp_comms.getAddress():tmp_comms.getControl()]
                             
                             if self.receivePacket(payload_type, tmp_comms):
@@ -173,8 +174,8 @@ class CommsControl():
                                 comms_response = CommsFormat.CommsACK(address = address[0])
                             else:
                                 logging.debug("Preparing NACK")
-                                comms_response = CommsFormat.CommsNACK(address = address)
-                            comms_response.setSequenceReceive(sequenceReceive)
+                                comms_response = CommsFormat.CommsNACK(address = address[0])
+                            comms_response.setSequenceReceive(sequence_receive)
                             self.sendPacket(comms_response)
                     
                 self._received.clear()
@@ -191,8 +192,7 @@ class CommsControl():
         elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
             tmp_comms = CommsFormat.generateData(payload)
         else:
-            return False        
-        tmp_comms.setInformation(payload)
+            return False
         
         with self._dvlock:
             queue = self.getQueue(payload_type)
@@ -211,25 +211,43 @@ class CommsControl():
             with self._dvlock:
                 if len(queue) > 0:
                     # 0x7F to deal with possible overflows (0 should follow after 127)
-                    if ((queue[0].getSequenceSend() + 1) & 0x7F) == self._sequenceReceive:
-                        self._sequenceSend = (self._sequenceSend + 1) % 128
+                    if ((queue[0].getSequenceSend() + 1) & 0x7F) == self._sequence_receive:
+                        self._sequence_send = (self._sequence_send + 1) % 128
                         queue.popleft()
         except:
             logging.debug("Queue is probably empty")
             
-    def receivePacket(self, payload_type, commsPacket):
+    # WIP: will be reworked
+    def receivePacket(self, payload_type, comms_packet):
         if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
             payload = CommsCommon.AlarmFormat()
         elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
             payload = CommsCommon.CommandFormat()
         elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
-            payload = CommsCommon.DataFormat()
+            # decode data type
+            data_type = comms_packet.getData()[comms_packet.getInformation() + 5]
+            if data_type == CommsCommon.PAYLOAD_TYPE.DATA:
+                payload = CommsCommon.DataFormat()
+            elif data_type == CommsCommon.PAYLOAD_TYPE.READBACK:
+                payload = CommsCommon.ReadbackFormat()
+            elif data_type == CommsCommon.PAYLOAD_TYPE.CYCLE:
+                payload = CommsCommon.CycleFormat()
+            elif data_type == CommsCommon.PAYLOAD_TYPE.THRESHOLDS:
+                # FIXME: nothing yet defined, TBD!!
+                return False
+            else:
+                return False
         else:
             return False
         
-        payload.fromByteArray(commsPacket.getData()[commsPacket.getInformation():commsPacket.getFcs()])
-        self.payloadrecv = payload
-        return True
+        try:
+            payload.fromByteArray(comms_packet.getData()[comms_packet.getInformation():comms_packet.getFcs()])
+        except Exception:
+            raise
+        else:
+            self.payloadrecv = payload
+            return True
+        return False
 
     # escape any 0x7D or 0x7E with 0x7D and swap bit 5
     def escapeByte(self, byte):
@@ -297,7 +315,7 @@ if __name__ == "__main__" :
 
         def update_llipacket(self, payload):
             if payload.getType() == CommsCommon.PAYLOAD_TYPE.DATA:
-                logging.info(f"payload received: {payload._fsm_state}")
+                logging.info(f"payload received: {payload.fsm_state}")
 
             self._llipacket = payload
             # pop from queue - protects against Dependant going down and not receiving packets
@@ -311,20 +329,11 @@ if __name__ == "__main__" :
         except:
             pass
 
-    comms_ctrl = CommsControl(port = port)
-    example = Dependant(comms_ctrl)
+    comms   = CommsControl(port = port)
+    example = Dependant(comms)
     
-    payload_send = CommsCommon.CommandFormat(CommsCommon.CMD_TYPE.GENERAL.value, CommsCommon.CMD_GENERAL.START.value, param=0)
-    comms_ctrl.writePayload(payload_send)
-
-#     commsCtrl.payloadrecv = "testpacket1"
-#     commsCtrl.payloadrecv = "testpacket2"
-
-#     LEDs = [3,5,7]
-#     for _ in range(30):
-#         for led in LEDs:
-#             commsCtrl.registerData(led)
-#         time.sleep(5)
-
-#     while True:
-#         time.sleep(60)
+    cmd = CommsCommon.CommandFormat(cmd_type = CommsCommon.CMD_TYPE.GENERAL.value, cmd_code = CommsCommon.CMD_GENERAL.START.value, param=0)
+    time.sleep(4)
+    comms.writePayload(cmd)
+    print('sent cmd start')
+    print(cmd)

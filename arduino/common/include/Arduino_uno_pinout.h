@@ -16,7 +16,7 @@ const int pin_pressure_inhale         = A3;
 const int pin_pressure_patient        = A4;
 const int pin_temperature_buffer      = A5;
 // const int pin_pressure_o2_supply      = A6;
-// const int pin_pressure_o2_regulated   = A7;
+const int pin_pressure_o2_regulated   = A7;
 // const int pin_pressure_diff_patient   = A8;
 
     // leds
