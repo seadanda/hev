@@ -43,18 +43,22 @@ void UILoop::reportFastReadings()
     if (tnow - _fast_report_time > _fast_report_timeout)
     {
 
-        readings<uint16_t> readings_avgs = _breathing_loop->getReadingAverages();
-        _fast_data.timestamp = static_cast<uint32_t>(readings_avgs.timestamp);
+	    // TO SWITCH BETWEEN RAW AND MILLIBAR DATA UNCOMMENT BELOW
+        readings<int16_t> readings = _breathing_loop->getReadingAverages();
+        //readings<int16_t> readings = _breathing_loop->getRawReadings();
+
+        _fast_data.timestamp = static_cast<uint32_t>(readings.timestamp);
         _fast_data.fsm_state = _breathing_loop->getFsmState();
-        _fast_data.pressure_air_supply = readings_avgs.pressure_air_supply;
-        _fast_data.pressure_air_regulated = readings_avgs.pressure_air_regulated;
-        _fast_data.pressure_buffer = readings_avgs.pressure_buffer;
-        _fast_data.pressure_inhale = readings_avgs.pressure_inhale;
-        _fast_data.pressure_patient = readings_avgs.pressure_patient;
-        _fast_data.temperature_buffer = readings_avgs.temperature_buffer;
-        _fast_data.pressure_o2_supply = readings_avgs.pressure_o2_supply;
-        _fast_data.pressure_o2_regulated = readings_avgs.pressure_o2_regulated;
-        _fast_data.pressure_diff_patient = readings_avgs.pressure_diff_patient;
+
+        _fast_data.pressure_air_supply    = readings.pressure_air_supply;
+        _fast_data.pressure_air_regulated = readings.pressure_air_regulated;
+        _fast_data.pressure_buffer        = readings.pressure_buffer;
+        _fast_data.pressure_inhale        = readings.pressure_inhale;
+        _fast_data.pressure_patient       = readings.pressure_patient;
+        _fast_data.temperature_buffer     = readings.temperature_buffer;
+        _fast_data.pressure_o2_supply     = readings.pressure_o2_supply;
+        _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
+        _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
 
         _plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_plSend);

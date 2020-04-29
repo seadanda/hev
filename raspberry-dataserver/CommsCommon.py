@@ -189,7 +189,7 @@ class BaseFormat():
 @dataclass
 class DataFormat(BaseFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
+    _dataStruct = Struct("<BIBBhhhhhhhhhhhfff")
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables

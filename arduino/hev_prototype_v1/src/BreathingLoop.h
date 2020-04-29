@@ -25,7 +25,9 @@ public:
     void doReset();
     bool getRunning();
     void updateReadings();
-    readings<uint16_t> getReadingAverages();
+    void updateRawReadings();
+    readings<int16_t> getReadingAverages();
+    readings<int16_t> getRawReadings();
     float getRespiratoryRate();
     float getFlow();
     float getIERatio();
@@ -84,8 +86,8 @@ private:
     uint32_t _calib_N;
     uint32_t _calib_time;
     uint32_t _calib_timeout;
-    readings<uint32_t> _calib_sums;
-    readings<uint16_t> _calib_avgs;
+    readings<int32_t> _calib_sums;
+    readings<int16_t> _calib_avgs;
 
     // timeouts
     uint32_t calculateDurationExhale();
@@ -93,8 +95,9 @@ private:
 
     // readings
     void resetReadingSums();
-    readings<uint32_t> _readings_sums; // 32 bit due to possible analog read overflow
-    readings<uint16_t> _readings_avgs;
+    readings<int32_t> _readings_sums; // 32 bit due to possible analog read overflow
+    readings<int16_t> _readings_avgs;
+    readings<int16_t> _readings_raw;
     bool     _readings_reset;
     uint32_t _readings_N;
     uint32_t _readings_time;

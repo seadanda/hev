@@ -138,17 +138,17 @@ struct fast_data_format {
     uint32_t timestamp              = 0;
     uint8_t  data_type              = DATA_TYPE::FAST;
     uint8_t  fsm_state              = 0; //UNKNOWN
-    uint16_t pressure_air_supply    = 0;
-    uint16_t pressure_air_regulated = 0;
-    uint16_t pressure_o2_supply     = 0;
-    uint16_t pressure_o2_regulated  = 0;
-    uint16_t pressure_buffer        = 0;
-    uint16_t pressure_inhale        = 0;
-    uint16_t pressure_patient       = 0;
-    uint16_t temperature_buffer     = 0;
-    uint16_t pressure_diff_patient  = 0;
-    uint16_t ambient_pressure       = 0;
-    uint16_t ambient_temperature    = 0;
+    int16_t pressure_air_supply    = 0;
+    int16_t pressure_air_regulated = 0;
+    int16_t pressure_o2_supply     = 0;
+    int16_t pressure_o2_regulated  = 0;
+    int16_t pressure_buffer        = 0;
+    int16_t pressure_inhale        = 0;
+    int16_t pressure_patient       = 0;
+    int16_t temperature_buffer     = 0;
+    int16_t pressure_diff_patient  = 0;
+    int16_t ambient_pressure       = 0;
+    int16_t ambient_temperature    = 0;
     float airway_pressure           = 0;
     float flow                      = 0;
     float volume                    = 0;
@@ -281,7 +281,7 @@ struct alarm_thresholds {
 
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
 void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
-uint16_t adcToMillibar(uint16_t adc, uint16_t offset = 0);
+int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{

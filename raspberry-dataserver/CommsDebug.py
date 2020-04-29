@@ -3,10 +3,23 @@ from CommsControl import CommsControl
 from CommsCommon import *
 import logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+from serial.tools import list_ports
 import sys
 import time
 
-comms = CommsControl(port = sys.argv[1])
+port_device = "" 
+for port in list_ports.comports():
+    vidpid = ""
+    if port.pid != None and port.vid != None:
+        vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
+        print(vidpid)
+    if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
+        port_device = port.device 
+    elif vidpid == "10C4:EA60" :
+        port_device = port.device 
+    elif len(sys.argv) > 1:
+        port_device = sys.argv[1]
+comms = CommsControl(port = port_device)
 
 
 class Dependant(object):
