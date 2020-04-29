@@ -28,6 +28,10 @@ function setChartXaxisRange(min,max){
     
 }
 
+
+var fillGauges = new Boolean(document.getElementById("example_gauge"));
+
+
 function init_results(){
     $.getJSON({
         url: '/last_N_data',
@@ -94,10 +98,11 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-        fio_reading = (point["pressure_buffer"]).toFixed(0) ;
-        //console.log(fio_reading);
-        fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
-
+	    if(fillGauges == true){
+		fio_reading = (point["pressure_buffer"]).toFixed(0) ;
+		//console.log(fio_reading);
+		fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
+	    }
         var seconds = point["timestamp"]/1000;
 	    // get difference between last time stamp and this and apply to existing points
 	    var diff = 0;
@@ -134,7 +139,7 @@ function requestChartVar() {
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
-            fio_gauge.update();
+            if (fillGauges == true) fio_gauge.update();
 
         },
         cache: false
@@ -373,7 +378,7 @@ $(document).ready(function() {
     });
 });
 
-
+if (fillGauges == true){
 var ctx = document.getElementById("example_gauge").getContext("2d");
 fio_gauge = new Chart(ctx, {
 	type: "tsgauge",
@@ -392,4 +397,5 @@ fio_gauge = new Chart(ctx, {
 		events: []
 	}
 });
+}
 
