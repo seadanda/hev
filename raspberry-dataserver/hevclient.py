@@ -54,13 +54,11 @@ class HEVClient(object):
                     with self._lock:
                         self._values = payload["sensors"]
                 elif payload["type"] == "READBACK":
-                    pass
-                    #with self._lock:
-                    #    self._readback = payload["READBACK"]
+                    with self._lock:
+                        self._readback = payload["READBACK"]
                 elif payload["type"] == "CYCLE":
-                    pass
-                    #with self._lock:
-                    #    self._cycle = payload["CYCLE"]
+                    with self._lock:
+                        self._cycle = payload["CYCLE"]
                 elif payload["type"] == "THRESHOLDS":
                     with self._lock:
                         self._thresholds = payload["THRESHOLDS"]
