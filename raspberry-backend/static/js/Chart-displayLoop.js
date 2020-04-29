@@ -16,13 +16,9 @@ function requestChartVar() {
 		chart_VF.data.datasets[1].data.shift();
 		chart_PF.data.datasets[1].data.shift();
 	    }
-	    // point labelled as: (stealing definitions from Chart-display.js)
-	    // Pressure = pressure_buffer
-	    // Flow = pressure_inhale ??
-	    // Volume = temperature_buffer !!?
-	    var pressure = point["pressure_buffer"];
-	    var volume = point["temperature_buffer"];
-	    var flow = point["pressure_inhale"];
+	    var pressure = point["pressure_airflow"];
+	    var volume = point["volume"];
+	    var flow = point["flow"];
 
 	    // to quote the AAMI: 
 	    //For Pressure-Volume loops, the graph

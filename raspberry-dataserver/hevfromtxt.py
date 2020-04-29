@@ -38,11 +38,10 @@ class hevfromtxt():
         while True:
             # directly setting private member variables in this edge case
             payload = CommsCommon.DataFormat()
-            payload._version = payload._RPI_VERSION
-            payload._timestamp = time_offset + self._timestamp[self._pos] * 1000  # timestamp in ms
-            payload._pressure_buffer = self._pressure[self._pos]
-            payload._pressure_inhale = self._volume[self._pos]
-            payload._temperature_buffer = self._flow[self._pos]
+            payload.timestamp = int(time_offset + self._timestamp[self._pos] * 1000)
+            payload.airway_pressure = self._pressure[self._pos]
+            payload.volume = self._volume[self._pos]
+            payload.flow = self._flow[self._pos]
             self.payloadrecv = payload
 
             if self._pos + self._increment < self._length:

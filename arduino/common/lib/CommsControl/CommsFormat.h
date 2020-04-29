@@ -19,13 +19,13 @@ public:
         _crc         = other._crc;
         _packet_size = other._packet_size;
         _info_size   = other._info_size;
-        memcpy(_data, other._data, CONST_MAX_SIZE_PACKET);
+        memcpy(_data, other._data, COMMS_MAX_SIZE_PACKET);
     }
     CommsFormat& operator=(const CommsFormat& other) {
         _crc         = other._crc;
         _packet_size = other._packet_size;
         _info_size   = other._info_size;
-        memcpy(_data, other._data, CONST_MAX_SIZE_PACKET);
+        memcpy(_data, other._data, COMMS_MAX_SIZE_PACKET);
 
         return *this;
     }
@@ -33,8 +33,8 @@ public:
     uint8_t* getData()    { return _data; }
     uint8_t  getSize()    { return _packet_size; }
 
-    void setAddress(uint8_t* address) {assignBytes(getAddress(), address, 1); }
-    void setControl(uint8_t* control) {assignBytes(getControl(), control, 2); }
+    void setAddress(uint8_t* address, bool calcCrc = true) {_address = *address; assignBytes(getAddress(), address, 1, calcCrc); }
+    void setControl(uint8_t* control, bool calcCrc = true) {_control = *control; assignBytes(getControl(), control, 2, calcCrc); }
     void setInformation(Payload *pl);
 
     void assignBytes(uint8_t* target, uint8_t* source, uint8_t size, bool calcCrc = true);
@@ -66,9 +66,12 @@ public:
 private:
     void init(uint8_t info_size = 0, uint8_t address = 0x00, uint16_t control = 0x0000);
 
-    uint8_t  _data[CONST_MAX_SIZE_PACKET];
+    uint8_t  _data[COMMS_MAX_SIZE_PACKET];
     uint8_t  _packet_size;
     uint8_t  _info_size;
+
+    uint8_t  _address;
+    uint16_t _control;
     uint16_t _crc;
 };
 
