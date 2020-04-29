@@ -112,7 +112,7 @@
       <div class = "lock">
       <a class="unlock" id="toggle_lock" onclick="toggle_lock()">
 	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="fa-lock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-	    <path class="path-icon" id = "path-locked-main" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
+	    <path class="path-icon transparent" id = "path-locked-main" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
 	    <path class="path-icon transparent" id="path-unlocked-main" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
 	  </svg>
 	  </a>
@@ -132,8 +132,26 @@
 	{% endblock %}
 	<script>
 
-	  var select_fields = document.getElementsByClassName("select-container");
-	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = true;}
+	  var lockTimer;
+	  var idleTimer;
+	  var unlocked = new Boolean(0);
+	  if (sessionStorage.getItem("unlocked")){
+	  if (sessionStorage.getItem("unlocked") == 1 ){unlocked = Boolean(1);}
+	  else {unlocked = Boolean(0);}
+
+	  }
+
+	  //our default is locked, but if we load and the unlock is set, unlock page
+	  window.onload = function(){
+	  if (unlocked) {
+	  unlock();
+	  }
+	  else{
+	  lock(); // should be locked already, this mainly tidies up the lock graphic
+	  }
+	  };
+
+			       
 	  function cmdNotification(input_cmd){
 		window.createNotification({
 			closeOnClick: 1,
@@ -148,22 +166,13 @@
 	  }
 
 
-	  var lockTimer;
-	  var idleTimer;
-          // stores lock state to pass between pages using the Web Storage API
-          if( !localStorage.getItem('unlocked') ){ // not yet defined
-            localStorage.setItem('unlocked',0);
-          }
-
-          window.addEventListener('load', (event) => {
-	    // on page load check locked state
-            if( localStorage.getItem('unlocked') == 1 ){ unlock(); }
-          });
-
+	  //timer only to be used if we're not on our main page
 	  {% if not fan_active %}
-	  idleTimer = setTimeout( idleRedirect, 5000 );
+	  idleTimer = setTimeout( idleRedirect, 10000 );
 	  {% endif %}
 	  function idleRedirect(){
+	  //reset to locked before idle redirect
+	  sessionStorage.setItem("unlocked",0);
 	  window.location.href = "/";
 	  }
 	  
@@ -220,8 +229,7 @@
 	  }
 	  var alarmInterval = setInterval('update_alarms()', 1000);
 
-	  function show_easy_numpad_wrapper(thisElement){
-	    if (thisElement.disabled == false && thisElement.readOnly == false) {
+	  function show_easy_numpad_wrapper(thisElement){	    if (thisElement.disabled == false && thisElement.readOnly == false) {
 	       show_easy_numpad(thisElement);
 	    }
 	  }
@@ -233,18 +241,17 @@
 	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = false;}
 	  var l = document.getElementsByClassName("nav-link-href");
 	  for (i = 0; i < l.length; i++) {l[i].classList.remove("nav-link-disabled");}
-
 			  var el = document.getElementById("path-locked-main");
 			  el.classList.add("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.remove("transparent");
-			  localStorage.setItem('unlocked',1);
+			  unlocked = Boolean(true);
+			  sessionStorage.setItem("unlocked",1);
 			  clearTimeout(lockTimer);
 			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  }
 	  
 			  function lock() {
-
 			  clearTimeout(lockTimer);
 			  var x = document.getElementsByClassName("input-editable");
 			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
@@ -257,12 +264,12 @@
 			  el.classList.remove("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.add("transparent");
-					  localStorage.setItem('unlocked',0);
+			  unlocked = Boolean(false);
+			  sessionStorage.setItem("unlocked",false);
 					  }
 					  function toggle_lock() {
 					  setTimeout(function(){
-					  var x = document.getElementsByClassName("input-editable");
-			  if ( x.length > 0 && x[0].readOnly == false ){lock();}
+					  if (unlocked == true) {lock();}
 			  else{ unlock() ; }
 			  },500);
 			  }
@@ -284,8 +291,7 @@
 			  });
 			  
 			  $(this).keypress(function (e) {
-			  console.log('keypress');
-			  if (localStorage.getItem('unlocked')==1) {
+			  if (unlocked) {
 			  clearTimeout(lockTimer);
 			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  }
