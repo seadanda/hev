@@ -90,8 +90,8 @@
 		    </div>
             <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
-		    <input type="submit" name="start" value="START" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
-			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input>
+		    <input type="submit" name="start" value="START" onclick="cmdNotification(this.value)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
 
 		    <!-- <input type="submit" name="reset" value="RESET" onclick="cmdNotification(this.value)" class="sb-nav-button py-1 mb-1"></input> -->
 			</div>
@@ -131,7 +131,9 @@
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
-
+	  var lockTimeOut = 20000; // 20 seconds lock time out
+	  var idleTimeOut = 60000; // one minute idle time out
+	  
 	  var lockTimer;
 	  var idleTimer;
 	  var unlocked = new Boolean(0);
@@ -152,7 +154,8 @@
 	  };
 
 			       
-	  function cmdNotification(input_cmd){
+	  function cmdNotification(element){
+	  if (!element.disabled){
 		window.createNotification({
 			closeOnClick: 1,
 			displayCloseButton: 0,
@@ -161,14 +164,15 @@
 			theme: "info"
 		})({
 			title: "Issuing command",
-			message: "Sent the command " + input_cmd 
+			message: "Sent the command " + element.value
 	  });
+	  }
 	  }
 
 
 	  //timer only to be used if we're not on our main page
 	  {% if not fan_active %}
-	  idleTimer = setTimeout( idleRedirect, 10000 );
+	  idleTimer = setTimeout( idleRedirect, idleTimeOut );
 	  {% endif %}
 	  function idleRedirect(){
 	  //reset to locked before idle redirect
@@ -237,7 +241,7 @@
 	  function unlock(){
 	  var x = document.getElementsByClassName("input-editable");
 	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
-	  var select_fields = document.getElementsByClassName("select-container");											
+	  var select_fields = document.getElementsByClassName("lockable");			
 	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = false;}
 	  var l = document.getElementsByClassName("nav-link-href");
 	  for (i = 0; i < l.length; i++) {l[i].classList.remove("nav-link-disabled");}
@@ -248,7 +252,7 @@
 			  unlocked = Boolean(true);
 			  sessionStorage.setItem("unlocked",1);
 			  clearTimeout(lockTimer);
-			  lockTimer = setTimeout('timeOutLock()', 10000);
+			  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
 			  }
 	  
 			  function lock() {
@@ -256,7 +260,7 @@
 			  var x = document.getElementsByClassName("input-editable");
 			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
 					  
-	  var select_fields = document.getElementsByClassName("select-container");											
+	var select_fields = document.getElementsByClassName("lockable");											
 	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = true;}
 					  var l = document.getElementsByClassName("nav-link-href");
 					  for (i = 0; i < l.length; i++) {l[i].classList.add("nav-link-disabled");}
@@ -280,24 +284,24 @@
 	$(this).mousemove(function (e) {
 			  if (unlocked) {
 			  clearTimeout(lockTimer);
-			  lockTimer = setTimeout('timeOutLock()', 10000);
+			  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
 			  
 			  }
 			  
 			  {% if not fan_active %}
 			  clearTimeout(idleTimer);
-			  idleTimer = setTimeout( idleRedirect, 5000 );
+			  idleTimer = setTimeout( idleRedirect, idleTimeOut );
 			  {% endif %}
 			  });
 			  
 			  $(this).keypress(function (e) {
 			  if (unlocked) {
 			  clearTimeout(lockTimer);
-			  lockTimer = setTimeout('timeOutLock()', 10000);
+			  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
 			  }
 			  {% if not fan_active %}
 			  clearTimeout(idleTimer);
-			  idleTimer = setTimeout( idleRedirect, 5000 );
+			  idleTimer = setTimeout( idleRedirect, idleTimeOut );
 			  {% endif %}
 			  });
 

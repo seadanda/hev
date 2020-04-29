@@ -29,10 +29,10 @@
 	      
 	      <div class = "row">
 		  <div class = "range-button-container ml-auto mr-auto">
-		    <input type="button" class="sb-nav-button" name="fivesecs" value="5s" onclick="setChartXaxisRange(-5,0)">
-		    <input type="button" class="sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange(-30,0)">
-		    <input type="button" class="sb-nav-button" name="sixtysecs" value="60s" onclick="setChartXaxisRange(-60,0)">
-		    <input type="button" class="sb-nav-button" name="ninetysecs" value="90s" onclick="setChartXaxisRange(-90,0)">
+		    <input type="button" class="lockable sb-nav-button" name="fivesecs" value="5s" onclick="setChartXaxisRange_wrapper(this,-5,0)" disabled>
+		    <input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange_wrapper(this,-30,0)" disabled>
+		    <input type="button" class="lockable sb-nav-button" name="sixtysecs" value="60s" onclick="setChartXaxisRange_wrapper(this,-60,0)" disabled>
+		    <input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartXaxisRange_wrapper(this,-90,0)" disabled>
 		  </div>
 	      </div>
       </div>
@@ -45,7 +45,7 @@
               </div>
 	      <!--<div class="small ml-auto mr-auto">PC-A/C</div>-->
               <div class="card-body px-1 py-1">
-		<div class = "select-container" disabled>
+		<div class = "select-container lockable" disabled>
 		  <select class = "input-reading ml-auto mr-auto input-editable pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
 		  <option value = ""></option>
 		  <optgroup label = "Pressure Control Modes">
@@ -200,11 +200,15 @@
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
 
 <script>
+  function setChartXaxisRange_wrapper(element,min,max){
+  if (!element.disabled){ setChartXaxisRange(min,max);  }
+  }
 
-pickout.to({
-el:'.pickout',
-theme:'MySelector'
-});
+  
+  pickout.to({
+  el:'.pickout',
+  theme:'MySelector'
+  });
 
 </script>
 

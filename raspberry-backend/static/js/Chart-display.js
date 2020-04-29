@@ -143,9 +143,9 @@ function requestChartVar() {
 		    chart_volume.data.datasets[0].data[i]['x'] = chart_volume.data.datasets[0].data[i]['x'] - diff;
 		}
 		
-		chart_pressure.data.datasets[0].data.push({x : 0, y : point["pressure_buffer"]});
-		chart_flow.data.datasets[0].data.push({ x : 0, y : point["temperature_buffer"]});
-		chart_volume.data.datasets[0].data.push({ x : 0, y : point["pressure_inhale"]});
+		chart_pressure.data.datasets[0].data.push({x : 0, y : point["airway_pressure"]});
+		chart_flow.data.datasets[0].data.push({ x : 0, y : point["flow"]});
+		chart_volume.data.datasets[0].data.push({ x : 0, y : point["volume"]});
 		
 		chart_pressure.update();
 		chart_flow.update();
