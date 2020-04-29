@@ -150,8 +150,16 @@
 
 	  var lockTimer;
 	  var idleTimer;
-	  var unlocked = Boolean(false);
-	  
+          // stores lock state to pass between pages using the Web Storage API
+          if( !localStorage.getItem('unlocked') ){ // not yet defined
+            localStorage.setItem('unlocked',0);
+          }
+
+          window.addEventListener('load', (event) => {
+	    // on page load check locked state
+            if( localStorage.getItem('unlocked') == 1 ){ unlock(); }
+          });
+
 	  {% if not fan_active %}
 	  idleTimer = setTimeout( idleRedirect, 5000 );
 	  {% endif %}
@@ -230,7 +238,7 @@
 			  el.classList.add("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.remove("transparent");
-			  unlocked = 1;
+			  localStorage.setItem('unlocked',1);
 			  clearTimeout(lockTimer);
 			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  }
@@ -249,7 +257,7 @@
 			  el.classList.remove("transparent");
 			  var el2 = document.getElementById("path-unlocked-main");
 			  el2.classList.add("transparent");
-					  unlocked = 0;
+					  localStorage.setItem('unlocked',0);
 					  }
 					  function toggle_lock() {
 					  setTimeout(function(){
@@ -263,7 +271,7 @@
 			  
 	  
 	$(this).mousemove(function (e) {
-			  if (unlocked) {
+			  if (localStorage.getItem('unlocked')==1) {
 			  clearTimeout(lockTimer);
 			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  
@@ -277,7 +285,7 @@
 			  
 			  $(this).keypress(function (e) {
 			  console.log('keypress');
-			  if (unlocked) {
+			  if (localStorage.getItem('unlocked')==1) {
 			  clearTimeout(lockTimer);
 			  lockTimer = setTimeout('timeOutLock()', 10000);
 			  }
