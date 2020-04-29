@@ -98,11 +98,13 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-	    if(fillGauges == true){
-		fio_reading = (point["pressure_buffer"]).toFixed(0) ;
-		//console.log(fio_reading);
-		fio_gauge.data.datasets[0].gaugeData['value'] = fio_reading;
-	    }
+        fio_reading = (point["pressure_buffer"]).toFixed(0) ;
+        p_plateau_reading = (point["pressure_inhale"]).toFixed(0) ;
+        //console.log(fio_reading);
+            if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
+            if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
+
+
         var seconds = point["timestamp"]/1000;
 	    // get difference between last time stamp and this and apply to existing points
 	    var diff = 0;
@@ -139,8 +141,8 @@ function requestChartVar() {
             chart_pressure.update();
             chart_flow.update();
             chart_volume.update();
-            if (fillGauges == true) fio_gauge.update();
-
+            if ("fio_gauge" in obj) obj["fio_gauge"].update();
+            if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
         },
         cache: false
     });
@@ -378,8 +380,9 @@ $(document).ready(function() {
     });
 });
 
-if (fillGauges == true){
-var ctx = document.getElementById("example_gauge").getContext("2d");
+/*
+var ctx = document.getElementById("gauge_example").getContext("2d");
+>>>>>>> 08dee8e2c63b31e8bddfd3efe6c95962465009f0
 fio_gauge = new Chart(ctx, {
 	type: "tsgauge",
 	data: {
@@ -397,5 +400,32 @@ fio_gauge = new Chart(ctx, {
 		events: []
 	}
 });
+*/
+
+var obj = {};
+function create_gauge_chart(var_name) {
+    if (document.getElementById("gauge_"+var_name)){
+	var ctx = document.getElementById("gauge_"+var_name).getContext("2d");
+	obj[var_name + "_gauge"] = new Chart(ctx, {
+            renderTo: 'gauge_' + var_name,
+            type: "tsgauge",
+            data: {
+		datasets: [{
+                    backgroundColor: ["#0fdc63", "#fd9704", "#ff7143"],
+                    borderWidth: 0,
+                    gaugeData: {
+			value: 0,
+			valueColor: "#ff7143"
+                    },
+                    gaugeLimits: [0, 50, 100]
+		}]
+            },
+            options: {
+		events: []
+            }
+	});
+    }
 }
 
+
+["fio", "p_plateau"].forEach(create_gauge_chart);
