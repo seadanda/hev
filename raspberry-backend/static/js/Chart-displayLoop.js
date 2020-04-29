@@ -16,7 +16,7 @@ function requestChartVar() {
 		chart_VF.data.datasets[1].data.shift();
 		chart_PF.data.datasets[1].data.shift();
 	    }
-	    var pressure = point["pressure_airflow"];
+	    var pressure =  point["airway_pressure"];
 	    var volume = point["volume"];
 	    var flow = point["flow"];
 
