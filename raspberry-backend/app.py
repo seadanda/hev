@@ -215,7 +215,7 @@ def live_alarms():
     data["alarms"] = data_alarms
 
     if data_receiver is not None:
-        data["timestamp"] = data_receiver['timestamp']
+        data["timestamp"] = data_receiver['timestamp']/1000
     else:
         data["timestamp"] = "none"
 

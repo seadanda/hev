@@ -38,11 +38,19 @@
           <div class="col-md-12">
             <div class="card mb-6">
               <!--<div class="card-chart-header small ">Variable number 1</div>-->
-              <div class="card-body px-0 py-0"><canvas id="pressure_air_supply" width="100%" height="80px"></canvas></div>
+              <div class="card-body px-0 py-0"><canvas id="pressure_air_supply" width="100%" height="70px"></canvas></div>
             </div>
-          </div>
+		  </div>
+		  <div class = "range-button-container ml-auto mr-auto">
+			<input type="button" class="lockable sb-nav-button" name="fivesecs" value="5s" onclick="setChartXaxisRange_wrapper(this,-5,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange_wrapper(this,-30,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="sixtysecs" value="60s" onclick="setChartXaxisRange_wrapper(this,-60,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartXaxisRange_wrapper(this,-90,0)" disabled>
+		</div>			  
 	</div>
-      </div>
+
+	</div>
+
     
       <div class = "col-md-5 py-0 px-0 mr-0 pl-1">
 	<div class="row">

@@ -216,7 +216,7 @@
 
 	  function update_alarms() {
         $.getJSON("live-alarms", function (data) {
-	       if (data != null && data.alarms !== 'none') {
+	       if (data != null && data.alarms !== '') {
 	          document.getElementById("alarms").innerHTML = data.alarms;
 	          var el = document.getElementById("alarm_ul");
 	          el.classList.add("alarm-red");

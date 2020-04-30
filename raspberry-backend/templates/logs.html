@@ -72,7 +72,7 @@ function requestAlarms() {
   $.getJSON({
       url: '/live-alarms',
       success: function(data) {
-         if (data.alarms != "none") {
+         if (data.alarms != "") {
             console.log(data.alarms);
             var table = document.getElementById("HEV_logs");
             var row = table.insertRow(1);
@@ -130,7 +130,7 @@ document.getElementById('update_button').onclick = function(){
   success: function(data) {
     var table = document.getElementById("HEV_logs");
     for (let i = data.length-1; i >= data.length-10; i--) {
-      if (data[i]['alarms'] != "Anone") {
+      if (data[i]['alarms'] != "none") {
         var row = table.insertRow(1);
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
