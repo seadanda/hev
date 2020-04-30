@@ -16,7 +16,7 @@ ValvesController::ValvesController()
     _inhale.state = VALVE_STATE::CLOSED;
 
     _exhale.pin = pin_valve_exhale;
-    _exhale.proportional = false;
+    _exhale.proportional = true;
     _exhale.state = VALVE_STATE::CLOSED;
 
     _purge.pin = pin_valve_purge;
