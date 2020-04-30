@@ -5,6 +5,7 @@
 #endif
 // #include <MemoryFree.h>
 #include <Wire.h>
+#include <SPI.h>
 #include <Adafruit_MCP9808.h>
 #include <INA.h>
 #include "CommsControl.h"
@@ -41,8 +42,6 @@ void setup()
     ledcAttachPin(pin_buzzer, 3);  
     ledcAttachPin(pin_valve_inhale , pwm_chan_inhale);  
     ledcAttachPin(pin_valve_exhale , pwm_chan_exhale);  
-    pin_to_chan[pin_valve_inhale] = pwm_chan_inhale;
-    pin_to_chan[pin_valve_exhale] = pwm_chan_exhale;
 
 // map<int,int> pin_to_chan; // = { pin_valve_inhale : pwm_chan_inhale , pin_valve_exhale : pwm_chan_exhale};
 #else
@@ -54,7 +53,6 @@ void setup()
     pinMode(pin_valve_air_in, OUTPUT);
     pinMode(pin_valve_o2_in, OUTPUT);
     pinMode(pin_valve_purge, OUTPUT);
-    pinMode(pin_valve_atmosphere, OUTPUT);
 
     pinMode(pin_pressure_air_supply, INPUT);
     pinMode(pin_pressure_air_regulated, INPUT);
@@ -72,7 +70,7 @@ void setup()
     pinMode(pin_led_yellow, OUTPUT);
     pinMode(pin_led_red, OUTPUT);
 
-    pinMode(pin_buzzer, OUTPUT);
+    //pinMode(pin_buzzer, OUTPUT);
     pinMode(pin_button_0, INPUT);
 
     comms.beginSerial();
