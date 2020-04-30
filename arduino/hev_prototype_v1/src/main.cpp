@@ -60,6 +60,7 @@ void setup()
     pinMode(pin_pressure_air_regulated, INPUT);
     pinMode(pin_pressure_buffer, INPUT);
     pinMode(pin_pressure_inhale, INPUT);
+	pinMode(pin_valve_exhale, OUTPUT);
     pinMode(pin_pressure_patient, INPUT);
     pinMode(pin_temperature_buffer, INPUT);
 #ifdef HEV_FULL_SYSTEM
