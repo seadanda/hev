@@ -144,24 +144,17 @@ class HEVServer(object):
 
         while self._broadcasting:
             # wait for data from serial port
-            try:
-                # set timeout such that there is never pileup
-                await asyncio.wait_for(self._datavalid.wait(), timeout=0.05)
-
+            # set timeout such that there is never pileup
+            if not self._datavalid.is_set:
+                # make sure client is still connected
+                await asyncio.sleep(0.05)
+                broadcast_packet = {"type": "keepalive"}
+            else:
                 # take lock of db and prepare packet
                 with self._dblock:
                     values: List[float] = self._values
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
-            except asyncio.TimeoutError:
-                # make sure client is still connected
-                broadcast_packet = {"type": "keepalive"}
-            except (ConnectionResetError, BrokenPipeError):
-                # Connection lost, stop trying to broadcast and free up socket
-                logging.warning(f"Connection lost with {addr!r}")
-                self._broadcasting = False
-                continue
-            else:
                 data_type = values.getType().name
                 if data_type == "DATA" : 
                     data_type = "broadcast"
@@ -211,7 +204,7 @@ class HEVServer(object):
             await server.serve_forever()
 
     async def create_sockets(self) -> None:
-        self._datavalid = asyncio.Event() # initially false
+        self._datavalid = threading.Event() # initially false
         self._dvlock.release()
         LOCALHOST = "127.0.0.1"
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
