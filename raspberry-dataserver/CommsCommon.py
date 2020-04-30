@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
 # VERSIONING
-# change version in BaseFormat for all data
+# change version in PayloadFormat for all data
 # i.e. if and of DataFormat, CommandFormat or AlarmFormat change
 # then change the RPI_VERSION
 
@@ -112,16 +112,16 @@ class BL_STATES(Enum):
 
 @unique
 class PAYLOAD_TYPE(IntEnum):
+    UNSET      = 0
     DATA       = 1
     READBACK   = 2
     CYCLE      = 3
     THRESHOLDS = 4
     CMD        = 5
     ALARM      = 6
-    UNSET      = 7
 
 @dataclass
-class BaseFormat():
+class PayloadFormat():
     # class variables excluded from init args and output dict
     _RPI_VERSION: ClassVar[int] = field(default=0xA2, init=False, repr=False)
     _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
@@ -143,6 +143,21 @@ class BaseFormat():
         if self._autogen and key[0] != "_" and key != "version":
             self.toByteArray()
 
+    @classmethod
+    def fromByteArray(cls, rec_bytes):
+        """Automatically determine which subclass to initialise as"""
+        DATA_TYPE_TO_CLASS = {
+            1: DataFormat,
+            2: ReadbackFormat,
+            3: CycleFormat,
+            #4: ThresholdFormat,
+            5: CommandFormat,
+            6: AlarmFormat,
+        }
+        ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[0]]
+        data = ReturnType._dataStruct.unpack(rec_bytes[1:])
+        return ReturnType(*data)
+
     @property
     def byteArray(self) -> bytearray:
         self.toByteArray()
@@ -151,7 +166,7 @@ class BaseFormat():
     @byteArray.setter
     def byteArray(self, byte_array) -> None:
         try:
-            self.fromByteArray(byte_array)
+            #self.fromByteArray(byte_array)
             self._byteArray = byte_array
         except Exception:
             raise
@@ -163,12 +178,6 @@ class BaseFormat():
             for v in asdict(self).values()
         ])
 
-    # at the minute not generalised. needs to be overridden
-    def fromByteArray(self, byteArray: bytearray) -> None:
-        (self.version,
-        self.timestamp) = self._dataStruct.unpack(byteArray)
-        self._byteArray = byteArray
-
     # check for mismatch between pi and microcontroller version
     def checkVersion(self) -> bool:
         return self._RPI_VERSION == self.version
@@ -177,7 +186,7 @@ class BaseFormat():
         return len(self._byteArray)
 
     def getType(self) -> Any:
-        return self._type
+        return self._type.name if isinstance(self._type, IntEnum) else self._type
     
     def getDict(self) -> Dict:
         return {k: v.name if isinstance(v, IntEnum) or isinstance(v, Enum) else v for k, v in asdict(self).items()}
@@ -187,7 +196,7 @@ class BaseFormat():
 # fast data payload
 # =======================================
 @dataclass
-class DataFormat(BaseFormat):
+class DataFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
     _type = PAYLOAD_TYPE.DATA
@@ -247,7 +256,7 @@ class DataFormat(BaseFormat):
 # readback data payload
 # =======================================
 @dataclass
-class ReadbackFormat(BaseFormat):
+class ReadbackFormat(PayloadFormat):
     _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
     _type = PAYLOAD_TYPE.READBACK
 
@@ -322,7 +331,7 @@ class ReadbackFormat(BaseFormat):
 # cycle data payload
 # =======================================
 @dataclass
-class CycleFormat(BaseFormat):
+class CycleFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBfffffffffHHHHBHHB")
     _type = PAYLOAD_TYPE.CYCLE
@@ -383,7 +392,7 @@ class CycleFormat(BaseFormat):
 # cmd type payload
 # =======================================
 @dataclass
-class CommandFormat(BaseFormat):
+class CommandFormat(PayloadFormat):
     _dataStruct = Struct("<BIBBI")
     _type = PAYLOAD_TYPE.CMD
 
@@ -404,7 +413,7 @@ class CommandFormat(BaseFormat):
 # alarm type payload
 # =======================================
 @dataclass
-class AlarmFormat(BaseFormat):
+class AlarmFormat(PayloadFormat):
     _dataStruct = Struct("<BIBBI")
     _type = PAYLOAD_TYPE.ALARM
 
