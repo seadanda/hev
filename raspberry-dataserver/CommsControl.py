@@ -8,6 +8,7 @@ from serial.tools import list_ports
 
 import threading
 import time
+import copy
 
 import CommsFormat
 import CommsCommon
@@ -282,27 +283,32 @@ class CommsControl():
     # callback to dependants to read the received payload
     @property
     def payloadrecv(self):
-        return self._payloadrecv
+        with self._dvlock:
+            return self._payloadrecv
 
     @payloadrecv.setter
     def payloadrecv(self, payload):
-        self._payloadrecv.append(payload)
+        with self._dvlock:
+            self._payloadrecv.append(payload)
+            payloadrecv = copy.deepcopy(self._payloadrecv)
         logging.debug(f"Pushed {payload} to FIFO")
         for callback in self._observers:
             # peek at the leftmost item, don't pop until receipt confirmed
-            callback(self._payloadrecv[0])
+            callback(payloadrecv[0])
 
     def bind_to(self, callback):
         self._observers.append(callback)
 
     def pop_payloadrecv(self):
         # from callback. confirmed receipt, pop value
-        poppedval = self._payloadrecv.popleft()
+        with self._dvlock:
+            poppedval = self._payloadrecv.popleft()
+            payloadrecv = copy.deepcopy(self._payloadrecv)
         logging.debug(f"Popped {poppedval} from FIFO")
-        if len(self._payloadrecv) > 0:
+        if len(payloadrecv) > 0:
             # purge full queue if Dependant goes down when it comes back up
             for callback in self._observers:
-                callback(self._payloadrecv[0])
+                callback(payloadrecv[0])
         
 # start as interactive session to be able to send and receive
 if __name__ == "__main__" :
