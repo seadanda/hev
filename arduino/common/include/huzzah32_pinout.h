@@ -6,7 +6,7 @@
 const int pin_valve_air_in     = 13;  // A12
 const int pin_valve_o2_in      =  5;  // SCK
 const int pin_valve_purge      = 18;  // MOSI
-const int pin_valve_atmosphere = 12;  // A11 / OUTPUT ONLY
+const int pin_spare_1 = 12;  // A11 / OUTPUT ONLY
 
     // pwm pins
 const int pin_valve_inhale     = 21;  // GPIO ONLY

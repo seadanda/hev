@@ -6,7 +6,7 @@ const int pin_valve_o2_in      = 10;
 const int pin_valve_inhale     = 3;  // lab14
 const int pin_valve_exhale     = 9;  // lab14
 const int pin_valve_purge      = 6;
-const int pin_valve_atmosphere = 4;
+const int pin_spare_1 = 4;
 
     // adcs
 const int pin_pressure_air_supply     = A2;

@@ -29,7 +29,6 @@ public:
     readings<int16_t> getReadingAverages();
     readings<int16_t> getRawReadings();
     float getRespiratoryRate();
-    float getFlow();
     float getIERatio();
     float getMinuteVolume();
     ValvesController * getValvesController();
@@ -41,6 +40,9 @@ public:
     uint8_t inhaleTriggerEnabled();
     uint8_t exhaleTriggerEnabled();
 
+    float getFlow();
+    float getVolume(); 
+    float getAirwayPressure();
     states_durations &getDurations();
 
     // states
@@ -115,6 +117,10 @@ private:
     // calculations
     void updateTotalCycleDuration(uint16_t newtotal);
     uint16_t _total_cycle_duration[3];
+
+    float _flow;
+    float _volume;
+    float _airway_pressure;
 };
 
 

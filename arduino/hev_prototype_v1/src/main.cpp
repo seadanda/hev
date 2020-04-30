@@ -53,6 +53,7 @@ void setup()
     pinMode(pin_valve_air_in, OUTPUT);
     pinMode(pin_valve_o2_in, OUTPUT);
     pinMode(pin_valve_purge, OUTPUT);
+    pinMode(pin_spare_1, OUTPUT);
 
     pinMode(pin_pressure_air_supply, INPUT);
     pinMode(pin_pressure_air_regulated, INPUT);
@@ -70,8 +71,7 @@ void setup()
     pinMode(pin_led_yellow, OUTPUT);
     pinMode(pin_led_red, OUTPUT);
 
-    //pinMode(pin_buzzer, OUTPUT);
-    pinMode(pin_button_0, INPUT);
+    pinMode(pin_buzzer, OUTPUT);
 
     comms.beginSerial();
 }
@@ -81,6 +81,7 @@ void loop()
 
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
+
 
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
