@@ -199,7 +199,8 @@
 			gaugeHelper.applyGaugeConfig(chart.config);
 			chart.config.options.animation.onComplete = function(chartElement) {
 				gaugeHelper.updateGaugeDimensions();
-				gaugeHelper.animateArrow();
+				gaugeHelper.clearValueArrow();
+				gaugeHelper.renderValueArrow();
 			};
 			Chart.controllers.doughnut.prototype.initialize.apply(this, arguments);
 		},
