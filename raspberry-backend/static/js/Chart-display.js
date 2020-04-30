@@ -105,7 +105,10 @@ function requestChartVar() {
         fio_reading = (point["airway_pressure"]).toFixed(0) ;
         p_plateau_reading = (point["volume"]).toFixed(0) ;
         //console.log(fio_reading);
-            if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
+            if ("fio_gauge" in obj) {
+                obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
+                obj["fio_gauge"].update({duration:0,lazy: false})
+            }
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
 
 
@@ -158,7 +161,7 @@ function requestChartVar() {
         cache: false
     });
     // call it again after time in ms
-    setTimeout(requestChartVar, 200);
+    setTimeout(requestChartVar, 2000);
 }
 
 requestChartVar();
@@ -422,13 +425,13 @@ function create_gauge_chart(var_name) {
             type: "tsgauge",
             data: {
 		datasets: [{
-                    backgroundColor: ["#0fdc63", "#fd9704", "#ff7143"],
+                    backgroundColor: ["red", "rgba(20,20,20,0.2)", "red"],
                     borderWidth: 0,
                     gaugeData: {
 			value: 0,
-			valueColor: "#ff7143"
+			valueColor: "black"
                     },
-                    gaugeLimits: [0, 50, 100]
+                    gaugeLimits: [0, 10, 90, 100]
 		}]
             },
             options: {
