@@ -123,15 +123,15 @@ class PAYLOAD_TYPE(IntEnum):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int] = field(default=0xA2, init=False, repr=False)
-    _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
-    _dataStruct:  ClassVar[Any] = field(default=Struct("<BI"), init=False, repr=False)
-    _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]  = field(default=0xA2, init=False, repr=False)
+    _dataStruct:  ClassVar[Any]  = field(default=Struct("<BIB"), init=False, repr=False)
     _autogen:     ClassVar[bool] = field(default=False, init=False, repr=False)
+    _byteArray:   bytearray      = field(default=None, init=False, repr=False)
 
-    # class variables
-    version:   int = 0
-    timestamp: int = 0
+    # Meta information
+    version: int                         = 0
+    timestamp: int                       = 0
+    payload_type: ClassVar[PAYLOAD_TYPE] = PAYLOAD_TYPE.UNSET
 
     def __post_init__(self):
         self.toByteArray()
@@ -186,7 +186,7 @@ class PayloadFormat():
         return len(self._byteArray)
 
     def getType(self) -> Any:
-        return self._type.name if isinstance(self._type, IntEnum) else self._type
+        return self.payload_type.name if isinstance(self.payload_type, IntEnum) else self.payload_type
     
     def getDict(self) -> Dict:
         return {k: v.name if isinstance(v, IntEnum) or isinstance(v, Enum) else v for k, v in asdict(self).items()}
@@ -202,7 +202,6 @@ class DataFormat(PayloadFormat):
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
-    data_type: int              = 1
     fsm_state: BL_STATES        = BL_STATES.IDLE
     pressure_air_supply: int    = 0
     pressure_air_regulated: int = 0
@@ -228,7 +227,7 @@ class DataFormat(PayloadFormat):
         tmp_state = 0
         (self.version,
         self.timestamp,
-        _, # dummy to skip datatype
+        self.payload_type, # dummy to skip datatype
         tmp_state,
         self.pressure_air_supply,
         self.pressure_air_regulated,
@@ -258,9 +257,7 @@ class DataFormat(PayloadFormat):
 @dataclass
 class ReadbackFormat(PayloadFormat):
     _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
-    _type = PAYLOAD_TYPE.READBACK
 
-    data_type: int                = 2
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
     duration_buff_flush: int      = 0
@@ -297,7 +294,7 @@ class ReadbackFormat(PayloadFormat):
         #logging.info(binascii.hexlify(byteArray))
         (self.version,
         self.timestamp,
-        _, # dummy to skip datatype
+        self.payload_type, # dummy to skip datatype
         self.duration_calibration,
         self.duration_buff_purge,
         self.duration_buff_flush,
@@ -334,9 +331,7 @@ class ReadbackFormat(PayloadFormat):
 class CycleFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBfffffffffHHHHBHHB")
-    _type = PAYLOAD_TYPE.CYCLE
 
-    data_type: int                 = 3
     respiratory_rate: float        = 0.0
     tidal_volume: float            = 0.0
     exhaled_tidal_volume: float    = 0.0
@@ -362,7 +357,7 @@ class CycleFormat(PayloadFormat):
         #logging.info(binascii.hexlify(byteArray))
         (self.version,
         self.timestamp,
-        _, # dummy to skip datatype
+        self.payload_type, # dummy to skip datatype
         self.respiratory_rate,
         self.tidal_volume,
         self.exhaled_tidal_volume,
@@ -393,8 +388,7 @@ class CycleFormat(PayloadFormat):
 # =======================================
 @dataclass
 class CommandFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBI")
-    _type = PAYLOAD_TYPE.CMD
+    _dataStruct = Struct("<BIBBBI")
 
     cmd_type: int = 0
     cmd_code: int = 0
@@ -414,12 +408,11 @@ class CommandFormat(PayloadFormat):
 # =======================================
 @dataclass
 class AlarmFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBI")
-    _type = PAYLOAD_TYPE.ALARM
+    _dataStruct = Struct("<BIBBBI")
 
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
-    param: int      = 0
+    param: int = 0
 
     def fromByteArray(self, byteArray):
         alarm = 0
