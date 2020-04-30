@@ -40,7 +40,7 @@ class HEVClient(object):
         # grab data from the socket as soon as it is available and dump it in the db
         while self._polling:
             try:
-                data = await reader.readuntil(b'\0')
+                data = await reader.readuntil(separator=b'\0')
                 data = data[:-1] # snip off nullbyte
                 payload = json.loads(data.decode("utf-8"))
                 if payload["type"] == "keepalive":
@@ -92,13 +92,13 @@ class HEVClient(object):
             }
 
         logging.info(payload)
-        packet = json.dumps(payload).encode()
+        packet = json.dumps(payload).encode() + b'\0'
 
         writer.write(packet)
         await writer.drain()
 
         # wait for acknowledge
-        data = await reader.read_until(b'\0')
+        data = await reader.readuntil(separator=b'\0')
         data = data[:-1]
         try:
             data = json.loads(data.decode("utf-8"))

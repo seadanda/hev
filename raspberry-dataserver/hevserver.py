@@ -76,7 +76,7 @@ class HEVServer(object):
             
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # listen for queries on the request socket
-        data = await reader.read_until(b'\0')
+        data = await reader.readuntil(separator=b'\0')
         data = data[:-1] # snip off nullbyte
         request = json.loads(data.decode("utf-8"))
 
@@ -133,7 +133,7 @@ class HEVServer(object):
             payload = {"type": "nack"}
 
         # send reply and close connection
-        packet = json.dumps(payload).encode()
+        packet = json.dumps(payload).encode() + b'\0'
         writer.write(packet)
         await writer.drain()
         writer.close()
@@ -146,13 +146,15 @@ class HEVServer(object):
         while self._broadcasting:
             # wait for data from serial port
             # set timeout such that there is never pileup
-            if not self._datavalid.is_set:
+            if not self._datavalid.is_set():
                 # make sure client is still connected
                 await asyncio.sleep(0.05)
                 broadcast_packet = {"type": "keepalive"}
             else:
                 # take lock of db and prepare packet
                 with self._dblock:
+                    if self._values is None:
+                        continue # should never get here
                     values: List[float] = self._values
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
