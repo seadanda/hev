@@ -137,7 +137,7 @@ struct fast_data_format {
     uint8_t  version                = HEV_FORMAT_VERSION;
     uint32_t timestamp              = 0;
     uint8_t  data_type              = DATA_TYPE::FAST;
-    uint8_t  fsm_state              = 0; //UNKNOWN
+    uint8_t  fsm_state              = 0; //UNKNOWN  //1 byte
     int16_t pressure_air_supply    = 0;
     int16_t pressure_air_regulated = 0;
     int16_t pressure_o2_supply     = 0;
@@ -148,8 +148,8 @@ struct fast_data_format {
     int16_t temperature_buffer     = 0;
     int16_t pressure_diff_patient  = 0;
     int16_t ambient_pressure       = 0;
-    int16_t ambient_temperature    = 0;
-    float airway_pressure           = 0;
+    int16_t ambient_temperature    = 0;  // 2 bytes
+    float airway_pressure           = 0; // 4 bytes
     float flow                      = 0;
     float volume                    = 0;
 };

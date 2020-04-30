@@ -60,6 +60,12 @@ void UILoop::reportFastReadings()
         _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
         _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
 
+        _fast_data.flow = _breathing_loop->getFlow();
+        _fast_data.volume= _breathing_loop->getVolume();
+        _fast_data.airway_pressure= _breathing_loop->getAirwayPressure();
+
+
+
         _plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_plSend);
         _fast_report_time = tnow;

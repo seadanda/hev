@@ -33,6 +33,10 @@ BreathingLoop::BreathingLoop()
     _valve_purge_enable        = 1;
     _inhale_trigger_enable     = 0;   // params - associated val of peak flow
     _exhale_trigger_enable     = 0;
+
+    _flow = 0;
+    _volume = 0;
+    _airway_pressure = 0;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -113,6 +117,11 @@ void BreathingLoop::updateRawReadings()
         _readings_raw.pressure_o2_regulated    =analogRead(pin_pressure_o2_regulated)  ;
         _readings_raw.pressure_diff_patient    =analogRead(pin_pressure_diff_patient)  ;
 #endif
+
+// add Oscar code here:
+        _flow= -1;
+        _volume= -1;
+        _airway_pressure= -1;
     }
 }
 
@@ -135,6 +144,7 @@ float BreathingLoop::getRespiratoryRate(){
     return 60000.0/avg;
 }
 
+/*
 float BreathingLoop::getFlow(){
     float normal_volume = 1;
     float si_volume = (_readings_avgs.temperature_buffer / _readings_avgs.pressure_patient ) * (1013.25/273.15) * normal_volume;
@@ -166,7 +176,7 @@ float BreathingLoop::getFlow(){
     float rho = 1.42 * 1000; // density  1.2kg/m3 @ 25 deg
     */
 
-}
+//}
 
 float    BreathingLoop::getIERatio(){
     // TODO : check with Oscar/Xavier
@@ -498,4 +508,14 @@ void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
     _total_cycle_duration[0] = _total_cycle_duration[1];
     _total_cycle_duration[1] = _total_cycle_duration[2];
     _total_cycle_duration[2] = newtotal;
+}
+
+float BreathingLoop::getFlow(){
+    return _flow;
+}
+float BreathingLoop::getVolume(){
+    return _volume;
+}
+float BreathingLoop::getAirwayPressure(){
+    return _airway_pressure;
 }
