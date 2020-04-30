@@ -76,7 +76,8 @@ class HEVServer(object):
             
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # listen for queries on the request socket
-        data = await reader.read(300)
+        data = await reader.read_until(b'\0')
+        data = data[:-1] # snip off nullbyte
         request = json.loads(data.decode("utf-8"))
 
         # logging
