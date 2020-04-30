@@ -284,13 +284,13 @@ class CommsControl():
     @property
     def payloadrecv(self):
         with self._dvlock:
-            return self._payloadrecv
+            return list(self._payloadrecv)
 
     @payloadrecv.setter
     def payloadrecv(self, payload):
         with self._dvlock:
             self._payloadrecv.append(payload)
-            payloadrecv = copy.deepcopy(self._payloadrecv)
+            payloadrecv = list(self._payloadrecv)
         logging.debug(f"Pushed {payload} to FIFO")
         for callback in self._observers:
             # peek at the leftmost item, don't pop until receipt confirmed
@@ -303,7 +303,7 @@ class CommsControl():
         # from callback. confirmed receipt, pop value
         with self._dvlock:
             poppedval = self._payloadrecv.popleft()
-            payloadrecv = copy.deepcopy(self._payloadrecv)
+            payloadrecv = list(self._payloadrecv)
         logging.debug(f"Popped {poppedval} from FIFO")
         if len(payloadrecv) > 0:
             # purge full queue if Dependant goes down when it comes back up
