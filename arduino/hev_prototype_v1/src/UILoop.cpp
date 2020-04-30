@@ -79,7 +79,7 @@ void UILoop::reportReadbackValues()
     if (tnow - _readback_report_time > _readback_report_timeout)
     {
         bool vin_air, vin_o2, vpurge;
-        float vinhale, vexhale;
+        uint8_t vinhale, vexhale;
         ValvesController *valves_controller = _breathing_loop->getValvesController();
         valves_controller->getValves(vin_air, vin_o2, vinhale, vexhale, vpurge);
 
@@ -107,13 +107,13 @@ void UILoop::reportReadbackValues()
 
         _readback_data.valve_inhale_percent = 0;  //TODO
         _readback_data.valve_exhale_percent = 0;  //TODO
-        _readback_data.valve_inhale_percent = _breathing_loop->getValveInhalePercent();
-        _readback_data.valve_exhale_percent = _breathing_loop->getValveInhalePercent();
-        _readback_data.valve_air_in_enable  = _breathing_loop->valveAirInEnabled();
-        _readback_data.valve_o2_in_enable  = _breathing_loop->valveO2InEnabled();
-        _readback_data.valve_purge_enable  = _breathing_loop->valvePurgeEnabled();
-        _readback_data.inhale_trigger_enable = _breathing_loop->inhaleTriggerEnabled();
-        _readback_data.exhale_trigger_enable = _breathing_loop->exhaleTriggerEnabled();
+        _readback_data.valve_inhale_percent  = valves_controller->getValveInhalePercent();
+        _readback_data.valve_exhale_percent  = valves_controller->getValveInhalePercent();
+        _readback_data.valve_air_in_enable   = valves_controller->valveAirInEnabled();
+        _readback_data.valve_o2_in_enable    = valves_controller->valveO2InEnabled();
+        _readback_data.valve_purge_enable    = valves_controller->valvePurgeEnabled();
+        _readback_data.inhale_trigger_enable = valves_controller->inhaleTriggerEnabled();
+        _readback_data.exhale_trigger_enable = valves_controller->exhaleTriggerEnabled();
         // _readback_data.peep = _breathing_loop->peep();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
@@ -157,6 +157,9 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::SET_THRESHOLD_MAX :
             cmdSetThresholdMax(cf);
             break;
+        case CMD_TYPE::SET_VALVE:
+            cmdSetValve(cf);
+            break;
         default:
             break;
     }
@@ -182,6 +185,7 @@ void UILoop::cmdSetMode(cmd_format &cf) {
     ;
 }
 
+// FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
     setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
 }
@@ -190,4 +194,6 @@ void UILoop::cmdSetThresholdMax(cmd_format &cf) {
     setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
 }
 
-
+void UILoop::cmdSetValve(cmd_format &cf) {
+    setValveParam(static_cast<CMD_SET_VALVE>(cf.cmd_code), _breathing_loop->getValvesController(), cf.param);
+}

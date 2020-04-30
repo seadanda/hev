@@ -22,6 +22,7 @@ class CMD_TYPE(Enum):
     SET_MODE          =  3
     SET_THRESHOLD_MIN =  4
     SET_THRESHOLD_MAX =  5
+    SET_VALVE         =  6
 
 @unique
 class CMD_GENERAL(Enum):
@@ -29,6 +30,7 @@ class CMD_GENERAL(Enum):
     STOP  =  2
     PURGE =  3
     FLUSH =  4
+    RESET =  5
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
@@ -50,6 +52,14 @@ class CMD_SET_MODE(Enum):
     HEV_MODE_CPAP = 2
     HEV_MODE_PRVC = 3
     HEV_MODE_TEST = 4
+
+class CMD_SET_VALVE(Enum):
+    AIR_IN_ENABLE = 1,
+    O2_IN_ENABLE  = 2,
+    PURGE_ENABLE  = 3,
+    INHALE_DUTY_CYCLE = 4,
+    INHALE_OPEN_MIN = 5,
+    INHALE_OPEN_MAX = 6
 
 @unique
 class ALARM_TYPE(Enum):

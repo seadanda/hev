@@ -32,14 +32,6 @@ public:
     float getIERatio();
     float getMinuteVolume();
     ValvesController * getValvesController();
-    uint8_t getValveInhalePercent();
-    uint8_t getValveExhalePercent();
-    uint8_t valveAirInEnabled();
-    uint8_t valveO2InEnabled();
-    uint8_t valvePurgeEnabled();
-    uint8_t inhaleTriggerEnabled();
-    uint8_t exhaleTriggerEnabled();
-
     float getFlow();
     float getVolume(); 
     float getAirwayPressure();
@@ -88,6 +80,7 @@ private:
     uint32_t _calib_N;
     uint32_t _calib_time;
     uint32_t _calib_timeout;
+    bool _calibrated;
     readings<int32_t> _calib_sums;
     readings<int16_t> _calib_avgs;
 
@@ -107,13 +100,7 @@ private:
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
  
-    uint8_t _valve_inhale_percent  ;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
-    uint8_t _valve_exhale_percent  ;
-    uint8_t _valve_air_in_enable   ;
-    uint8_t _valve_o2_in_enable    ;
-    uint8_t _valve_purge_enable    ;
-    uint8_t _inhale_trigger_enable ;   // params - associated val of peak flow
-    uint8_t _exhale_trigger_enable ;
+
     // calculations
     void updateTotalCycleDuration(uint16_t newtotal);
     uint16_t _total_cycle_duration[3];
@@ -121,6 +108,10 @@ private:
     float _flow;
     float _volume;
     float _airway_pressure;
+
+    // safety
+    void safetyCheck();
+    uint8_t _safe; 
 };
 
 

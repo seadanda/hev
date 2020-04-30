@@ -123,6 +123,32 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t &va
     }
 }
 
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t &value)
+{
+    switch(cmd){
+        case CMD_SET_VALVE::AIR_IN_ENABLE :
+            valves_controller->enableAirInValve( (value > 0) );
+            break;
+        case CMD_SET_VALVE::O2_IN_ENABLE :
+            valves_controller->enableO2InValve( (value > 0) );
+            break;
+        case CMD_SET_VALVE::PURGE_ENABLE :
+            valves_controller->enablePurgeValve( (value > 0) );
+            break;
+        case CMD_SET_VALVE::INHALE_DUTY_CYCLE : 
+            valves_controller->setInhaleDutyCycle(value); // should be 0-100
+            break;
+        case CMD_SET_VALVE::INHALE_OPEN_MIN :
+            valves_controller->setInhaleOpenMin(value); // should be 0-100
+            break;
+        case CMD_SET_VALVE::INHALE_OPEN_MAX :
+            valves_controller->setInhaleOpenMax(value); // should be 0-100
+            break;
+        default:
+            break;
+    }
+}
+
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0)
 {
     // TODO -  a proper calibration

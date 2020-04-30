@@ -13,11 +13,11 @@ ValvesController::ValvesController()
 
     _inhale.pin = pin_valve_inhale;
     _inhale.proportional = true;
-    _inhale.state = VALVE_STATE::CLOSED;
+    _inhale.state = VALVE_STATE::FULLY_CLOSED;
 
     _exhale.pin = pin_valve_exhale;
     _exhale.proportional = true;
-    _exhale.state = VALVE_STATE::CLOSED;
+    _exhale.state = VALVE_STATE::FULLY_CLOSED;
 
     _purge.pin = pin_valve_purge;
     _purge.proportional = false;
@@ -25,6 +25,18 @@ ValvesController::ValvesController()
 
     _pin_to_chan[pin_valve_inhale] = pwm_chan_inhale;
     _pin_to_chan[pin_valve_exhale] = pwm_chan_exhale;
+
+    _inhale_duty_cycle = 0;
+    _inhale_open_max = MAX_VALVE_FRAC_OPEN;
+    _inhale_open_min = 0;
+
+    _valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
+    _valve_exhale_percent      = 0;
+    _valve_air_in_enable       = 1;
+    _valve_o2_in_enable        = 1;
+    _valve_purge_enable        = 1;
+    _inhale_trigger_enable     = 0;   // params - associated val of peak flow
+    _exhale_trigger_enable     = 0;
 }
 
 ValvesController::~ValvesController()
@@ -59,14 +71,87 @@ void ValvesController::setPWMValve(int pin, float frac_open)
 #endif
 }
 
-void ValvesController::setValves(bool vin_air, bool vin_o2, float vinhale, 
-               float vexhale, bool vpurge)
+// might want to change these to float : 
+void ValvesController::setInhaleDutyCycle(uint32_t value)
 {
-    digitalWrite(_air_in.pin, vin_air);
-    digitalWrite(_o2_in.pin, vin_o2);
-    setPWMValve(_inhale.pin, vinhale);
-    setPWMValve(_exhale.pin, vexhale);
-    digitalWrite(_purge.pin, vpurge);
+    float fdc = value / 100.0;
+    if (fdc > MAX_VALVE_FRAC_OPEN ) 
+        fdc = MAX_VALVE_FRAC_OPEN;
+    _inhale_duty_cycle = fdc;
+    
+}
+
+void ValvesController::setInhaleOpenMin(uint32_t value)
+{
+    float fop_min = value / 100.0;
+    if (fop_min > MAX_VALVE_FRAC_OPEN ) 
+        fop_min = MAX_VALVE_FRAC_OPEN;
+    _inhale_open_min = fop_min;
+
+}
+
+void ValvesController::setInhaleOpenMax(uint32_t value)
+{
+    float fop_max = value / 100.0;
+    if (fop_max > MAX_VALVE_FRAC_OPEN ) 
+        fop_max = MAX_VALVE_FRAC_OPEN;
+    _inhale_open_max = fop_max;
+
+}
+
+void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale, 
+               uint8_t vexhale, bool vpurge)
+{
+    digitalWrite(_air_in.pin, vin_air * _valve_air_in_enable);
+    digitalWrite(_o2_in.pin, vin_o2 * _valve_o2_in_enable);
+    digitalWrite(_purge.pin, vpurge * _valve_purge_enable);
+
+    switch(vinhale){
+        case VALVE_STATE::FULLY_CLOSED:
+            setPWMValve(_inhale.pin, 0.0);
+            break;
+        case VALVE_STATE::FULLY_OPEN:
+            setPWMValve(_inhale.pin, MAX_VALVE_FRAC_OPEN); 
+            break;
+        case VALVE_STATE::OPEN:
+            setPWMValve(_inhale.pin, _inhale_open_max); 
+            break;
+        case VALVE_STATE::CALIB_OPEN:
+            setPWMValve(_inhale.pin, 0.9); 
+            break;
+        case VALVE_STATE::CLOSED:
+            setPWMValve(_inhale.pin, _inhale_open_min); 
+            break;
+        case VALVE_STATE::PID:
+            // placeholder - this should be replaced by:
+            //doPID(_inhale.pin);
+            setPWMValve(_inhale.pin, _inhale_open_max); 
+            break;
+        default:
+            break;
+    }
+
+    switch(vexhale){
+        case VALVE_STATE::FULLY_CLOSED:
+            setPWMValve(_exhale.pin, 0.0);
+            break;
+        case VALVE_STATE::FULLY_OPEN:
+            setPWMValve(_exhale.pin, MAX_VALVE_FRAC_OPEN); 
+            break;
+        case VALVE_STATE::CALIB_OPEN:
+            setPWMValve(_exhale.pin, 0.9); 
+            break;
+        case VALVE_STATE::OPEN:
+            setPWMValve(_exhale.pin, 0.8); 
+            break;
+        case VALVE_STATE::CLOSED:
+            setPWMValve(_exhale.pin, 0); 
+            break;
+        default:
+            //doPID(_exhale.pin);
+            break;
+
+    }
 
     // save the state 
     _air_in.state = vin_air;
@@ -76,8 +161,8 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, float vinhale,
     _purge.state  = vpurge;
 }
 
-void ValvesController::getValves(bool &vin_air, bool &vin_o2, float &vinhale, 
-               float &vexhale, bool &vpurge)
+void ValvesController::getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale, 
+               uint8_t &vexhale, bool &vpurge)
 {
     // read the state
     vin_air = _air_in.state;
@@ -86,3 +171,27 @@ void ValvesController::getValves(bool &vin_air, bool &vin_o2, float &vinhale,
     vexhale = _exhale.state;
     vpurge  = _purge.state ;
 }
+
+uint8_t ValvesController::getValveInhalePercent(){return _valve_inhale_percent;}
+uint8_t ValvesController::getValveExhalePercent(){return _valve_exhale_percent;}
+uint8_t ValvesController::valveAirInEnabled(){return _valve_air_in_enable;}
+uint8_t ValvesController::valveO2InEnabled(){return _valve_o2_in_enable;}
+uint8_t ValvesController::valvePurgeEnabled(){return _valve_purge_enable;}
+uint8_t ValvesController::inhaleTriggerEnabled(){return _inhale_trigger_enable;}
+uint8_t ValvesController::exhaleTriggerEnabled(){return _exhale_trigger_enable;}
+
+void ValvesController::enableO2InValve(bool en)
+{
+    _valve_o2_in_enable = en;
+}
+
+void ValvesController::enablePurgeValve(bool en)
+{
+    _valve_purge_enable = en;
+}
+
+void ValvesController::enableAirInValve(bool en)
+{
+    _valve_air_in_enable = en;
+}
+
