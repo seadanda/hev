@@ -1849,8 +1849,10 @@ small,
 
 .card-body {
   flex: 1 1 auto;
+  display:flex;
   padding: 1.25rem;
   align-items:center;
+  justify-content: center;
 }
 
 .card-title {
@@ -5943,7 +5945,7 @@ html, body {
 .reading{font-size:1.7rem;min-width:5rem;display:inline-block;text-align:right;}
 .reading-main{font-size:1.4rem;min-width:4rem;display:inline-block;text-align:right;}
 
-.input-reading{font-size:1.4rem;width:3.4em;text-align:center;background:transparent;border:0;text-align:right;}
+.input-reading{font-size:2.0rem;text-align:center;background:transparent;border:0;width:100%}
 .input-reading:disabled{color:black;}
 .input-editable:enabled{border:1;background:white;}
 
@@ -6072,7 +6074,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     flex: 0 0 41.6666666667%;
     max-width: 41.6666666667%;
 }
-.card-reading{
+.card-reading, .card-input-reading{
     position: relative;
     min-width: 0;
     word-wrap: break-word;
@@ -6088,11 +6090,17 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     padding-left: 0.0rem !important;
     margin-right: 0.05rem !important;
     margin-left: 0.05rem !important;
-    background-color: rgb(211,211,211);
     color: #343a40 !important;
     margin-bottom: 0.5rem !important;
     height:calc((100vh - var(--top-height) - 0.5rem)/4.0 - 0.5rem);
 }
+.card-reading {
+  background-color: rgb(211,211,211);
+}
+.card-input-reading {
+  background-color: white;
+}
+
 
 .range-button-container{
     height:2.0rem;
