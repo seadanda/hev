@@ -139,14 +139,14 @@ struct fast_data_format {
     uint8_t  data_type              = DATA_TYPE::FAST;
     uint8_t  fsm_state              = 0; //UNKNOWN
     uint16_t pressure_air_supply    = 0;
-    uint16_t pressure_air_regulated = 0;
+    float    pressure_air_regulated = 0;
     uint16_t pressure_o2_supply     = 0;
-    uint16_t pressure_o2_regulated  = 0;
-    uint16_t pressure_buffer        = 0;
-    uint16_t pressure_inhale        = 0;
-    uint16_t pressure_patient       = 0;
+    float    pressure_o2_regulated  = 0;
+    float    pressure_buffer        = 0;
+    float    pressure_inhale        = 0;
+    float    pressure_patient       = 0;
     uint16_t temperature_buffer     = 0;
-    uint16_t pressure_diff_patient  = 0;
+    float    pressure_diff_patient  = 0;
     uint16_t ambient_pressure       = 0;
     uint16_t ambient_temperature    = 0;
     float airway_pressure           = 0;
@@ -173,8 +173,8 @@ struct readback_data_format {
     uint16_t duration_exhale_fill     = 0;
     uint16_t duration_exhale          = 0;
 
-    uint8_t  valve_air_in             = 0;
-    uint8_t  valve_o2_in              = 0;
+    float    valve_air_in             = 0;
+    float    valve_o2_in              = 0;
     uint8_t  valve_inhale             = 0;
     uint8_t  valve_exhale             = 0;
     uint8_t  valve_purge              = 0;
