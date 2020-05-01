@@ -9,11 +9,13 @@ var initial_yaxis_volume = [];
 var initial_yaxis_flow = [];
 
 var fio_reading;
+var p_plateau_reading
 
-/**
- * Request data from the server, add it to the graph and set a timeout
- * to request again
- */
+//for (var i = 1; i < 99999; i++)
+//        window.clearInterval(i);
+
+
+
 
 var current_timestamp = -1;
 
@@ -110,7 +112,7 @@ function requestChartVar() {
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
 
 
-            var seconds = point["timestamp"]/1000;
+        var seconds = point["timestamp"]/1000;
 
 	    // this is a hack for the test data so that we can cycle data
 	    if ( seconds < current_timestamp ) current_timestamp = seconds - 0.20;
@@ -159,7 +161,7 @@ function requestChartVar() {
         cache: false
     });
     // call it again after time in ms
-    setTimeout(requestChartVar, 200);
+    chart_display_interval = setTimeout(requestChartVar, 200);
 }
 
 requestChartVar();

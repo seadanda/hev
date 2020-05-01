@@ -57,7 +57,7 @@ class HEVServer(object):
         elif payload_type in [1,2,3,4] : 
             # pass data to db
             with self._dblock:
-                self._values = copy.deepcopy(payload)
+                self._values = payload
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
@@ -76,7 +76,8 @@ class HEVServer(object):
             
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # listen for queries on the request socket
-        data = await reader.read(300)
+        data = await reader.readuntil(separator=b'\0')
+        data = data[:-1] # snip off nullbyte
         request = json.loads(data.decode("utf-8"))
 
         # logging
@@ -132,7 +133,7 @@ class HEVServer(object):
             payload = {"type": "nack"}
 
         # send reply and close connection
-        packet = json.dumps(payload).encode()
+        packet = json.dumps(payload).encode() + b'\0'
         writer.write(packet)
         await writer.drain()
         writer.close()
@@ -144,36 +145,34 @@ class HEVServer(object):
 
         while self._broadcasting:
             # wait for data from serial port
-            try:
-                # set timeout such that there is never pileup
-                await asyncio.wait_for(self._datavalid.wait(), timeout=0.05)
-
+            # set timeout such that there is never pileup
+            if not self._datavalid.is_set():
+                # make sure client is still connected
+                await asyncio.sleep(0.05)
+                broadcast_packet = {"type": "keepalive"}
+            else:
                 # take lock of db and prepare packet
                 with self._dblock:
+                    if self._values is None:
+                        continue # should never get here
                     values: List[float] = self._values
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
-            except asyncio.TimeoutError:
-                # make sure client is still connected
-                broadcast_packet = {"type": "keepalive"}
-            except (ConnectionResetError, BrokenPipeError):
-                # Connection lost, stop trying to broadcast and free up socket
-                logging.warning(f"Connection lost with {addr!r}")
-                self._broadcasting = False
-                continue
-            else:
                 data_type = values.getType().name
-                if data_type == "DATA" : 
-                    data_type = "broadcast"
                 broadcast_packet = {"type": data_type}
-                broadcast_packet["sensors"] = values.getDict()
+
+                if data_type == "DATA" : 
+                    broadcast_packet["type"] = "broadcast"
+                    broadcast_packet["sensors"] = values.getDict()
+                    
+                broadcast_packet[data_type] = values.getDict()
 
                 broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
                 # take control of datavalid and reset it
                 with self._dvlock:
                     self._datavalid.clear()
 
-                logging.info(f"Send data for timestamp: {broadcast_packet['sensors']['timestamp']}")
+                logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
@@ -211,7 +210,7 @@ class HEVServer(object):
             await server.serve_forever()
 
     async def create_sockets(self) -> None:
-        self._datavalid = asyncio.Event() # initially false
+        self._datavalid = threading.Event() # initially false
         self._dvlock.release()
         LOCALHOST = "127.0.0.1"
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
@@ -229,7 +228,7 @@ if __name__ == "__main__":
     try:
         #parser to allow us to pass arguments to hevserver
         parser = argparse.ArgumentParser(description='Arguments to run hevserver')
-        parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
+        parser.add_argument('-i', '--inputFile', type=str, default = '', help='Load data from file')
         parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
         parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
         args = parser.parse_args()

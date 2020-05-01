@@ -1,100 +1,126 @@
 var chart;
 var refreshIntervalId;
-var initial_xaxis = [];
 var initial_yaxis_var1 = [];
 var initial_yaxis_var2 = [];
-var time_x;
 
 var updated_xaxis = [];
 var updated_yaxis_var1 = [];
 var updated_yaxis_var2 = [];
 
+
+var current_timestamp = -1;
+
+
+function setChartProtXaxisRange(min,max){
+    chart.options.scales.xAxes[0].ticks.min = min;
+    chart.options.scales.xAxes[0].ticks.max = max;   
+}
+
+
 /**
  * Request last N data from the server, add it to the graph
  */
-function last_results() {
+function init_results(){
   $.getJSON({
-      url: '/last_N_data',
-      success: function(data) {
+    url: '/last_N_data',
+    success: function(data) {
+      var timestamp = 0;
         for (i=0; i<data.length; i++) {
-          // terrible hack to show the time in reverse order
-          time_x = (-i/5).toFixed(2)
-          initial_xaxis.push(time_x);
-          //initial_xaxis.push(data[i]["timestamp"]);
-          initial_yaxis_var1.push(data[i]["airway_pressure"]);
-          initial_yaxis_var2.push(data[i]["volume"]);
+          var seconds = data[i]["timestamp"]/1000;
+          if (i==data.length-1) timestamp = seconds;
+          if ( seconds == "" ) continue;
+          initial_yaxis_var1.push({x : seconds, y : data[i]["airway_pressure"]});
+          initial_yaxis_var2.push({x : seconds, y : data[i]["volume"]});
         }
         //reverse because data is read from the other way
-        initial_xaxis.reverse();
         initial_yaxis_var1.reverse();
         initial_yaxis_var2.reverse();
-      },
-      cache: false
-  });
-}
-
-last_results();
-
-/**
- * Request data from the server, add it to the graph and set a timeout
- * to request again
- */
-
-function requestDataVar1(var1, var2) {
-  $.ajax({
-    url: '/live-data',
-    success: function(point) {
-      if(chart.data.datasets[0].data.length > 300){
-        chart.data.labels.shift();
-        chart.data.datasets[0].data.shift();
-      }
-      if(chart.data.datasets[1].data.length > 300){
-        //chart.data.labels.shift();
-        chart.data.datasets[1].data.shift();
-      }
-      for (var i=0; i<300; i++) {
-        var x = chart.data.labels[i] - 0.20 ;
-        chart.data.labels[i] = x.toFixed(1);
-      }
-      // add the point
-      //chart.data.labels.push(point.created_at);
-      chart.data.labels.push(0);
-      chart.data.datasets[0].data.push(point[var1]);
-      chart.data.datasets[1].data.push(point[var2]);
-            
-      chart.update();
+        console.log('init results, timestamp: ',timestamp);
+        for ( let i = 0 ; i < initial_yaxis_var1.length; i++){
+          console.log('filling up with ',initial_yaxis_var1[i]['x'], ' - ',timestamp);
+          initial_yaxis_var1[i]['x'] = initial_yaxis_var1[i]['x'] - timestamp;
+          initial_yaxis_var2[i]['x']   = initial_yaxis_var2[i]['x']   - timestamp;
+        }
     },
     cache: false
   });
-  // call it again after 200 ms
-  refreshIntervalId = setTimeout(requestDataVar1, 200, var1, var2);
 }
 
 
+function requestDataVar1(var1, var2) {
+  $.ajax({
+      url: '/live-data',
+      success: function(point) {
+
+        var seconds = point["timestamp"]/1000;
+
+        // this is a hack for the test data so that we can cycle data
+        if ( seconds < current_timestamp ) current_timestamp = seconds - 0.20;
+        
+        //protect against bogus timestamps, skip those that are earlier than we already have
+        if (current_timestamp == -1 || seconds > current_timestamp ) {
+          // get difference between last time stamp and this and apply to existing points
+          var diff = 0;
+          if ( current_timestamp == -1 ){
+              diff = seconds;
+          }
+          else {
+              diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
+          }
+          current_timestamp = seconds;
+          if(chart.data.datasets[0].data.length > 300){
+                          chart.data.datasets[0].data.shift();
+          }
+          
+          if(chart.data.datasets[1].data.length > 300){
+            chart.data.datasets[1].data.shift();
+          }                  
+ 
+          for ( let i = 0 ; i < initial_yaxis_var1.length; i++){
+              chart.data.datasets[0].data[i]['x'] = chart.data.datasets[0].data[i]['x'] - diff;
+              chart.data.datasets[1].data[i]['x'] = chart.data.datasets[1].data[i]['x'] - diff;
+          }
+  
+          chart.data.datasets[0].data.push({x : 0, y : point[var1]});
+          chart.data.datasets[1].data.push({ x : 0, y : point[var2]});
+          
+          chart.update();
+        }
+
+      },
+      cache: false
+  });
+  // call it again after time in ms
+  refreshIntervalId = setTimeout(requestDataVar1, 200, var1, var2);
+}
+
+requestDataVar1("airway_pressure", "volume");
 
 
 
 $(document).ready(function() {
   var ctx = document.getElementById('pressure_air_supply');
   chart = new Chart(ctx, {
-    type: 'line',
+    type: 'scatter',
     data: {
-      labels: initial_xaxis,
+      labels: [],
       datasets: [{ 
         label: 'A',
         yAxisID: 'A',
         data: initial_yaxis_var1,
-        label: "Buffer",
+        label: "Pressure",
         borderColor: "#0000FF",
         fill: false,
+        showLine: true,
         }, 
       { 
         label: 'B',
         yAxisID: 'B',
         data: initial_yaxis_var2,
-        label: "Inhale",
+        label: "Volume",
         borderColor: "#000000",
         fill: false,
+        showLine: true,
       }]
     },
     options: {
@@ -155,7 +181,6 @@ $(document).ready(function() {
       } 
     }
   });
-  requestDataVar1("airway_pressure", "volume");
 });
 
 

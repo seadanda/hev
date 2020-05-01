@@ -126,55 +126,28 @@ class BaseFormat():
     _RPI_VERSION: ClassVar[int] = field(default=0xA2, init=False, repr=False)
     _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
     _dataStruct:  ClassVar[Any] = field(default=Struct("<BI"), init=False, repr=False)
-    _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
-    _autogen:     ClassVar[bool] = field(default=False, init=False, repr=False)
 
     # class variables
     version:   int = 0
     timestamp: int = 0
 
-    def __post_init__(self):
-        self.toByteArray()
-        self._autogen = True
-
-    def __setattr__(self, key, value):
-        self.__dict__[key] = value
-        # if any other variable is modified outside init, regenerate the bytearray
-        if self._autogen and key[0] != "_" and key != "version":
-            self.toByteArray()
-
     @property
     def byteArray(self) -> bytearray:
-        self.toByteArray()
-        return self._byteArray
-
-    @byteArray.setter
-    def byteArray(self, byte_array) -> None:
-        try:
-            self.fromByteArray(byte_array)
-            self._byteArray = byte_array
-        except Exception:
-            raise
-
-    def toByteArray(self) -> None:
-        self.version = self._RPI_VERSION
-        self._byteArray = self._dataStruct.pack(*[
+        return self._dataStruct.pack(*[
             v.value if isinstance(v, IntEnum) or isinstance(v, Enum) else v
             for v in asdict(self).values()
         ])
 
     # at the minute not generalised. needs to be overridden
     def fromByteArray(self, byteArray: bytearray) -> None:
-        (self.version,
-        self.timestamp) = self._dataStruct.unpack(byteArray)
-        self._byteArray = byteArray
+        (self.version, self.timestamp) = self._dataStruct.unpack(byteArray)
 
     # check for mismatch between pi and microcontroller version
     def checkVersion(self) -> bool:
         return self._RPI_VERSION == self.version
 
     def getSize(self) -> int:
-        return len(self._byteArray)
+        return self._dataStruct.size
 
     def getType(self) -> Any:
         return self._type
@@ -189,26 +162,26 @@ class BaseFormat():
 @dataclass
 class DataFormat(BaseFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
+    _dataStruct = Struct("<BIBBHfHffffHfHHfff")
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
-    data_type: int              = 1
-    fsm_state: BL_STATES        = BL_STATES.IDLE
-    pressure_air_supply: int    = 0
-    pressure_air_regulated: int = 0
-    pressure_o2_supply: int     = 0
-    pressure_o2_regulated: int  = 0
-    pressure_buffer: int        = 0
-    pressure_inhale: int        = 0
-    pressure_patient: int       = 0
-    temperature_buffer: int     = 0
-    pressure_diff_patient: int  = 0
-    ambient_pressure: int       = 0
-    ambient_temperature: int    = 0
-    airway_pressure: float      = 0
-    flow: float                 = 0
-    volume: float               = 0
+    data_type: int                = 1
+    fsm_state: BL_STATES          = BL_STATES.IDLE
+    pressure_air_supply: int      = 0
+    pressure_air_regulated: float = 0.0
+    pressure_o2_supply: int       = 0
+    pressure_o2_regulated: float  = 0.0
+    pressure_buffer: float        = 0.0
+    pressure_inhale: float        = 0.0
+    pressure_patient: float       = 0.0
+    temperature_buffer: int       = 0
+    pressure_diff_patient: float  = 0.0
+    ambient_pressure: int         = 0
+    ambient_temperature: int      = 0
+    airway_pressure: float        = 0.0
+    flow: float                   = 0.0
+    volume: float                 = 0.0
 
 
     # for receiving DataFormat from microcontroller
@@ -248,7 +221,7 @@ class DataFormat(BaseFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(BaseFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
+    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBBf")
     _type = PAYLOAD_TYPE.READBACK
 
     data_type: int                = 2
@@ -264,8 +237,8 @@ class ReadbackFormat(BaseFormat):
     duration_exhale_fill: int     = 0
     duration_exhale: int          = 0
 
-    valve_air_in: int             = 0
-    valve_o2_in: int              = 0
+    valve_air_in: float           = 0.0
+    valve_o2_in: float            = 0.0
     valve_inhale: int             = 0
     valve_exhale: int             = 0
     valve_purge: int              = 0
@@ -279,7 +252,7 @@ class ReadbackFormat(BaseFormat):
     inhale_trigger_enable: int    = 0
     exhale_trigger_enable: int    = 0
     peep: int                     = 0
-    inhale_exhate_ratio: float    = 0.0
+    inhale_exhale_ratio: float    = 0.0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -315,7 +288,6 @@ class ReadbackFormat(BaseFormat):
         self.exhale_trigger_enable,
         self.peep,
         self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
 
 
 # =======================================
@@ -371,7 +343,6 @@ class CycleFormat(BaseFormat):
         self.apnea_index,
         self.apnea_time,
         self.mandatory_breath) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
 
 
 # =======================================
@@ -397,7 +368,6 @@ class CommandFormat(BaseFormat):
         self.cmd_type,
         self.cmd_code,
         self.param) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
 
 
 # =======================================
@@ -420,4 +390,3 @@ class AlarmFormat(BaseFormat):
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
         self.alarm_code = ALARM_CODES(alarm)
-        self._byteArray = byteArray

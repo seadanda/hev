@@ -17,6 +17,7 @@
 		this.arrowAngle = 25 * Math.PI / 180;
 		this.arrowColor = config.options.indicatorColor || options.arrowColor;
 		this.showMarkers = typeof(config.options.showMarkers) === 'undefined' ? true : config.options.showMarkers;
+		this.ctx.lineWidth = 1.5;
 		if (config.options.markerFormatFn) {
 			this.markerFormatFn = config.options.markerFormatFn;
 		} else {
@@ -111,6 +112,20 @@
 			this.renderLimitLabel(this.limits[i]);
 		}
 	};
+	GaugeChartHelper.prototype.renderSetValueLabel = function() {
+		var label = this.data.setvalue.toString();
+		var ctx = this.ctx;
+		ctx.font = "30px " + this.fontStyle;
+		var stringWidth = ctx.measureText(label).width;
+		var elementWidth = 0.75 * this.gaugeRadius * 2;
+		var widthRatio = elementWidth / stringWidth;
+		var newFontSize = Math.floor(30 * widthRatio);
+		var fontSizeToUse = Math.min(newFontSize, this.gaugeRadius);
+		ctx.textAlign = "center";
+		ctx.font = fontSizeToUse + "px " + this.fontStyle;
+		ctx.fillStyle = this.data.valueColor || this.fontColor;
+		ctx.fillText(label, this.gaugeCenterX, this.gaugeCenterY);
+	};
 	GaugeChartHelper.prototype.renderValueLabel = function() {
 		var label = this.data.value.toString();
 		var ctx = this.ctx;
@@ -129,6 +144,11 @@
 		var angle = this.getAngleOfValue(typeof value === "number" ? value : this.data.value);
 		this.ctx.globalCompositeOperation = "source-over";
 		this.renderArrow(this.gaugeRadius, angle, this.arrowLength, this.arrowAngle, this.arrowColor);
+	};
+	GaugeChartHelper.prototype.renderSetValueMarker = function(value) {
+		var angle = this.getAngleOfValue(typeof value === "number" ? value : this.data.setvalue);
+		this.ctx.globalCompositeOperation = "source-over";
+		this.renderMarker(this.gaugeRadius, angle, this.arrowLength, this.arrowAngle, this.arrowColor);
 	};
 	GaugeChartHelper.prototype.renderSmallValueArrow = function(value) {
 		var angle = this.getAngleOfValue(value);
@@ -159,6 +179,28 @@
 		ctx.closePath();
 		ctx.fill();
 	};
+	GaugeChartHelper.prototype.renderMarker = function(radius, angle, arrowLength, arrowAngle, arrowColor) {
+		var coord = this.getCoordOnCircle(radius - arrowLength, angle);
+		var coord2 = this.getCoordOnCircle(radius + arrowLength, angle);
+
+
+		var arrowBegin = {
+			x: this.gaugeCenterX - coord.x,
+			y: this.gaugeCenterY - coord.y
+		};
+		var arrowEnd = {
+			x: this.gaugeCenterX - coord2.x,
+			y: this.gaugeCenterY - coord2.y
+		};
+
+		var ctx = this.ctx;
+		ctx.fillStyle = arrowColor;
+		ctx.beginPath();
+		coord = this.getCoordOnCircle(arrowLength, angle);
+		ctx.moveTo(arrowBegin.x, arrowBegin.y);
+		ctx.lineTo(arrowEnd.x, arrowEnd.y);
+		ctx.stroke();
+	};
 	GaugeChartHelper.prototype.animateArrow = function() {
 		var stepCount = 30;
 		var animateTimeout = 300;
@@ -179,10 +221,6 @@
 		}.bind(this), animateTimeout / stepCount);
 	};
 	Chart.defaults.tsgauge = {
-		animation: {
-			animateRotate: true,
-			animateScale: false
-		},
 		cutoutPercentage: 95,
 		rotation: Math.PI,
 		circumference: Math.PI,
@@ -197,9 +235,10 @@
 			var gaugeHelper = this.gaugeHelper = new GaugeChartHelper();
 			gaugeHelper.setup(chart, chart.config);
 			gaugeHelper.applyGaugeConfig(chart.config);
+			gaugeHelper.renderValueArrow();
 			chart.config.options.animation.onComplete = function(chartElement) {
-				gaugeHelper.updateGaugeDimensions();
-				gaugeHelper.clearValueArrow();
+				//gaugeHelper.updateGaugeDimensions();
+				//gaugeHelper.clearValueArrow();
 				gaugeHelper.renderValueArrow();
 			};
 			Chart.controllers.doughnut.prototype.initialize.apply(this, arguments);
@@ -208,11 +247,15 @@
 			Chart.controllers.doughnut.prototype.draw.apply(this, arguments);
 			var gaugeHelper = this.gaugeHelper;
 			gaugeHelper.updateGaugeDimensions();
-			gaugeHelper.renderValueLabel();
+			gaugeHelper.renderSetValueLabel();
 			if (gaugeHelper.showMarkers) {
 				gaugeHelper.renderLimits();
 			}
-			gaugeHelper.renderSmallValueArrow(gaugeHelper.minValue);
+			//gaugeHelper.renderSmallValueArrow(gaugeHelper.minValue);
+			//gaugeHelper.renderValueArrow();
+			//console.log('set value: ',gaugeHelper.data.setvalue);
+			gaugeHelper.renderSetValueMarker();
+			gaugeHelper.renderValueArrow();
 		}
 	});
 })();

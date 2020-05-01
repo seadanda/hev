@@ -30,10 +30,12 @@ class CommsControl():
         self._alarms   = deque(maxlen = queueSizeSend)
         self._commands = deque(maxlen = queueSizeSend)
         self._data     = deque(maxlen = queueSizeSend)
+        self._dw_lock  = threading.Lock()   # data write lock
         
         # received queue and observers to be notified on update
         self._payloadrecv = deque(maxlen = queueSizeReceive)
         self._observers = []
+        self._dr_lock  = threading.Lock()   # data read lock
         
         # needed to find packet frames
         self._received = []
@@ -46,13 +48,12 @@ class CommsControl():
         self._sequence_receive = 0
         
         # initialize of the multithreading
-        self._lockSerial = threading.Lock()
+        self._lock_serial = threading.Lock()
         self._receiving = True
         threading.Thread(target=self.receiver, daemon=True).start()
         
         self._sending   = True
         self._datavalid = threading.Event()  # callback for send process
-        self._dvlock    = threading.Lock()      # make callback threadsafe
         threading.Thread(target=self.sender, daemon=True).start()
     
     # open serial port
@@ -70,15 +71,14 @@ class CommsControl():
         while self._sending:
             self._datavalid.wait()
             if self._serial is not None:
-                if not self._serial.in_waiting > 0:
-                    self.sendQueue(self._alarms  ,  10)
-                    self.sendQueue(self._commands,  50)
-                    self.sendQueue(self._data    , 200)
+                self.sendQueue(self._alarms  ,  10)
+                self.sendQueue(self._commands,  50)
+                self.sendQueue(self._data    , 200)
             if self.finishedSending():
                 self._datavalid.clear()
                     
     def finishedSending(self):
-        with self._dvlock:
+        with self._dw_lock:
             try:
                 if (len(self._alarms) + len(self._data) + len(self._commands)) > 0:
                     return False
@@ -95,21 +95,21 @@ class CommsControl():
             time.sleep(0.001)
             if self._serial is not None:
                 if self._serial.in_waiting > 0:
-                    with self._lockSerial:
+                    data = []
+                    with self._lock_serial:
                         logging.debug("Receiving data...")
                         data = self._serial.read(self._serial.in_waiting)
-                        self.processPacket(data)
+                    self.processPacket(data)
 
     def sendQueue(self, queue, timeout):
-        with self._dvlock:
+        with self._dw_lock:
             if len(queue) > 0:
                 logging.debug(f'Queue length: {len(queue)}')
                 current_time = int(round(time.time() * 1000))
                 if current_time > (self._timeLastTransmission + timeout):
-                    with self._lockSerial:
-                        self._timeLastTransmission = current_time
-                        queue[0].setSequenceSend(self._sequence_send)
-                        self.sendPacket(queue[0])
+                    self._timeLastTransmission = current_time
+                    queue[0].setSequenceSend(self._sequence_send)
+                    self.sendPacket(queue[0])
                     
     def getQueue(self, payload_type):
         if   payload_type == CommsCommon.PAYLOAD_TYPE.ALARM:
@@ -195,21 +195,22 @@ class CommsControl():
         else:
             return False
         
-        with self._dvlock:
+        with self._dw_lock:
             queue = self.getQueue(payload_type)
             queue.append(tmp_comms)
-            self._datavalid.set()
+            self._datavalid.set() # executes callback
             
         return True
         
     def sendPacket(self, comms):
-        logging.debug("Sending data...")
-        logging.debug(binascii.hexlify(self.encoder(comms.getData())))
-        self._serial.write(self.encoder(comms.getData()))
+        with self._lock_serial:
+            logging.debug("Sending data...")
+            logging.debug(binascii.hexlify(self.encoder(comms.getData())))
+            self._serial.write(self.encoder(comms.getData()))
     
     def finishPacket(self, queue):
         try:
-            with self._dvlock:
+            with self._dw_lock:
                 if len(queue) > 0:
                     # 0x7F to deal with possible overflows (0 should follow after 127)
                     if ((queue[0].getSequenceSend() + 1) & 0x7F) == self._sequence_receive:
@@ -283,14 +284,14 @@ class CommsControl():
     # callback to dependants to read the received payload
     @property
     def payloadrecv(self):
-        with self._dvlock:
+        with self._dr_lock:
             return self._payloadrecv
 
     @payloadrecv.setter
     def payloadrecv(self, payload):
-        with self._dvlock:
+        with self._dr_lock:
             self._payloadrecv.append(payload)
-            payloadrecv = copy.deepcopy(self._payloadrecv)
+            payloadrecv = list(self._payloadrecv)
         logging.debug(f"Pushed {payload} to FIFO")
         for callback in self._observers:
             # peek at the leftmost item, don't pop until receipt confirmed
@@ -301,9 +302,9 @@ class CommsControl():
 
     def pop_payloadrecv(self):
         # from callback. confirmed receipt, pop value
-        with self._dvlock:
+        with self._dr_lock:
             poppedval = self._payloadrecv.popleft()
-            payloadrecv = copy.deepcopy(self._payloadrecv)
+            payloadrecv = list(self._payloadrecv)
         logging.debug(f"Popped {poppedval} from FIFO")
         if len(payloadrecv) > 0:
             # purge full queue if Dependant goes down when it comes back up

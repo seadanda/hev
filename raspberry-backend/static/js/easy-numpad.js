@@ -3,8 +3,9 @@ let _minValue = null;
 let _maxValue = null;
 let _isInRange = true;
 
-function show_easy_numpad(thisElement)
+function show_easy_numpad(thisElement, value, min, max)
 {
+    if (thisElement.disabled) return;
     let easy_numpad = document.createElement("div");
     easy_numpad.id = "easy-numpad-frame";
     easy_numpad.className = "easy-numpad-frame";
@@ -37,7 +38,61 @@ function show_easy_numpad(thisElement)
                     <td><a href="±" onclick="easynum(this)">±</a></td>
 					<td ><a href="0"onclick="easynum(this)">0</a></td>
                     <td><a href="." onclick="easynum(this)">.</a></td>
-                    <td><a href="Done" class="done" id="done" onclick="easy_numpad_done()">Done</a></td>
+                    <td><a href="Done" class="done" id="done" onclick="var result=easy_numpad_done()">Done</a></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    `;
+
+    document.getElementsByTagName('body')[0].appendChild(easy_numpad);
+    _outputID = thisElement.id;
+    _minValue = min;
+    _maxValue = max;
+    _disabled = thisElement.disabled;
+    
+    let useDefault = document.getElementById(thisElement.id).getAttribute("data-easynumpad-use_default");
+    if(useDefault != "false")
+    {
+        document.getElementById("easy-numpad-output").innerText = value;
+    }
+}
+function show_easy_numpad(thisElement)
+{
+    if (thisElement.disabled) return;
+    let easy_numpad = document.createElement("div");
+    easy_numpad.id = "easy-numpad-frame";
+    easy_numpad.className = "easy-numpad-frame";
+    easy_numpad.innerHTML = `
+    <div class="easy-numpad-container">
+        <div class="easy-numpad-output-container">
+            <p class="easy-numpad-output" id="easy-numpad-output"></p>
+        </div>
+        <div class="easy-numpad-number-container">
+            <table>
+                <tr>
+                    <td><a href="7" onclick="easynum(this)">7</a></td>
+                    <td><a href="8" onclick="easynum(this)">8</a></td>
+                    <td><a href="9" onclick="easynum(this)">9</a></td>
+                    <td><a href="Del" class="del" id="del" onclick="easy_numpad_del()">Del</a></td>
+                </tr>
+                <tr>
+                    <td><a href="4" onclick="easynum(this)">4</a></td>
+                    <td><a href="5" onclick="easynum(this)">5</a></td>
+                    <td><a href="6" onclick="easynum(this)">6</a></td>
+                    <td><a href="Clear" class="clear" id="clear" onclick="easy_numpad_clear()">Clear</a></td>
+                </tr>
+                <tr>
+                    <td><a href="1" onclick="easynum(this)">1</a></td>
+                    <td><a href="2" onclick="easynum(this)">2</a></td>
+                    <td><a href="3" onclick="easynum(this)">3</a></td>
+                    <td><a href="Cancel" class="cancel" id="cancel" onclick="easy_numpad_cancel()">Cancel</a></td>
+                </tr>
+                <tr>
+                    <td><a href="±" onclick="easynum(this)">±</a></td>
+					<td ><a href="0"onclick="easynum(this)">0</a></td>
+                    <td><a href="." onclick="easynum(this)">.</a></td>
+                    <td><a href="Done" class="done" id="done" onclick="var result=easy_numpad_done()">Done</a></td>
                 </tr>
             </table>
         </div>
@@ -171,10 +226,11 @@ function easy_numpad_done()
         }
 	var element = document.getElementById(_outputID);
 
-	if (easy_numpad_output_val != element.value){
-	    var success = confirm('Are you sure you want to change the ' + element.name + " from " + element.value + " to " + easy_numpad_output_val);
-	    if(success) document.getElementById(_outputID).value = easy_numpad_output_val;
-	}
+	//if (easy_numpad_output_val != element.value){
+	//    var success = confirm('Are you sure you want to change the ' + element.name + " from " + element.value + " to " + easy_numpad_output_val);
+	//    if(success) document.getElementById(_outputID).value = easy_numpad_output_val;
+    //}
+    return easy_numpad_output_val;
         easy_numpad_close();
     }
 }
