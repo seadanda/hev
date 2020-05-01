@@ -126,55 +126,28 @@ class BaseFormat():
     _RPI_VERSION: ClassVar[int] = field(default=0xA2, init=False, repr=False)
     _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
     _dataStruct:  ClassVar[Any] = field(default=Struct("<BI"), init=False, repr=False)
-    _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
-    _autogen:     ClassVar[bool] = field(default=False, init=False, repr=False)
 
     # class variables
     version:   int = 0
     timestamp: int = 0
 
-    def __post_init__(self):
-        self.toByteArray()
-        self._autogen = True
-
-    def __setattr__(self, key, value):
-        self.__dict__[key] = value
-        # if any other variable is modified outside init, regenerate the bytearray
-        if self._autogen and key[0] != "_" and key != "version":
-            self.toByteArray()
-
     @property
     def byteArray(self) -> bytearray:
-        self.toByteArray()
-        return self._byteArray
-
-    @byteArray.setter
-    def byteArray(self, byte_array) -> None:
-        try:
-            self.fromByteArray(byte_array)
-            self._byteArray = byte_array
-        except Exception:
-            raise
-
-    def toByteArray(self) -> None:
-        self.version = self._RPI_VERSION
-        self._byteArray = self._dataStruct.pack(*[
+        return self._dataStruct.pack(*[
             v.value if isinstance(v, IntEnum) or isinstance(v, Enum) else v
             for v in asdict(self).values()
         ])
 
     # at the minute not generalised. needs to be overridden
     def fromByteArray(self, byteArray: bytearray) -> None:
-        (self.version,
-        self.timestamp) = self._dataStruct.unpack(byteArray)
-        self._byteArray = byteArray
+        (self.version, self.timestamp) = self._dataStruct.unpack(byteArray)
 
     # check for mismatch between pi and microcontroller version
     def checkVersion(self) -> bool:
         return self._RPI_VERSION == self.version
 
-    def getSize(self) -> int:
-        return len(self._byteArray)
+    # def getSize(self) -> int:
+    #     return len(self._byteArray)
 
     def getType(self) -> Any:
         return self._type
@@ -315,7 +288,6 @@ class ReadbackFormat(BaseFormat):
         self.exhale_trigger_enable,
         self.peep,
         self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
 
 
 # =======================================
@@ -371,7 +343,6 @@ class CycleFormat(BaseFormat):
         self.apnea_index,
         self.apnea_time,
         self.mandatory_breath) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
 
 
 # =======================================
@@ -397,7 +368,6 @@ class CommandFormat(BaseFormat):
         self.cmd_type,
         self.cmd_code,
         self.param) = self._dataStruct.unpack(byteArray) 
-        self._byteArray = byteArray
 
 
 # =======================================
@@ -420,4 +390,3 @@ class AlarmFormat(BaseFormat):
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
         self.alarm_code = ALARM_CODES(alarm)
-        self._byteArray = byteArray
