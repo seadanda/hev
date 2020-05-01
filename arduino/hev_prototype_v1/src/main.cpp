@@ -5,6 +5,7 @@
 #endif
 // #include <MemoryFree.h>
 #include <Wire.h>
+#include <SPI.h>
 #include <Adafruit_MCP9808.h>
 #include <INA.h>
 #include "CommsControl.h"
