@@ -42,10 +42,10 @@
             </div>
 		  </div>
 		  <div class = "range-button-container ml-auto mr-auto">
-			<input type="button" class="lockable sb-nav-button" name="fivesecs" value="5s" onclick="setChartXaxisRange_wrapper(this,-5,0)" disabled>
-			<input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange_wrapper(this,-30,0)" disabled>
-			<input type="button" class="lockable sb-nav-button" name="sixtysecs" value="60s" onclick="setChartXaxisRange_wrapper(this,-60,0)" disabled>
-			<input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartXaxisRange_wrapper(this,-90,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="fivesecs" value="5s" onclick="setChartProtXaxisRange_wrapper(this,-5,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartProtXaxisRange_wrapper(this,-30,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="sixtysecs" value="60s" onclick="setChartProtXaxisRange_wrapper(this,-60,0)" disabled>
+			<input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartProtXaxisRange_wrapper(this,-90,0)" disabled>
 		</div>			  
 	</div>
 
@@ -264,5 +264,14 @@
 	{% endblock %}
 	{% block body_scripts %}
 
-        <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
+		
+    <script>
+      function setChartProtXaxisRange_wrapper(element,min,max){
+      if (!element.disabled){ setChartProtXaxisRange(min,max);  }
+      }
+    
+      
+    
+    </script>		
 	{% endblock %}
