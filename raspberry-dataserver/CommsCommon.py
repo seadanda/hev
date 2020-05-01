@@ -146,8 +146,8 @@ class BaseFormat():
     def checkVersion(self) -> bool:
         return self._RPI_VERSION == self.version
 
-    # def getSize(self) -> int:
-    #     return len(self._byteArray)
+    def getSize(self) -> int:
+        return self._dataStruct.size
 
     def getType(self) -> Any:
         return self._type
