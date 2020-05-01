@@ -189,26 +189,26 @@ class BaseFormat():
 @dataclass
 class DataFormat(BaseFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
+    _dataStruct = Struct("<BIBBHfHffffHfHHfff")
     _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
-    data_type: int              = 1
-    fsm_state: BL_STATES        = BL_STATES.IDLE
-    pressure_air_supply: int    = 0
-    pressure_air_regulated: int = 0
-    pressure_o2_supply: int     = 0
-    pressure_o2_regulated: int  = 0
-    pressure_buffer: int        = 0
-    pressure_inhale: int        = 0
-    pressure_patient: int       = 0
-    temperature_buffer: int     = 0
-    pressure_diff_patient: int  = 0
-    ambient_pressure: int       = 0
-    ambient_temperature: int    = 0
-    airway_pressure: float      = 0
-    flow: float                 = 0
-    volume: float               = 0
+    data_type: int                = 1
+    fsm_state: BL_STATES          = BL_STATES.IDLE
+    pressure_air_supply: int      = 0
+    pressure_air_regulated: float = 0.0
+    pressure_o2_supply: int       = 0
+    pressure_o2_regulated: float  = 0.0
+    pressure_buffer: float        = 0.0
+    pressure_inhale: float        = 0.0
+    pressure_patient: float       = 0.0
+    temperature_buffer: int       = 0
+    pressure_diff_patient: float  = 0.0
+    ambient_pressure: int         = 0
+    ambient_temperature: int      = 0
+    airway_pressure: float        = 0.0
+    flow: float                   = 0.0
+    volume: float                 = 0.0
 
 
     # for receiving DataFormat from microcontroller
@@ -248,7 +248,7 @@ class DataFormat(BaseFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(BaseFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
+    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBBf")
     _type = PAYLOAD_TYPE.READBACK
 
     data_type: int                = 2
@@ -264,8 +264,8 @@ class ReadbackFormat(BaseFormat):
     duration_exhale_fill: int     = 0
     duration_exhale: int          = 0
 
-    valve_air_in: int             = 0
-    valve_o2_in: int              = 0
+    valve_air_in: float           = 0.0
+    valve_o2_in: float            = 0.0
     valve_inhale: int             = 0
     valve_exhale: int             = 0
     valve_purge: int              = 0
@@ -279,7 +279,7 @@ class ReadbackFormat(BaseFormat):
     inhale_trigger_enable: int    = 0
     exhale_trigger_enable: int    = 0
     peep: int                     = 0
-    inhale_exhate_ratio: float    = 0.0
+    inhale_exhale_ratio: float    = 0.0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 

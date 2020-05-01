@@ -159,17 +159,20 @@ class HEVServer(object):
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
                 data_type = values.getType().name
-                if data_type == "DATA" : 
-                    data_type = "broadcast"
                 broadcast_packet = {"type": data_type}
-                broadcast_packet["sensors"] = values.getDict()
+
+                if data_type == "DATA" : 
+                    broadcast_packet["type"] = "broadcast"
+                    broadcast_packet["sensors"] = values.getDict()
+                    
+                broadcast_packet[data_type] = values.getDict()
 
                 broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
                 # take control of datavalid and reset it
                 with self._dvlock:
                     self._datavalid.clear()
 
-                logging.info(f"Send data for timestamp: {broadcast_packet['sensors']['timestamp']}")
+                logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
@@ -225,7 +228,7 @@ if __name__ == "__main__":
     try:
         #parser to allow us to pass arguments to hevserver
         parser = argparse.ArgumentParser(description='Arguments to run hevserver')
-        parser.add_argument('--inputFile', type=str, default = '', help='a test file to load data')
+        parser.add_argument('-i', '--inputFile', type=str, default = '', help='Load data from file')
         parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
         parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
         args = parser.parse_args()
