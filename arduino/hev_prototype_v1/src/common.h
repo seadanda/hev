@@ -282,6 +282,7 @@ struct alarm_thresholds {
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
 void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
+float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{
