@@ -233,11 +233,6 @@
 	  }
 	  var alarmInterval = setInterval('update_alarms()', 1000);
 
-	  function show_easy_numpad_wrapper(thisElement){	    if (thisElement.disabled == false && thisElement.readOnly == false) {
-	       show_easy_numpad(thisElement);
-	    }
-	  }
-
 	  function unlock(){
 	  var x = document.getElementsByClassName("input-editable");
 	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
