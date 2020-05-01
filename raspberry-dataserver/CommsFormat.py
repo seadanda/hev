@@ -2,8 +2,17 @@
 
 # Communication protocol based on HDLC format
 # author Peter Svihra <peter.svihra@cern.ch>
+# adapted for async DM
 
 import libscrc
+import binascii
+import logging
+from typing import ClassVar
+
+# Set up logging
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+logging.getLogger().setLevel(logging.DEBUG)
+
 
 def commsFromBytes(byteArray):
     comms = CommsFormat()
@@ -111,6 +120,110 @@ class CommsFormat:
     def copyBytes(self, bytes_array):
         self._info_size = len(bytes_array) - 7
         self._data     = bytes_array
+
+    def encode(self):
+        byteArray = self._data
+    
+        # prefix escape pattern for data bytes which happen to contain an escape pattern
+        temp = b''
+        temp += bytes([byteArray[0]])
+        oldpos = 1 # start after flag byte and search until before stop byte
+        if b'\x7D' in byteArray[oldpos:-1] or b'\x7E' in byteArray[oldpos:-1]:
+            while b'\x7D' in byteArray[oldpos:-1] or b'\x7E' in byteArray[oldpos:-1]:
+                print("changing")
+                posd = byteArray.find(b'\x7D')
+                pose = byteArray.find(b'\x7E')
+                pos = posd if posd < pose else pose
+                temp += bytes([byteArray[oldpos:pos]]) + b'\x7D' + bytes([byteArray[pos] ^ (1<<5)])
+                oldpos = pos+1
+
+            byteArray = temp + bytes([byteArray[-1]])
+
+        print(byteArray)
+        return byteArray
+
+    # escape any 0x7D or 0x7E with 0x7D and swap bit 5
+    def escapeByte(self, byte):
+        if byte == 0x7D or byte == 0x7E:
+            return [0x7D, byte ^ (1<<5)]
+        else:
+            return [byte]
+
+    def encoder(self):
+        data = self._data
+        try:
+            stream = [escaped for byte in data[1:-1] for escaped in self.escapeByte(byte)]
+            result = bytearray([data[0]] + stream + [data[-1]])
+            return result
+        except:
+            return None
+
+
+class CommsPacket(object):
+    separator: ClassVar[int] = bytes([0x7E])
+
+    def __init__(self, data):
+        self._data = data
+        self._sequence = None
+        self._address = None
+        self._byteArray = None
+        self._datavalid = False
+        self._acked = None
+
+    @property
+    def byteArray(self):
+        return self._byteArray
+        
+    @property
+    def sequence(self):
+        return self._sequence
+
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def acked(self):
+        return self._acked
+
+    def decode(self):
+        """Returns true for data, false for ack/nack"""
+        byteArray = self._data
+    
+        # remove escape sequences for bytes containing escape patterns and convert back
+        if b'\x7D' in byteArray:
+            temp = b''
+            oldpos = 0
+            while b'\x7D' in byteArray[oldpos:]:
+                pos = byteArray.find(b'\x7D')
+                temp += byteArray[oldpos:pos] + bytes([byteArray[pos+1] ^ (1<<5)])
+                oldpos = pos+2
+            byteArray = temp
+
+        # check checksum and control bytes
+        tmp_comms = commsFromBytes(byteArray)
+        if tmp_comms.compareCrc():
+            control     = tmp_comms.getData()[tmp_comms.getControl()+1]
+            self._sequence_receive = (tmp_comms.getData()[tmp_comms.getControl()] >> 1) & 0x7F
+            
+            # get type of packet
+            ctrl_flag    = control & 0x0F
+            if ctrl_flag == 0x05:
+                # received NACK
+                self._acked = False
+                retval = True
+            elif ctrl_flag == 0x01:
+                # received ACK
+                self._acked = True
+                retval = False
+            else:
+                # received data
+                self._sequence = ((control >> 1) & 0x7F) + 1
+                self._address = tmp_comms.getData()[1]
+                self._byteArray = tmp_comms.getData()[tmp_comms.getInformation():tmp_comms.getFcs()]
+                retval = True
+        
+        return retval
 
 # ACK specific formating
 class CommsACK(CommsFormat):
