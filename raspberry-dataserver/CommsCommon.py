@@ -125,23 +125,12 @@ class PayloadFormat():
     # class variables excluded from init args and output dict
     _RPI_VERSION: ClassVar[int]  = field(default=0xA2, init=False, repr=False)
     _dataStruct:  ClassVar[Any]  = field(default=Struct("<BIB"), init=False, repr=False)
-    _autogen:     ClassVar[bool] = field(default=False, init=False, repr=False)
     _byteArray:   bytearray      = field(default=None, init=False, repr=False)
 
     # Meta information
-    version: int                         = 0
-    timestamp: int                       = 0
-    payload_type: ClassVar[PAYLOAD_TYPE] = PAYLOAD_TYPE.UNSET
-
-    def __post_init__(self):
-        self.toByteArray()
-        self._autogen = True
-
-    def __setattr__(self, key, value):
-        self.__dict__[key] = value
-        # if any other variable is modified outside init, regenerate the bytearray
-        if self._autogen and key[0] != "_" and key != "version":
-            self.toByteArray()
+    version: int               = 0
+    timestamp: int             = 0
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.UNSET
 
     @classmethod
     def fromByteArray(cls, rec_bytes):
@@ -154,8 +143,8 @@ class PayloadFormat():
             5: CommandFormat,
             6: AlarmFormat,
         }
-        ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[0]]
-        data = ReturnType._dataStruct.unpack(rec_bytes[1:])
+        ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
+        data = ReturnType._dataStruct.unpack(rec_bytes)
         return ReturnType(*data)
 
     @property
@@ -165,11 +154,7 @@ class PayloadFormat():
 
     @byteArray.setter
     def byteArray(self, byte_array) -> None:
-        try:
-            #self.fromByteArray(byte_array)
-            self._byteArray = byte_array
-        except Exception:
-            raise
+        self._byteArray = byte_array
 
     def toByteArray(self) -> None:
         self.version = self._RPI_VERSION
@@ -199,7 +184,6 @@ class PayloadFormat():
 class DataFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
-    _type = PAYLOAD_TYPE.DATA
 
     # subclass member variables
     fsm_state: BL_STATES        = BL_STATES.IDLE
@@ -227,7 +211,7 @@ class DataFormat(PayloadFormat):
         tmp_state = 0
         (self.version,
         self.timestamp,
-        self.payload_type, # dummy to skip datatype
+        self.payload_type,
         tmp_state,
         self.pressure_air_supply,
         self.pressure_air_regulated,
@@ -243,11 +227,7 @@ class DataFormat(PayloadFormat):
         self.airway_pressure,
         self.flow,
         self.volume) = self._dataStruct.unpack(byteArray) 
-        try:
-            self.fsm_state = BL_STATES(tmp_state)
-        except Exception:
-            # no longer silently die, catch Exceptions higher up
-            raise
+        self.fsm_state = BL_STATES(tmp_state)
         self._byteArray = byteArray
 
 
@@ -294,7 +274,7 @@ class ReadbackFormat(PayloadFormat):
         #logging.info(binascii.hexlify(byteArray))
         (self.version,
         self.timestamp,
-        self.payload_type, # dummy to skip datatype
+        self.payload_type,
         self.duration_calibration,
         self.duration_buff_purge,
         self.duration_buff_flush,
@@ -357,7 +337,7 @@ class CycleFormat(PayloadFormat):
         #logging.info(binascii.hexlify(byteArray))
         (self.version,
         self.timestamp,
-        self.payload_type, # dummy to skip datatype
+        self.payload_type,
         self.respiratory_rate,
         self.tidal_volume,
         self.exhaled_tidal_volume,
@@ -397,6 +377,7 @@ class CommandFormat(PayloadFormat):
     def fromByteArray(self, byteArray):
         (self.version,
         self.timestamp,
+        self.payload_type,
         self.cmd_type,
         self.cmd_code,
         self.param) = self._dataStruct.unpack(byteArray) 
@@ -418,6 +399,7 @@ class AlarmFormat(PayloadFormat):
         alarm = 0
         (self.version,
         self.timestamp,
+        self.payload_type,
         self.alarm_type,
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
