@@ -1,9 +1,10 @@
 var chart;
 var refreshIntervalId;
+var updateRefreshIntervalId;
+
 var initial_yaxis_var1 = [];
 var initial_yaxis_var2 = [];
 
-var updated_xaxis = [];
 var updated_yaxis_var1 = [];
 var updated_yaxis_var2 = [];
 
@@ -94,7 +95,6 @@ function requestDataVar1(var1, var2) {
   refreshIntervalId = setTimeout(requestDataVar1, 200, var1, var2);
 }
 
-requestDataVar1("airway_pressure", "volume");
 
 
 
@@ -181,6 +181,7 @@ $(document).ready(function() {
       } 
     }
   });
+  requestDataVar1("airway_pressure", "volume");
 });
 
 
@@ -201,26 +202,78 @@ function getSelectValues(select) {
 }
 
 
-function updated_last_results(var1, var2) {
+function updated_init_results(var1, var2){
   $.getJSON({
-      url: '/last_N_data',
-      success: function(data) {
+    url: '/last_N_data',
+    success: function(data) {
+      var timestamp = 0;
         for (i=0; i<data.length; i++) {
-          // terrible hack to show the time in reverse order
-          time_x = (-i/5).toFixed(2)
-          updated_xaxis.push(time_x);
-          //initial_xaxis.push(data[i]["timestamp"]);
-          updated_yaxis_var1.push(data[i]["airway_pressure"]);
-          updated_yaxis_var2.push(data[i]["airway_pressure"]);
+          var seconds = data[i]["timestamp"]/1000;
+          if (i==data.length-1) timestamp = seconds;
+          if ( seconds == "" ) continue;
+          updated_yaxis_var1.push({x : seconds, y : data[i][var1]});
+          updated_yaxis_var2.push({x : seconds, y : data[i][var2]});
         }
-        console.log(updated_xaxis);
         //reverse because data is read from the other way
-        updated_xaxis.reverse();
         updated_yaxis_var1.reverse();
         updated_yaxis_var2.reverse();
+        console.log('init results, timestamp: ',timestamp);
+        for ( let i = 0 ; i < updated_yaxis_var1.length; i++){
+          console.log('filling up with ',updated_yaxis_var1[i]['x'], ' - ',timestamp);
+          updated_yaxis_var1[i]['x'] = updated_yaxis_var1[i]['x'] - timestamp;
+          updated_yaxis_var2[i]['x']   = updated_yaxis_var2[i]['x']   - timestamp;
+        }
+    },
+    cache: false
+  });
+}
+
+
+function updateRequestDataVar(var1, var2) {
+  $.ajax({
+      url: '/live-data',
+      success: function(point) {
+
+        var seconds = point["timestamp"]/1000;
+
+        // this is a hack for the test data so that we can cycle data
+        if ( seconds < current_timestamp ) current_timestamp = seconds - 0.20;
+        
+        //protect against bogus timestamps, skip those that are earlier than we already have
+        if (current_timestamp == -1 || seconds > current_timestamp ) {
+          // get difference between last time stamp and this and apply to existing points
+          var diff = 0;
+          if ( current_timestamp == -1 ){
+              diff = seconds;
+          }
+          else {
+              diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
+          }
+          current_timestamp = seconds;
+          if(chart.data.datasets[0].data.length > 300){
+                          chart.data.datasets[0].data.shift();
+          }
+          
+          if(chart.data.datasets[1].data.length > 300){
+            chart.data.datasets[1].data.shift();
+          }                  
+ 
+          for ( let i = 0 ; i < updated_yaxis_var1.length; i++){
+              chart.data.datasets[0].data[i]['x'] = chart.data.datasets[0].data[i]['x'] - diff;
+              chart.data.datasets[1].data[i]['x'] = chart.data.datasets[1].data[i]['x'] - diff;
+          }
+  
+          chart.data.datasets[0].data.push({x : 0, y : point[var1]});
+          chart.data.datasets[1].data.push({ x : 0, y : point[var2]});
+          
+          chart.update();
+        }
+
       },
       cache: false
   });
+  // call it again after time in ms
+  updateRefreshIntervalId = setTimeout(updateRequestDataVar, 200, var1, var2);
 }
 
 
@@ -231,45 +284,47 @@ function updateChartType() {
   var selection_results = getSelectValues(selection)
   console.log("selected variables: ", selection_results);
   chart.destroy();
-  //chart.data.labels = [];
-  //chart.data.datasets[0].data = [];
-  //chart.data.datasets[1].data = [];
-  //here we destroy/delete the old or previous chart and redraw it again
-  updated_xaxis = [];
+
+  
   updated_yaxis_var1 = [];
   updated_yaxis_var2 = [];
-  clearInterval(refreshIntervalId);
-  updated_last_results(selection_results[0], selection_results[1]);
-  
 
-  var ctx = document.getElementById('pressure_air_supply');
-  chart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: updated_xaxis,
-      datasets: [{ 
-        label: 'A',
-        yAxisID: 'A',
-        data: updated_yaxis_var1,
-        label: selection_results[0],
-        borderColor: "#0000FF",
-        fill: false,
+  clearTimeout(refreshIntervalId);
+  clearTimeout(updateRefreshIntervalId);
+  updated_init_results(selection_results[0], selection_results[1]);
+  updateRequestDataVar(selection_results[0], selection_results[1]);
+
+  $(document).ready(function() {
+    var ctx = document.getElementById('pressure_air_supply');
+    chart = new Chart(ctx, {
+      type: 'scatter',
+      data: {
+        labels: [],
+        datasets: [{ 
+          label: 'A',
+          yAxisID: 'A',
+          data: updated_yaxis_var1,
+          label: selection_results[0],
+          borderColor: "#0000FF",
+          fill: false,
+          showLine: true,
+          }, 
+        { 
+          label: 'B',
+          yAxisID: 'B',
+          data: updated_yaxis_var2,
+          label: selection_results[1],
+          borderColor: "#000000",
+          fill: false,
+          showLine: true,
+        }]
       },
-      { 
-        label: 'B',
-        yAxisID: 'B',
-        data: updated_yaxis_var2,
-        label: selection_results[1],
-        borderColor: "#000000",
-        fill: false,
-      }]
-    },
       options: {
         elements: {
           point: { 
               radius: 0
           }
-        },        
+        },       
         responsive: true,
         stroke: {
             curve: 'smooth'
@@ -282,47 +337,47 @@ function updateChartType() {
           text: 'pressure_air_supply'
         },
         scales: {
-		      xAxes: [{
+          xAxes: [{
             //type: 'time',
             time: {
-			        unit: 'second',
-			        displayFormat: 'second'
+              unit: 'second',
+              displayFormat: 'second',
+              type: 'realtime'
             },
-		        ticks: {
-              maxTicksLimit: 5,
+            ticks: {
               fontSize: 25,
-		        	maxRotation: 0
-		        }
-		      }],
+              maxTicksLimit: 5,
+              maxRotation: 0
+            }
+          }],
           yAxes: [{
             id: 'A',
             type: 'linear',
             position: 'left',
-		        color: "#0000FF",
             ticks: {
-              fontColor: "#0000FF", // this here
-              fontSize: 25,
-            },
-          }, 
+               fontColor: "#0000FF", // this here
+               fontSize: 25,
+             },
+            }, 
           {
             id: 'B',
             type: 'linear',
             position: 'right',
-		        color: "#000000",
             ticks: {
-              fontColor: "#000000", // this here
-              fontSize: 25,
+                    fontColor: "#000000", // this here
+                    fontSize: 25,
             },
           }]
-	      },
-		    legend : {
+        },
+        legend : {
           display: true,
           "labels": {
           "fontSize": 20,
           }
         } 
       }
-   });
+    });
+  });
    requestDataVar1(selection_results[0], selection_results[1]);
 }; // ends update button
 
