@@ -8,13 +8,13 @@ CommsFormat::CommsFormat(uint8_t info_size, uint8_t address, uint16_t control) {
 CommsFormat::CommsFormat(Payload &pl) {
     uint8_t address;
     switch (pl.getType()) {
-        case PRIORITY::ALARM:
+        case PRIORITY::ALARM_ADDR:
             address = PACKET_ALARM;
             break;
-        case PRIORITY::CMD:
+        case PRIORITY::CMD_ADDR:
             address = PACKET_CMD;
             break;
-        case PRIORITY::DATA:
+        case PRIORITY::DATA_ADDR:
             address = PACKET_DATA;
             break;
         default:

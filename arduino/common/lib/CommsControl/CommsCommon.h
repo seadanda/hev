@@ -41,10 +41,10 @@
 
 // enum of all transfer types
 enum PRIORITY : uint8_t {
-    DATA  = PACKET_DATA,
-    CMD   = PACKET_CMD,
-    ALARM = PACKET_ALARM,
-    UNSET = 0x00
+    DATA_ADDR  = PACKET_DATA,
+    CMD_ADDR   = PACKET_CMD,
+    ALARM_ADDR = PACKET_ALARM,
+    UNSET_ADDR = 0x00
 };
 
 // payload consists of type and information
@@ -52,7 +52,7 @@ enum PRIORITY : uint8_t {
 // information is set as information in the protocol
 class Payload {
 public:
-    Payload(PRIORITY type = PRIORITY::UNSET)  {_type = type; }
+    Payload(PRIORITY type = PRIORITY::UNSET_ADDR)  {_type = type; }
     Payload(const Payload &other) {
         _type = other._type;
         _size = other._size;
@@ -66,7 +66,7 @@ public:
     }
 
     ~Payload() { unset(); }
-    void unset() { memset( _buffer, 0, PAYLOAD_MAX_SIZE_BUFFER); _type = PRIORITY::UNSET; _size = 0;}
+    void unset() { memset( _buffer, 0, PAYLOAD_MAX_SIZE_BUFFER); _type = PRIORITY::UNSET_ADDR; _size = 0;}
 
     void setType(PRIORITY type) { _type = type; }
     PRIORITY getType() {return _type; }

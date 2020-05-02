@@ -32,13 +32,13 @@
 const float MAX_VALVE_FRAC_OPEN = 0.68;
 // input params
 enum PAYLOAD_TYPE : uint8_t {
-    UNSET      = 0,
-    DATA       = 1,
-    READBACK   = 2,
-    CYCLE      = 3,
-    THRESHOLDS = 4,
-    CMD        = 5,
-    ALARM      = 6
+    UNSET        = 0,
+    DATA         = 1,
+    READBACK     = 2,
+    CYCLE        = 3,
+    THRESHOLDS   = 4,
+    CMD          = 5,
+    ALARM        = 6
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -134,13 +134,6 @@ struct alarm_format {
     uint32_t param        = 0;
 };
 #pragma pack()
-
-enum DATA_TYPE: uint8_t  {
-    FAST       =  1,
-    READBACK   =  2,
-    CYCLE      =  3,
-    THRESHOLDS =  4
-};
 
 // struct for all data sent
 #pragma pack(1)

@@ -137,7 +137,7 @@ void CommsControl::receiver() {
 
 bool CommsControl::writePayload(Payload &pl) {
     PRIORITY payload_type = pl.getType();
-    if (payload_type != PRIORITY::UNSET) {
+    if (payload_type != PRIORITY::UNSET_ADDR) {
         // create comms format using payload, the type is deduced from the payload itself
         CommsFormat comms = CommsFormat(pl);
 
@@ -282,11 +282,11 @@ PRIORITY CommsControl::getInfoType(uint8_t &address) {
 // get link to queue according to packet format
 RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *CommsControl::getQueue(PRIORITY &type) {
     switch (type) {
-        case PRIORITY::ALARM:
+        case PRIORITY::ALARM_ADDR:
             return &_ring_buff_alarm;
-        case PRIORITY::CMD:
+        case PRIORITY::CMD_ADDR:
             return &_ring_buff_cmd;
-        case PRIORITY::DATA:
+        case PRIORITY::DATA_ADDR:
             return &_ring_buff_data;
         default:
             return nullptr;
