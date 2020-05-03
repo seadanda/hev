@@ -123,9 +123,9 @@ class PAYLOAD_TYPE(IntEnum):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]  = field(default=0xA2, init=False, repr=False)
-    _dataStruct:  ClassVar[Any]  = field(default=Struct("<BIB"), init=False, repr=False)
-    _byteArray:   bytearray      = field(default=None, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA2, init=False, repr=False)
+    _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
+    _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
     # Meta information
     version: int               = 0
@@ -168,10 +168,10 @@ class PayloadFormat():
         return self._RPI_VERSION == self.version
 
     def getSize(self) -> int:
-        return len(self._byteArray)
+        return len(self.byteArray)
 
     def getType(self) -> Any:
-        return self.payload_type.name if isinstance(self.payload_type, IntEnum) else self.payload_type
+        return self.payload_type
     
     def getDict(self) -> Dict:
         return {k: v.name if isinstance(v, IntEnum) or isinstance(v, Enum) else v for k, v in asdict(self).items()}
@@ -184,6 +184,7 @@ class PayloadFormat():
 class DataFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBBHHHHHHHHHHHfff")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
 
     # subclass member variables
     fsm_state: BL_STATES        = BL_STATES.IDLE
@@ -237,6 +238,7 @@ class DataFormat(PayloadFormat):
 @dataclass
 class ReadbackFormat(PayloadFormat):
     _dataStruct = Struct("<BIBHHHHHHHHHHHBBBBBBBBBBBBBBf")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
 
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
@@ -311,6 +313,7 @@ class ReadbackFormat(PayloadFormat):
 class CycleFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBfffffffffHHHHBHHB")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.CYCLE
 
     respiratory_rate: float        = 0.0
     tidal_volume: float            = 0.0
@@ -369,6 +372,7 @@ class CycleFormat(PayloadFormat):
 @dataclass
 class CommandFormat(PayloadFormat):
     _dataStruct = Struct("<BIBBBI")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.CMD
 
     cmd_type: int = 0
     cmd_code: int = 0
@@ -390,6 +394,7 @@ class CommandFormat(PayloadFormat):
 @dataclass
 class AlarmFormat(PayloadFormat):
     _dataStruct = Struct("<BIBBBI")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.ALARM
 
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN

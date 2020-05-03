@@ -21,17 +21,20 @@ def commsFromBytes(byteArray):
 
 def generateAlarm(payload):
     comms = CommsFormat(info_size = payload.getSize(), address = 0xC0)
-    comms.setInformation(payload.byteArray)
+    bytelist = bytes([byte for byte in bytearray(payload.byteArray)])
+    comms.setInformation(bytelist)
     return comms
 
 def generateCmd(payload):
     comms = CommsFormat(info_size = payload.getSize(), address = 0x80)
-    comms.setInformation(payload.byteArray)
+    bytelist = bytes([byte for byte in bytearray(payload.byteArray)])
+    comms.setInformation(bytelist)
     return comms
 
 def generateData(payload):
     comms = CommsFormat(info_size = payload.getSize(), address = 0x40)
-    comms.setInformation(payload.byteArray)
+    bytelist = bytes([byte for byte in bytearray(payload.byteArray)])
+    comms.setInformation(bytelist)
     return comms
 
 class CommsChecksumError(Exception):
