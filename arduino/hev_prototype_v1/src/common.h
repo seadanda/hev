@@ -23,6 +23,16 @@
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
 // input params
+enum PAYLOAD_TYPE : uint8_t {
+    UNSET        = 0,
+    DATA         = 1,
+    READBACK     = 2,
+    CYCLE        = 3,
+    THRESHOLDS   = 4,
+    CMD          = 5,
+    ALARM        = 6
+};
+
 enum CMD_TYPE  : uint8_t {
     GENERAL           =  1,
     SET_DURATION      =  2,
@@ -65,11 +75,12 @@ enum VENTILATION_MODE : uint8_t {
 
 #pragma pack(1)
 struct cmd_format {
-    uint8_t  version   = HEV_FORMAT_VERSION;
-    uint32_t timestamp = 0;
-    uint8_t  cmd_type  = 0;
-    uint8_t  cmd_code  = 0;
-    uint32_t param     = 0;
+    uint8_t  version      = HEV_FORMAT_VERSION;
+    uint32_t timestamp    = 0;
+    uint8_t  payload_type = PAYLOAD_TYPE::CMD;
+    uint8_t  cmd_type     = 0;
+    uint8_t  cmd_code     = 0;
+    uint32_t param        = 0;
 };
 #pragma pack()
 
@@ -110,20 +121,14 @@ enum ALARM_CODES: uint8_t {
 
 #pragma pack(1)
 struct alarm_format {
-    uint8_t  version    = HEV_FORMAT_VERSION;
-    uint32_t timestamp  = 0;
-    uint8_t  alarm_type = 0;
-    uint8_t  alarm_code = 0;
-    uint32_t param      = 0;
+    uint8_t  version      = HEV_FORMAT_VERSION;
+    uint32_t timestamp    = 0;
+    uint8_t  payload_type = PAYLOAD_TYPE::ALARM;
+    uint8_t  alarm_type   = 0;
+    uint8_t  alarm_code   = 0;
+    uint32_t param        = 0;
 };
 #pragma pack()
-
-enum DATA_TYPE: uint8_t  {
-    FAST       =  1,
-    READBACK   =  2,
-    CYCLE      =  3,
-    THRESHOLDS =  4
-};
 
 // struct for all data sent
 #pragma pack(1)
@@ -131,7 +136,7 @@ struct fast_data_format {
 // fast values - read every ~10 ms
     uint8_t  version                = HEV_FORMAT_VERSION;
     uint32_t timestamp              = 0;
-    uint8_t  data_type              = DATA_TYPE::FAST;
+    uint8_t  payload_type           = PAYLOAD_TYPE::DATA;
     uint8_t  fsm_state              = 0; //UNKNOWN
     uint16_t pressure_air_supply    = 0;
     float    pressure_air_regulated = 0;
@@ -144,9 +149,9 @@ struct fast_data_format {
     float    pressure_diff_patient  = 0;
     uint16_t ambient_pressure       = 0;
     uint16_t ambient_temperature    = 0;
-    float airway_pressure           = 0;
-    float flow                      = 0;
-    float volume                    = 0;//41
+    float airway_pressure           = 0.0;
+    float flow                      = 0.0;
+    float volume                    = 0.0;
 };
 #pragma pack()
 
@@ -155,7 +160,7 @@ struct readback_data_format {
 // readback values
     uint8_t  version                  = HEV_FORMAT_VERSION;
     uint32_t timestamp                = 0;
-    uint8_t  data_type                = DATA_TYPE::READBACK;
+    uint8_t  payload_type             = PAYLOAD_TYPE::READBACK;
     uint16_t duration_calibration     = 0;
     uint16_t duration_buff_purge      = 0;
     uint16_t duration_buff_flush      = 0;
@@ -192,20 +197,21 @@ struct cycle_data_format {
 // per breath values
     uint8_t  version                    = HEV_FORMAT_VERSION;
     uint32_t timestamp                  = 0;
-    uint8_t  data_type                  = DATA_TYPE::CYCLE;
+    uint8_t  payload_type               = PAYLOAD_TYPE::CYCLE;
 
-    float respiratory_rate              = 0;
 
-    float tidal_volume                  = 0;
-    float exhaled_tidal_volume          = 0;
-    float inhaled_tidal_volume          = 0;
+    float respiratory_rate              = 0.0;
 
-    float minute_volume                 = 0;
-    float exhaled_minute_volume         = 0;
-    float inhaled_minute_volume         = 0;
+    float tidal_volume                  = 0.0;
+    float exhaled_tidal_volume          = 0.0;
+    float inhaled_tidal_volume          = 0.0;
 
-    float lung_compliance               = 0;
-    float static_compliance             = 0;
+    float minute_volume                 = 0.0;
+    float exhaled_minute_volume         = 0.0;
+    float inhaled_minute_volume         = 0.0;
+
+    float lung_compliance               = 0.0;
+    float static_compliance             = 0.0;
 
     uint16_t inhalation_pressure        = 0;  // mean airway pressure
     uint16_t peak_inspiratory_pressure  = 0;  
