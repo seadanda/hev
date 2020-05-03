@@ -42,8 +42,6 @@ void setup()
     ledcAttachPin(pin_buzzer, 3);  
     ledcAttachPin(pin_valve_inhale , pwm_chan_inhale);  
     ledcAttachPin(pin_valve_exhale , pwm_chan_exhale);  
-    pin_to_chan[pin_valve_inhale] = pwm_chan_inhale;
-    pin_to_chan[pin_valve_exhale] = pwm_chan_exhale;
 
 // map<int,int> pin_to_chan; // = { pin_valve_inhale : pwm_chan_inhale , pin_valve_exhale : pwm_chan_exhale};
 #else
@@ -86,8 +84,8 @@ void loop()
 
 
     ui_loop.reportFastReadings();
-//    ui_loop.reportReadbackValues();
-//    ui_loop.reportCycleReadings();
+    ui_loop.reportReadbackValues();
+    ui_loop.reportCycleReadings();
 
     // per cycle sender
     comms.sender();
