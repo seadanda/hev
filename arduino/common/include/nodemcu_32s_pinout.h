@@ -6,7 +6,7 @@
 const int pin_valve_air_in        = 25;   // DAC1  // A18
 const int pin_valve_o2_in         = 5;   // STRAPPING PIN (prefer as output / high-Z)
 const int pin_valve_purge         = 18;
-const int pin_spare_1    = 26;// DAC2;  // A19  // spare
+const int pin_spare_1             = 26;// DAC2;  // A19  // spare
 
     // pwm pins
 const int pin_valve_inhale        = 21;  // formerly valve_out
