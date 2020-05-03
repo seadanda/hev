@@ -184,6 +184,7 @@ class CommsPacket(object):
         if tmp_comms.compareCrc():
             control     = tmp_comms.getData()[tmp_comms.getControl()+1]
             self._sequence_receive = (tmp_comms.getData()[tmp_comms.getControl()] >> 1) & 0x7F
+            self._address = tmp_comms.getData()[1]
             
             # get type of packet
             ctrl_flag    = control & 0x0F
@@ -196,7 +197,6 @@ class CommsPacket(object):
             else:
                 # received data
                 self._sequence_receive = ((control >> 1) & 0x7F) + 1
-                self._address = tmp_comms.getData()[1]
                 self._byteArray = tmp_comms.getData()[tmp_comms.getInformation():tmp_comms.getFcs()]
         else:
             raise CommsChecksumError
