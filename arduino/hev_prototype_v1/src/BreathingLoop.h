@@ -16,7 +16,6 @@ class BreathingLoop
 public:
     BreathingLoop();
     ~BreathingLoop();
-    uint8_t getVentilationMode();
     uint8_t getFsmState();
     void FSM_assignment();
     void FSM_breathCycle();
@@ -25,7 +24,9 @@ public:
     void doReset();
     bool getRunning();
     void updateReadings();
-    readings<uint16_t> getReadingAverages();
+    void updateRawReadings();
+    readings<int16_t> getReadingAverages();
+    readings<int16_t> getRawReadings();
     float getRespiratoryRate();
     float getFlow();
     float getIERatio();
@@ -38,6 +39,8 @@ public:
     uint8_t valvePurgeEnabled();
     uint8_t inhaleTriggerEnabled();
     uint8_t exhaleTriggerEnabled();
+    void    setVentilationMode(VENTILATION_MODE mode);
+    VENTILATION_MODE getVentilationMode();
 
     states_durations &getDurations();
 
@@ -60,18 +63,11 @@ public:
     };
 
 
-//TODO: this should probably be common
-    enum VENTILATION_MODES : uint8_t
-    {
-        LAB_MODE_BREATHE = 0,
-        LAB_MODE_PURGE = 1,
-        LAB_MODE_FLUSH = 2
-    };
 
 private:
     uint32_t            _fsm_time ;
     uint32_t            _fsm_timeout;
-    VENTILATION_MODES   _ventilation_mode;
+    VENTILATION_MODE        _ventilation_mode;
     BL_STATES           _bl_state;
     bool                _running;
     bool                _reset;
@@ -84,8 +80,8 @@ private:
     uint32_t _calib_N;
     uint32_t _calib_time;
     uint32_t _calib_timeout;
-    readings<uint32_t> _calib_sums;
-    readings<uint16_t> _calib_avgs;
+    readings<int32_t> _calib_sums;
+    readings<int16_t> _calib_avgs;
 
     // timeouts
     uint32_t calculateDurationExhale();
@@ -93,8 +89,9 @@ private:
 
     // readings
     void resetReadingSums();
-    readings<uint32_t> _readings_sums; // 32 bit due to possible analog read overflow
-    readings<uint16_t> _readings_avgs;
+    readings<int32_t> _readings_sums; // 32 bit due to possible analog read overflow
+    readings<int16_t> _readings_avgs;
+    readings<int16_t> _readings_raw;
     bool     _readings_reset;
     uint32_t _readings_N;
     uint32_t _readings_time;

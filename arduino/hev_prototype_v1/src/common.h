@@ -8,12 +8,6 @@
 #include <huzzah32_pinout.h>
 #elif defined(ARDUINO_NodeMCU_32S)
 #include <nodemcu_32s_pinout.h>
-#elif defined(ARDUINO_AVR_UNO)
-#ifdef HEV_MINI_SYSTEM
-#include <Arduino_uno_pinout_minisystem.h>
-#else
-#include <Arduino_uno_pinout.h>
-#endif
 #elif defined(ARDUINO_SAMD_MKRVIDOR4000)
 #include <Arduino_MKR_4000_Vidor_pinout.h>
 #elif defined(ARDUINO_SAMD_MKRWIFI1010)
@@ -22,11 +16,9 @@
 #include <Arduino_Nano_33_IOT_pinout.h>
 #elif defined(ARDUINO_SAM_DUE)
 #include <Arduino_Due_pinout.h>
-#elif defined(ARDUINO_AVR_YUN)
-#include <Arduino_Yun_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA2
+#define HEV_FORMAT_VERSION 0xA3
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
@@ -42,8 +34,7 @@ enum CMD_TYPE  : uint8_t {
 enum CMD_GENERAL : uint8_t {
     START =  1,
     STOP  =  2,
-    PURGE =  3,
-    FLUSH =  4
+    RESET =  3
 };
 
 // Taken from the FSM doc. Correct as of 1400 on 20200417
@@ -61,11 +52,15 @@ enum CMD_SET_DURATION : uint8_t {
     EXHALE          = 11
 };
 
-enum CMD_SET_MODE : uint8_t {
-    HEV_MODE_PS,
-    HEV_MODE_CPAP,
-    HEV_MODE_PRVC,
-    HEV_MODE_TEST
+enum VENTILATION_MODE : uint8_t {
+    UNKNOWN          = 0,
+    HEV_MODE_PS      = 1,
+    HEV_MODE_CPAP    = 2,
+    HEV_MODE_PRVC    = 3,
+    HEV_MODE_TEST    = 4,
+    LAB_MODE_BREATHE = 5,
+    LAB_MODE_PURGE   = 6,
+    LAB_MODE_FLUSH   = 7
 };
 
 #pragma pack(1)
@@ -151,7 +146,7 @@ struct fast_data_format {
     uint16_t ambient_temperature    = 0;
     float airway_pressure           = 0;
     float flow                      = 0;
-    float volume                    = 0;
+    float volume                    = 0;//41
 };
 #pragma pack()
 
@@ -178,7 +173,7 @@ struct readback_data_format {
     uint8_t  valve_inhale             = 0;
     uint8_t  valve_exhale             = 0;
     uint8_t  valve_purge              = 0;
-    uint8_t  ventilation_mode         = CMD_SET_MODE::HEV_MODE_PS;
+    uint8_t  ventilation_mode         = VENTILATION_MODE::HEV_MODE_PS;
 
     uint8_t valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     uint8_t valve_exhale_percent      = 0;
@@ -281,7 +276,7 @@ struct alarm_thresholds {
 
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
 void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
-uint16_t adcToMillibar(uint16_t adc, uint16_t offset = 0);
+int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{

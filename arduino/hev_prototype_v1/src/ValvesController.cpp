@@ -16,13 +16,17 @@ ValvesController::ValvesController()
     _inhale.state = VALVE_STATE::CLOSED;
 
     _exhale.pin = pin_valve_exhale;
-    _exhale.proportional = false;
+    _exhale.proportional = true;
     _exhale.state = VALVE_STATE::CLOSED;
 
     _purge.pin = pin_valve_purge;
     _purge.proportional = false;
     _purge.state = VALVE_STATE::CLOSED;
 
+#ifdef CHIP_ESP32
+    _pin_to_chan[pin_valve_inhale] = pwm_chan_inhale;
+    _pin_to_chan[pin_valve_exhale] = pwm_chan_exhale;
+#endif
 }
 
 ValvesController::~ValvesController()
@@ -45,7 +49,11 @@ void ValvesController::setPWMValve(int pin, float frac_open)
 
 #ifdef CHIP_ESP32
     int duty_cycle = calcValveDutyCycle(pwm_resolution, frac_open);
-    int chan = pin_to_chan[pin];
+    int chan = _pin_to_chan[pin];
+    //if (pin == pin_valve_exhale)
+    //    chan = pwm_chan_exhale;
+    //else if (pin == pin_valve_inhale)
+    //    chan = pwm_chan_inhale;
     ledcWrite(chan, duty_cycle);
 #else
     int duty_cycle = pow(2, pwm_resolution) * frac_open;

@@ -43,18 +43,22 @@ void UILoop::reportFastReadings()
     if (tnow - _fast_report_time > _fast_report_timeout)
     {
 
-        readings<uint16_t> readings_avgs = _breathing_loop->getReadingAverages();
-        _fast_data.timestamp = static_cast<uint32_t>(readings_avgs.timestamp);
+	    // TO SWITCH BETWEEN RAW AND MILLIBAR DATA UNCOMMENT BELOW
+        readings<int16_t> readings = _breathing_loop->getReadingAverages();
+        //readings<int16_t> readings = _breathing_loop->getRawReadings();
+
+        _fast_data.timestamp = static_cast<uint32_t>(readings.timestamp);
         _fast_data.fsm_state = _breathing_loop->getFsmState();
-        _fast_data.pressure_air_supply = readings_avgs.pressure_air_supply;
-        _fast_data.pressure_air_regulated = readings_avgs.pressure_air_regulated;
-        _fast_data.pressure_buffer = readings_avgs.pressure_buffer;
-        _fast_data.pressure_inhale = readings_avgs.pressure_inhale;
-        _fast_data.pressure_patient = readings_avgs.pressure_patient;
-        _fast_data.temperature_buffer = readings_avgs.temperature_buffer;
-        _fast_data.pressure_o2_supply = readings_avgs.pressure_o2_supply;
-        _fast_data.pressure_o2_regulated = readings_avgs.pressure_o2_regulated;
-        _fast_data.pressure_diff_patient = readings_avgs.pressure_diff_patient;
+
+        _fast_data.pressure_air_supply    = readings.pressure_air_supply;
+        _fast_data.pressure_air_regulated = readings.pressure_air_regulated;
+        _fast_data.pressure_buffer        = readings.pressure_buffer;
+        _fast_data.pressure_inhale        = readings.pressure_inhale;
+        _fast_data.pressure_patient       = readings.pressure_patient;
+        _fast_data.temperature_buffer     = readings.temperature_buffer;
+        _fast_data.pressure_o2_supply     = readings.pressure_o2_supply;
+        _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
+        _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
 
         _plSend.setPayload(PAYLOAD_TYPE::DATA, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_plSend);
@@ -93,7 +97,7 @@ void UILoop::reportReadbackValues()
         _readback_data.valve_exhale = vexhale;
         _readback_data.valve_purge = vpurge;
 
-        _readback_data.ventilation_mode = _breathing_loop->getVentilationMode();
+        _readback_data.ventilation_mode = static_cast<uint8_t>(_breathing_loop->getVentilationMode());
 
         _readback_data.valve_inhale_percent = 0;  //TODO
         _readback_data.valve_exhale_percent = 0;  //TODO
@@ -159,6 +163,8 @@ void UILoop::cmdGeneral(cmd_format &cf) {
             break;
         case CMD_GENERAL::STOP  : _breathing_loop->doStop();
             break;
+        case CMD_GENERAL::RESET : _breathing_loop->doReset();
+            break;
         default:
             break;
     }
@@ -169,7 +175,7 @@ void UILoop::cmdSetDuration(cmd_format &cf) {
 }
 
 void UILoop::cmdSetMode(cmd_format &cf) {
-    ;
+    _breathing_loop->setVentilationMode(static_cast<VENTILATION_MODE>(cf.cmd_code));
 }
 
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {

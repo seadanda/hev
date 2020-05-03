@@ -15,8 +15,6 @@ enum VALVE_STATE : bool
     OPEN = HIGH
 };
 
-static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
-static int chan_to_pin[50];  
 
 class ValvesController
 {
@@ -38,6 +36,7 @@ private:
     valve _inhale;
     valve _exhale;
     valve _purge;
+    uint8_t _pin_to_chan[50]; 
 
 };
 

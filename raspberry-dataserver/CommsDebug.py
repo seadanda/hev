@@ -30,6 +30,8 @@ class Dependant(object):
 
     def update_llipacket(self, payload):
         #logging.info(f"payload received: {payload}")
+        if hasattr(payload, 'ventilation_mode'):
+            logging.info(f"payload received: {payload.ventilation_mode}")
         #logging.info(f"payload received: {payload.fsm_state}")
         #logging.info(f"payload received: {payload.timestamp}")
         if hasattr(payload, 'fsm_state'):
@@ -44,14 +46,18 @@ dep = Dependant(comms)
 
 # initialise as start command, automatically executes toByteArray()
 #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
-cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
+#cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
 time.sleep(4)
+cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
+comms.writePayload(cmd)
+print('sent cmd purge')
+cmd = CommandFormat(cmd_type=CMD_TYPE.SET_MODE.value, cmd_code=VENTILATION_MODE.LAB_MODE_PURGE.value, param=0)
 comms.writePayload(cmd)
 print('sent cmd set inhale duration 1111')
 while True:
-    time.sleep(20)
-    #cmd.cmd_code = CMD_GENERAL.STOP.value # automatically executes toByteArray()
-    #comms.writePayload(cmd)
+    time.sleep(30)
+    cmd.cmd_code = CMD_GENERAL.STOP.value # automatically executes toByteArray()
+    comms.writePayload(cmd)
     print('sent cmd stop')
     pass
 
