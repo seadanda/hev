@@ -4,10 +4,11 @@ import asyncio
 import serial_asyncio
 import logging
 import binascii
+import time
 from collections import deque
 from struct import error as StructError
-from CommsCommon import PayloadFormat, DataFormat
-from CommsFormat import CommsPacket, CommsACK, CommsNACK
+from CommsCommon import PayloadFormat
+from CommsFormat import CommsPacket, CommsACK, CommsNACK, CommsChecksumError
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
@@ -27,49 +28,63 @@ class CommsLLI:
         self._data = deque(maxlen = 16)
         self._datavalid = asyncio.Event()
         # receive
+        self._sequence_send    = 0
         self._sequence_receive = 0
+        self._timeLastTransmission = 0
 
     async def main(self, device, baudrate):
         self._reader, self._writer = await serial_asyncio.open_serial_connection(url=device, baudrate=baudrate, timeout = 2, dsrdtr = True)
         self._connected = True
         while self._connected:
-            #sender = self.send()
+            sender = self.send()
             receiver = self.recv()
-            await asyncio.gather(*[receiver], return_exceptions=True)
+            await asyncio.gather(*[receiver, sender], return_exceptions=True)
 
-    #async def sender(self, packet):
-    #    while self._sending:
-    #        self._datavalid.wait()
-    #        if self._writer is not None:
-    #            self.sendQueue(self._alarms  ,  10)
-    #            self.sendQueue(self._commands,  50)
-    #            self.sendQueue(self._data    , 200)
-    #        if self.finishedSending():
-    #            self._datavalid.clear()
+    def sendQueue(self, queue, timeout):
+        if len(queue) > 0:
+            logging.debug(f'Queue length: {len(queue)}')
+            current_time = int(round(time.time() * 1000))
+            if current_time > (self._timeLastTransmission + timeout):
+                self._timeLastTransmission = current_time
+                queue[0].setSequenceSend(self._sequence_send)
+                self.sendPacket(queue[0])
+                    
+    async def send(self):
+        while self._connected:
+            await self._datavalid.wait()
+            self.sendQueue(self._alarms, 10)
+            self.sendQueue(self._commands, 50)
+            self.sendQueue(self._data, 200)
+            if self.finishedSending():
+                self._datavalid.clear()
 
     async def sendPacket(self, packet):
-        logging.info(f"Sending {binascii.hexlify(packet.encode())}")
+        logging.debug(f"Sending {binascii.hexlify(packet.encode())}")
         self._writer.write(packet.encode())
+
+    async def readPacket(self):
+        while True:
+            rawdata = await self._reader.readuntil(CommsPacket.start_flag)
+            # valid packets are minimum 6 bytes excluding start flag
+            if len(rawdata) >= 6:
+                # replace start flag which was stripped while searching
+                rawdata = CommsPacket.start_flag + rawdata
+                break
+        return CommsPacket(bytearray(rawdata))
+
 
     async def recv(self):
         while self._connected:
-            while True:
-                rawdata = await self._reader.readuntil(CommsPacket.separator)
-                # valid packets are minimum 6 bytes excluding start flag
-                if len(rawdata) >= 6:
-                    # replace start flag which was stripped
-                    rawdata = CommsPacket.separator + rawdata
-                    break
+            packet = await self.readPacket()
 
-            data = bytearray()
-            for el in rawdata:
-                data.extend(bytes([el]))
-            
-            packet = CommsPacket(data)
+            try:
+                data = packet.decode()
+            except CommsChecksumError:
+                # checksum failed! wait for it to be resent
+                logging.warning(f"Packet did not match checksum: {packet._data}")
+                break
 
-            is_response = packet.decode()
-
-            if is_response:
+            if data is None:
                 # packet is an ack/nack from previously sent data
                 if packet.acked:
                     logging.debug("Received ACK")
@@ -78,14 +93,15 @@ class CommsLLI:
                     logging.debug("Received NACK")
                     #trigger another send, if anything is there
             else:
-                # packet should contain data
+                # packet should contain valid data
                 try:
                     payload = PayloadFormat.fromByteArray(packet.byteArray)
                     logging.debug(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
                     comms_response = CommsACK(packet.address)
                 except (StructError, ValueError):
-                    # invalid payload
+                    # invalid payload, but valid checksum - this is bad!
                     logging.error(f"Invalid payload: {payload}")
+                    # restart/reflash/swap to redundant microcontroller?
                     comms_response = CommsNACK(packet.address)
                 finally:
                     comms_response.setSequenceReceive(packet.sequence_receive)
