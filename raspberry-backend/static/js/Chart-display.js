@@ -98,6 +98,16 @@ function last_results() {
 function setGaugeValue(name, value){
     obj[name].data.datasets[0].gaugeData['setvalue'] = value;
 }
+function getGaugeValue(name){
+    return obj[name].data.datasets[0].gaugeData['setvalue'];
+}
+function getGaugeMinValue(name){
+    return obj[name].data.datasets[0].gaugeLimits[0];
+}
+function getGaugeMaxValue(name){
+    return obj[name].data.datasets[0].gaugeLimits[obj[name].data.datasets[0].gaugeLimits.length-1];
+}
+
 
 function requestChartVar() {
     $.ajax({

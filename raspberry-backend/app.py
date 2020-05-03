@@ -3,12 +3,12 @@
 # Python monitoring code
 # USAGE:  python3 app.py
 #
-# Last update: April 20, 2020
+# Last update: May 5, 2020
 
 from time import time
 from flask import Flask, render_template, make_response, jsonify, Response, request
 import sqlite3
-#import json
+import argparse
 from flask import json
 import chardet
 from hevclient import HEVClient
@@ -32,7 +32,7 @@ def getList(dict):
 def hello_world():
    return render_template('index.html', result=live_data())
 
-@WEBAPP.route('/prototype', methods=['GET', 'POST'])
+@WEBAPP.route('/testing', methods=['GET', 'POST'])
 def prototype():
    return render_template('index_prototype.html', result=live_data())
 
@@ -103,6 +103,7 @@ def data_handler():
     hevclient.set_thresholds(converted_output)
 
     return render_template('index.html', result=live_data(), patient=patient_name)
+
 
 def number_rows(table_name):
     conn = sqlite3.connect(sqlite_file)
@@ -251,8 +252,16 @@ def last_N_alarms():
     return response
 
 
+def parse_args():
+    parser = argparse.ArgumentParser(description='HEV webserver')
+    parser.add_argument('--host', default='127.0.0.1')    
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-    WEBAPP.run(debug=True, host='127.0.0.1', port=5000)
+    ARGS = parse_args()
+
+    WEBAPP.run(debug=True, host=ARGS.host, port=5000)
 
 
 
