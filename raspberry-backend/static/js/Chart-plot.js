@@ -18,6 +18,7 @@ function setChartProtXaxisRange(min,max){
 }
 
 
+
 /**
  * Request last N data from the server, add it to the graph
  */
@@ -41,11 +42,12 @@ function init_results(){
           console.log('filling up with ',initial_yaxis_var1[i]['x'], ' - ',timestamp);
           initial_yaxis_var1[i]['x'] = initial_yaxis_var1[i]['x'] - timestamp;
           initial_yaxis_var2[i]['x']   = initial_yaxis_var2[i]['x']   - timestamp;
-        }
+        }        
     },
     cache: false
   });
 }
+
 
 
 function requestDataVar1(var1, var2) {
@@ -72,6 +74,7 @@ function requestDataVar1(var1, var2) {
           if(chart.data.datasets[0].data.length > 300){
                           chart.data.datasets[0].data.shift();
           }
+
           
           if(chart.data.datasets[1].data.length > 300){
             chart.data.datasets[1].data.shift();
@@ -149,8 +152,10 @@ $(document).ready(function() {
             type: 'realtime'
           },
 		      ticks: {
+            min: -10,
+            max: 0,
             fontSize: 25,
-			      maxTicksLimit: 5,
+            maxTicksLimit: 5,
 			      maxRotation: 0
 		      }
 		    }],
@@ -222,7 +227,7 @@ function updated_init_results(var1, var2){
           console.log('filling up with ',updated_yaxis_var1[i]['x'], ' - ',timestamp);
           updated_yaxis_var1[i]['x'] = updated_yaxis_var1[i]['x'] - timestamp;
           updated_yaxis_var2[i]['x']   = updated_yaxis_var2[i]['x']   - timestamp;
-        }
+        }        
     },
     cache: false
   });

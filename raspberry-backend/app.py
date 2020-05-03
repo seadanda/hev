@@ -32,7 +32,7 @@ def getList(dict):
 def hello_world():
    return render_template('index.html', result=live_data())
 
-@WEBAPP.route('/prototype', methods=['GET', 'POST'])
+@WEBAPP.route('/testing', methods=['GET', 'POST'])
 def prototype():
    return render_template('index_prototype.html', result=live_data())
 
