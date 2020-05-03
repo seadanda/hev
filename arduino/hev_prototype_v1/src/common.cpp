@@ -164,6 +164,12 @@ int16_t adcToMillibar(int16_t adc, int16_t offset = 0)
     float c = max_p - m * max_adc;
     float mbar = m*(adc-offset) + c; 
 
+    float PCB_Gain		= 2.		; // real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
+    float Sensor_Gain		= 400./4000.	; // the sensor gain is 400 mbar / 4000 mVolts
+    float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
+    
+    mbar = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); // same calculation as in the Labview Code  
+
     return static_cast<int16_t>(mbar);
     //return static_cast<int16_t>(adc);
 } 
