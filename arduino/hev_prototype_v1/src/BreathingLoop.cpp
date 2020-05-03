@@ -10,7 +10,7 @@ BreathingLoop::BreathingLoop()
     _calib_time = tnow;
     _fsm_time = tnow;
     _fsm_timeout = 1000;
-    _ventilation_mode = VENTILATION_MODES::LAB_MODE_BREATHE;
+    _ventilation_mode = VENTILATION_MODE::LAB_MODE_BREATHE;
     _bl_state = BL_STATES::IDLE;
     _running = false;
     _reset = false;
@@ -40,11 +40,6 @@ BreathingLoop::~BreathingLoop()
 ;
 }
 
-uint8_t BreathingLoop::getVentilationMode()
-{
-    return static_cast<uint8_t>(_ventilation_mode);
-}
-
 uint8_t BreathingLoop::getFsmState()
 {
     return static_cast<uint8_t>(_bl_state);
@@ -60,17 +55,17 @@ void BreathingLoop::updateReadings()
         _readings_N++;
 
         _readings_sums.timestamp                += tnow;
+#ifdef CHIP_ESP32
         _readings_sums.pressure_air_supply      += static_cast<uint32_t>(analogRead(pin_pressure_air_supply)    );
+        _readings_sums.pressure_o2_supply       += static_cast<uint32_t>(analogRead(pin_pressure_o2_supply)     );
+#endif
         _readings_sums.pressure_air_regulated   += static_cast<uint32_t>(analogRead(pin_pressure_air_regulated) );
         _readings_sums.pressure_buffer          += static_cast<uint32_t>(analogRead(pin_pressure_buffer)        );
         _readings_sums.pressure_inhale          += static_cast<uint32_t>(analogRead(pin_pressure_inhale)        );
         _readings_sums.pressure_patient         += static_cast<uint32_t>(analogRead(pin_pressure_patient)       );
         _readings_sums.temperature_buffer       += static_cast<uint32_t>(analogRead(pin_temperature_buffer)     );
-#ifdef HEV_FULL_SYSTEM
-        _readings_sums.pressure_o2_supply       += static_cast<uint32_t>(analogRead(pin_pressure_o2_supply)     );
         _readings_sums.pressure_o2_regulated    += static_cast<uint32_t>(analogRead(pin_pressure_o2_regulated)  );
         _readings_sums.pressure_diff_patient    += static_cast<uint32_t>(analogRead(pin_pressure_diff_patient)  );
-#endif
     }
 
     // to make sure the readings correspond only to the same fsm mode
@@ -102,18 +97,28 @@ void BreathingLoop::updateRawReadings()
     // to make sure the readings correspond only to the same fsm mode
     if (tnow - _readings_avgs_time > _readings_avgs_timeout) {
         _readings_raw.timestamp                = static_cast<uint32_t>(_readings_sums.timestamp);
+#ifdef CHIP_ESP32
         _readings_raw.pressure_air_supply      =analogRead(pin_pressure_air_supply)    ;
+        _readings_raw.pressure_o2_supply       =analogRead(pin_pressure_o2_supply)     ;
+#endif
         _readings_raw.pressure_air_regulated   =analogRead(pin_pressure_air_regulated) ;
         _readings_raw.pressure_buffer          =analogRead(pin_pressure_buffer)        ;
         _readings_raw.pressure_inhale          =analogRead(pin_pressure_inhale)        ;
         _readings_raw.pressure_patient         =analogRead(pin_pressure_patient)       ;
         _readings_raw.temperature_buffer       =analogRead(pin_temperature_buffer)     ;
-#ifdef HEV_FULL_SYSTEM                                                                  
-        _readings_raw.pressure_o2_supply       =analogRead(pin_pressure_o2_supply)     ;
         _readings_raw.pressure_o2_regulated    =analogRead(pin_pressure_o2_regulated)  ;
         _readings_raw.pressure_diff_patient    =analogRead(pin_pressure_diff_patient)  ;
-#endif
     }
+}
+
+void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
+{
+    _ventilation_mode = mode;
+}
+
+VENTILATION_MODE BreathingLoop::getVentilationMode()
+{
+    return _ventilation_mode;
 }
 
 

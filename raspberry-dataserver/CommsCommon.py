@@ -1,4 +1,4 @@
-from struct import Struct 
+from struct import Struct
 from enum import Enum, IntEnum, auto, unique
 from dataclasses import dataclass, asdict, field, fields
 from typing import Any, ClassVar, Dict
@@ -27,8 +27,7 @@ class CMD_TYPE(Enum):
 class CMD_GENERAL(Enum):
     START =  1
     STOP  =  2
-    PURGE =  3
-    FLUSH =  4
+    RESET =  3
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
@@ -45,11 +44,15 @@ class CMD_SET_TIMEOUT(Enum):
     EXHALE_FILL     = 10
     EXHALE          = 11
 
-class CMD_SET_MODE(Enum):
-    HEV_MODE_PS   = 1
-    HEV_MODE_CPAP = 2
-    HEV_MODE_PRVC = 3
-    HEV_MODE_TEST = 4
+class VENTILATION_MODE(Enum):
+    UNKNOWN          = 0
+    HEV_MODE_PS      = 1
+    HEV_MODE_CPAP    = 2
+    HEV_MODE_PRVC    = 3
+    HEV_MODE_TEST    = 4
+    LAB_MODE_BREATHE = 5
+    LAB_MODE_PURGE   = 6
+    LAB_MODE_FLUSH   = 7
 
 @unique
 class ALARM_TYPE(Enum):
@@ -89,7 +92,7 @@ class ALARM_CODES(Enum):
 class CMD_MAP(Enum):
     GENERAL           =  CMD_GENERAL
     SET_TIMEOUT       =  CMD_SET_TIMEOUT
-    SET_MODE          =  CMD_SET_MODE
+    SET_MODE          =  VENTILATION_MODE
     SET_THRESHOLD_MIN =  ALARM_CODES
     SET_THRESHOLD_MAX =  ALARM_CODES
 
@@ -123,7 +126,7 @@ class PAYLOAD_TYPE(IntEnum):
 @dataclass
 class BaseFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int] = field(default=0xA2, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int] = field(default=0xA3, init=False, repr=False)
     _type:        ClassVar[Any] = field(default=PAYLOAD_TYPE.UNSET, init=False, repr=False)
     _dataStruct:  ClassVar[Any] = field(default=Struct("<BI"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
@@ -170,8 +173,9 @@ class BaseFormat():
         self._byteArray = byteArray
 
     # check for mismatch between pi and microcontroller version
-    def checkVersion(self) -> bool:
-        return self._RPI_VERSION == self.version
+    def checkVersion(self):
+        if self._RPI_VERSION != self.version : 
+            raise Exception('Version Mismatch', "PI:", self._RPI_VERSION, "uC:", self.version)
 
     def getSize(self) -> int:
         return len(self._byteArray)
@@ -234,9 +238,11 @@ class DataFormat(BaseFormat):
         self.ambient_temperature,
         self.airway_pressure,
         self.flow,
-        self.volume) = self._dataStruct.unpack(byteArray) 
+        self.volume
+        ) = self._dataStruct.unpack(byteArray) 
         try:
             self.fsm_state = BL_STATES(tmp_state)
+            self.checkVersion()
         except Exception:
             # no longer silently die, catch Exceptions higher up
             raise
@@ -269,7 +275,7 @@ class ReadbackFormat(BaseFormat):
     valve_inhale: int             = 0
     valve_exhale: int             = 0
     valve_purge: int              = 0
-    ventilation_mode: int         = 0 #CMD_SET_MODE.HEV_MODE_PS
+    ventilation_mode: int         = VENTILATION_MODE.HEV_MODE_PS
 
     valve_inhale_percent: int     = 0
     valve_exhale_percent: int     = 0
@@ -286,6 +292,7 @@ class ReadbackFormat(BaseFormat):
     def fromByteArray(self, byteArray):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
+        tmp_mode = 0
         (self.version,
         self.timestamp,
         _, # dummy to skip datatype
@@ -305,7 +312,7 @@ class ReadbackFormat(BaseFormat):
         self.valve_inhale,
         self.valve_exhale,
         self.valve_purge,
-        self.ventilation_mode,
+        tmp_mode,
         self.valve_inhale_percent,
         self.valve_exhale_percent,
         self.valve_air_in_enable,
@@ -315,6 +322,12 @@ class ReadbackFormat(BaseFormat):
         self.exhale_trigger_enable,
         self.peep,
         self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
+        try:
+            self.ventilation_mode = VENTILATION_MODE(tmp_mode)
+            self.checkVersion()
+        except Exception:
+            # no longer silently die, catch Exceptions higher up
+            raise
         self._byteArray = byteArray
 
 
@@ -371,6 +384,8 @@ class CycleFormat(BaseFormat):
         self.apnea_index,
         self.apnea_time,
         self.mandatory_breath) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
         self._byteArray = byteArray
 
 
@@ -397,6 +412,7 @@ class CommandFormat(BaseFormat):
         self.cmd_type,
         self.cmd_code,
         self.param) = self._dataStruct.unpack(byteArray) 
+        print(self.version)
         self._byteArray = byteArray
 
 

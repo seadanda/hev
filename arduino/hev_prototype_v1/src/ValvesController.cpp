@@ -23,8 +23,10 @@ ValvesController::ValvesController()
     _purge.proportional = false;
     _purge.state = VALVE_STATE::CLOSED;
 
+#ifdef CHIP_ESP32
     _pin_to_chan[pin_valve_inhale] = pwm_chan_inhale;
     _pin_to_chan[pin_valve_exhale] = pwm_chan_exhale;
+#endif
 }
 
 ValvesController::~ValvesController()

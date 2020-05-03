@@ -44,6 +44,9 @@ void setup()
     ledcAttachPin(pin_valve_exhale , pwm_chan_exhale);  
 
 // map<int,int> pin_to_chan; // = { pin_valve_inhale : pwm_chan_inhale , pin_valve_exhale : pwm_chan_exhale};
+
+    pinMode(pin_pressure_air_supply, INPUT);
+    pinMode(pin_pressure_o2_supply, INPUT);
 #else
 // NOTE defaults to whatever the frequency of the pin is for non-ESP32 boards.  Changing frequency is possible but complicated
     pinMode(pin_valve_inhale, OUTPUT);
@@ -54,17 +57,13 @@ void setup()
     pinMode(pin_valve_o2_in, OUTPUT);
     pinMode(pin_valve_purge, OUTPUT);
 
-    pinMode(pin_pressure_air_supply, INPUT);
     pinMode(pin_pressure_air_regulated, INPUT);
     pinMode(pin_pressure_buffer, INPUT);
     pinMode(pin_pressure_inhale, INPUT);
     pinMode(pin_pressure_patient, INPUT);
     pinMode(pin_temperature_buffer, INPUT);
-#ifdef HEV_FULL_SYSTEM
-    pinMode(pin_pressure_o2_supply, INPUT);
     pinMode(pin_pressure_o2_regulated, INPUT);
     pinMode(pin_pressure_diff_patient, INPUT);
-#endif
 
     pinMode(pin_led_green, OUTPUT);
     pinMode(pin_led_yellow, OUTPUT);

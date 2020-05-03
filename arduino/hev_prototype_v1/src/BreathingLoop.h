@@ -16,7 +16,6 @@ class BreathingLoop
 public:
     BreathingLoop();
     ~BreathingLoop();
-    uint8_t getVentilationMode();
     uint8_t getFsmState();
     void FSM_assignment();
     void FSM_breathCycle();
@@ -40,6 +39,8 @@ public:
     uint8_t valvePurgeEnabled();
     uint8_t inhaleTriggerEnabled();
     uint8_t exhaleTriggerEnabled();
+    void    setVentilationMode(VENTILATION_MODE mode);
+    VENTILATION_MODE getVentilationMode();
 
     states_durations &getDurations();
 
@@ -62,18 +63,11 @@ public:
     };
 
 
-//TODO: this should probably be common
-    enum VENTILATION_MODES : uint8_t
-    {
-        LAB_MODE_BREATHE = 0,
-        LAB_MODE_PURGE = 1,
-        LAB_MODE_FLUSH = 2
-    };
 
 private:
     uint32_t            _fsm_time ;
     uint32_t            _fsm_timeout;
-    VENTILATION_MODES   _ventilation_mode;
+    VENTILATION_MODE        _ventilation_mode;
     BL_STATES           _bl_state;
     bool                _running;
     bool                _reset;

@@ -12,7 +12,7 @@ import svpi
 import hevfromtxt
 from hevtestdata import HEVTestData
 import CommsControl
-from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, CMD_SET_MODE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, VENTILATION_MODE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List

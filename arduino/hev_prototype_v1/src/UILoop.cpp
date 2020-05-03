@@ -97,7 +97,7 @@ void UILoop::reportReadbackValues()
         _readback_data.valve_exhale = vexhale;
         _readback_data.valve_purge = vpurge;
 
-        _readback_data.ventilation_mode = _breathing_loop->getVentilationMode();
+        _readback_data.ventilation_mode = static_cast<uint8_t>(_breathing_loop->getVentilationMode());
 
         _readback_data.valve_inhale_percent = 0;  //TODO
         _readback_data.valve_exhale_percent = 0;  //TODO
@@ -163,6 +163,8 @@ void UILoop::cmdGeneral(cmd_format &cf) {
             break;
         case CMD_GENERAL::STOP  : _breathing_loop->doStop();
             break;
+        case CMD_GENERAL::RESET : _breathing_loop->doReset();
+            break;
         default:
             break;
     }
@@ -173,7 +175,7 @@ void UILoop::cmdSetDuration(cmd_format &cf) {
 }
 
 void UILoop::cmdSetMode(cmd_format &cf) {
-    ;
+    _breathing_loop->setVentilationMode(static_cast<VENTILATION_MODE>(cf.cmd_code));
 }
 
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
