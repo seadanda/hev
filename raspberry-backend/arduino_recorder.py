@@ -3,7 +3,7 @@
 # HEV monitoring application
 # USAGE:  python3 arduino_recorder.py
 #
-# Last update: April 21, 2020
+# Last update: May 5, 2020
 
 import sys
 import time
@@ -79,6 +79,7 @@ def database_setup():
     finally:
         print('Table ' + TABLE_NAME + ' created successfully!')
 
+
 def monitoring(interval):
     '''
     Store arduino data in the sqlite3 table. 
@@ -106,12 +107,12 @@ def monitoring(interval):
                     data_alarms = "none"
                 
                 data_packet = { el : data_receiver[el] for el in data_format}
-                data_packet.update({"time" : timestamp})
+                data_packet.update({"DB_time" : timestamp})
                 data_packet.update({"alarms" : data_alarms})
 
                 print("Writing to database ...")
                 try:
-                    exec_string = "( :time, "
+                    exec_string = "( :DB_time, "
                     for el in data_format: 
                          exec_string += ":" + el + ", "
                     exec_string += ":alarms) "
@@ -128,6 +129,7 @@ def monitoring(interval):
                 finally:                  
                     sys.stdout.flush()
                     time.sleep(interval)
+                    
 
 def progress(status, remaining, total):
     print(f'Copied {total-remaining} of {total} pages...')
@@ -153,7 +155,7 @@ def db_backup(backup_time):
     
 
 def parse_args():
-    parser = argparse.ArgumentParser(description='Python script monitorign Arduino data')
+    parser = argparse.ArgumentParser(description='Python script for recording Arduino data')
     parser.add_argument('--interval', type=float, default=1)
     parser.add_argument('--backup_time', type=int, default=600)
     return parser.parse_args()
