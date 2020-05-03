@@ -1,0 +1,60 @@
+---
+- hosts: cernpi
+  remote_user: pi
+  vars:
+        download_dir: /home/pi/Downloads
+        dev_dir: /home/pi/Development
+
+  tasks: 
+        - name: include vars
+          include_vars: lists.yml
+
+        - name: apt update, apt upgrade
+          apt: 
+              upgrade: yes
+              update_cache: yes
+          become: yes
+
+
+        - name: install software via apt
+          apt: 
+              name: "{{ item }}"
+              state: present
+          with_items: "{{ rpi_swlist }}"  
+          become: yes
+
+        - name: pip install packages
+          pip:
+              executable: /usr/bin/pip3
+              name: "{{ item }}"
+          with_items: "{{ pip_list }}"  
+
+        - name: mk dev dir
+          file:
+              path: "{{ dev_dir }}"
+              state: directory
+
+        - name: clone git repo - hev-sw
+          git: 
+              repo: https://github.com/chrisburr/hev-sw.git
+              version: avoid-time-jump
+              dest: "{{ dev_dir }}/hev-sw"
+
+        - name: clone git repo - hev-display
+          git: 
+              repo: https://github.com/hev-sw/hev-display.git
+              dest: "{{ dev_dir }}/hev-display"
+        
+        - name: copy hev-display script
+          template: src=hev-display-opengl.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+        - name: run hev-display-opengl script
+          command: "{{ download_dir }}/hev-display-opengl.sh"
+          become: yes
+
+        - name: link fonts for hev-display
+          file:
+              src: "/usr/share/fonts/truetype/dejavu"
+              dest: "/usr/local/qt5pi/lib/fonts"
+              state: link
+          become: yes
+
