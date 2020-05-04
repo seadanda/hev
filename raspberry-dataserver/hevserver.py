@@ -237,8 +237,8 @@ if __name__ == "__main__":
             logging.info(f"Using test data source")
         elif args.inputFile != '':
             if args.inputFile[-1-3:] == '.txt':
-                # assume sample.txt format
-                lli = hevfromtxt.hevfromtxt(args.inputFile)
+                # just ignore actual filename and read from both valid inputfiles
+                lli = hevfromtxt.hevfromtxt()
             else:
                 lli = svpi.svpi(args.inputFile)
         else:
