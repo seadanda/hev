@@ -147,8 +147,9 @@ class PayloadFormat():
             6: AlarmFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
-        data = ReturnType._dataStruct.unpack(rec_bytes)
-        return ReturnType(*data)
+        payload_obj = ReturnType()
+        payload_obj.fromByteArray(rec_bytes)
+        return payload_obj
 
     @property
     def byteArray(self) -> bytearray:
@@ -175,7 +176,7 @@ class PayloadFormat():
         return len(self.byteArray)
 
     def getType(self) -> Any:
-        return self.payload_type
+        return self.payload_type.name if isinstance(self.payload_type, IntEnum) else PAYLOAD_TYPE(self.payload_type)
     
     def getDict(self) -> Dict:
         return {k: v.name if isinstance(v, IntEnum) or isinstance(v, Enum) else v for k, v in asdict(self).items()}
@@ -191,7 +192,7 @@ class DataFormat(PayloadFormat):
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
 
     # subclass member variables
-    fsm_state: BL_STATES        = BL_STATES.IDLE
+    fsm_state: BL_STATES          = BL_STATES.IDLE
     pressure_air_supply: int      = 0
     pressure_air_regulated: float = 0.0
     pressure_o2_supply: int       = 0
@@ -207,16 +208,16 @@ class DataFormat(PayloadFormat):
     flow: float                   = 0.0
     volume: float                 = 0.0
 
-
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
     def fromByteArray(self, byteArray):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
         tmp_state = 0
+        tmp_payload_type = 0
         (self.version,
         self.timestamp,
-        self.payload_type,
+        tmp_payload_type,
         tmp_state,
         self.pressure_air_supply,
         self.pressure_air_regulated,
@@ -233,7 +234,9 @@ class DataFormat(PayloadFormat):
         self.flow,
         self.volume) = self._dataStruct.unpack(byteArray) 
         self.fsm_state = BL_STATES(tmp_state)
+
         self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
 
@@ -280,9 +283,10 @@ class ReadbackFormat(PayloadFormat):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
         tmp_mode = 0
+        tmp_payload_type = 0
         (self.version,
         self.timestamp,
-        self.payload_type,
+        tmp_payload_type,
         self.duration_calibration,
         self.duration_buff_purge,
         self.duration_buff_flush,
@@ -309,12 +313,10 @@ class ReadbackFormat(PayloadFormat):
         self.exhale_trigger_enable,
         self.peep,
         self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
-        try:
-            self.ventilation_mode = VENTILATION_MODE(tmp_mode)
-            self.checkVersion()
-        except Exception:
-            # no longer silently die, catch Exceptions higher up
-            raise
+
+        self.checkVersion()
+        self.ventilation_mode = VENTILATION_MODE(tmp_mode)
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
 
@@ -350,9 +352,10 @@ class CycleFormat(PayloadFormat):
     def fromByteArray(self, byteArray):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
         (self.version,
         self.timestamp,
-        self.payload_type,
+        tmp_payload_type,
         self.respiratory_rate,
         self.tidal_volume,
         self.exhaled_tidal_volume,
@@ -372,6 +375,7 @@ class CycleFormat(PayloadFormat):
         self.mandatory_breath) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
 
@@ -393,12 +397,16 @@ class CommandFormat(PayloadFormat):
     param: int    = 0
 
     def fromByteArray(self, byteArray):
+        tmp_payload_type = 0
         (self.version,
         self.timestamp,
-        self.payload_type,
+        tmp_payload_type,
         self.cmd_type,
         self.cmd_code,
         self.param) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
 
@@ -416,10 +424,15 @@ class AlarmFormat(PayloadFormat):
 
     def fromByteArray(self, byteArray):
         alarm = 0
+        tmp_payload_type = 0
         (self.version,
         self.timestamp,
-        self.payload_type,
+        tmp_payload_type,
         self.alarm_type,
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
+
+        self.checkVersion()
         self.alarm_code = ALARM_CODES(alarm)
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
