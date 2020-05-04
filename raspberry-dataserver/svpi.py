@@ -36,21 +36,15 @@ class svpi():
             alarm = self.getAlarms()
             if alarm is not None:
                 byteArray = alarm
-                payload = CommsCommon.AlarmFormat()
             else:
                 # grab next array from filedump
                 fullArray = self._bytestore[0+self._pos*27:27+self._pos*27]
                 # currently (20200426) the byte dump has the wrong format of 27 bytes, expects 41. snip out second byte and add four more bytes for zeroed timestamp
-                byteArray = b'\xa2' + fullArray[-1-3:] + bytearray((0x01,0x01)) + fullArray[2:] + fullArray[-1-8:]
+                byteArray = b'\xa3' + fullArray[-1-3:] + bytearray((0x01,0x01)) + fullArray[2:] + fullArray[-1-20:]
                 # go to next byte array. if at the end, loop
                 self._pos = self._pos + 1 if self._pos < 99 else 0
-                payload = CommsCommon.DataFormat()
             
-            #try:
-            payload.fromByteArray(byteArray)
-            #except Exception as e:
-            #    logging.error(f"Failed to parse packet: {e}")
-            #else:
+            payload = CommsCommon.PayloadFormat.fromByteArray(byteArray)
             self.payloadrecv = payload
 
             time.sleep(self._delay)
@@ -61,7 +55,7 @@ class svpi():
             # send alarm
             alarm = 1 + np.random.randint(0, len(ALARM_CODES))
             # give all simulated alarms low priority for the minute
-            return bytearray((0xA2,0x00,0x00,0x00,0x00,0x01,alarm,0x00,0x00,0x00,0x00))
+            return bytearray((0xA3,0x00,0x00,0x00,0x00,0x06,0x01,alarm,0x00,0x00,0x00,0x00))
         return None
 
     # callback to dependants to read the received payload
@@ -71,27 +65,14 @@ class svpi():
 
     @payloadrecv.setter
     def payloadrecv(self, payload):
-        self._payloadrecv.append(payload)
-        logging.debug(f"Pushed {payload} to FIFO")
         for callback in self._observers:
-            # peek at the leftmost item, don't pop until receipt confirmed
-            callback(self._payloadrecv[0])
+            callback(payload)
 
     def writePayload(self, payload):
         logging.info(payload)
 
     def bind_to(self, callback):
         self._observers.append(callback)
-
-    def pop_payloadrecv(self):
-        # from callback. confirmed receipt, pop value
-        poppedval = self._payloadrecv.popleft()
-        logging.debug(f"Popped {poppedval} from FIFO")
-        if len(self._payloadrecv) > 0:
-            # purge full queue if Dependant goes down when it comes back up
-            for callback in self._observers:
-                callback(self._payloadrecv[0])
-
 
 if __name__ == "__main__":
     #parser to allow us to pass arguments to hevserver
