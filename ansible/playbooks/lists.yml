@@ -11,5 +11,6 @@ rpi_swlist:
 
 pip_list: 
   - libscrc
+  - pyserial_asyncio
 
   
