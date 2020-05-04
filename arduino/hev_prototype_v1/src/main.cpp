@@ -11,8 +11,8 @@
 #include "CommsControl.h"
 #include "BreathingLoop.h"
 #include "ValvesController.h"
-#include "UILoop.h"
 #include "AlarmLoop.h"
+#include "UILoop.h"
 
 // System temp sensor
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
@@ -117,6 +117,8 @@ void loop()
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
     ui_loop.reportCycleReadings();
+
+    alarm_loop.processAlarms();
 
     // per cycle sender
     comms.sender();

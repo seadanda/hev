@@ -266,32 +266,33 @@ struct states_durations {
     uint32_t exhale; // has to be calculated using function getTimeoutExhale()
 };
 
+// cannot set default value
 template <typename T> struct alarms {
-    T apnea                          =  0;
-    T check_valve_exhale             =  0;
-    T check_p_patient                =  0;
-    T expiration_sense_fault_or_leak =  0;
-    T expiration_valve_leak          =  0;
-    T high_fio2                      =  0;
-    T high_pressure                  =  0;
-    T high_rr                        =  0;
-    T high_vte                       =  0;
-    T low_vte                        =  0;
-    T high_vti                       =  0;
-    T low_vti                        =  0;
-    T intentional_stop               =  0;
-    T low_battery                    =  0;
-    T low_fio2                       =  0;
-    T occlusion                      =  0;
-    T high_peep                      =  0;
-    T low_peep                       =  0;
-    T ac_power_disconnection         =  0;
-    T battery_fault_srvc             =  0;
-    T battery_charge                 =  0;
-    T air_fail                       =  0;
-    T o2_fail                        =  0;
-    T pressure_sensor_fault          =  0;
-    T arduino_fail                   =  0;
+    T apnea                          ;
+    T check_valve_exhale             ;
+    T check_p_patient                ;
+    T expiration_sense_fault_or_leak ;
+    T expiration_valve_leak          ;
+    T high_fio2                      ;
+    T high_pressure                  ;
+    T high_rr                        ;
+    T high_vte                       ;
+    T low_vte                        ;
+    T high_vti                       ;
+    T low_vti                        ;
+    T intentional_stop               ;
+    T low_battery                    ;
+    T low_fio2                       ;
+    T occlusion                      ;
+    T high_peep                      ;
+    T low_peep                       ;
+    T ac_power_disconnection         ;
+    T battery_fault_srvc             ;
+    T battery_charge                 ;
+    T air_fail                       ;
+    T o2_fail                        ;
+    T pressure_sensor_fault          ;
+    T arduino_fail                   ;
 };
 
 struct pid_variables {
