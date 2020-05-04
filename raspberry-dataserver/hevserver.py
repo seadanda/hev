@@ -12,7 +12,7 @@ import argparse
 import svpi
 import hevfromtxt
 from hevtestdata import HEVTestData
-import CommsControl
+from CommsLLI import CommsLLI
 from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, VENTILATION_MODE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
 from collections import deque
 from serial.tools import list_ports
@@ -37,13 +37,10 @@ class HEVServer(object):
         self._datavalid = None           # something has been received from arduino. placeholder for asyncio.Event()
         self._dvlock = threading.Lock()  # make datavalid threadsafe
         self._dvlock.acquire()           # come up locked to wait for loop
-        # start worker thread to send values in background
-        worker = threading.Thread(target=self.serve_all, daemon=True)
-        worker.start()
 
     def polling(self, payload):
         # get values when we get a callback from commsControl (lli)
-        logging.debug(f"Payload received: {payload!r}")
+        logging.debug(f"Payload received: {payload}")
         # check if it is data or alarm
         payload_type = payload.getType()
         if payload_type == PAYLOAD_TYPE.ALARM:
@@ -71,9 +68,6 @@ class HEVServer(object):
             # invalid packet, don't throw exception just log and pop
             logging.error("Received invalid packet, ignoring")
 
-        # pop from lli queue
-        self._lli.pop_payloadrecv()
-            
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # listen for queries on the request socket
         data = await reader.readuntil(separator=b'\0')
@@ -158,6 +152,7 @@ class HEVServer(object):
                     values: List[float] = self._values
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
+                print(values.getType())
                 data_type = values.getType().name
                 broadcast_packet = {"type": data_type}
 
@@ -209,7 +204,7 @@ class HEVServer(object):
         async with server:
             await server.serve_forever()
 
-    async def create_sockets(self) -> None:
+    async def main(self) -> None:
         self._datavalid = threading.Event() # initially false
         self._dvlock.release()
         LOCALHOST = "127.0.0.1"
@@ -220,11 +215,9 @@ class HEVServer(object):
         #tasks = [b1, r1]
         await asyncio.gather(*tasks, return_exceptions=True)
 
-    def serve_all(self) -> None:
-        asyncio.run(self.create_sockets())
-
 
 if __name__ == "__main__":
+    tasks = [] # asyncio tasks
     try:
         #parser to allow us to pass arguments to hevserver
         parser = argparse.ArgumentParser(description='Arguments to run hevserver')
@@ -260,22 +253,30 @@ if __name__ == "__main__":
 
             # initialise low level interface
             try:
-                lli = CommsControl.CommsControl(port=port_device)
+                # setup serial device and init server
+                loop = asyncio.get_event_loop()
+                lli = CommsLLI(loop)
+                comms = lli.main(port_device, 115200)
+                tasks.append(comms)
                 logging.info(f"Serving data from device {port_device}")
             except NameError:
                 logging.error("Arduino not connected")
                 exit(1)
 
+        # create tasks
         hevsrv = HEVServer(lli)
+        server = hevsrv.main()
+        tasks.append(server)
 
-        # serve forever
-        loop = asyncio.get_event_loop()
-        try:
-            loop.run_forever()
-        finally:
-            loop.close()
+        # run tasks
+        asyncio.gather(*tasks, return_exceptions=True)
+        loop.run_forever()
+    except asyncio.CancelledError:
+        pass
     except KeyboardInterrupt:
         logging.info("Server stopped")
     except StructError:
         logging.error("Failed to parse packet")
+    finally:
+        loop.close()
 

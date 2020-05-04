@@ -176,7 +176,7 @@ class PayloadFormat():
         return len(self.byteArray)
 
     def getType(self) -> Any:
-        return self.payload_type.name if isinstance(self.payload_type, IntEnum) else PAYLOAD_TYPE(self.payload_type)
+        return self.payload_type if isinstance(self.payload_type, IntEnum) else PAYLOAD_TYPE(self.payload_type)
     
     def getDict(self) -> Dict:
         return {k: v.name if isinstance(v, IntEnum) or isinstance(v, Enum) else v for k, v in asdict(self).items()}
