@@ -152,7 +152,6 @@ class HEVServer(object):
                     values: List[float] = self._values
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
-                print(values.getType())
                 data_type = values.getType().name
                 broadcast_packet = {"type": data_type}
 
@@ -218,6 +217,7 @@ class HEVServer(object):
 
 if __name__ == "__main__":
     tasks = [] # asyncio tasks
+    loop = asyncio.get_event_loop()
     try:
         #parser to allow us to pass arguments to hevserver
         parser = argparse.ArgumentParser(description='Arguments to run hevserver')
@@ -254,7 +254,6 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 # setup serial device and init server
-                loop = asyncio.get_event_loop()
                 lli = CommsLLI(loop)
                 comms = lli.main(port_device, 115200)
                 tasks.append(comms)
@@ -277,6 +276,3 @@ if __name__ == "__main__":
         logging.info("Server stopped")
     except StructError:
         logging.error("Failed to parse packet")
-    finally:
-        loop.close()
-
