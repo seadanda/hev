@@ -51,7 +51,6 @@ enum CMD_GENERAL : uint8_t {
     RESET =  3
 };
 
-
 // Taken from the FSM doc. Correct as of 1400 on 20200417
 enum CMD_SET_DURATION : uint8_t {
     CALIBRATION     =  1,
@@ -106,9 +105,9 @@ struct cmd_format {
 
 
 enum ALARM_TYPE: uint8_t {
-    LP   = 1,
-    MP   = 2,
-    HP   = 3
+    PRIORITY_LOW    =  1,
+    PRIORITY_MEDIUM =  2,
+    PRIORITY_HIGH   =  3
 };
 
 enum ALARM_CODES: uint8_t {
@@ -209,7 +208,6 @@ struct readback_data_format {
     uint8_t exhale_trigger_enable     = 0;
     float   peep                      = 0.0;
     float   inhale_exhale_ratio       = 0.0;
-
 };
 #pragma pack()
 
@@ -268,32 +266,32 @@ struct states_durations {
     uint32_t exhale; // has to be calculated using function getTimeoutExhale()
 };
 
-struct alarm_thresholds {
-    uint32_t apnea;
-    uint32_t check_valve_exhale;
-    uint32_t check_p_patient;
-    uint32_t expiration_sense_fault_or_leak;
-    uint32_t expiration_valve_leak;
-    uint32_t high_fio2;
-    uint32_t high_pressure;
-    uint32_t high_rr;
-    uint32_t high_vte;
-    uint32_t low_vte;
-    uint32_t high_vti;
-    uint32_t low_vti;
-    uint32_t intentional_stop;
-    uint32_t low_battery;
-    uint32_t low_fio2;
-    uint32_t occlusion;
-    uint32_t high_peep;
-    uint32_t low_peep;
-    uint32_t ac_power_disconnection;
-    uint32_t battery_fault_srvc;
-    uint32_t battery_charge;
-    uint32_t air_fail;
-    uint32_t o2_fail;
-    uint32_t pressure_sensor_fault;
-    uint32_t arduino_fail;
+template <typename T> struct alarms {
+    T apnea                          =  0;
+    T check_valve_exhale             =  0;
+    T check_p_patient                =  0;
+    T expiration_sense_fault_or_leak =  0;
+    T expiration_valve_leak          =  0;
+    T high_fio2                      =  0;
+    T high_pressure                  =  0;
+    T high_rr                        =  0;
+    T high_vte                       =  0;
+    T low_vte                        =  0;
+    T high_vti                       =  0;
+    T low_vti                        =  0;
+    T intentional_stop               =  0;
+    T low_battery                    =  0;
+    T low_fio2                       =  0;
+    T occlusion                      =  0;
+    T high_peep                      =  0;
+    T low_peep                       =  0;
+    T ac_power_disconnection         =  0;
+    T battery_fault_srvc             =  0;
+    T battery_charge                 =  0;
+    T air_fail                       =  0;
+    T o2_fail                        =  0;
+    T pressure_sensor_fault          =  0;
+    T arduino_fail                   =  0;
 };
 
 struct pid_variables {

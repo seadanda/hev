@@ -195,11 +195,11 @@ void UILoop::cmdSetPID(cmd_format &cf){
 
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
+    setAlarm(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
 }
 
 void UILoop::cmdSetThresholdMax(cmd_format &cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
+    setAlarm(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
 }
 
 void UILoop::cmdSetValve(cmd_format &cf) {
