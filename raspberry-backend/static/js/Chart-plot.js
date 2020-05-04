@@ -133,6 +133,7 @@ $(document).ready(function() {
         }
       },       
       responsive: true,
+	    maintainAspectRatio: false,
       stroke: {
           curve: 'smooth'
       },
@@ -331,6 +332,7 @@ function updateChartType() {
           }
         },       
         responsive: true,
+  	    maintainAspectRatio: false,
         stroke: {
             curve: 'smooth'
         },

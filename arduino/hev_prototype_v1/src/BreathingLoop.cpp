@@ -295,7 +295,6 @@ void BreathingLoop::FSM_assignment( ) {
 void BreathingLoop::FSM_breathCycle()
 {
     // basic cycle for testing hardware
-    // start = digitalRead(pin_button_0);
     switch (_bl_state) {
         case BL_STATES::IDLE:
             

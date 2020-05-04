@@ -15,19 +15,17 @@
               update_cache: yes
           become: yes
 
-
         - name: install software via apt
           apt: 
-              name: "{{ item }}"
+              name: "{{ rpi_swlist }}"  
               state: present
-          with_items: "{{ rpi_swlist }}"  
           become: yes
+
 
         - name: pip install packages
           pip:
               executable: /usr/bin/pip3
-              name: "{{ item }}"
-          with_items: "{{ pip_list }}"  
+              name: "{{ pip_list }}"  
 
         - name: mk dev dir
           file:

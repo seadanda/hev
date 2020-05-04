@@ -99,7 +99,7 @@
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">PEEP<small>[cmH20]</small></a>
 	      </div>
-	      <div class="card-body px-1 py-1 tiny"><input class = "input-reading input-editable" name = "PEEP" id = "pressure_buffer" value=5 readOnly disabled></div>
+	      <div class="card-body px-1 py-1 tiny"><input class = "input-reading input-editable" name = "PEEP" id = "PEEP_input" value=5 readOnly disabled onclick="show_easy_numpad(this,peep_controller)"></div>
 	    </div>
 
 
@@ -144,7 +144,7 @@
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">I:E</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading input-editable" id = "ie_ratio" value=1.3 readOnly disabled> </div>
+              <div class="card-body px-1 py-1 tiny"><input class = "input-reading input-editable" id = "ie_ratio_input" value=1.3 readOnly disabled onclick="show_easy_numpad(this,ie_ratio_controller)"> </div>
 	    </div>
 	</div>
 	<!-- end row 4 -->
@@ -210,6 +210,8 @@
 //document.getElementById("gauge-fio-container").getValue = function(value){
 //	return getGaugeValue("gauge-fio");
 //}
+
+// set up controllers that get and set values for the gauges, names and functions defined in Chart-display.js
 class gauge_controller {
   constructor(name) {
     this.name = name;
@@ -229,8 +231,38 @@ class gauge_controller {
   }
 }
 
-fio_controller = new gauge_controller("fio_gauge");
+class input_controller{
+	constructor(name, element) {
+    this.name = name;
+	this.element = element;
+  }
+  getName(){ return this.name;}
+  getValue() {
+    return this.element.value;
+  }
+  setValue(val){
+	  this.element.value = val;
+  }
+  getMin(){
+	  if (this.element.min) return this.element.min;
+	  else return null;
+  }
+  getMax(){
+	  if (this.element.max) return this.element.max;
+	  else return null;
+  }
+}
+
+
+
+fio_controller       = new gauge_controller("fio_gauge");
 p_plateau_controller = new gauge_controller("p_plateau_gauge");
+
+var peep_input = document.getElementById("PEEP_input");
+peep_controller = new input_controller("peep", peep_input);
+var ie_ratio_input = document.getElementById("ie_ratio_input");
+ie_ratio_controller = new input_controller("ie_ratio", ie_ratio_input);
+
 /*
 var gauge_fio_container = document.getElementById("gauge-fio-container");
 Object.defineProperty(gauge_fio_container, 'doChange', {
