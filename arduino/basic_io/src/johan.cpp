@@ -21,6 +21,8 @@
 #define DEBUG_PRINTLN2(x,y)
 #endif
 
+//Flag to close all valves of the system to stop the data taking in a safe state
+bool stop = true;
 
 // Create the MCP9808 temperature sensor object
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
@@ -126,10 +128,22 @@ void setup() {
         pinMode(greenled,OUTPUT);
 
 
-        digitalWrite(pin_valve_air_in, HIGH);
-        //digitalWrite(pin_valve_exhale, LOW);
+
+	if(stop){
+	//To Close all valves of the system
+        digitalWrite(pin_valve_air_in, LOW);
+        digitalWrite(pin_valve_exhale, LOW);
         digitalWrite(pin_valve_purge, LOW);
-        digitalWrite(pin_valve_o2_in, HIGH);
+        digitalWrite(pin_valve_o2_in, LOW);
+	}
+	else{
+		//Default values for data taking
+		digitalWrite(pin_valve_air_in, HIGH);
+		//digitalWrite(pin_valve_exhale, LOW);
+		digitalWrite(pin_valve_purge, LOW);
+		digitalWrite(pin_valve_o2_in, HIGH);
+	}
+
 
         //digitalWrite(redled, HIGH);
         //digitalWrite(yellowled, HIGH);
@@ -222,24 +236,45 @@ void loop() {
         //DEBUG_PRINT2((float)INA.getShuntMicroVolts(3)/5,0);  
         //DEBUG_PRINT("mA ");
 
-	duty_cycle = 0.6;
-        int val = (int)(255.0*duty_cycle);
+	if(stop){
 
-        int vallow = (int)(255.0*0.1);
+		ledcWrite(0, 0);//val);// exhale
+		ledcWrite(1, 0);//val);// exhale
 
-        //Serial.print(" duty cycle ");
-        //Serial.println(String(duty_cycle));
-        //Serial.print(" raw val ");
-        //Serial.println(String(val));
+	}
+	else{
 
-	digitalWrite(greenled, HIGH);
-        //ledcWrite(0, val);// inhale
-        ledcWrite(0, 0);//vallow);// exhale
-	delay(1000);
-        ledcWrite(0, 0);//val);// exhale
-	delay(200);
-        //ledcWrite(1, 0);// exhale
-	//digitalWrite(greenled, LOW);
+		duty_cycle = 0.74;
+		float low_duty_cycle = 0.54;//525;
+		int nsteps = 1; // number of steps of 10 ms in between 
 
-        //delay(1000);
+		float step_size = (duty_cycle-low_duty_cycle) / nsteps;
+
+		int val = (int)(255.0*duty_cycle);
+
+		int vallow = (int)(255.0*low_duty_cycle);
+
+		//Serial.print(" duty cycle ");
+		//Serial.println(String(duty_cycle));
+		//Serial.print(" raw val ");
+		//Serial.println(String(val));
+
+		digitalWrite(greenled, HIGH);
+		//ledcWrite(0, val);// inhale
+		ledcWrite(0, vallow);//vallow);// exhale
+		delay(1000);
+
+		for(int i=0; i<nsteps ; i++){
+			int _val = (int)( 255.0 * ( low_duty_cycle + ( i * step_size ) ) );
+			ledcWrite(0,_val);
+			delay(10);
+		}
+
+		ledcWrite(0, val);//val);// exhale
+		delay(1000);
+		//ledcWrite(1, 0);// exhale
+		//digitalWrite(greenled, LOW);
+
+		//delay(1000);
+	}
 }
