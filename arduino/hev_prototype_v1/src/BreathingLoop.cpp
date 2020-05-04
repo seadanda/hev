@@ -54,7 +54,7 @@ void BreathingLoop::updateReadings()
         _readings_time = tnow;
         _readings_N++;
 
-        _readings_sums.timestamp                += tnow;
+        _readings_sums.timestamp                = tnow;
 #ifdef CHIP_ESP32
         _readings_sums.pressure_air_supply      += static_cast<uint32_t>(analogRead(pin_pressure_air_supply)    );
         _readings_sums.pressure_o2_supply       += static_cast<uint32_t>(analogRead(pin_pressure_o2_supply)     );
