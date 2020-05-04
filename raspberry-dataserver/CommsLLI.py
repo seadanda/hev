@@ -30,13 +30,13 @@ class CommsLLI:
         self._data     = asyncio.Queue(maxsize=self._queue_size, loop=self._loop)
 
         # acks from arduino
-        self._dvAlarms   = asyncio.Event(loop=self._loop)
-        self._dvCommands = asyncio.Event(loop=self._loop)
-        self._dvData     = asyncio.Event(loop=self._loop)
+        self._dv_alarms   = asyncio.Event(loop=self._loop)
+        self._dv_commands = asyncio.Event(loop=self._loop)
+        self._dv_data     = asyncio.Event(loop=self._loop)
         # maps between address and queues/events/timeouts 
         self._queues   = {0xC0: self._alarms, 0x80: self._commands, 0x40: self._data}
         self._timeouts = {0xC0: 10, 0x80: 50, 0x40: 200}
-        self._acklist  = {0xC0: self._dvAlarms, 0x80: self._dvCommands, 0x40: self._dvData}
+        self._acklist  = {0xC0: self._dv_alarms, 0x80: self._dv_commands, 0x40: self._dv_data}
         
         # receive
         #self._payloadrecv = asyncio.Queue(maxsize=self._queue_size, loop=self._loop)
@@ -175,7 +175,6 @@ class CommsLLI:
     @payloadrecv.setter
     def payloadrecv(self, payload):
         for callback in self._observers:
-            # peek at the leftmost item, don't pop until receipt confirmed
             callback(payload)
 
     def bind_to(self, callback):
