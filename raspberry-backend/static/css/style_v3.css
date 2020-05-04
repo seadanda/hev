@@ -6074,7 +6074,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     flex: 0 0 41.6666666667%;
     max-width: 41.6666666667%;
 }
-.card-reading, .card-input-reading{
+.card-reading, .card-input-reading, .card-reading-proto, .card-input-reading-proto{
     position: relative;
     min-width: 0;
     word-wrap: break-word;
@@ -6092,8 +6092,14 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     margin-left: 0.05rem !important;
     color: #343a40 !important;
     margin-bottom: 0.5rem !important;
+}
+.card-reading, .card-input-reading{
     height:calc((100vh - var(--top-height) - 0.5rem)/4.0 - 0.5rem);
 }
+.card-reading-proto, .card-input-reading-proto{
+    height:calc((100vh - var(--top-height) - 0.5rem)/5.0 - 0.5rem);
+}
+
 .card-reading {
   background-color: rgb(211,211,211);
 }
@@ -6112,6 +6118,11 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     position:relative;
     width:100%;
     height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem)/3.0); // 2.0rem if for the range-button container
+}
+.proto-chart-container {
+    position:relative;
+    width:100%;
+    height:calc((100vh - var(--top-height) - 0.5rem - 4.0rem)/1.0); // 2.0rem if for the range-button container and another 2.0 for select
 }
 .reading-wrapper{
     margin-top:auto;

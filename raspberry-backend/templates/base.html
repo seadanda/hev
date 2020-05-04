@@ -132,16 +132,15 @@
 	{% endblock %}
 	<script>
 
-	  var lockTimeOut = 20000; // 20 seconds lock time out
-	  var idleTimeOut = 60000; // one minute idle time out
+	  var lockTimeOut = 200000; // 20 seconds lock time out ( * 10 for development)
+	  var idleTimeOut = 600000; // one minute idle time out ( * 10 for development)
 	  
 	  var lockTimer;
 	  var idleTimer;
-	  var unlocked = new Boolean(0);
-	  if (sessionStorage.getItem("unlocked")){
-	  if (sessionStorage.getItem("unlocked") == 1 ){unlocked = Boolean(1);}
-	  else {unlocked = Boolean(0);}
-
+	  var unlocked = Boolean(false);
+	  if (sessionStorage.getItem("unlocked")!=null){
+	  	if (sessionStorage.getItem("unlocked") == true){console.log("storage item has unlocked = true");unlocked = Boolean(true);}
+		  else {unlocked = Boolean(false);console.log("storage item has unlocked is false");}
 	  }
 
 	  //our default is locked, but if we load and the unlock is set, unlock page
@@ -269,8 +268,8 @@
 					  }
 					  function toggle_lock() {
 					  setTimeout(function(){
-					  if (unlocked == true) {lock();}
-			  else{ unlock() ; }
+					  if (unlocked == true) {console.log("locking");lock();}
+			  else{ console.log("unlocking");unlock() ; }
 			  },500);
 			  }
 						  
