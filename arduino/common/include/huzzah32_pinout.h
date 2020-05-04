@@ -6,7 +6,7 @@
 const int pin_valve_air_in     = 13;  // A12
 const int pin_valve_o2_in      =  5;  // SCK
 const int pin_valve_purge      = 18;  // MOSI
-const int pin_valve_atmosphere = 12;  // A11 / OUTPUT ONLY
+const int pin_spare_1 = 12;  // A11 / OUTPUT ONLY
 
     // pwm pins
 const int pin_valve_inhale     = 21;  // GPIO ONLY
@@ -32,7 +32,7 @@ const int pin_led_red          = 15; // A13 ****
 const int pin_buzzer         = 22; // I2C SDA
 
     // buttons
-const int pin_button_0       = 23; // I2C SCL
+const int pin_spare_2       = 23; // I2C SCL
 
     // spare
 // const int pin spare_adc    = A1; // 25 DAC1

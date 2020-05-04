@@ -70,7 +70,6 @@ void setup()
     pinMode(pin_led_red, OUTPUT);
 
     //pinMode(pin_buzzer, OUTPUT);
-    pinMode(pin_button_0, INPUT);
 
     comms.beginSerial();
 }

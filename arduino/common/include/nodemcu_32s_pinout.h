@@ -3,10 +3,9 @@
 #define CHIP_ESP32
 #define HEV_FULL_SYSTEM
     // digital pins
-const int pin_valve_air_in        = 25;   // DAC1  // A18
-const int pin_valve_o2_in         = 5;   // STRAPPING PIN (prefer as output / high-Z)
+const int pin_valve_air_in        = 25; // A18 // DAC1 
+const int pin_valve_o2_in         = 5;  // STRAPPING PIN (prefer as output / high-Z)
 const int pin_valve_purge         = 18;
-const int pin_valve_atmosphere    = 26;// DAC2;  // A19
 
     // pwm pins
 const int pin_valve_inhale        = 21;  // formerly valve_out
@@ -31,11 +30,11 @@ const int pin_led_red          = 12; // A15// STRAPPING PIN (prefer as output / 
     // buzzer
 const int pin_buzzer         =  2;   // STRAPPING PIN (prefer as output / High-Z)
 
-    // buttons
-const int pin_button_0       = 13;
 
     // SPARES - this and i2c and dac are spare
-const int pin_spare_adc         = A13;  // IO15  // STRAPPING PIN (prefer as output / high-Z)
+const int pin_spare_1        = 26; // A19 // DAC2
+const int pin_spare_2        = 13; // A14;
+const int pin_spare_3        = 15; // A13; // STRAPPING PIN (prefer as output / high-Z)
     // i2c
 const int pin_scl = 23;
 const int pin_sda = 22;
