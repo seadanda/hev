@@ -37,7 +37,9 @@ OTHER_FILES += platformio.ini
 HEADERS += src/common.h \
             src/MemoryFree.h \
             src/AlarmLoop.h \
+            src/AudioVisualController.h \
             src/BreathingLoop.h \
+            src/ValvesController.h \
             src/UILoop.h \
             ../common/lib/CommsControl/CommsCommon.h \
             ../common/lib/CommsControl/CommsControl.h \
@@ -47,7 +49,9 @@ SOURCES += src/main.cpp \
             src/common.cpp \
             src/MemoryFree.cpp \
             src/AlarmLoop.cpp \
+            src/AudioVisualController.cpp \
             src/BreathingLoop.cpp \
+            src/ValvesController.cpp \
             src/UILoop.cpp \
             ../common/lib/CommsControl/CommsControl.cpp \
             ../common/lib/CommsControl/CommsFormat.cpp
