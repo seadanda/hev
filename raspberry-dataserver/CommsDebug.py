@@ -41,12 +41,15 @@ dep = Dependant(comms)
 
 # initialise as start command, automatically executes toByteArray()
 cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
-time.sleep(4)
+time.sleep(1)
 comms.writePayload(cmd)
 print('sent cmd start')
 while True:
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=200) # to set Kp=0.2, param=200 i.e., milli_Kp
+    comms.writePayload(cmd)
     time.sleep(20)
-    cmd.cmd_code = CMD_GENERAL.STOP.value # automatically executes toByteArray()
+    print('sent cmd set Kp = 0.2')
+    cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.STOP.value, param=0)
     comms.writePayload(cmd)
     print('sent cmd stop')
     pass

@@ -30,6 +30,10 @@ BreathingLoop::BreathingLoop()
     _flow = 0;
     _volume = 0;
     _airway_pressure = 0;
+
+    _pid.Kp = 0.1; // proportional factor
+    _pid.Ki = 0;   // integral factor
+    _pid.Kd = 0;   // derivative factor
 }
 
 BreathingLoop::~BreathingLoop()
@@ -550,15 +554,16 @@ float BreathingLoop::getAirwayPressure(){
 
 void BreathingLoop::doPID(float target_pressure, float process_pressure, float &output, float &proportional, float &integral, float &derivative){
 
-    float Kp = 0.1; // proportional factor
-    float Ki = 0;   // integral factor
-    float Kd = 0;   // derivative factor
-
     float error = target_pressure - process_pressure;
 
-    proportional = Kp*error;
+    proportional = _pid.Kp*error;
 
     //TODO integral and derivative
 
     output = proportional;
+}
+
+pid_variables& BreathingLoop::getPIDVariables()
+{
+    return _pid;
 }

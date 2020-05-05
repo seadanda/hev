@@ -35,6 +35,7 @@ public:
     float getFlow();
     float getVolume(); 
     float getAirwayPressure();
+    pid_variables& getPIDVariables();
     states_durations &getDurations();
 
  
@@ -117,6 +118,10 @@ private:
     // safety
     void safetyCheck();
     uint8_t _safe; 
+
+    // PID vars
+
+    pid_variables _pid; 
 };
 
 

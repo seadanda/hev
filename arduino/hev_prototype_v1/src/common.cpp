@@ -149,6 +149,24 @@ void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint3
     }
 }
 
+void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value)
+{
+    switch(cmd){
+        case CMD_SET_PID::KP:
+            pid.Kp = value/1000.0;
+            break;
+        case CMD_SET_PID::KI:
+            pid.Ki = value/1000.0;
+            break;
+        case CMD_SET_PID::KD:
+            pid.Kd = value/1000.0;
+            break;
+        default:
+            break;
+    }
+}
+
+
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0)
 {
     // TODO -  a proper calibration

@@ -105,8 +105,8 @@ void UILoop::reportReadbackValues()
 
         _readback_data.ventilation_mode = _breathing_loop->getVentilationMode();
 
-        _readback_data.valve_inhale_percent = 0;  //TODO
-        _readback_data.valve_exhale_percent = 0;  //TODO
+        //_readback_data.valve_inhale_percent = 0;  //TODO
+        //_readback_data.valve_exhale_percent = _breathing_loop->getPIDVariables().Kp * 1000;//0;  //TODO
         _readback_data.valve_inhale_percent  = valves_controller->getValveInhalePercent();
         _readback_data.valve_exhale_percent  = valves_controller->getValveInhalePercent();
         _readback_data.valve_air_in_enable   = valves_controller->valveAirInEnabled();
@@ -160,6 +160,9 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::SET_VALVE:
             cmdSetValve(cf);
             break;
+        case CMD_TYPE::SET_PID: 
+            cmdSetPID(cf);
+            break;
         default:
             break;
     }
@@ -183,6 +186,11 @@ void UILoop::cmdSetDuration(cmd_format &cf) {
 
 void UILoop::cmdSetMode(cmd_format &cf) {
     ;
+}
+
+void UILoop::cmdSetPID(cmd_format &cf){
+
+    setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
 }
 
 // FIXME shouldn't these use setThresholdMin,Max ...?

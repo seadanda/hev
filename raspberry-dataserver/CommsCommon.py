@@ -23,6 +23,7 @@ class CMD_TYPE(Enum):
     SET_THRESHOLD_MIN =  4
     SET_THRESHOLD_MAX =  5
     SET_VALVE         =  6
+    SET_PID           =  7
 
 @unique
 class CMD_GENERAL(Enum):
@@ -60,6 +61,11 @@ class CMD_SET_VALVE(Enum):
     INHALE_DUTY_CYCLE = 4,
     INHALE_OPEN_MIN = 5,
     INHALE_OPEN_MAX = 6
+
+class CMD_SET_PID(Enum):
+    KP = 1
+    KI = 2
+    KD = 3
 
 @unique
 class ALARM_TYPE(Enum):
