@@ -76,7 +76,7 @@ public:
         setAV(_led_red   , red   );
         setAV(_buzzer    , buzzer);
     }
-    void setAVsHigher(AV_STYLE green, AV_STYLE yellow, AV_STYLE red, AV_STYLE buzzer) {
+    void setAVsHigher(AV_STYLE green = AV_STYLE::PERM_OFF, AV_STYLE yellow = AV_STYLE::PERM_OFF, AV_STYLE red = AV_STYLE::PERM_OFF, AV_STYLE buzzer = AV_STYLE::PERM_OFF) {
         setAVHigher(_led_green , green );
         setAVHigher(_led_yellow, yellow);
         setAVHigher(_led_red   , red   );

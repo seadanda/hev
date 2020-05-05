@@ -113,12 +113,12 @@ void loop()
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
 
+    alarm_loop.processAlarms();
 
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
     ui_loop.reportCycleReadings();
-
-    alarm_loop.processAlarms();
+    ui_loop.reportAlarms();
 
     // per cycle sender
     comms.sender();

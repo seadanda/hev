@@ -135,7 +135,9 @@ enum ALARM_CODES: uint8_t {
     AIR_FAIL                       = 22,  // HP
     O2_FAIL                        = 23,  // HP
     PRESSURE_SENSOR_FAULT          = 24,  // HP
-    ARDUINO_FAIL                   = 25   // HP
+    ARDUINO_FAIL                   = 25,  // HP
+
+    ALARMS_COUNT                  = 26
 };
 
 #pragma pack(1)
@@ -266,33 +268,148 @@ struct states_durations {
     uint32_t exhale; // has to be calculated using function getTimeoutExhale()
 };
 
-// cannot set default value
-template <typename T> struct alarms {
-    T apnea                          ;
-    T check_valve_exhale             ;
-    T check_p_patient                ;
-    T expiration_sense_fault_or_leak ;
-    T expiration_valve_leak          ;
-    T high_fio2                      ;
-    T high_pressure                  ;
-    T high_rr                        ;
-    T high_vte                       ;
-    T low_vte                        ;
-    T high_vti                       ;
-    T low_vti                        ;
-    T intentional_stop               ;
-    T low_battery                    ;
-    T low_fio2                       ;
-    T occlusion                      ;
-    T high_peep                      ;
-    T low_peep                       ;
-    T ac_power_disconnection         ;
-    T battery_fault_srvc             ;
-    T battery_charge                 ;
-    T air_fail                       ;
-    T o2_fail                        ;
-    T pressure_sensor_fault          ;
-    T arduino_fail                   ;
+struct alarms {
+    ALARM_TYPE  priorities     [ALARM_CODES::ALARMS_COUNT] = {
+        ALARM_TYPE::PRIORITY_LOW   ,    // TEMPORARY VALUE DUE TO START FROM 1
+        ALARM_TYPE::PRIORITY_HIGH  ,    // APNEA
+        ALARM_TYPE::PRIORITY_HIGH  ,    // CHECK_VALVE_EXHALE
+        ALARM_TYPE::PRIORITY_HIGH  ,    // CHECK_P_PATIENT
+        ALARM_TYPE::PRIORITY_MEDIUM,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        ALARM_TYPE::PRIORITY_MEDIUM,    // EXPIRATION_VALVE_Leak
+        ALARM_TYPE::PRIORITY_MEDIUM,    // HIGH_FIO2
+        ALARM_TYPE::PRIORITY_HIGH  ,    // HIGH_PRESSURE
+        ALARM_TYPE::PRIORITY_MEDIUM,    // HIGH_RR
+        ALARM_TYPE::PRIORITY_MEDIUM,    // HIGH_VTE
+        ALARM_TYPE::PRIORITY_MEDIUM,    // LOW_VTE
+        ALARM_TYPE::PRIORITY_MEDIUM,    // HIGH_VTI
+        ALARM_TYPE::PRIORITY_MEDIUM,    // LOW_VTI
+        ALARM_TYPE::PRIORITY_HIGH  ,    // INTENTIONAL_STOP
+        ALARM_TYPE::PRIORITY_HIGH  ,    // LOW_BATTERY
+        ALARM_TYPE::PRIORITY_HIGH  ,    // LOW_FIO2
+        ALARM_TYPE::PRIORITY_HIGH  ,    // OCCLUSION
+        ALARM_TYPE::PRIORITY_HIGH  ,    // HIGH_PEEP
+        ALARM_TYPE::PRIORITY_HIGH  ,    // LOW_PEEP
+        ALARM_TYPE::PRIORITY_MEDIUM,    // AC_POWER_DISCONNECTION
+        ALARM_TYPE::PRIORITY_MEDIUM,    // BATTERY_FAULT_SRVC
+        ALARM_TYPE::PRIORITY_MEDIUM,    // BATTERY_CHARGE
+        ALARM_TYPE::PRIORITY_HIGH  ,    // AIR_FAIL
+        ALARM_TYPE::PRIORITY_HIGH  ,    // O2_FAIL
+        ALARM_TYPE::PRIORITY_HIGH  ,    // PRESSURE_SENSOR_FAULT
+        ALARM_TYPE::PRIORITY_HIGH       // ARDUINO_FAIL
+    };
+    bool        actives        [ALARM_CODES::ALARMS_COUNT] = {
+        false,    // TEMPORARY VALUE DUE TO START FROM 1
+        false,    // APNEA
+        false,    // CHECK_VALVE_EXHALE
+        false,    // CHECK_P_PATIENT
+        false,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        false,    // EXPIRATION_VALVE_Leak
+        false,    // HIGH_FIO2
+        false,    // HIGH_PRESSURE
+        false,    // HIGH_RR
+        false,    // HIGH_VTE
+        false,    // LOW_VTE
+        false,    // HIGH_VTI
+        false,    // LOW_VTI
+        false,    // INTENTIONAL_STOP
+        false,    // LOW_BATTERY
+        false,    // LOW_FIO2
+        false,    // OCCLUSION
+        false,    // HIGH_PEEP
+        false,    // LOW_PEEP
+        false,    // AC_POWER_DISCONNECTION
+        false,    // BATTERY_FAULT_SRVC
+        false,    // BATTERY_CHARGE
+        false,    // AIR_FAIL
+        false,    // O2_FAIL
+        false,    // PRESSURE_SENSOR_FAULT
+        false     // ARDUINO_FAIL
+    };
+    uint32_t    last_broadcasts[ALARM_CODES::ALARMS_COUNT] = {
+        0,    // TEMPORARY VALUE DUE TO START FROM 1
+        0,    // APNEA
+        0,    // CHECK_VALVE_EXHALE
+        0,    // CHECK_P_PATIENT
+        0,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        0,    // EXPIRATION_VALVE_Leak
+        0,    // HIGH_FIO2
+        0,    // HIGH_PRESSURE
+        0,    // HIGH_RR
+        0,    // HIGH_VTE
+        0,    // LOW_VTE
+        0,    // HIGH_VTI
+        0,    // LOW_VTI
+        0,    // INTENTIONAL_STOP
+        0,    // LOW_BATTERY
+        0,    // LOW_FIO2
+        0,    // OCCLUSION
+        0,    // HIGH_PEEP
+        0,    // LOW_PEEP
+        0,    // AC_POWER_DISCONNECTION
+        0,    // BATTERY_FAULT_SRVC
+        0,    // BATTERY_CHARGE
+        0,    // AIR_FAIL
+        0,    // O2_FAIL
+        0,    // PRESSURE_SENSOR_FAULT
+        0     // ARDUINO_FAIL
+    };
+    uint32_t    thresholds_min [ALARM_CODES::ALARMS_COUNT] = {
+        0x00000000,    // TEMPORARY VALUE DUE TO START FROM 1
+        0x00000000,    // APNEA
+        0x00000000,    // CHECK_VALVE_EXHALE
+        0x00000000,    // CHECK_P_PATIENT
+        0x00000000,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        0x00000000,    // EXPIRATION_VALVE_Leak
+        0x00000000,    // HIGH_FIO2
+        0x00000000,    // HIGH_PRESSURE
+        0x00000000,    // HIGH_RR
+        0x00000000,    // HIGH_VTE
+        0x00000000,    // LOW_VTE
+        0x00000000,    // HIGH_VTI
+        0x00000000,    // LOW_VTI
+        0x00000000,    // INTENTIONAL_STOP
+        0x00000000,    // LOW_BATTERY
+        0x00000000,    // LOW_FIO2
+        0x00000000,    // OCCLUSION
+        0x00000000,    // HIGH_PEEP
+        0x00000000,    // LOW_PEEP
+        0x00000000,    // AC_POWER_DISCONNECTION
+        0x00000000,    // BATTERY_FAULT_SRVC
+        0x00000000,    // BATTERY_CHARGE
+        0x00000000,    // AIR_FAIL
+        0x00000000,    // O2_FAIL
+        0x00000000,    // PRESSURE_SENSOR_FAULT
+        0x00000000     // ARDUINO_FAIL
+    };
+    uint32_t    thresholds_max [ALARM_CODES::ALARMS_COUNT] = {
+        0xFFFFFFFF,    // TEMPORARY VALUE DUE TO START FROM 1
+        0xFFFFFFFF,    // APNEA
+        0xFFFFFFFF,    // CHECK_VALVE_EXHALE
+        0xFFFFFFFF,    // CHECK_P_PATIENT
+        0xFFFFFFFF,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        0xFFFFFFFF,    // EXPIRATION_VALVE_Leak
+        0xFFFFFFFF,    // HIGH_FIO2
+        0xFFFFFFFF,    // HIGH_PRESSURE
+        0xFFFFFFFF,    // HIGH_RR
+        0xFFFFFFFF,    // HIGH_VTE
+        0xFFFFFFFF,    // LOW_VTE
+        0xFFFFFFFF,    // HIGH_VTI
+        0xFFFFFFFF,    // LOW_VTI
+        0xFFFFFFFF,    // INTENTIONAL_STOP
+        0xFFFFFFFF,    // LOW_BATTERY
+        0xFFFFFFFF,    // LOW_FIO2
+        0xFFFFFFFF,    // OCCLUSION
+        0xFFFFFFFF,    // HIGH_PEEP
+        0xFFFFFFFF,    // LOW_PEEP
+        0xFFFFFFFF,    // AC_POWER_DISCONNECTION
+        0xFFFFFFFF,    // BATTERY_FAULT_SRVC
+        0xFFFFFFFF,    // BATTERY_CHARGE
+        0xFFFFFFFF,    // AIR_FAIL
+        0xFFFFFFFF,    // O2_FAIL
+        0xFFFFFFFF,    // PRESSURE_SENSOR_FAULT
+        0xFFFFFFFF     // ARDUINO_FAIL
+    };
+    uint32_t    values         [ALARM_CODES::ALARMS_COUNT];
 };
 
 struct pid_variables {
