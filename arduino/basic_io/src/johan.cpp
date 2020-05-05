@@ -21,6 +21,8 @@
 #define DEBUG_PRINTLN2(x,y)
 #endif
 
+//Flag to close all valves of the system to stop the data taking in a safe state
+bool stop = true;
 
 // Create the MCP9808 temperature sensor object
 Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
@@ -29,7 +31,7 @@ Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
 // Set Board to "ESP32 Dev Module"
 // Set Port to /dev/ttyUSB0 on Linux
 
-const int freq = 900; // 900 Hz for burkert 2875; Note - could be 500 Hz; depending on valve
+const int freq = 500; // 900 Hz for burkert 2875; Note - could be 500 Hz; depending on valve
 float duty_cycle = 0.0;
 const float max_duty_cycle = 0.85;
 
@@ -87,15 +89,17 @@ void setup() {
         // NodeMCU32
         // pwm
         ledcSetup(0, freq, 8);  
+        ledcSetup(1, freq, 8);  
 
-        ledcSetup(1,2200,8); // buzzer frequency
+        //ledcSetup(1,2200,8); // buzzer frequency
 
         //ledcAttachPin(pin_valve_o2_in      , 0);  
         ledcAttachPin(pin_valve_inhale     , 0);  
+        ledcAttachPin(pin_valve_exhale     , 1);  
 
         ledcAttachPin(buzzer     , 1);  
 
-        ledcWrite(1, 128); //buzzer
+        //ledcWrite(1, 128); //buzzer
 
         pinMode(A13, INPUT); // potentiometer
 
@@ -113,7 +117,7 @@ void setup() {
         // Valves IO config
 
         pinMode(pin_valve_air_in,OUTPUT);
-        pinMode(pin_valve_exhale,OUTPUT);
+        //pinMode(pin_valve_exhale,OUTPUT);
         pinMode(pin_valve_purge,OUTPUT);
         pinMode(pin_valve_o2_in,OUTPUT);
 
@@ -124,14 +128,26 @@ void setup() {
         pinMode(greenled,OUTPUT);
 
 
-        digitalWrite(pin_valve_air_in, HIGH);
+
+	if(stop){
+	//To Close all valves of the system
+        digitalWrite(pin_valve_air_in, LOW);
         digitalWrite(pin_valve_exhale, LOW);
         digitalWrite(pin_valve_purge, LOW);
-        digitalWrite(pin_valve_o2_in, HIGH);
+        digitalWrite(pin_valve_o2_in, LOW);
+	}
+	else{
+		//Default values for data taking
+		digitalWrite(pin_valve_air_in, HIGH);
+		//digitalWrite(pin_valve_exhale, LOW);
+		digitalWrite(pin_valve_purge, LOW);
+		digitalWrite(pin_valve_o2_in, HIGH);
+	}
 
-        digitalWrite(redled, HIGH);
-        digitalWrite(yellowled, HIGH);
-        digitalWrite(greenled, HIGH);
+
+        //digitalWrite(redled, HIGH);
+        //digitalWrite(yellowled, HIGH);
+        //digitalWrite(greenled, HIGH);
 
         DEBUG_PRINT("Hello");
         Serial.println("Hello");
@@ -185,46 +201,80 @@ void loop() {
                 duty_cycle = max_duty_cycle;
         }
 
-        int val = (int)(255.0*duty_cycle);
 
-        Serial.print("Pot ");
-        Serial.print(String((int)res));
-        Serial.print(" p_patient ");
-        Serial.print(String((int)pressure_patient));
-        Serial.print(" p_buffer ");
-        Serial.print(String((int)pressure_buffer));
-        Serial.print(" p_as ");
-        Serial.print(String((int)pressure_asupply));
-        Serial.print(" p_ar ");
-        Serial.print(String((int)pressure_aregulated));
-        Serial.print(" p_inhale ");
-        Serial.print(String((int)pressure_inhale));
-        Serial.print(" p_o2s ");
-        Serial.print(String((int)pressure_o2supply)); 
-        Serial.print(" p_o2r ");
-        Serial.print(String((int)pressure_o2regulated));
+        //Serial.print("Pot ");
+        //Serial.print(String((int)res));
+        //Serial.print(" p_patient ");
+        //Serial.print(String((int)pressure_patient));
+        //Serial.print(" p_buffer ");
+        //Serial.print(String((int)pressure_buffer));
+        //Serial.print(" p_as ");
+        //Serial.print(String((int)pressure_asupply));
+        //Serial.print(" p_ar ");
+        //Serial.print(String((int)pressure_aregulated));
+        //Serial.print(" p_inhale ");
+        //Serial.print(String((int)pressure_inhale));
+        //Serial.print(" p_o2s ");
+        //Serial.print(String((int)pressure_o2supply)); 
+        //Serial.print(" p_o2r ");
+        //Serial.print(String((int)pressure_o2regulated));
 
-        Serial.print(" Temp: "); 
-        Serial.print(c, 4);
+        //Serial.print(" Temp: "); 
+        //Serial.print(c, 4);
 
 
-        // measuring Valves voltage and current
-        Serial.print(" ");
-        Serial.print((float)INA.getBusMilliVolts(0)/1000.0,4);
-        DEBUG_PRINT("V ");
-        DEBUG_PRINT2((float)INA.getShuntMicroVolts(0)/5,0);  
-        DEBUG_PRINT("mA "); 
-        DEBUG_PRINT2((float)INA.getShuntMicroVolts(1)/5,0);  
-        DEBUG_PRINT("mA ");   
-        DEBUG_PRINT2((float)INA.getShuntMicroVolts(2)/5,0);  
-        DEBUG_PRINT("mA ");
-        DEBUG_PRINT2((float)INA.getShuntMicroVolts(3)/5,0);  
-        DEBUG_PRINT("mA ");
+        //// measuring Valves voltage and current
+        //Serial.print(" ");
+        //Serial.print((float)INA.getBusMilliVolts(0)/1000.0,4);
+        //DEBUG_PRINT("V ");
+        //DEBUG_PRINT2((float)INA.getShuntMicroVolts(0)/5,0);  
+        //DEBUG_PRINT("mA "); 
+        //DEBUG_PRINT2((float)INA.getShuntMicroVolts(1)/5,0);  
+        //DEBUG_PRINT("mA ");   
+        //DEBUG_PRINT2((float)INA.getShuntMicroVolts(2)/5,0);  
+        //DEBUG_PRINT("mA ");
+        //DEBUG_PRINT2((float)INA.getShuntMicroVolts(3)/5,0);  
+        //DEBUG_PRINT("mA ");
 
-        Serial.print(" duty cycle ");
-        Serial.println(String(duty_cycle));
+	if(stop){
 
-        ledcWrite(0, val);
+		ledcWrite(0, 0);//val);// exhale
+		ledcWrite(1, 0);//val);// exhale
 
-        delay(1000);
+	}
+	else{
+
+		duty_cycle = 0.74;
+		float low_duty_cycle = 0.54;//525;
+		int nsteps = 1; // number of steps of 10 ms in between 
+
+		float step_size = (duty_cycle-low_duty_cycle) / nsteps;
+
+		int val = (int)(255.0*duty_cycle);
+
+		int vallow = (int)(255.0*low_duty_cycle);
+
+		//Serial.print(" duty cycle ");
+		//Serial.println(String(duty_cycle));
+		//Serial.print(" raw val ");
+		//Serial.println(String(val));
+
+		digitalWrite(greenled, HIGH);
+		//ledcWrite(0, val);// inhale
+		ledcWrite(0, vallow);//vallow);// exhale
+		delay(1000);
+
+		for(int i=0; i<nsteps ; i++){
+			int _val = (int)( 255.0 * ( low_duty_cycle + ( i * step_size ) ) );
+			ledcWrite(0,_val);
+			delay(10);
+		}
+
+		ledcWrite(0, val);//val);// exhale
+		delay(1000);
+		//ledcWrite(1, 0);// exhale
+		//digitalWrite(greenled, LOW);
+
+		//delay(1000);
+	}
 }

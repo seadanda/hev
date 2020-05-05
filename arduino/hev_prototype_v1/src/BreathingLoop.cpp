@@ -86,7 +86,31 @@ void BreathingLoop::updateReadings()
         _readings_avgs.pressure_o2_regulated    = adcToMillibar((_readings_sums.pressure_o2_regulated    / _readings_N));
         _readings_avgs.pressure_diff_patient    = (_readings_sums.pressure_diff_patient    / _readings_N) ;
 #endif
+        
+
+        // add Oscar code here:
+        if (getFsmState() == BL_STATES::INHALE){
+
+                //TODO
+
+                float_t _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
+
+                float output = 0.;
+
+                doPID(10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
+                _valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
+                //Lazy approach
+                //airway_pressure = Proportional
+                //volume = Integral
+                //flow = Derivative
+
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, _valve_inhale_PID_percentage*VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            
+
+        }
+
         resetReadingSums();
+
     }
 }
 
@@ -111,11 +135,10 @@ void BreathingLoop::updateRawReadings()
         _readings_raw.pressure_diff_patient    =analogRead(pin_pressure_diff_patient)  ;
 #endif
 
-// add Oscar code here:
-        _flow= -1;
-        _volume= -1;
-        _airway_pressure= -1;
+
+
     }
+
 }
 
 
@@ -523,4 +546,19 @@ float BreathingLoop::getVolume(){
 }
 float BreathingLoop::getAirwayPressure(){
     return _airway_pressure;
+}
+
+void BreathingLoop::doPID(float target_pressure, float process_pressure, float &output, float &proportional, float &integral, float &derivative){
+
+    float Kp = 0.1; // proportional factor
+    float Ki = 0;   // integral factor
+    float Kd = 0;   // derivative factor
+
+    float error = target_pressure - process_pressure;
+
+    proportional = Kp*error;
+
+    //TODO integral and derivative
+
+    output = proportional;
 }

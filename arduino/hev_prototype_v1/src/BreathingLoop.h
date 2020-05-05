@@ -37,6 +37,8 @@ public:
     float getAirwayPressure();
     states_durations &getDurations();
 
+ 
+
     // states
     enum BL_STATES : uint8_t {
             UNKNOWN         =  0,
@@ -108,6 +110,9 @@ private:
     float _flow;
     float _volume;
     float _airway_pressure;
+    float _valve_inhale_PID_percentage;//from 0 to 1.
+
+    void doPID(float, float, float&, float&, float&, float&);
 
     // safety
     void safetyCheck();
