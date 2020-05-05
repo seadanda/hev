@@ -5824,10 +5824,12 @@ html, body {
   z-index: 1039;
 }
 .sb-topnav .navbar-brand {
-  width: 225px;
   padding-left: 0rem;
   padding-right: 0rem;
   margin: 0;
+}
+sb-topnav {
+  width:225px;
 }
 .sb-topnav.navbar-dark #sidebarToggle {
     color: rgba(255, 255, 255, 0.5);
