@@ -103,7 +103,7 @@ void BreathingLoop::updateReadings()
                 //volume = Integral
                 //flow = Derivative
 
-                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, _valve_inhale_PID_percentage*VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+                //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, _valve_inhale_PID_percentage*VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             
 
         }
