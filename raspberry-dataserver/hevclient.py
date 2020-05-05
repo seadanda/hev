@@ -7,7 +7,7 @@ import asyncio
 import time
 import json
 import threading
-from typing import List, Dict
+from typing import List, Dict, Union
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,7 +21,7 @@ class HEVPacketError(Exception):
 class HEVClient(object):
     def __init__(self):
         self._alarms = []  # db for alarms
-        self._values = None  # db for sensor values
+        self._fastdata = None  # db for sensor values
         self._readback = None  # db for sensor values
         self._cycle = None  # db for sensor values
         self._thresholds = None  # db for sensor values
@@ -48,7 +48,7 @@ class HEVClient(object):
                     continue
                 elif payload["type"] == "broadcast":
                     with self._lock:
-                        self._values = payload["sensors"]
+                        self._fastdata = payload["sensors"]
                 elif payload["type"] == "READBACK":
                     with self._lock:
                         self._readback = payload["READBACK"]
@@ -117,7 +117,7 @@ class HEVClient(object):
             logging.warning(f"Request type {reqtype} failed")
             return False
 
-    def send_cmd(self, cmdtype:str, cmd: str, param: str=None) -> bool:
+    def send_cmd(self, cmdtype:str, cmd: str, param: Union[float,int]=None) -> bool:
         # send a cmd and wait to see if it's valid
         return asyncio.run(self.send_request("cmd", cmdtype=cmdtype, cmd=cmd, param=param))
 
@@ -127,7 +127,19 @@ class HEVClient(object):
 
     def get_values(self) -> Dict:
         # get sensor values from db
-        return self._values
+        return self._fastdata
+
+    def get_readback(self) -> Dict:
+        # get readback from db
+        return self._readback
+
+    def get_cycle(self) -> Dict:
+        # get cycle data from db
+        return self._cycle
+
+    def get_thresholds(self) -> Dict:
+        # get threshold data from db
+        return self._thresholds
 
     def get_alarms(self) -> List[str]:
         # get alarms from db
@@ -162,9 +174,12 @@ if __name__ == "__main__":
     time.sleep(2)
     print(f"Alarms: {hevclient.get_alarms()}")
 
-    # print some more values
+    # set a timeout
+    hevclient.send_cmd("SET_TIMEOUT", "INHALE", 1111)
+
+    # check for the readback
     for i in range(10):
-        print(f"Values: {json.dumps(hevclient.get_values(), indent=4)}")
+        print(f"Readback: {json.dumps(hevclient.get_readback(), indent=4)}")
         print(f"Alarms: {hevclient.get_alarms()}")
         time.sleep(1)
 
