@@ -83,26 +83,13 @@ def send_cmd():
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
     """
-    Send configuration data to the Arduino
+    Send timeout thresholds to the Arduino
     """
-    output = []
-    var_1 = request.form['pressure_air_supply']
-    var_2 = request.form['variable2']
-    var_3 = request.form['variable3']
-    var_4 = request.form['variable4']
-    var_5 = request.form['variable5']
-    var_6 = request.form['variable6']
-  
-    patient_name = request.form['patient_name']
+    web_form = request.form
+    timeout_value = web_form.get('timeout_threshold')
+    print(hevclient.send_cmd("SET_TIMEOUT", "BUFF_FILL", int(timeout_value)))
 
- 
-    multiple_appends(output, var_1, var_2, var_3, var_4, var_5, var_6)
-    
-    converted_output = [float(i) for i in output] 
-
-    hevclient.set_thresholds(converted_output)
-
-    return render_template('index.html', result=live_data(), patient=patient_name)
+    return ('', 204)
 
 
 def number_rows(table_name):
