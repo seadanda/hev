@@ -34,11 +34,12 @@
                 <table>
               <tr>
                 <td> <label class="small" for="inputVar1" >Buffer fill [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="pressure_air_supply" type="number" value="11" name="timeout_threshold"  onclick="show_easy_numpad(this, buffer_fill_controller);lock();" readOnly disabled/></td>
+                <td><input class="form-control py-1 input-editable" id="pressure_air_supply" type="number" value="11" name="timeout_threshold"  onclick="show_easy_numpad(this, buffer_fill_controller);lock();"  readOnly disabled/></td>
               </tr>
               <tr>
                 <td><span class="form-group"><label class="small" for="inputVar2">Buffer flush [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="pressure_air_regulated" type="number" value=1 name="variable2"  /></span></td>
+                <td><input class="form-control py-1 input-editable" id="pressure_air_regulated" type="number" value="1" name="timeout_threshold"  onclick="show_easy_numpad(this, buffer_flush_controller);lock();"  readOnly disabled/></td>
+
               </tr>
               <tr>
                 <td><span class="form-group"><label class="small" for="inputVar3">Buffer loaded [ms]</label></td>
@@ -100,30 +101,17 @@
 {% block body_scripts %}
 <script type=text/javascript>
 
-function changeThresholdAlert(element){
-	  if (!element.disabled){
-		window.createNotification({
-			closeOnClick: 1,
-			displayCloseButton: 0,
-			positionClass: "nfc-bottom-right",
-			showDuration: false,
-			theme: "info"
-		})({
-			title: "Setting threshold",
-			message: "Changed " + element.name
-	  });
-	  }
-	  }
 
-function changeValue(element){
+function sendCmd(var_name, var_value) {
+  var buffer = {name : var_name, value : var_value};
   $.ajax({
         type: "POST",
         url:"/data_handler",
-        //data:{5}
-        //data:{element.value},
-        success:"url_for('send_cmd')"
-    });
-	  }
+        data: JSON.stringify(buffer)   // converts js value to JSON string
+        })    
+};
+
+
 
 
   class input_controller{
@@ -148,6 +136,7 @@ function changeValue(element){
 			message: "Setting updated from " + this.element.value + " to " + val + " for " + this.name
 	  });
 	  this.element.value = val;
+    sendCmd(this.name, val);
   }
   getMin(){
 	  if (this.element.min) return this.element.min;
@@ -160,6 +149,8 @@ function changeValue(element){
 }
 
 buffer_fill_controller = new input_controller("buffer_fill", document.getElementById("pressure_air_supply"));
+buffer_flush_controller = new input_controller("buffer_fill", document.getElementById("pressure_air_regulated"));
+
 
 </script>
 

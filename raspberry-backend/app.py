@@ -85,9 +85,15 @@ def data_handler():
     """
     Send timeout thresholds to the Arduino
     """
-    web_form = request.form
-    timeout_value = web_form.get('timeout_threshold')
-    print(hevclient.send_cmd("SET_TIMEOUT", "BUFF_FILL", int(timeout_value)))
+    #data = {}    # empty dict to store data
+    #data['variable'] = request.get_json(force=True)
+    data = request.get_json(force=True)
+    
+
+    print(data['name'])
+    print(data['value'])
+
+    print(hevclient.send_cmd("SET_TIMEOUT", "BUFF_FILL", int(data['value'])))
 
     return ('', 204)
 
