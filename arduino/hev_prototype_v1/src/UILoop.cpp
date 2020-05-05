@@ -60,6 +60,10 @@ void UILoop::reportFastReadings()
         _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
         _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
 
+        _fast_data.flow = _breathing_loop->getFlow();
+        _fast_data.volume= _breathing_loop->getVolume();
+        _fast_data.airway_pressure= _breathing_loop->getAirwayPressure();
+
         _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_plSend);
         _fast_report_time = tnow;
@@ -73,7 +77,7 @@ void UILoop::reportReadbackValues()
     if (tnow - _readback_report_time > _readback_report_timeout)
     {
         bool vin_air, vin_o2, vpurge;
-        float vinhale, vexhale;
+        uint8_t vinhale, vexhale;
         ValvesController *valves_controller = _breathing_loop->getValvesController();
         valves_controller->getValves(vin_air, vin_o2, vinhale, vexhale, vpurge);
 
@@ -99,15 +103,15 @@ void UILoop::reportReadbackValues()
 
         _readback_data.ventilation_mode = static_cast<uint8_t>(_breathing_loop->getVentilationMode());
 
-        _readback_data.valve_inhale_percent = 0;  //TODO
-        _readback_data.valve_exhale_percent = 0;  //TODO
-        _readback_data.valve_inhale_percent = _breathing_loop->getValveInhalePercent();
-        _readback_data.valve_exhale_percent = _breathing_loop->getValveInhalePercent();
-        _readback_data.valve_air_in_enable  = _breathing_loop->valveAirInEnabled();
-        _readback_data.valve_o2_in_enable  = _breathing_loop->valveO2InEnabled();
-        _readback_data.valve_purge_enable  = _breathing_loop->valvePurgeEnabled();
-        _readback_data.inhale_trigger_enable = _breathing_loop->inhaleTriggerEnabled();
-        _readback_data.exhale_trigger_enable = _breathing_loop->exhaleTriggerEnabled();
+        //_readback_data.valve_inhale_percent = 0;  //TODO
+        //_readback_data.valve_exhale_percent = _breathing_loop->getPIDVariables().Kp * 1000;//0;  //TODO
+        _readback_data.valve_inhale_percent  = valves_controller->getValveInhalePercent();
+        _readback_data.valve_exhale_percent  = valves_controller->getValveInhalePercent();
+        _readback_data.valve_air_in_enable   = valves_controller->valveAirInEnabled();
+        _readback_data.valve_o2_in_enable    = valves_controller->valveO2InEnabled();
+        _readback_data.valve_purge_enable    = valves_controller->valvePurgeEnabled();
+        _readback_data.inhale_trigger_enable = valves_controller->inhaleTriggerEnabled();
+        _readback_data.exhale_trigger_enable = valves_controller->exhaleTriggerEnabled();
         // _readback_data.peep = _breathing_loop->peep();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
@@ -151,6 +155,12 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::SET_THRESHOLD_MAX :
             cmdSetThresholdMax(cf);
             break;
+        case CMD_TYPE::SET_VALVE:
+            cmdSetValve(cf);
+            break;
+        case CMD_TYPE::SET_PID: 
+            cmdSetPID(cf);
+            break;
         default:
             break;
     }
@@ -178,6 +188,12 @@ void UILoop::cmdSetMode(cmd_format &cf) {
     _breathing_loop->setVentilationMode(static_cast<VENTILATION_MODE>(cf.cmd_code));
 }
 
+void UILoop::cmdSetPID(cmd_format &cf){
+
+    setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
+}
+
+// FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
     setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
 }
@@ -186,4 +202,6 @@ void UILoop::cmdSetThresholdMax(cmd_format &cf) {
     setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
 }
 
-
+void UILoop::cmdSetValve(cmd_format &cf) {
+    setValveParam(static_cast<CMD_SET_VALVE>(cf.cmd_code), _breathing_loop->getValvesController(), cf.param);
+}

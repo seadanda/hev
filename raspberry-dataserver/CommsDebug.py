@@ -48,14 +48,14 @@ async def commsDebug():
     #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
-    await asyncio.sleep(4)
+    await asyncio.sleep(1)
     comms.writePayload(cmd)
     print('sent cmd start')
     while True:
         await asyncio.sleep(15)
-        cmd = CommandFormat(cmd_type=CMD_TYPE.SET_MODE.value, cmd_code=VENTILATION_MODE.LAB_MODE_PURGE.value, param=0)
+        cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=200) # to set Kp=0.2, param=200 i.e., milli_Kp
         comms.writePayload(cmd)
-        print('sent cmd purge')
+        print('sent cmd set Kp = 0.2')
         await asyncio.sleep(15)
         cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.STOP.value, param=0)
         comms.writePayload(cmd)

@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 #include <Arduino.h>
+#include "ValvesController.h"
 
 //#define HEV_MINI_SYSTEM  // uncomment this if using lab 14-1-014
 
@@ -22,6 +23,7 @@
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
+const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
 // input params
 enum PAYLOAD_TYPE : uint8_t {
     UNSET        = 0,
@@ -38,7 +40,9 @@ enum CMD_TYPE  : uint8_t {
     SET_DURATION      =  2,
     SET_MODE          =  3,
     SET_THRESHOLD_MIN =  4,
-    SET_THRESHOLD_MAX =  5
+    SET_THRESHOLD_MAX =  5,
+    SET_VALVE         =  6,
+    SET_PID           =  7
 };
 
 enum CMD_GENERAL : uint8_t {
@@ -46,6 +50,7 @@ enum CMD_GENERAL : uint8_t {
     STOP  =  2,
     RESET =  3
 };
+
 
 // Taken from the FSM doc. Correct as of 1400 on 20200417
 enum CMD_SET_DURATION : uint8_t {
@@ -71,6 +76,21 @@ enum VENTILATION_MODE : uint8_t {
     LAB_MODE_BREATHE = 5,
     LAB_MODE_PURGE   = 6,
     LAB_MODE_FLUSH   = 7
+};
+
+enum CMD_SET_VALVE: uint8_t {
+    AIR_IN_ENABLE = 1,
+    O2_IN_ENABLE  = 2,
+    PURGE_ENABLE  = 3,
+    INHALE_DUTY_CYCLE = 4,
+    INHALE_OPEN_MIN = 5,
+    INHALE_OPEN_MAX = 6
+};
+
+enum CMD_SET_PID : uint8_t {
+    KP = 1,
+    KI = 2,
+    KD = 3
 };
 
 #pragma pack(1)
@@ -228,10 +248,10 @@ struct cycle_data_format {
 #pragma pack()
 
 
-enum VALVE_STATES : bool {
-    V_OPEN = HIGH,
-    V_CLOSED = LOW
-};
+//enum VALVE_STATES : bool {
+//    V_OPEN = HIGH,
+//    V_CLOSED = LOW
+//};
 
 struct states_durations {
     uint32_t calibration;
@@ -275,14 +295,22 @@ struct alarm_thresholds {
     uint32_t arduino_fail;
 };
 
+struct pid_variables {
+    float Kp; // proportional factor
+    float Ki; // integral factor
+    float Kd; // derivative factor
+};
+
 // static uint32_t valve_port_states = 0x0; 
 // static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
 // static int chan_to_pin[50];  
 
-
 void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
 void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t &value);
+void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
+float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{
