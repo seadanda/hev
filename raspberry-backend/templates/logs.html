@@ -26,8 +26,8 @@
   <div class="container-fluid">
     <!--<h1 class="mt-4">Info</h1> !-->
 
-    <input type="button" value="Update alarms" id="update_button" style="background-color:gray; border-color:blue; color:white"></input>
-    <button type="button" id="ack_alarms"   style="background-color:gray; border-color:blue; color:white">Acknowledge all alarms</button>
+    <input type="button" class="form-control py-2" value="Update alarms" id="update_button" style="background-color:#1f4793; border-color:blue; color:white"></input>
+    <button type="button" class="form-control py-2" id="ack_alarms"   style="background-color:#1f4793; border-color:blue; color:white">Acknowledge all alarms</button>
 
 
       <table id="HEV_logs">
@@ -83,7 +83,7 @@ function requestAlarms() {
             //cell1.innerHTML = convertTimestamp(data.created_at)
             cell1.innerHTML = data.timestamp;
             cell2.innerHTML = data.alarms;
-            cell3.innerHTML =  '<button type="button" id="ack"   style="background-color:gray; border-color:blue; color:white">Ack</button>';
+            cell3.innerHTML =  '<button type="button" id="ack"   style="background-color:#1f4793; border-color:blue; color:white">Ack</button>';
 
          }
          
@@ -111,7 +111,7 @@ document.getElementById('update_button').onclick = function(){
     update_logs();
   } else {
     this.value = "Update alarms"
-    this.style.backgroundColor = "gray";
+    this.style.backgroundColor = "#1f4793";
     button_state = false;
     clearInterval(alarmLogs);
   }

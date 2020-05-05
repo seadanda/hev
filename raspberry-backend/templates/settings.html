@@ -16,14 +16,19 @@
 	    </a></div>
 	</div>
         <div class="card-body px-1 py-1">
-          <span class="form-group"><label class="small" for="inputName">Name</label><input class="form-control py-0" id="inputName" type="name" value="John Smith" readOnly name='patient_name' /></span>
-
-          <span class="form-group"><label class="small" for="inputEmailAddress">Age</label><input class="form-control py-0" id="inputAge" type="number" readOnly placeholder=87 /></span>
-          <span class="form-group"><label class="small" for="inputHeight">Height (cm)</label><input class="form-control py-0" id="inputHeight" type="number" readOnly placeholder=180 /></span>
-          <span class="form-group"><label class="small" for="inputWeight">Weight (kg)</label><input class="form-control py-0" id="inputWeight" type="number" readOnly placeholder=80 /></span>
-	</div>
+          <div>
+          <span class="form-group"><label class="small" for="inputName">Name</label><input class="form-control py-1" id="inputName" type="name" value="John Smith" readOnly name='patient_name' /></span>
+          <span class="form-group"><label class="small" for="inputEmailAddress">Age</label><input class="form-control py-1" id="inputAge" type="number" readOnly placeholder=87 /></span>
+          <span class="form-group"><label class="small" for="inputHeight">Height (cm)</label><input class="form-control py-1" id="inputHeight" type="number" readOnly placeholder=180 /></span>
+          <span class="form-group"><label class="small" for="inputWeight">Weight (kg)</label><input class="form-control py-1" id="inputWeight" type="number" readOnly placeholder=80 /></span>
+          </div> 
+        </div>
+  <div class="row justify-content-center">
+      <span class="form-group" ><input class="form-button py-2" id="inputPassword" type="submit" value="Submit Changes"  /></span>
+  </div>  
       </div>
     </div>
+    <!--
     <div class="row justify-content-center">
       <div class="card rounded-lg px-0 py-0">
         <div class="card-header px-1 py-1">
@@ -35,32 +40,44 @@
 	    </svg>
 	    </a>
 	    </div>
-	</div>
+	</div>-->
         <div class="card-body px-1 py-1">
-          <span class="form-group"><label class="small" for="inputVar1">pressure_air_supply</label><input class="form-control py-0" id="pressure_air_supply" type="number" value=1 name="pressure_air_supply" readOnly /></span>
-          <span class="form-group"><label class="small" for="inputVar2">pressure_air_regulated</label><input class="form-control py-0" id="pressure_air_regulated" type="number" value=1 name="variable2" readOnly /></span>
+          <div>
+          <form action="{{ url_for('data_handler') }}" method="post">
+
+         <label class="small" for="inputVar1" >Buffer fill [ms]  </label>   <input class="form-control py-1" id="pressure_air_supply" type="submit" value="11" name="timeout_threshold"  onclick="changeThresholdAlert(this.name)" />
+
+          <span class="form-group"><label class="small" for="inputVar2">Buffer flush [ms]</label><input class="form-control py-1" id="pressure_air_regulated" type="number" value=1 name="variable2"  /></span>
+          <span class="form-group"><label class="small" for="inputVar3">Buffer loaded [ms]</label><input class="form-control py-1" id="pressure_o2_supply" type="number" value=1 name="variable3"  /></span>
           <br>
-          <span class="form-group"><label class="small" for="inputVar3">pressure_o2_supply</label><input class="form-control py-0" id="pressure_o2_supply" type="number" value=1 name="variable3" readOnly /></span>
-          <span class="form-group"><label class="small" for="inputVar4">pressure_o2_regulated</label><input class="form-control py-0" id="pressure_o2_regulated" type="number" value=1 name="variable4" readOnly /></span>
+
+          <span class="form-group"><label class="small" for="inputVar4">Buffer pre-fill [ms]</label><input class="form-control py-1" id="pressure_o2_regulated" type="number" value=1 name="variable4"  /></span>
+          <span class="form-group"><label class="small" for="inputVar5">Buffer pre-inhale [ms]</label><input class="form-control py-1" id="pressure_buffer" type="number" value=1 name="variable4"  /></span>
+          <span class="form-group"><label class="small" for="inputVar6">Buffer purge [ms]</label><input class="form-control py-1" id="pressure_inhale" type="number" value=1 name="variable4"  /></span>
           <br>
-          <span class="form-group"><label class="small" for="inputVar5">pressure_buffer</label><input class="form-control py-0" id="pressure_buffer" type="number" value=1 name="variable4" readOnly /></span>
-          <span class="form-group"><label class="small" for="inputVar6">pressure_inhale</label><input class="form-control py-0" id="pressure_inhale" type="number" value=1 name="variable4" readOnly /></span>
+          <span class="form-group"><label class="small" for="inputVar7">Inhale [ms]</label><input class="form-control py-1" id="pressure_patient" type="number" value=1 name="variable4"  /></span>
+          <span class="form-group"><label class="small" for="inputVar8">Pause [ms]</label><input class="form-control py-1" id="readback_valve_air_in" type="number" value=1 name="variable4"  /></span>
+          <span class="form-group"><label class="small" for="inputVar9">Exhale [ms]</label><input class="form-control py-1" id="readback_valve_02_in" type="number" value=1 name="variable4"  /></span>
           <br>
-          <span class="form-group"><label class="small" for="inputVar7">pressure_patient</label><input class="form-control py-0" id="pressure_patient" type="number" value=1 name="variable4" readOnly /></span>
+          <span class="form-group"><label class="small" for="inputVar10">Exhale fill[ms]</label><input class="form-control py-1" id="readback_valve_out" type="number" value=1 name="variable5"  /></span>
+          <span class="form-group"><label class="small" for="inputVar11">Vavle (Air)</label><input class="form-control py-1" id="readback_valve_scavenge" type="number" value=1 name="variable6"  /></span>
+          <span class="form-group"><label class="small" for="inputVar12">Valve (O2)</label><input class="form-control py-1" id="readback_valve_purge" type="number" value=1 name="variable6"  /></span>
           <br>
-          <span class="form-group"><label class="small" for="inputVar8">readback_valve_air_in</label><input class="form-control py-0" id="readback_valve_air_in" type="number" value=1 name="variable4" readOnly /></span>
-          <span class="form-group"><label class="small" for="inputVar9">readback_valve_02_in</label><input class="form-control py-0" id="readback_valve_02_in" type="number" value=1 name="variable4" readOnly /></span>
+          <span class="form-group"><label class="small" for="inputVar13">Valve (Inhale) [%]</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
+          <span class="form-group"><label class="small" for="inputVar13">Valve (Exhale) [%]</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
+          <span class="form-group"><label class="small" for="inputVar13">Valve (Purge)</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
           <br>
-          <span class="form-group"><label class="small" for="inputVar10">readback_valve_out</label><input class="form-control py-0" id="readback_valve_out" type="number" value=1 name="variable5" readOnly /></span>
-          <span class="form-group"><label class="small" for="inputVar11">readback_valve_scavenge</label><input class="form-control py-0" id="readback_valve_scavenge" type="number" value=1 name="variable6" readOnly /></span>
+          <span class="form-group"><label class="small" for="inputVar13">PEEP [cmH2O]</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
+          <span class="form-group"><label class="small" for="inputVar13">State</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
+          <span class="form-group"><label class="small" for="inputVar13">RPM</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
           <br>
-          <span class="form-group"><label class="small" for="inputVar12">readback_valve_purge</label><input class="form-control py-0" id="readback_valve_purge" type="number" value=1 name="variable6" readOnly /></span>
-          <span class="form-group"><label class="small" for="inputVar13">readback_mode</label><input class="form-control py-0" id="readback_mode" type="number" value=1 name="variable6" readOnly /></span>
+          <span class="form-group"><label class="small" for="inputVar13">Inhale:Exhale</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
+          <span class="form-group"><label class="small" for="inputVar13">Calibration [ms]</label><input class="form-control py-1" id="readback_mode" type="number" value=1 name="variable6"  /></span>
+
+          </div>
         </div>
-      </div>
-    </div>
     <div class="row justify-content-center">
-          <span class="form-group" ><input class="form-button py-0" id="inputPassword" type="submit" value="Submit Changes"  /></span>
+          <span class="form-group" ><input class="form-button py-2" id="inputPassword" type="submit" value="Submit Changes"  /></span>
     </div>
   </form>
 </div>
@@ -68,6 +85,34 @@
 
 {% block scripts %}
 <script type=text/javascript>
+
+function changeThresholdAlert(element){
+	  if (!element.disabled){
+		window.createNotification({
+			closeOnClick: 1,
+			displayCloseButton: 0,
+			positionClass: "nfc-bottom-right",
+			showDuration: false,
+			theme: "info"
+		})({
+			title: "Setting threshold",
+			message: "Changed " + element.name
+	  });
+	  }
+	  }
+
+function changeValue(element){
+  $.ajax({
+        type: "POST",
+        url:"/data_handler",
+        //data:{5}
+        //data:{element.value},
+        success:"url_for('send_cmd')"
+    });
+	  }
+
+
+  /*
   function toggle_lock_personal() {
   setTimeout(function(){
   if ( document.getElementById("inputName").readOnly == true){
@@ -138,7 +183,7 @@
 
   }
   },500)}
-
+  */
 
 </script>
 
