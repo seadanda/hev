@@ -11,31 +11,34 @@ AlarmLoop::AlarmLoop()
 AlarmLoop::~AlarmLoop()
 {;}
 
-bool AlarmLoop::fireAlarm(alarm_format &result, int &alarm_num, uint32_t &tnow)
-{
-    if (_alarms.actives[alarm_num]) {
-
-    }
-
-    return false;
-}
-
-bool AlarmLoop::checkTresholds() {
-    _triggered = false;
+ALARM_TYPE AlarmLoop::checkTresholds() {
+    _type = ALARM_TYPE::ALARM_TYPE_UNKNOWN;
+    bool active = false;
     for (uint8_t alarm_num = 0; alarm_num < ALARM_CODES::ALARMS_COUNT; alarm_num++) {
-        _triggered |= _alarms.actives[alarm_num] = ( _alarms.values[alarm_num] < _alarms.thresholds_min[alarm_num]
-                                                  || _alarms.values[alarm_num] > _alarms.thresholds_max[alarm_num]);
+        active |= _alarms.actives[alarm_num] = ( _alarms.values[alarm_num] < _alarms.thresholds_min[alarm_num]
+                                              || _alarms.values[alarm_num] > _alarms.thresholds_max[alarm_num]);
+        if (_alarms.actives[alarm_num] && _alarms.priorities[alarm_num] > _type) {
+            _type = _alarms.priorities[alarm_num];
+        }
     }
 
-    return _triggered;
+    return _type;
 }
 
-void AlarmLoop::processAlarms() {
-    if (checkTresholds()) {
-        _av_controller.setStylesHigher(AV_STYLE::OSCIL);
-//        _av_controller.setAVsHigher(AV_STYLE::OSCIL);
-    } else {
-        _av_controller.setStyles();
+void AlarmLoop::fireAlarms() {
+    switch (checkTresholds()) {
+        case ALARM_TYPE::PRIORITY_LOW:
+            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_ON , AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
+            break;
+        case ALARM_TYPE::PRIORITY_MEDIUM:
+            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   , AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
+            break;
+        case ALARM_TYPE::PRIORITY_HIGH:
+            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   , AV_STYLE::PERM_OFF);
+            break;
+        default:
+            _av_controller.setAVs(AV_STYLE::PERM_ON, AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
+            break;
     }
 
     _av_controller.update();

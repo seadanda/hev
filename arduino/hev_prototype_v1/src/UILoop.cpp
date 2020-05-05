@@ -143,7 +143,7 @@ void UILoop::reportAlarms()
     // loop all alarms
     for (uint8_t alarm_num = 0; alarm_num < ALARM_CODES::ALARMS_COUNT; alarm_num++) {
         // get active ones
-        if (_alarm_loop->getActive()[alarm_num]) {
+        if (_alarm_loop->getActives()[alarm_num]) {
             ALARM_TYPE type = _alarm_loop->getTypes()[alarm_num];
             uint32_t *last_broadcast = &_alarm_loop->getLastBroadcasts()[alarm_num];
             // refresh on timeout

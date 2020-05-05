@@ -70,7 +70,7 @@ public:
 
     void setStyles      (AV_STYLE style = AV_STYLE::PERM_OFF) { setAVs      (style, style, style, style); }
     void setStylesHigher(AV_STYLE style) { setAVsHigher(style, style, style, style); }
-    void setAVs(AV_STYLE green, AV_STYLE yellow, AV_STYLE red, AV_STYLE buzzer) {
+    void setAVs(AV_STYLE green = AV_STYLE::PERM_OFF, AV_STYLE yellow = AV_STYLE::PERM_OFF, AV_STYLE red = AV_STYLE::PERM_OFF, AV_STYLE buzzer = AV_STYLE::PERM_OFF) {
         setAV(_led_green , green );
         setAV(_led_yellow, yellow);
         setAV(_led_red   , red   );

@@ -113,7 +113,7 @@ void loop()
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
 
-    alarm_loop.processAlarms();
+    alarm_loop.fireAlarms();
 
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
