@@ -14,15 +14,13 @@
 #include "UILoop.h"
 #include "AlarmLoop.h"
 
-int ventilation_mode = HEV_MODE_PS;
-
-uint8_t prev_state = LOW;
-uint32_t report_timeout = 50; //ms
-uint32_t report_time = 0;
-
+// System temp sensor
+Adafruit_MCP9808 tempsensor = Adafruit_MCP9808();
+// I2C devices
+INA_Class      INA;    
+TwoWire I2CMCP9808 = TwoWire(0);
 
 // comms
-// fast_data_format data;
 CommsControl comms;
 
 // loops
@@ -72,6 +70,40 @@ void setup()
     //pinMode(pin_buzzer, OUTPUT);
 
     comms.beginSerial();
+
+    Wire.begin(22, 23);
+    I2CMCP9808.begin(22, 23);
+
+    int ntries = 3;
+    bool foundMCP9808 = false; 
+    while(!tempsensor.begin(0x18, &I2CMCP9808) && ntries > 0) {
+        //Serial.println("Couldn't find MCP9808! Check your connections and verify the address is correct.");
+        delay(1000); 
+        ntries--;
+    } 
+    if (ntries > 0)
+        foundMCP9808 = true;
+    if (foundMCP9808)
+        tempsensor.setResolution(3);
+
+    bool foundINADevices = false;
+    ntries = 3; 
+    uint8_t devicesFound = INA.begin(1, 500000); // Set to an expected 1 Amp maximum and a 100000 microOhm resistor
+    while ((INA.begin(1, 500000) == 0) && ntries > 0)
+    {
+        delay(1000); 
+        ntries--;
+    }                
+    if (ntries > 0)
+        foundINADevices = true;
+    if (foundINADevices){
+        INA.setBusConversion(8500);            // Maximum conversion time 8.244ms
+        INA.setShuntConversion(8500);          // Maximum conversion time 8.244ms
+        INA.setAveraging(128);                 // Average each reading n-times
+        INA.setMode(INA_MODE_CONTINUOUS_BOTH); // Bus/shunt measured continuously
+        INA.AlertOnBusOverVoltage(true, 5000); // Trigger alert if over 5V on bus
+        breathing_loop.getValvesController()->setupINA(&INA, devicesFound);
+    }
 }
 
 void loop()
