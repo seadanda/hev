@@ -68,10 +68,10 @@ public:
     };
 
 
-    pid_variables _pid; // Public variable to be able to change it via getPIDVariables
 
 
 private:
+    pid_variables _pid; // Public variable to be able to change it via getPIDVariables
     uint32_t            _fsm_time ;
     uint32_t            _fsm_timeout;
     VENTILATION_MODE        _ventilation_mode;

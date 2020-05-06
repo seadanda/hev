@@ -31,25 +31,33 @@ class Dependant(object):
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
-        logging.info(f"payload received: {payload}")
-        #if payload.getType() == 1:
+        #logging.info(f"payload received: {payload}")
+        if payload.getType() == 1:
         #    logging.info(f"payload received: {payload}")
-        #    #logging.info(f"Fsm state: {payload.fsm_state}")
+            logging.info(f"Fsm state: {payload.fsm_state} ")
+        if payload.getType() == 7:
+            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f}")
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
-        #if hasattr(payload, 'duration_inhale'):
-        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+        if hasattr(payload, 'duration_inhale'):
+            logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
         self._llipacket = payload.getDict() # returns a dict
 
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
     #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
-    #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
+    #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1000)
+    #comms.writePayload(cmd)
 
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=700) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=3)#1000) # to set Kp=0.0002, param=200 i.e., micro_Kp
     await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.0033) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0022) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)

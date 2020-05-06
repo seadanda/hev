@@ -19,7 +19,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA3
+#define HEV_FORMAT_VERSION 0xA5
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
@@ -32,7 +32,8 @@ enum PAYLOAD_TYPE : uint8_t {
     CYCLE        = 3,
     THRESHOLDS   = 4,
     CMD          = 5,
-    ALARM        = 6
+    ALARM        = 6,
+    DEBUG        = 7
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -100,7 +101,7 @@ struct cmd_format {
     uint8_t  payload_type = PAYLOAD_TYPE::CMD;
     uint8_t  cmd_type     = 0;
     uint8_t  cmd_code     = 0;
-    uint32_t param        = 0;
+    float    param        = 0;
 };
 #pragma pack()
 
@@ -247,6 +248,24 @@ struct cycle_data_format {
 };
 #pragma pack()
 
+#pragma pack(1)
+struct debug_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::DEBUG;
+
+    float kp = 0.0;
+    float ki = 0.0;
+    float kd = 0.0;
+    float target_pressure  = 0.0; //
+    float process_pressure = 0.0; 
+    float output           = 0.0; 
+    float proportional     = 0.0; 
+    float integral         = 0.0; //
+    float derivative       = 0.0;
+};
+#pragma pack()
 
 //enum VALVE_STATES : bool {
 //    V_OPEN = HIGH,
@@ -305,10 +324,10 @@ struct pid_variables {
 // static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
 // static int chan_to_pin[50];  
 
-void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
-void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
-void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t &value);
-void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value);
+void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value);
+void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t value);
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t value);
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 

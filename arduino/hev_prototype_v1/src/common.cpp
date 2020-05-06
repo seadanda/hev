@@ -1,7 +1,7 @@
 #include "common.h"
 
 
-void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value) {
+void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t value) {
     switch (alarm) {
         case ALARM_CODES::APNEA                         :
             thresholds.apnea = value;
@@ -83,7 +83,7 @@ void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &val
     }
 }
 
-void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t &value) {
+void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t value) {
     switch (cmd) {
         case CMD_SET_DURATION::CALIBRATION:
             durations.calibration     = value;
@@ -123,7 +123,7 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t &va
     }
 }
 
-void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t &value)
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t value)
 {
     switch(cmd){
         case CMD_SET_VALVE::AIR_IN_ENABLE :
@@ -149,17 +149,17 @@ void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint3
     }
 }
 
-void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value)
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
 {
     switch(cmd){
         case CMD_SET_PID::KP:
-            pid.Kp = value/1000000.0;
+            pid.Kp = value;
             break;
         case CMD_SET_PID::KI:
-            pid.Ki = value/1000000.0;
+            pid.Ki = value;
             break;
         case CMD_SET_PID::KD:
-            pid.Kd = value/1000000.0;
+            pid.Kd = value;
             break;
         default:
             break;

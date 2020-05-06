@@ -61,6 +61,9 @@ class HEVServer(object):
         elif payload_type == PAYLOAD_TYPE.CMD:
             # ignore for the minute
             pass
+        elif payload_type == PAYLOAD_TYPE.DEBUG:
+            # ignore for the minute
+            pass
         elif payload_type == PAYLOAD_TYPE.UNSET:
             # ignore for the minute
             pass
@@ -107,6 +110,9 @@ class HEVServer(object):
                 # ignore for the minute
                 pass
             elif reqtype == "CYCLE":
+                # ignore for the minute
+                pass
+            elif reqtype == "DEBUG":
                 # ignore for the minute
                 pass
             elif reqtype == "alarm":

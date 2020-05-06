@@ -234,6 +234,8 @@ class CommsControl():
                 payload = CommsCommon.ReadbackFormat()
             elif data_type == CommsCommon.PAYLOAD_TYPE.CYCLE:
                 payload = CommsCommon.CycleFormat()
+            elif data_type == CommsCommon.PAYLOAD_TYPE.DEBUG:
+                payload = CommsCommon.DebugFormat()
             elif data_type == CommsCommon.PAYLOAD_TYPE.THRESHOLDS:
                 # FIXME: nothing yet defined, TBD!!
                 return False

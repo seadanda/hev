@@ -17,6 +17,7 @@ public:
     int doCommand(cmd_format &cf);
     void reportFastReadings();
     void reportReadbackValues();
+    void reportDebugValues();
     void reportCycleReadings();
     void receiveCommands();
 
@@ -39,12 +40,15 @@ private:
     uint32_t _fast_report_time;
     uint32_t _readback_report_time;
     uint32_t _cycle_report_time;
+    uint32_t _debug_report_time;
     uint16_t _fast_report_timeout;
     uint16_t _readback_report_timeout;
     uint16_t _cycle_report_timeout;
+    uint16_t _debug_report_timeout;
     fast_data_format _fast_data;
     readback_data_format _readback_data;
     cycle_data_format _cycle_data;
+    debug_data_format _debug_data;
 };
 
 #endif

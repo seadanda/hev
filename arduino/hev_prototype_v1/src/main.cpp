@@ -85,6 +85,7 @@ void loop()
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
     ui_loop.reportCycleReadings();
+    ui_loop.reportDebugValues();
 
     // per cycle sender
     comms.sender();
