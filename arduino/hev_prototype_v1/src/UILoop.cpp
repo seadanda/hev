@@ -112,7 +112,7 @@ void UILoop::reportReadbackValues()
         _readback_data.valve_purge_enable    = valves_controller->valvePurgeEnabled();
         _readback_data.inhale_trigger_enable = valves_controller->inhaleTriggerEnabled();
         _readback_data.exhale_trigger_enable = valves_controller->exhaleTriggerEnabled();
-        // _readback_data.peep = _breathing_loop->peep();
+        _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
         _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));

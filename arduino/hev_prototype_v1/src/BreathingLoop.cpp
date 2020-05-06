@@ -16,6 +16,8 @@ BreathingLoop::BreathingLoop()
     _reset = false;
     _safe  = true;
 
+    _peep = 5.0;
+
     initCalib();
     resetReadingSums();
 
@@ -205,6 +207,11 @@ float    BreathingLoop::getIERatio(){
     float total_inhale_time = _states_durations.inhale + _states_durations.pause;
     float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale;
     return total_inhale_time/total_exhale_time;
+}
+
+float BreathingLoop::getPEEP()
+{
+    return _peep;
 }
 
 float BreathingLoop::getMinuteVolume(){

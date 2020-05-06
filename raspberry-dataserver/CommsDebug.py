@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 from serial.tools import list_ports
 import sys
 import time
+import binascii
 
 def getTTYPort():
     port_device = "" 
@@ -39,6 +40,11 @@ class Dependant(object):
             logging.info(f"payload received: {payload.ventilation_mode}")
         if hasattr(payload, 'duration_inhale'):
             logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+        if hasattr(payload, 'inhale_exhale_ratio'):
+            logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
+            logging.info(f"payload received: peep = {payload.peep} ")
+            logging.info(f"payload received: valve air in = {payload.valve_air_in} ")
+            #print(binascii.hexlify(payload._byteArray))
         self._llipacket = payload.getDict() # returns a dict
 
 

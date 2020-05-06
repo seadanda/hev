@@ -29,6 +29,7 @@ public:
     readings<int16_t> getRawReadings();
     float getRespiratoryRate();
     float getIERatio();
+    float getPEEP();
     float getMinuteVolume();
     ValvesController * getValvesController();
     uint8_t getValveInhalePercent();
@@ -105,6 +106,7 @@ private:
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
  
+    float _peep;
 
     // calculations
     void updateTotalCycleDuration(uint16_t newtotal);

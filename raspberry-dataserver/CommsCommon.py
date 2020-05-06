@@ -141,7 +141,7 @@ class PAYLOAD_TYPE(IntEnum):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA3, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA4, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -205,7 +205,6 @@ class DataFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBBHfHffffHfHHfff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
-
     # subclass member variables
     fsm_state: BL_STATES          = BL_STATES.IDLE
     pressure_air_supply: int      = 0
@@ -260,8 +259,9 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBBf")
+    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
+
 
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
@@ -289,7 +289,7 @@ class ReadbackFormat(PayloadFormat):
     valve_purge_enable: int       = 0
     inhale_trigger_enable: int    = 0
     exhale_trigger_enable: int    = 0
-    peep: int                     = 0
+    peep: float                   = 0.0
     inhale_exhale_ratio: float    = 0.0
 
     # for receiving DataFormat from microcontroller
@@ -327,7 +327,7 @@ class ReadbackFormat(PayloadFormat):
         self.inhale_trigger_enable,
         self.exhale_trigger_enable,
         self.peep,
-        self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
+        self.inhale_exhale_ratio) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.ventilation_mode = VENTILATION_MODE(tmp_mode)
