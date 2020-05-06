@@ -11,6 +11,7 @@ import time
 import matplotlib.pyplot as plt
 import numpy as np
 import queue
+from collections import deque
 
 plt.ion()
 
@@ -22,11 +23,11 @@ PID_P = asyncio.Queue(history_length)
 PID_I = asyncio.Queue(history_length)
 PID_D = asyncio.Queue(history_length)
 
-pressure_buffer = asyncio.Queue(history_length)
-pressure_inhale = asyncio.Queue(history_length)
-PID_P = asyncio.Queue(history_length)
-PID_I = asyncio.Queue(history_length)
-PID_D = asyncio.Queue(history_length)
+pressure_buffer_deq  = deque(maxlen=history_length)
+pressure_inhale_deq  = deque(maxlen=history_length)
+PID_P_deq  = deque(maxlen=history_length)
+PID_I_deq  = deque(maxlen=history_length)
+PID_D_deq  = deque(maxlen=history_length)
 
 fig = plt.figure()
 
@@ -57,29 +58,33 @@ async def draw_plots():
          #asyncio.sleep(1)
 
         if(pressure_inhale.qsize() == 0): continue
-
+        pressure_inhale_deq.append(await pressure_inhale.get())
+        pressure_buffer_deq.append(pressure_buffer.get_nowait())
+        PID_D_deq.append(PID_D.get_nowait())
+        PID_I_deq.append(PID_I.get_nowait())
+        PID_P_deq.append(PID_P.get_nowait())
         print("Running draw plots finished ", pressure_inhale.qsize())
 
-        h1.set_xdata(np.array(range(pressure_inhale.qsize())))
-        h1.set_ydata(list(await pressure_inhale.queue.get()))#list(pressure_inhale.queue))
+        h1.set_xdata(np.array(range(len(pressure_inhale_deq))))
+        h1.set_ydata(list(pressure_inhale_deq))#list(pressure_inhale.queue))
 
-        h2.set_xdata(np.array(range(pressure_buffer.qsize())))
-        h2.set_ydata(list(pressure_buffer.queue.get_nowait()))#list(pressure_buffer.queue))
+        h2.set_xdata(np.array(range(len(pressure_buffer_deq))))
+        h2.set_ydata(list(pressure_buffer_deq))#list(pressure_buffer.queue))
 
-        h3.set_xdata(np.array(range(PID_P.qsize())))
-        h3.set_ydata(list(PID_P.queue.get_nowait()))#list(pressure_buffer.queue))
+        h3.set_xdata(np.array(range(len(PID_P_deq))))
+        h3.set_ydata(list(PID_P_deq))#list(pressure_buffer.queue))
 
-        h4.set_xdata(np.array(range(PID_I.qsize())))
-        h4.set_ydata(list(PID_I.queue.get_nowait()))#list(pressure_buffer.queue))
+        h4.set_xdata(np.array(range(len(PID_I_deq))))
+        h4.set_ydata(list(PID_I_deq))#list(pressure_buffer.queue))
 
-        h5.set_xdata(np.array(range(PID_D.qsize())))
-        h5.set_ydata(list(PID_D.queue.get_nowait()))#list(pressure_buffer.queue))
+        h5.set_xdata(np.array(range(len(PID_D_deq))))
+        h5.set_ydata(list(PID_D_deq))#list(pressure_buffer.queue))
 
-        pressure_inhale.queue.task_done()
-        pressure_buffer.queue.task_done()
-        PID_D.queue.task_done()
-        PID_I.queue.task_done()
-        PID_P.queue.task_done()
+        pressure_inhale.task_done()
+        pressure_buffer.task_done()
+        PID_D.task_done()
+        PID_I.task_done()
+        PID_P.task_done()
 
         plt.legend()
         #plt.ylim(-2,20)
@@ -102,47 +107,35 @@ def FILO(_queue, newitem):
     if _queue.full(): _queue.get_nowait()
     _queue.put_nowait(newitem)
 
-async def build_history_plots():
+# async def build_history_plots():
 
-    """
-    2020-05-06 10:45:55,948 - INFO - payload received: DataFormat(version=163, timestamp=231682, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.STOP: 11>, pressure_air_supply=41, pressure_air_regulated=453.0, pressure_o2_supply=30, pressure_o2_regulated=451.0, pressure_buffer=242.0, pressure_inhale=0.0, pressure_patient=0.0, temperature_buffer=659, pressure_diff_patient=1331.0, ambient_pressure=0, ambient_temperature=0, airway_pressure=-0.14404296875, flow=0.0, volume=0.0)
-{'version': 163, 'timestamp': 231682, 'payload_type': 'DATA', 'fsm_state': 'STOP', 'pressure_air_supply': 41, 'pressure_air_regulated': 453.0, 'pressure_o2_supply': 30, 'pressure_o2_regulated': 451.0, 'pressure_buffer': 242.0, 'pressure_inhale': 0.0, 'pressure_patient': 0.0, 'temperature_buffer': 659, 'pressure_diff_patient': 1331.0, 'ambient_pressure': 0, 'ambient_temperature': 0, 'airway_pressure': -0.14404296875, 'flow': 0.0, 'volume': 0.0}
-0.0
-2020-05-06 10:45:55,959 - INFO - payload received: DataFormat(version=163, timestamp=231737, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.STOP: 11>, pressure_air_supply=48, pressure_air_regulated=453.0, pressure_o2_supply=30, pressure_o2_regulated=452.0, pressure_buffer=242.0, pressure_inhale=0.0, pressure_patient=0.0, temperature_buffer=659, pressure_diff_patient=1325.0, ambient_pressure=0, ambient_temperature=0, airway_pressure=-0.14404296875, flow=0.0, volume=0.0)
-{'version': 163, 'timestamp': 231737, 'payload_type': 'DATA', 'fsm_state': 'STOP', 'pressure_air_supply': 48, 'pressure_air_regulated': 453.0, 'pressure_o2_supply': 30, 'pressure_o2_regulated': 452.0, 'pressure_buffer': 242.0, 'pressure_inhale': 0.0, 'pressure_patient': 0.0, 'temperature_buffer': 659, 'pressure_diff_patient': 1325.0, 'ambient_pressure': 0, 'ambient_temperature': 0, 'airway_pressure': -0.14404296875, 'flow': 0.0, 'volume': 0.0}
-0.0
-    """
+#     """
+#     2020-05-06 10:45:55,948 - INFO - payload received: DataFormat(version=163, timestamp=231682, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.STOP: 11>, pressure_air_supply=41, pressure_air_regulated=453.0, pressure_o2_supply=30, pressure_o2_regulated=451.0, pressure_buffer=242.0, pressure_inhale=0.0, pressure_patient=0.0, temperature_buffer=659, pressure_diff_patient=1331.0, ambient_pressure=0, ambient_temperature=0, airway_pressure=-0.14404296875, flow=0.0, volume=0.0)
+# {'version': 163, 'timestamp': 231682, 'payload_type': 'DATA', 'fsm_state': 'STOP', 'pressure_air_supply': 41, 'pressure_air_regulated': 453.0, 'pressure_o2_supply': 30, 'pressure_o2_regulated': 451.0, 'pressure_buffer': 242.0, 'pressure_inhale': 0.0, 'pressure_patient': 0.0, 'temperature_buffer': 659, 'pressure_diff_patient': 1331.0, 'ambient_pressure': 0, 'ambient_temperature': 0, 'airway_pressure': -0.14404296875, 'flow': 0.0, 'volume': 0.0}
+# 0.0
+# 2020-05-06 10:45:55,959 - INFO - payload received: DataFormat(version=163, timestamp=231737, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.STOP: 11>, pressure_air_supply=48, pressure_air_regulated=453.0, pressure_o2_supply=30, pressure_o2_regulated=452.0, pressure_buffer=242.0, pressure_inhale=0.0, pressure_patient=0.0, temperature_buffer=659, pressure_diff_patient=1325.0, ambient_pressure=0, ambient_temperature=0, airway_pressure=-0.14404296875, flow=0.0, volume=0.0)
+# {'version': 163, 'timestamp': 231737, 'payload_type': 'DATA', 'fsm_state': 'STOP', 'pressure_air_supply': 48, 'pressure_air_regulated': 453.0, 'pressure_o2_supply': 30, 'pressure_o2_regulated': 452.0, 'pressure_buffer': 242.0, 'pressure_inhale': 0.0, 'pressure_patient': 0.0, 'temperature_buffer': 659, 'pressure_diff_patient': 1325.0, 'ambient_pressure': 0, 'ambient_temperature': 0, 'airway_pressure': -0.14404296875, 'flow': 0.0, 'volume': 0.0}
+# 0.0
+#     """
 
-    print("Starting Build data")
+#     print("Starting Build data")
 
-    global last_build_time
+#     global last_build_time
     
-    while True:
+#     while True:
 
-        if time.time() - last_build_time < 0.1 or last_build_time == 0:
-            continue
+#         if time.time() - last_build_time < 0.1 or last_build_time == 0:
+#             continue
 
-        last_build_time = time.time()
+#         last_build_time = time.time()
 
-        #if last_data == 0: continue
+#         #if last_data == 0: continue
 
-        try:
+#         try:
 
-            _pressure_inhale = last_data["pressure_inhale"]
-            _pressure_buffer = last_data["pressure_buffer"]
-            _PID_P = last_data["airway_pressure"]
-            _PID_I = last_data["volume"]
-            _PID_D = last_data["flow"]
 
-            FILO(pressure_inhale, _pressure_inhale)
-            FILO(pressure_buffer, _pressure_buffer)
-            FILO(PID_P, _PID_P)
-            FILO(PID_I, _PID_I)
-            FILO(PID_D, _PID_D)
-            print("data acquired")
-
-        except KeyError:
-            pass
+#         except KeyError:
+#             pass
 
 
 def getTTYPort():
@@ -177,6 +170,12 @@ class Dependant(object):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
         #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+        pressure_buffer.put_nowait(payload.pressure_buffer)
+        pressure_inhale.put_nowait(payload.pressure_inhale)
+        PID_D.put_nowait(payload.PID_D)
+        PID_I.put_nowait(payload.PID_I)
+        PID_P.put_nowait(payload.PID_P)
+        print("data acquired")
         self._llipacket = payload.getDict() # returns a dict
         last_data = self._llipacket #= payload.getDict() # returns a dict
 
@@ -217,8 +216,8 @@ try:
     lli = comms.main(getTTYPort(), 115200)
     debug = commsDebug()
     plot = draw_plots()
-    getdata = build_history_plots()
-    tasks = [lli, debug, getdata]#, plot]
+    #getdata = build_history_plots()
+    tasks = [lli, debug, plot]
 
     # run tasks
     asyncio.gather(*tasks, return_exceptions=True)
