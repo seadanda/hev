@@ -57,7 +57,9 @@ async def draw_plots():
 
          #asyncio.sleep(1)
 
-        if(pressure_inhale.qsize() == 0): continue
+        if(pressure_inhale.qsize() == 0):
+            await asyncio.sleep(0.1)
+            continue
         pressure_inhale_deq.append(await pressure_inhale.get())
         pressure_buffer_deq.append(pressure_buffer.get_nowait())
         PID_D_deq.append(PID_D.get_nowait())
