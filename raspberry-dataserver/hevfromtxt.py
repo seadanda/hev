@@ -11,6 +11,7 @@ import numpy as np
 from typing import List
 from collections import deque
 import logging
+import os.path
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
@@ -18,8 +19,8 @@ logging.basicConfig(level=logging.INFO,
 class hevfromtxt():
     def __init__(self):
         # use input file for testing
-        h = np.loadtxt("share/sample.txt",skiprows = 1, delimiter = ',')
-        h2 = np.loadtxt("share/testdummy.txt",skiprows = 23, delimiter = '\t')
+        h = np.loadtxt(os.path.dirname(__file__)+"/share/sample.txt",skiprows = 1, delimiter = ',')
+        h2 = np.loadtxt(os.path.dirname(__file__)+"/share/testdummy.txt",skiprows = 23, delimiter = '\t')
         # share/sample.txt - take values to be plotted
         self._timestamp = h[:,0].tolist()
         self._airway_pressure = h[:,1].tolist()

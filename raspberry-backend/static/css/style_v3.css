@@ -5736,12 +5736,15 @@ html, body {
 #layoutSidenav {
   display: flex;
 }
+#layoutSidenav_nav{
+  background:white;
+}
 #layoutSidenav #layoutSidenav_nav {
-  flex-basis: 225px;
+  flex-basis: 100px;
   flex-shrink: 0;
   transition: transform 0.15s ease-in-out;
   z-index: 1038;
-  transform: translateX(-225px);
+  transform: translateX(-100px);
 }
 #layoutSidenav #layoutSidenav_content {
   position: relative;
@@ -5751,7 +5754,7 @@ html, body {
   min-width: 0;
   flex-grow: 1;
   min-height: calc(120vh - var(--top-height));
-  margin-left: -225px;
+  margin-left: -100px;
 }
 
 .sb-sidenav-toggled #layoutSidenav #layoutSidenav_nav {
@@ -5781,15 +5784,16 @@ html, body {
   }
 
   .sb-sidenav-toggled #layoutSidenav #layoutSidenav_nav {
-    transform: translateX(-225px);
+    transform: translateX(-100px);
   }
   .sb-sidenav-toggled #layoutSidenav #layoutSidenav_content {
-    margin-left: -225px;
+    margin-left: -100px;
   }
   .sb-sidenav-toggled #layoutSidenav #layoutSidenav_content:before {
     display: none;
   }
 }
+
 .sb-nav-fixed .sb-topnav {
   z-index: 1039;
 }
@@ -5829,7 +5833,7 @@ html, body {
   margin: 0;
 }
 sb-topnav {
-  width:225px;
+  width:100px;
 }
 .sb-topnav.navbar-dark #sidebarToggle {
     color: rgba(255, 255, 255, 0.5);
@@ -5956,7 +5960,13 @@ sb-topnav {
 #logo{ height:var(--top-height); }
 #chart-area{ fill:white; }
 .fa-w-16{ width:95px;height:95px;}
-.fa-w-15{ width:85px;height:85px;}
+.fa-w-15{ width:65px;height:65px;}
+@media (min-height: 650px) {
+  .fa-w-15{ width:75px;height:75px;}
+}
+@media (min-height: 750px) {
+  .fa-w-15{ width:85px;height:85px;}
+}
 .path-icon{ fill:rgb(31,71,147); }
 .path-icon-alarm{ fill:red; }
 .transparent{ fill:none;fill-opacity:1.0; }
@@ -6121,6 +6131,14 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     width:100%;
     height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem)/3.0); // 2.0rem if for the range-button container
 }
+.main-gauge-container {
+    display:flex;
+    flex: 1 1 auto;
+    width:100%;
+  align-items:top;
+  justify-content: center;
+}
+
 .proto-chart-container {
     position:relative;
     width:100%;
