@@ -19,6 +19,7 @@ public:
     ~AlarmLoop();
 
     void fireAlarms();
+    void updateValues(readings<int16_t> fast_data);
 
     uint32_t *getValues       () { return _alarms.values        ; }
     uint32_t *getThresholdsMin() { return _alarms.thresholds_min; }

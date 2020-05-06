@@ -43,3 +43,7 @@ void AlarmLoop::fireAlarms() {
 
     _av_controller.update();
 }
+
+void AlarmLoop::updateValues(readings<int16_t> fast_data) {
+    _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = fast_data.pressure_patient;
+}

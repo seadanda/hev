@@ -139,7 +139,7 @@ enum ALARM_CODES: uint8_t {
     PRESSURE_SENSOR_FAULT          = 24,  // HP
     ARDUINO_FAIL                   = 25,  // HP
 
-    ALARMS_COUNT                  = 26
+    ALARMS_COUNT                   = 26
 };
 
 #pragma pack(1)
