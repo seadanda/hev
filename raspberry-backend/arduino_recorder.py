@@ -156,7 +156,7 @@ def db_backup(backup_time):
 
 def parse_args():
     parser = argparse.ArgumentParser(description='Python script for recording Arduino data')
-    parser.add_argument('--interval', type=float, default=1)
+    parser.add_argument('--interval', type=float, default=0.02)
     parser.add_argument('--backup_time', type=int, default=600)
     return parser.parse_args()
 

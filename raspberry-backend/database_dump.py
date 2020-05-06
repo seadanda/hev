@@ -14,8 +14,8 @@ from datetime import datetime, timedelta
 import threading
 
 #SQLITE_FILE = 'database/HEC_monitoringDB.sqlite'  # name of the sqlite database file
-SQLITE_BACKUPFILE = 'database/HEC_monitoringDB_backup.sqlite'  # name of the sqlite backup database file
-TABLE_NAME = 'hec_monitor'  # name of the table to be created
+SQLITE_BACKUPFILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite backup database file
+TABLE_NAME = 'hev_monitor'  # name of the table to be created
 
 def load_data(sqFile, startTime):
     """
@@ -54,8 +54,7 @@ def printRows(dataTable):
     tableInfo = dataTable['tableInfo']
     rows = dataTable['rows']
     fmt=" ".join(["{yyyy:4d}-{mm:02d}-{dd:02d} {HH:02d}:{MM:02d}", # date of datetaken
-                  "{temperature:6.2f}", #temp
-                  "{pressure:6.2f}"]) #pressure
+                  ]) #pressure
     fmtOther = []
     # others added later
     for col in tableInfo[4:]:
@@ -96,7 +95,7 @@ def printRows(dataTable):
         if( nPrint%50 == 0 ): print(header) # header every 50 rows
         nPrint += 1
         otherTxt = ""
-        for i in range(len(r[4:])):
+        for i in range(len(r[4:])-1):
             otherTxt += fmtOther[i].format(r[4+i])
         rowDateTime = (epoch + timedelta(seconds=r[0]/1000))
         print(fmt.format(yyyy=rowDateTime.year,
@@ -108,6 +107,7 @@ def printRows(dataTable):
                          pressure=r[3],
                          other=otherTxt,
                          alarm=r[1]))
+                         
 
 
 def parse_args():
