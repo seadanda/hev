@@ -68,6 +68,8 @@ public:
     };
 
 
+    pid_variables _pid; // Public variable to be able to change it via getPIDVariables
+
 
 private:
     uint32_t            _fsm_time ;
@@ -123,7 +125,7 @@ private:
 
     // PID vars
 
-    pid_variables _pid; 
+    float _pid_integral; 
 };
 
 

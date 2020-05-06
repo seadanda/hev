@@ -31,9 +31,11 @@ BreathingLoop::BreathingLoop()
     _volume = 0;
     _airway_pressure = 0;
 
-    _pid.Kp = 0.007; // proportional factor
-    _pid.Ki = 0;   // integral factor
+    _pid.Kp = 0.0007; // proportional factor
+    _pid.Ki = 0.000007;   // integral factor
     _pid.Kd = 0;   // derivative factor
+
+    _pid_integral = 0.;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -95,7 +97,7 @@ void BreathingLoop::updateReadings()
                 float_t _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
                 doPID(10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
-		_volume = _valve_inhale_PID_percentage;
+		//_volume = _valve_inhale_PID_percentage;
 
 		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
                 //Lazy approach
@@ -390,6 +392,8 @@ void BreathingLoop::FSM_breathCycle()
                 default:
                     _fsm_timeout = _states_durations.buff_pre_inhale;
             }
+
+	    _pid_integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
         
             break;
         case BL_STATES::INHALE:
@@ -559,18 +563,21 @@ void BreathingLoop::doPID(float target_pressure, float process_pressure, float &
 
     float error = target_pressure - process_pressure;
 
-    proportional = _pid.Kp*error;
+    proportional       = _pid.Kp*error;
+    _pid_integral     += _pid.Ki*error;
+
+    integral = _pid_integral;
 
     //TODO integral and derivative
-    //
     
     float minimum_open_frac = 0.54; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.64; //Maximum opening for the PID control
 
-    output = proportional + minimum_open_frac;
+    output = proportional + integral + minimum_open_frac;
 
     if(output > maximum_open_frac) output = maximum_open_frac;
     if(output < minimum_open_frac) output = minimum_open_frac;
+
 }
 
 pid_variables& BreathingLoop::getPIDVariables()
