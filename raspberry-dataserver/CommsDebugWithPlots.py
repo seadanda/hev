@@ -16,17 +16,17 @@ plt.ion()
 
 history_length = 5000
 
-pressure_buffer = queue.Queue(history_length)
-pressure_inhale = queue.Queue(history_length)
-PID_P = queue.Queue(history_length)
-PID_I = queue.Queue(history_length)
-PID_D = queue.Queue(history_length)
+pressure_buffer = asyncio.Queue(history_length)
+pressure_inhale = asyncio.Queue(history_length)
+PID_P = asyncio.Queue(history_length)
+PID_I = asyncio.Queue(history_length)
+PID_D = asyncio.Queue(history_length)
 
-pressure_buffer = queue.Queue(history_length)
-pressure_inhale = queue.Queue(history_length)
-PID_P = queue.Queue(history_length)
-PID_I = queue.Queue(history_length)
-PID_D = queue.Queue(history_length)
+pressure_buffer = asyncio.Queue(history_length)
+pressure_inhale = asyncio.Queue(history_length)
+PID_P = asyncio.Queue(history_length)
+PID_I = asyncio.Queue(history_length)
+PID_D = asyncio.Queue(history_length)
 
 fig = plt.figure()
 
@@ -54,26 +54,32 @@ async def draw_plots():
 
     while True:
 
-        await asyncio.sleep(1)
+         #asyncio.sleep(1)
 
         if(pressure_inhale.qsize() == 0): continue
 
         print("Running draw plots finished ", pressure_inhale.qsize())
 
         h1.set_xdata(np.array(range(pressure_inhale.qsize())))
-        h1.set_ydata(list(pressure_inhale.queue))#list(pressure_inhale.queue))
+        h1.set_ydata(list(await pressure_inhale.queue.get()))#list(pressure_inhale.queue))
 
         h2.set_xdata(np.array(range(pressure_buffer.qsize())))
-        h2.set_ydata(list(pressure_buffer.queue))#list(pressure_buffer.queue))
+        h2.set_ydata(list(pressure_buffer.queue.get_nowait()))#list(pressure_buffer.queue))
 
         h3.set_xdata(np.array(range(PID_P.qsize())))
-        h3.set_ydata(list(PID_P.queue))#list(pressure_buffer.queue))
+        h3.set_ydata(list(PID_P.queue.get_nowait()))#list(pressure_buffer.queue))
 
         h4.set_xdata(np.array(range(PID_I.qsize())))
-        h4.set_ydata(list(PID_I.queue))#list(pressure_buffer.queue))
+        h4.set_ydata(list(PID_I.queue.get_nowait()))#list(pressure_buffer.queue))
 
         h5.set_xdata(np.array(range(PID_D.qsize())))
-        h5.set_ydata(list(PID_D.queue))#list(pressure_buffer.queue))
+        h5.set_ydata(list(PID_D.queue.get_nowait()))#list(pressure_buffer.queue))
+
+        pressure_inhale.queue.task_done()
+        pressure_buffer.queue.task_done()
+        PID_D.queue.task_done()
+        PID_I.queue.task_done()
+        PID_P.queue.task_done()
 
         plt.legend()
         #plt.ylim(-2,20)
@@ -93,8 +99,8 @@ async def draw_plots():
 
 
 def FILO(_queue, newitem):
-    if _queue.full(): _queue.get()
-    _queue.put(newitem)
+    if _queue.full(): _queue.get_nowait()
+    _queue.put_nowait(newitem)
 
 async def build_history_plots():
 
