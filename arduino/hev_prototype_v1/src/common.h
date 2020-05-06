@@ -312,6 +312,7 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
+
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{
     uint64_t timestamp       = 0; //
@@ -325,4 +326,5 @@ template <typename T> struct readings{
     T pressure_o2_regulated  = 0;
     T pressure_diff_patient  = 0;
 };
+
 #endif

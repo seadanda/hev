@@ -45,6 +45,7 @@ private:
     fast_data_format _fast_data;
     readback_data_format _readback_data;
     cycle_data_format _cycle_data;
+
 };
 
 #endif

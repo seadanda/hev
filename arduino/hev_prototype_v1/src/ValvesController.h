@@ -2,11 +2,30 @@
 #define VALVES_CONTROLLER_H
 
 #include <Arduino.h>
+#include <INA.h>
 
 struct valve {
     int pin = -1;
     bool proportional = false;
     uint8_t state; 
+    float voltage;
+    float current;
+    uint8_t i2caddr;
+    int8_t device_number;
+};
+
+template <typename T> struct IV_readings{
+    uint64_t timestamp       = 0; //
+    T inhale_current = 0;
+    T exhale_current = 0;
+    T purge_current  = 0;
+    T air_in_current = 0;
+    T o2_in_current  = 0;
+    T inhale_voltage = 0;
+    T exhale_voltage = 0;
+    T purge_voltage  = 0;
+    T air_in_voltage = 0;
+    T o2_in_voltage  = 0;
 };
 
 enum VALVE_STATE : uint8_t
@@ -27,6 +46,7 @@ class ValvesController
 public:
     ValvesController();
     ~ValvesController();
+    void setupINA(INA_Class *ina, uint8_t num_devices);
     void setPWMValve(int pin, float frac_open);
     void setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
                    uint8_t vexhale, bool vpurge);
@@ -48,8 +68,11 @@ public:
     void setInhaleOpenMin(uint32_t value);
     void setInhaleOpenMax(uint32_t value);
 
-private:
-    valve _air_in;
+    void updateIV(valve v);
+    void updateAllIV();
+    IV_readings<float>* getIVReadings();
+
+        private : valve _air_in;
     valve _o2_in;
     valve _inhale;
     valve _exhale;
@@ -67,6 +90,8 @@ private:
     float _inhale_duty_cycle;
     float _inhale_open_min;
     float _inhale_open_max;
+    INA_Class *_INA;
+    IV_readings<float> _iv_readings; 
 };
 
 #endif
