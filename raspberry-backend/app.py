@@ -78,22 +78,23 @@ def send_cmd():
         print(hevclient.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
-    
+
+
+
 
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
     """
     Send timeout thresholds to the Arduino
     """
-    #data = {}    # empty dict to store data
-    #data['variable'] = request.get_json(force=True)
+
     data = request.get_json(force=True)
     
 
-    print(data['name'])
-    print(data['value'])
+    #print(data['name'])
+    #print(data['value'])
 
-    print(hevclient.send_cmd("SET_TIMEOUT", "BUFF_FILL", int(data['value'])))
+    print(hevclient.send_cmd("SET_TIMEOUT", data['name'].upper(), int(data['value'])))
 
     return ('', 204)
 
