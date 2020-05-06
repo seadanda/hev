@@ -60,11 +60,12 @@ async def draw_plots():
         if(pressure_inhale.qsize() == 0):
             await asyncio.sleep(0.1)
             continue
+        #await asyncio.sleep(0.3)
         pressure_inhale_deq.append(await pressure_inhale.get())
-        pressure_buffer_deq.append(pressure_buffer.get_nowait())
-        PID_D_deq.append(PID_D.get_nowait())
-        PID_I_deq.append(PID_I.get_nowait())
-        PID_P_deq.append(PID_P.get_nowait())
+        pressure_buffer_deq.append(await pressure_buffer.get())
+        PID_D_deq.append(await PID_D.get())
+        PID_I_deq.append(await PID_I.get())
+        PID_P_deq.append(await PID_P.get())
         print("Running draw plots finished ", pressure_inhale.qsize())
 
         h1.set_xdata(np.array(range(len(pressure_inhale_deq))))
@@ -160,23 +161,26 @@ class Dependant(object):
     def __init__(self, lli):
         self._llipacket = None
         self._lli = lli
+        self.cnt = 0
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
         global last_data
         #logging.info(f"payload received: {payload}")
         if payload.getType() == 1:
+            self.cnt += 1
             logging.info(f"payload received: {payload}")
+            if self.cnt % 20 == 0 :
+                pressure_buffer.put_nowait(payload.pressure_buffer)
+                pressure_inhale.put_nowait(payload.pressure_inhale)
+                PID_D.put_nowait(payload.flow)
+                PID_I.put_nowait(payload.volume)
+                PID_P.put_nowait(payload.airway_pressure)
             #logging.info(f"Fsm state: {payload.fsm_state}")
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
         #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
-        pressure_buffer.put_nowait(payload.pressure_buffer)
-        pressure_inhale.put_nowait(payload.pressure_inhale)
-        PID_D.put_nowait(payload.PID_D)
-        PID_I.put_nowait(payload.PID_I)
-        PID_P.put_nowait(payload.PID_P)
         print("data acquired")
         self._llipacket = payload.getDict() # returns a dict
         last_data = self._llipacket #= payload.getDict() # returns a dict
