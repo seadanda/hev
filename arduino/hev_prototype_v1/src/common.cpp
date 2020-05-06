@@ -153,13 +153,13 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value)
 {
     switch(cmd){
         case CMD_SET_PID::KP:
-            pid.Kp = value/1000.0;
+            pid.Kp = value/1000000.0;
             break;
         case CMD_SET_PID::KI:
-            pid.Ki = value/1000.0;
+            pid.Ki = value/1000000.0;
             break;
         case CMD_SET_PID::KD:
-            pid.Kd = value/1000.0;
+            pid.Kd = value/1000000.0;
             break;
         default:
             break;
@@ -206,6 +206,12 @@ float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0)
     float m = (max_p - min_p) / (max_adc - min_adc );
     float c = max_p - m * max_adc;
     float mbar = m*(adc-offset) + c; 
+
+    float PCB_Gain		= 2.		; // real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
+    float Sensor_Gain		= 400./4000.	; // the sensor gain is 400 mbar / 4000 mVolts
+    float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
+    
+    mbar = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); // same calculation as in the Labview Code  
 
     return static_cast<float_t>(mbar);
     //return static_cast<int16_t>(adc);

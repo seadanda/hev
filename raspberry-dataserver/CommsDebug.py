@@ -31,10 +31,10 @@ class Dependant(object):
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
-        #logging.info(f"payload received: {payload}")
-        if payload.getType() == 1:
-            logging.info(f"payload received: {payload}")
-            #logging.info(f"Fsm state: {payload.fsm_state}")
+        logging.info(f"payload received: {payload}")
+        #if payload.getType() == 1:
+        #    logging.info(f"payload received: {payload}")
+        #    #logging.info(f"Fsm state: {payload.fsm_state}")
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -46,17 +46,22 @@ class Dependant(object):
 async def commsDebug():
     #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
+
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=20000) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    await asyncio.sleep(1)
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     await asyncio.sleep(1)
     comms.writePayload(cmd)
     print('sent cmd start')
     toggle = 2
     while True:
-        await asyncio.sleep(15)
-        #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=200) # to set Kp=0.2, param=200 i.e., milli_Kp
+        await asyncio.sleep(60)
+        #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
-        await asyncio.sleep(15)
+        await asyncio.sleep(60)
         cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=toggle, param=0)
         if toggle == 2 :
             toggle = 1

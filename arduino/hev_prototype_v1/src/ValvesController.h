@@ -48,6 +48,9 @@ public:
     void setInhaleOpenMin(uint32_t value);
     void setInhaleOpenMax(uint32_t value);
 
+    void    setPIDoutput(float value);
+    float   getPIDoutput();
+
 private:
     valve _air_in;
     valve _o2_in;
@@ -67,6 +70,8 @@ private:
     float _inhale_duty_cycle;
     float _inhale_open_min;
     float _inhale_open_max;
+
+    float _PID_output;
 };
 
 #endif

@@ -30,7 +30,7 @@ ValvesController::ValvesController()
 
     _inhale_duty_cycle = 0;
     _inhale_open_max = MAX_VALVE_FRAC_OPEN;
-    _inhale_open_min = 0;
+    _inhale_open_min = 0.54;
 
     _valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     _valve_exhale_percent      = 0;
@@ -39,6 +39,8 @@ ValvesController::ValvesController()
     _valve_purge_enable        = 1;
     _inhale_trigger_enable     = 0;   // params - associated val of peak flow
     _exhale_trigger_enable     = 0;
+
+    _PID_output                = 0;
 }
 
 ValvesController::~ValvesController()
@@ -127,7 +129,7 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
         case VALVE_STATE::PID:
             // placeholder - this should be replaced by:
             //doPID(_inhale.pin);
-            setPWMValve(_inhale.pin, _inhale_open_max); 
+            setPWMValve(_inhale.pin, _PID_output);//_inhale_open_max);
             break;
         default:
             break;
@@ -197,3 +199,10 @@ void ValvesController::enableAirInValve(bool en)
     _valve_air_in_enable = en;
 }
 
+void ValvesController::setPIDoutput(float value){
+	_PID_output = value;
+}
+
+float ValvesController::getPIDoutput(){
+	return _PID_output;
+}

@@ -31,7 +31,7 @@ BreathingLoop::BreathingLoop()
     _volume = 0;
     _airway_pressure = 0;
 
-    _pid.Kp = 0.1; // proportional factor
+    _pid.Kp = 0.007; // proportional factor
     _pid.Ki = 0;   // integral factor
     _pid.Kd = 0;   // derivative factor
 }
@@ -94,17 +94,17 @@ void BreathingLoop::updateReadings()
 
                 float_t _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
-                float output = 0.;
-
                 doPID(10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
-                _valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
+		_volume = _valve_inhale_PID_percentage;
+
+		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
                 //Lazy approach
                 //airway_pressure = Proportional
                 //volume = Integral
                 //flow = Derivative
 
-                //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, _valve_inhale_PID_percentage*VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-            
+                _valves_controller.setPIDoutput(_valve_inhale_PID_percentage);
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
 
         }
 
@@ -342,7 +342,7 @@ void BreathingLoop::FSM_breathCycle()
             } else {
                 _fsm_timeout = 1000;
             }
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             initCalib();
             break;
         case BL_STATES::CALIBRATION : 
@@ -399,7 +399,7 @@ void BreathingLoop::FSM_breathCycle()
             // TODO : spontaneous trigger
             // if p_inhale > max thresh pressure(def: 50?)
             // go to exhale fill
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);//Comment this line for the PID control during inhale
             _fsm_timeout = _states_durations.inhale;
             
             break;
@@ -435,7 +435,7 @@ void BreathingLoop::FSM_breathCycle()
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = 1000;
             break;
     }
@@ -562,8 +562,15 @@ void BreathingLoop::doPID(float target_pressure, float process_pressure, float &
     proportional = _pid.Kp*error;
 
     //TODO integral and derivative
+    //
+    
+    float minimum_open_frac = 0.54; //Minimum opening to avoid vibrations on the valve control
+    float maximum_open_frac = 0.64; //Maximum opening for the PID control
 
-    output = proportional;
+    output = proportional + minimum_open_frac;
+
+    if(output > maximum_open_frac) output = maximum_open_frac;
+    if(output < minimum_open_frac) output = minimum_open_frac;
 }
 
 pid_variables& BreathingLoop::getPIDVariables()
