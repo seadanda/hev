@@ -14,7 +14,7 @@ public:
     int doAlarm(alarm_format *af);
 
     alarm_thresholds& getThresholdsMin() { return _thresholds_min; }
-    alarm_thresholds& getThresholdsMax() { return _thresholds_min; }
+    alarm_thresholds& getThresholdsMax() { return _thresholds_max; }
 private:
     alarm_thresholds _thresholds_min;
     alarm_thresholds _thresholds_max;

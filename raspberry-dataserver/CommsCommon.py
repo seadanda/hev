@@ -22,6 +22,8 @@ class CMD_TYPE(Enum):
     SET_MODE          =  3
     SET_THRESHOLD_MIN =  4
     SET_THRESHOLD_MAX =  5
+    SET_VALVE         =  6
+    SET_PID           =  7
 
 @unique
 class CMD_GENERAL(Enum):
@@ -53,6 +55,19 @@ class VENTILATION_MODE(Enum):
     LAB_MODE_BREATHE = 5
     LAB_MODE_PURGE   = 6
     LAB_MODE_FLUSH   = 7
+
+class CMD_SET_VALVE(Enum):
+    AIR_IN_ENABLE = 1,
+    O2_IN_ENABLE  = 2,
+    PURGE_ENABLE  = 3,
+    INHALE_DUTY_CYCLE = 4,
+    INHALE_OPEN_MIN = 5,
+    INHALE_OPEN_MAX = 6
+
+class CMD_SET_PID(Enum):
+    KP = 1
+    KI = 2
+    KD = 3
 
 @unique
 class ALARM_TYPE(Enum):

@@ -28,7 +28,6 @@ public:
     readings<int16_t> getReadingAverages();
     readings<int16_t> getRawReadings();
     float getRespiratoryRate();
-    float getFlow();
     float getIERatio();
     float getMinuteVolume();
     ValvesController * getValvesController();
@@ -42,7 +41,13 @@ public:
     void    setVentilationMode(VENTILATION_MODE mode);
     VENTILATION_MODE getVentilationMode();
 
+    float getFlow();
+    float getVolume(); 
+    float getAirwayPressure();
+    pid_variables& getPIDVariables();
     states_durations &getDurations();
+
+ 
 
     // states
     enum BL_STATES : uint8_t {
@@ -80,6 +85,7 @@ private:
     uint32_t _calib_N;
     uint32_t _calib_time;
     uint32_t _calib_timeout;
+    bool _calibrated;
     readings<int32_t> _calib_sums;
     readings<int16_t> _calib_avgs;
 
@@ -99,16 +105,25 @@ private:
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
  
-    uint8_t _valve_inhale_percent  ;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
-    uint8_t _valve_exhale_percent  ;
-    uint8_t _valve_air_in_enable   ;
-    uint8_t _valve_o2_in_enable    ;
-    uint8_t _valve_purge_enable    ;
-    uint8_t _inhale_trigger_enable ;   // params - associated val of peak flow
-    uint8_t _exhale_trigger_enable ;
+
     // calculations
     void updateTotalCycleDuration(uint16_t newtotal);
     uint16_t _total_cycle_duration[3];
+
+    float _flow;
+    float _volume;
+    float _airway_pressure;
+    float _valve_inhale_PID_percentage;//from 0 to 1.
+
+    void doPID(float, float, float&, float&, float&, float&);
+
+    // safety
+    void safetyCheck();
+    uint8_t _safe; 
+
+    // PID vars
+
+    pid_variables _pid; 
 };
 
 
