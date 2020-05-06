@@ -3,125 +3,113 @@ from CommsLLI import CommsLLI
 from CommsCommon import *
 import asyncio
 import logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 from serial.tools import list_ports
 import sys
 import time
+import argparse
 
-import matplotlib.pyplot as plt
-import numpy as np
-import queue
-from collections import deque
-
-
+import threading
 from PyQt5 import QtWidgets, QtCore
-from pyqtgraph import PlotWidget, plot
+from pyqtgraph import PlotWidget, plot, mkColor
 import pyqtgraph as pg
-import sys  # We need sys so that we can pass argv to QApplication
+import sys
 import os
-from random import randint
 
 class LabPlots(QtWidgets.QMainWindow):
 
-    def __init__(self, lli, *args, **kwargs):
+    def __init__(self, dark=False, throttle=20, *args, **kwargs):
         super(LabPlots, self).__init__(*args, **kwargs)
 
-        self._lli = lli
-        self.cnt = 0
-        self._lli.bind_to(self.update_llipacket)
-
-        history_length = 5000
+        self.history_length = 5000
+        self.throttle = throttle
 
         self.graphWidget = pg.PlotWidget()
         self.setCentralWidget(self.graphWidget)
 
-        self.timestamp = list(0 for el in range(history_length))
-        self.pressure_buffer = list(0 for el in range(history_length))
-        self.pressure_inhale = list(0 for el in range(history_length))
-        self.PID_P = list(0 for el in range(history_length))
-        self.PID_I = list(0 for el in range(history_length))
-        self.PID_D = list(0 for el in range(history_length))
+        self.timestamp = list(el*(-1) for el in range(self.history_length))[::-1]
+        self.pressure_buffer = list(0 for _ in range(self.history_length))
+        self.pressure_inhale = list(0 for _ in range(self.history_length))
+        self.PID_P = list(0 for _ in range(self.history_length))
+        self.PID_I = list(0 for _ in range(self.history_length))
+        self.PID_D = list(0 for _ in range(self.history_length))
 
-        #Add Background colour to white
-        self.graphWidget.setBackground('w')
+        if dark:
+            # dark theme
+            self.graphWidget.setBackground(mkColor(30,30,30))
+        else:
+            # light theme
+            self.graphWidget.setBackground('w')
+
         #Add Title
-        self.graphWidget.setTitle("HEV Lab plots", color='blue', size=30)
+        self.graphWidget.setTitle("HEV Lab Plots")
         #Add Axis Labels
-        self.graphWidget.setLabel('left', 'Readings', color='red', size=30)
-        self.graphWidget.setLabel('bottom', 'Timestamp (ms)', color='red', size=30)
+        #self.graphWidget.setLabel('left', 'Readings', size=40)
+        #self.graphWidget.setLabel('bottom', 'Time', size=40)
         #Add legend
         self.graphWidget.addLegend()
         #Add grid
         self.graphWidget.showGrid(x=True, y=True)
         #Set Range
-        self.graphWidget.setXRange(0, 10, padding=0)
-        self.graphWidget.setYRange(-20, 300, padding=0)
+        self.graphWidget.setXRange(self.history_length * (-1), 0, padding=0)
+        self.graphWidget.setYRange(-50, 300, padding=0)
 
-        self.line1 = self.graphWidget.plot(self.timestamp, self.pressure_inhale, "Buffer", 'r')
-        self.line2 = self.graphWidget.plot(self.timestamp, self.pressure_buffer, "Inhale", 'b')
-        self.line3 = self.graphWidget.plot(self.timestamp, self.PID_D, "Proportional", 'b')
-        self.line4 = self.graphWidget.plot(self.timestamp, self.PID_I, "Integral", 'b')
-        self.line5 = self.graphWidget.plot(self.timestamp, self.PID_D, "Derivative", 'b')
+        self.line1 = self.plot(self.timestamp, self.pressure_inhale, "Buffer", "F00")
+        self.line2 = self.plot(self.timestamp, self.pressure_buffer, "Inhale", "0F0")
+        self.line3 = self.plot(self.timestamp, self.PID_D, "Proportional", "00F")
+        self.line4 = self.plot(self.timestamp, self.PID_I, "Integral", "707")
+        self.line5 = self.plot(self.timestamp, self.PID_D, "Derivative", "077")
 
-        self.qtimestamp = asyncio.Queue(history_length)
-        self.qpressure_buffer = asyncio.Queue(history_length)
-        self.qpressure_inhale = asyncio.Queue(history_length)
-        self.qPID_P = asyncio.Queue(history_length)
-        self.qPID_I = asyncio.Queue(history_length)
-        self.qPID_D = asyncio.Queue(history_length)
+        # get data in another thread
+        self.worker = threading.Thread(target=self.polling, daemon=True)
+        self.worker.start()
 
+    def polling(self):
+        try:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+            comms = CommsLLI(loop, throttle=self.throttle)
 
-    def update_llipacket(self, payload):
-        #logging.info(f"payload received: {payload}")
-        if payload.getType() == 1:
-            self.cnt += 1
-            logging.info(f"payload received: {payload}")
-            if self.cnt % 20 == 0 :
-                self.qtimestamp.put_nowait(payload.timestamp)
-                self.qpressure_buffer.put_nowait(payload.pressure_buffer)
-                self.qpressure_inhale.put_nowait(payload.pressure_inhale)
-                self.qPID_D.put_nowait(payload.flow)
-                self.qPID_I.put_nowait(payload.volume)
-                self.qPID_P.put_nowait(payload.airway_pressure)
-            #logging.info(f"Fsm state: {payload.fsm_state}")
-        #if hasattr(payload, 'ventilation_mode'):
-        #    logging.info(f"payload received: {payload.ventilation_mode}")
-        #if hasattr(payload, 'duration_inhale'):
-        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
-        print("data acquired")
+            # create tasks
+            lli = comms.main(getTTYPort(), 115200)
+            plot = self.redraw(comms)
+            debug = commsDebug(comms)
+            tasks = [lli, debug, plot]
 
-        #build_history_plots(payload.getDict())
-        #if self.counter % 10 == 0: draw_plots()
+            # run tasks
+            asyncio.gather(*tasks, return_exceptions=True)
+            loop.run_forever()
+        except asyncio.CancelledError:
+            pass
+        finally:
+            loop.close()
 
-    async def redraw(self):
+    def plot(self, x, y, plotname, color):
+           pen = pg.mkPen(color=color, width=3)
+           return self.graphWidget.plot(x, y, name=plotname, pen=pen)
+
+    async def redraw(self, lli):
         while True:
-            # append new value
-            self.timestamp.append(await self.qtimestamp.get())
-            self.pressure_inhale.append(await self.qpressure_inhale.get())
-            self.pressure_buffer.append(await self.qpressure_buffer.get())
-            self.PID_D.append(await self.qPID_D.get())
-            self.PID_I.append(await self.qPID_I.get())
-            self.PID_P.append(await self.qPID_P.get())
-            # clear leftmost value
-            self.pressure_buffer = self.pressure_buffer[1:]
-            self.pressure_inhale = self.pressure_inhale[1:]
-            self.PID_D = self.PID_D[1:]
-            self.PID_I = self.PID_I[1:]
-            self.PID_P = self.PID_P[1:]
-            # clear from queue
-            self.qtimestamp.task_done()
-            self.qpressure_inhale.task_done()
-            self.qpressure_buffer.task_done()
-            self.qPID_D.task_done()
-            self.qPID_I.task_done()
-            self.qPID_P.task_done()
-            print("Running draw plots finished ", self.pressure_inhale.qsize())
-            self.line1.setData(self.timestamp, self.pressure_buffer)
-            self.line2.setData(self.timestamp, self.pressure_inhale)
-            self.line3.setData(self.timestamp, self.PID_D)
-            self.line4.setData(self.timestamp, self.PID_I)
-            self.line5.setData(self.timestamp, self.PID_P)
-
+            payload = await lli._payloadrecv.get()
+            if payload.getType() == 1:
+                logging.info(f"payload received: {payload}")
+                logging.debug("data acquired")
+                self.pressure_buffer.append(payload.pressure_buffer)
+                self.pressure_inhale.append(payload.pressure_inhale)
+                self.PID_D.append(payload.flow)
+                self.PID_I.append(payload.volume)
+                self.PID_P.append(payload.airway_pressure)
+                if len(self.pressure_buffer) > self.history_length:
+                    self.pressure_buffer = self.pressure_buffer[1:]
+                    self.pressure_inhale = self.pressure_inhale[1:]
+                    self.PID_D = self.PID_D[1:]
+                    self.PID_I = self.PID_I[1:]
+                    self.PID_P = self.PID_P[1:]
+                self.line1.setData(self.timestamp, self.pressure_buffer)
+                self.line2.setData(self.timestamp, self.pressure_inhale)
+                self.line3.setData(self.timestamp, self.PID_D)
+                self.line4.setData(self.timestamp, self.PID_I)
+                self.line5.setData(self.timestamp, self.PID_P)
 
 def getTTYPort():
     port_device = "" 
@@ -140,7 +128,7 @@ def getTTYPort():
 
 
 # initialise as start command, automatically executes toByteArray()
-async def commsDebug():
+async def commsDebug(comms):
     #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
@@ -164,29 +152,23 @@ async def commsDebug():
         print('sent cmd stop')
 
 
-try:
-    # setup serial device and init server
-    loop = asyncio.get_event_loop()
-    comms = CommsLLI(loop)
+if __name__ == "__main__":
+    # parse args and setup logging
+    parser = argparse.ArgumentParser(description='Plotting script for the HEV lab setup')
+    parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
+    parser.add_argument('--throttle', type=int, default=20, help='Reduce rate from LLI')
+    parser.add_argument('--dark', action='store_true', help='Use dark mode')
+
+    args = parser.parse_args()
+    if args.debug == 0:
+        logging.getLogger().setLevel(logging.WARNING)
+    elif args.debug == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    else:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     # setup pyqtplot widget
     app = QtWidgets.QApplication(sys.argv)
-    dep = LabPlots(comms)
+    dep = LabPlots(dark=args.dark, throttle=args.throttle)
     dep.show()
-
-    # create tasks
-    lli = comms.main(getTTYPort(), 115200)
-    debug = commsDebug()
-    plot = dep.redraw()
-    tasks = [lli, debug, plot]
-
-    # run tasks
-    asyncio.gather(*tasks, return_exceptions=True)
-    loop.run_forever()
-except asyncio.CancelledError:
-    pass
-except KeyboardInterrupt:
-    logging.info("Closing LLI")
-finally:
-    loop.close()
     sys.exit(app.exec_())
