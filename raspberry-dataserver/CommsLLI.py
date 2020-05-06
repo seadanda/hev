@@ -15,7 +15,7 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
 
 class CommsLLI:
-    def __init__(self, loop):
+    def __init__(self, loop, throttle=1):
         super().__init__()
         # IO
         self._loop = loop
@@ -39,9 +39,11 @@ class CommsLLI:
         self._acklist  = {0xC0: self._dv_alarms, 0x80: self._dv_commands, 0x40: self._dv_data}
         
         # receive
-        #self._payloadrecv = asyncio.Queue(maxsize=self._queue_size, loop=self._loop)
-        self._payloadrecv = deque(maxlen = self._queue_size)
+        self._payloadrecv = asyncio.Queue()
         self._observers = []
+        # for reducing the rate for use in the lab
+        self._packet_count = 0
+        self._throttle = throttle
 
         # packet counting
         self._sequence_send    = 0
@@ -176,7 +178,11 @@ class CommsLLI:
     def payloadrecv(self, payload):
         for callback in self._observers:
             callback(payload)
-
+        if self._throttle > 0:
+            if self._packet_count % self._throttle == 0:
+                self._payloadrecv.put_nowait(payload)
+            self._packet_count += 1
+    
     def bind_to(self, callback):
         self._observers.append(callback)
 
