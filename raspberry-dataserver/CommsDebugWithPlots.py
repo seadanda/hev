@@ -13,132 +13,114 @@ import numpy as np
 import queue
 from collections import deque
 
-plt.ion()
 
-history_length = 5000
+from PyQt5 import QtWidgets, QtCore
+from pyqtgraph import PlotWidget, plot
+import pyqtgraph as pg
+import sys  # We need sys so that we can pass argv to QApplication
+import os
+from random import randint
 
-pressure_buffer = asyncio.Queue(history_length)
-pressure_inhale = asyncio.Queue(history_length)
-PID_P = asyncio.Queue(history_length)
-PID_I = asyncio.Queue(history_length)
-PID_D = asyncio.Queue(history_length)
+class LabPlots(QtWidgets.QMainWindow):
 
-pressure_buffer_deq  = deque(maxlen=history_length)
-pressure_inhale_deq  = deque(maxlen=history_length)
-PID_P_deq  = deque(maxlen=history_length)
-PID_I_deq  = deque(maxlen=history_length)
-PID_D_deq  = deque(maxlen=history_length)
+    def __init__(self, lli, *args, **kwargs):
+        super(LabPlots, self).__init__(*args, **kwargs)
 
-fig = plt.figure()
+        self._lli = lli
+        self.cnt = 0
+        self._lli.bind_to(self.update_llipacket)
 
-ax = fig.add_subplot(111)
+        history_length = 5000
 
-h1, = ax.plot([],[], label="buffer")
-h2, = ax.plot([],[], label="inhale")
-h3, = ax.plot([],[], label="Proportional")
-h4, = ax.plot([],[], label="Integral")
-h5, = ax.plot([],[], label="Derivative")
-#plt.axes()
-#an = []
+        self.graphWidget = pg.PlotWidget()
+        self.setCentralWidget(self.graphWidget)
 
-#for i in range(history_length):
-#    pressure_buffer.put(-1)
-#    pressure_inhale.put(-1)
-#    PID_P.put(-1)
-#    PID_I.put(-1)
-#    PID_D.put(-1)
+        self.timestamp = list(0 for el in range(history_length))
+        self.pressure_buffer = list(0 for el in range(history_length))
+        self.pressure_inhale = list(0 for el in range(history_length))
+        self.PID_P = list(0 for el in range(history_length))
+        self.PID_I = list(0 for el in range(history_length))
+        self.PID_D = list(0 for el in range(history_length))
 
-last_data = 0
-last_build_time = time.time()
+        #Add Background colour to white
+        self.graphWidget.setBackground('w')
+        #Add Title
+        self.graphWidget.setTitle("HEV Lab plots", color='blue', size=30)
+        #Add Axis Labels
+        self.graphWidget.setLabel('left', 'Readings', color='red', size=30)
+        self.graphWidget.setLabel('bottom', 'Timestamp (ms)', color='red', size=30)
+        #Add legend
+        self.graphWidget.addLegend()
+        #Add grid
+        self.graphWidget.showGrid(x=True, y=True)
+        #Set Range
+        self.graphWidget.setXRange(0, 10, padding=0)
+        self.graphWidget.setYRange(-20, 300, padding=0)
 
-async def draw_plots():
+        self.line1 = self.graphWidget.plot(self.timestamp, self.pressure_inhale, "Buffer", 'r')
+        self.line2 = self.graphWidget.plot(self.timestamp, self.pressure_buffer, "Inhale", 'b')
+        self.line3 = self.graphWidget.plot(self.timestamp, self.PID_D, "Proportional", 'b')
+        self.line4 = self.graphWidget.plot(self.timestamp, self.PID_I, "Integral", 'b')
+        self.line5 = self.graphWidget.plot(self.timestamp, self.PID_D, "Derivative", 'b')
 
-    while True:
-
-         #asyncio.sleep(1)
-
-        if(pressure_inhale.qsize() == 0):
-            await asyncio.sleep(0.1)
-            continue
-        #await asyncio.sleep(0.3)
-        pressure_inhale_deq.append(await pressure_inhale.get())
-        pressure_buffer_deq.append(await pressure_buffer.get())
-        PID_D_deq.append(await PID_D.get())
-        PID_I_deq.append(await PID_I.get())
-        PID_P_deq.append(await PID_P.get())
-        print("Running draw plots finished ", pressure_inhale.qsize())
-
-        h1.set_xdata(np.array(range(len(pressure_inhale_deq))))
-        h1.set_ydata(list(pressure_inhale_deq))#list(pressure_inhale.queue))
-
-        h2.set_xdata(np.array(range(len(pressure_buffer_deq))))
-        h2.set_ydata(list(pressure_buffer_deq))#list(pressure_buffer.queue))
-
-        h3.set_xdata(np.array(range(len(PID_P_deq))))
-        h3.set_ydata(list(PID_P_deq))#list(pressure_buffer.queue))
-
-        h4.set_xdata(np.array(range(len(PID_I_deq))))
-        h4.set_ydata(list(PID_I_deq))#list(pressure_buffer.queue))
-
-        h5.set_xdata(np.array(range(len(PID_D_deq))))
-        h5.set_ydata(list(PID_D_deq))#list(pressure_buffer.queue))
-
-        pressure_inhale.task_done()
-        pressure_buffer.task_done()
-        PID_D.task_done()
-        PID_I.task_done()
-        PID_P.task_done()
-
-        plt.legend()
-        #plt.ylim(-2,20)
-
-        ax.relim()
-        ax.autoscale_view(True,True,True)
-        fig.canvas.draw()
-        fig.canvas.flush_events()
-        #time.sleep(60)
-        #time.sleep(0.1)
-
-        #ai, = ax.plot(range(10), range(10))
-        #an.append(ai)
-
-        fig.canvas.draw()
-        plt.show(block=False)
+        self.qtimestamp = asyncio.Queue(history_length)
+        self.qpressure_buffer = asyncio.Queue(history_length)
+        self.qpressure_inhale = asyncio.Queue(history_length)
+        self.qPID_P = asyncio.Queue(history_length)
+        self.qPID_I = asyncio.Queue(history_length)
+        self.qPID_D = asyncio.Queue(history_length)
 
 
-def FILO(_queue, newitem):
-    if _queue.full(): _queue.get_nowait()
-    _queue.put_nowait(newitem)
+    def update_llipacket(self, payload):
+        #logging.info(f"payload received: {payload}")
+        if payload.getType() == 1:
+            self.cnt += 1
+            logging.info(f"payload received: {payload}")
+            if self.cnt % 20 == 0 :
+                self.qtimestamp.put_nowait(payload.timestamp)
+                self.qpressure_buffer.put_nowait(payload.pressure_buffer)
+                self.qpressure_inhale.put_nowait(payload.pressure_inhale)
+                self.qPID_D.put_nowait(payload.flow)
+                self.qPID_I.put_nowait(payload.volume)
+                self.qPID_P.put_nowait(payload.airway_pressure)
+            #logging.info(f"Fsm state: {payload.fsm_state}")
+        #if hasattr(payload, 'ventilation_mode'):
+        #    logging.info(f"payload received: {payload.ventilation_mode}")
+        #if hasattr(payload, 'duration_inhale'):
+        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+        print("data acquired")
 
-# async def build_history_plots():
+        #build_history_plots(payload.getDict())
+        #if self.counter % 10 == 0: draw_plots()
 
-#     """
-#     2020-05-06 10:45:55,948 - INFO - payload received: DataFormat(version=163, timestamp=231682, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.STOP: 11>, pressure_air_supply=41, pressure_air_regulated=453.0, pressure_o2_supply=30, pressure_o2_regulated=451.0, pressure_buffer=242.0, pressure_inhale=0.0, pressure_patient=0.0, temperature_buffer=659, pressure_diff_patient=1331.0, ambient_pressure=0, ambient_temperature=0, airway_pressure=-0.14404296875, flow=0.0, volume=0.0)
-# {'version': 163, 'timestamp': 231682, 'payload_type': 'DATA', 'fsm_state': 'STOP', 'pressure_air_supply': 41, 'pressure_air_regulated': 453.0, 'pressure_o2_supply': 30, 'pressure_o2_regulated': 451.0, 'pressure_buffer': 242.0, 'pressure_inhale': 0.0, 'pressure_patient': 0.0, 'temperature_buffer': 659, 'pressure_diff_patient': 1331.0, 'ambient_pressure': 0, 'ambient_temperature': 0, 'airway_pressure': -0.14404296875, 'flow': 0.0, 'volume': 0.0}
-# 0.0
-# 2020-05-06 10:45:55,959 - INFO - payload received: DataFormat(version=163, timestamp=231737, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.STOP: 11>, pressure_air_supply=48, pressure_air_regulated=453.0, pressure_o2_supply=30, pressure_o2_regulated=452.0, pressure_buffer=242.0, pressure_inhale=0.0, pressure_patient=0.0, temperature_buffer=659, pressure_diff_patient=1325.0, ambient_pressure=0, ambient_temperature=0, airway_pressure=-0.14404296875, flow=0.0, volume=0.0)
-# {'version': 163, 'timestamp': 231737, 'payload_type': 'DATA', 'fsm_state': 'STOP', 'pressure_air_supply': 48, 'pressure_air_regulated': 453.0, 'pressure_o2_supply': 30, 'pressure_o2_regulated': 452.0, 'pressure_buffer': 242.0, 'pressure_inhale': 0.0, 'pressure_patient': 0.0, 'temperature_buffer': 659, 'pressure_diff_patient': 1325.0, 'ambient_pressure': 0, 'ambient_temperature': 0, 'airway_pressure': -0.14404296875, 'flow': 0.0, 'volume': 0.0}
-# 0.0
-#     """
-
-#     print("Starting Build data")
-
-#     global last_build_time
-    
-#     while True:
-
-#         if time.time() - last_build_time < 0.1 or last_build_time == 0:
-#             continue
-
-#         last_build_time = time.time()
-
-#         #if last_data == 0: continue
-
-#         try:
-
-
-#         except KeyError:
-#             pass
+    async def redraw(self):
+        while True:
+            # append new value
+            self.timestamp.append(await self.qtimestamp.get())
+            self.pressure_inhale.append(await self.qpressure_inhale.get())
+            self.pressure_buffer.append(await self.qpressure_buffer.get())
+            self.PID_D.append(await self.qPID_D.get())
+            self.PID_I.append(await self.qPID_I.get())
+            self.PID_P.append(await self.qPID_P.get())
+            # clear leftmost value
+            self.pressure_buffer = self.pressure_buffer[1:]
+            self.pressure_inhale = self.pressure_inhale[1:]
+            self.PID_D = self.PID_D[1:]
+            self.PID_I = self.PID_I[1:]
+            self.PID_P = self.PID_P[1:]
+            # clear from queue
+            self.qtimestamp.task_done()
+            self.qpressure_inhale.task_done()
+            self.qpressure_buffer.task_done()
+            self.qPID_D.task_done()
+            self.qPID_I.task_done()
+            self.qPID_P.task_done()
+            print("Running draw plots finished ", self.pressure_inhale.qsize())
+            self.line1.setData(self.timestamp, self.pressure_buffer)
+            self.line2.setData(self.timestamp, self.pressure_inhale)
+            self.line3.setData(self.timestamp, self.PID_D)
+            self.line4.setData(self.timestamp, self.PID_I)
+            self.line5.setData(self.timestamp, self.PID_P)
 
 
 def getTTYPort():
@@ -156,37 +138,6 @@ def getTTYPort():
             port_device = sys.argv[1]
     return port_device
 
-
-class Dependant(object):
-    def __init__(self, lli):
-        self._llipacket = None
-        self._lli = lli
-        self.cnt = 0
-        self._lli.bind_to(self.update_llipacket)
-
-    def update_llipacket(self, payload):
-        global last_data
-        #logging.info(f"payload received: {payload}")
-        if payload.getType() == 1:
-            self.cnt += 1
-            logging.info(f"payload received: {payload}")
-            if self.cnt % 20 == 0 :
-                pressure_buffer.put_nowait(payload.pressure_buffer)
-                pressure_inhale.put_nowait(payload.pressure_inhale)
-                PID_D.put_nowait(payload.flow)
-                PID_I.put_nowait(payload.volume)
-                PID_P.put_nowait(payload.airway_pressure)
-            #logging.info(f"Fsm state: {payload.fsm_state}")
-        #if hasattr(payload, 'ventilation_mode'):
-        #    logging.info(f"payload received: {payload.ventilation_mode}")
-        #if hasattr(payload, 'duration_inhale'):
-        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
-        print("data acquired")
-        self._llipacket = payload.getDict() # returns a dict
-        last_data = self._llipacket #= payload.getDict() # returns a dict
-
-        #build_history_plots(payload.getDict())
-        #if self.counter % 10 == 0: draw_plots()
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
@@ -212,17 +163,21 @@ async def commsDebug():
         comms.writePayload(cmd)
         print('sent cmd stop')
 
+
 try:
     # setup serial device and init server
     loop = asyncio.get_event_loop()
     comms = CommsLLI(loop)
-    dep = Dependant(comms)
+
+    # setup pyqtplot widget
+    app = QtWidgets.QApplication(sys.argv)
+    dep = LabPlots(comms)
+    dep.show()
 
     # create tasks
     lli = comms.main(getTTYPort(), 115200)
     debug = commsDebug()
-    plot = draw_plots()
-    #getdata = build_history_plots()
+    plot = dep.redraw()
     tasks = [lli, debug, plot]
 
     # run tasks
@@ -234,3 +189,4 @@ except KeyboardInterrupt:
     logging.info("Closing LLI")
 finally:
     loop.close()
+    sys.exit(app.exec_())
