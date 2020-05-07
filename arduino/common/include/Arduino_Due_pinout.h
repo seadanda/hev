@@ -37,4 +37,4 @@ const int pin_lcd_d5         = 28;
 const int pin_lcd_d6         = 30;
 const int pin_lcd_d7         = 32;
 
-const int pwm_resolution = 8; // 8 bit resolution; up to 12 possible
+const int pwm_resolution = 12; // 8 bit resolution; up to 12 possible
