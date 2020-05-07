@@ -26,7 +26,7 @@ INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/toolchain-atmelavr/lib/gcc/avr/
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/tool-unity"
 
 DEFINES += "PLATFORMIO=40301"
-DEFINES += "ARDUINO_AVR_UNO"
+DEFINES += "ARDUINO_NodeMCU_32S"
 DEFINES += "F_CPU=16000000L"
 DEFINES += "ARDUINO_ARCH_AVR"
 DEFINES += "ARDUINO=10808"

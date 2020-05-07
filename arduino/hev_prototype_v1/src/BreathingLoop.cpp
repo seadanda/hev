@@ -94,7 +94,7 @@ void BreathingLoop::updateReadings()
 
                 //TODO
 
-                float_t _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
+                float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
                 float output = 0.;
 

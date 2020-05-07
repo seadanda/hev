@@ -71,9 +71,9 @@ class CMD_SET_PID(Enum):
 
 @unique
 class ALARM_TYPE(Enum):
-    LP   = 1
-    MP   = 2
-    HP   = 3
+    PRIORITY_LOW    = 1
+    PRIORITY_MEDIUM = 2
+    PRIORITY_HIGH   = 3
 
 @unique
 class ALARM_CODES(Enum):
@@ -439,15 +439,17 @@ class AlarmFormat(PayloadFormat):
 
     def fromByteArray(self, byteArray):
         alarm = 0
+        priority = 0
         tmp_payload_type = 0
         (self.version,
         self.timestamp,
         tmp_payload_type,
-        self.alarm_type,
+        priority,
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
 
         self.checkVersion()
+        self.alarm_type = ALARM_TYPE(priority)
         self.alarm_code = ALARM_CODES(alarm)
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray

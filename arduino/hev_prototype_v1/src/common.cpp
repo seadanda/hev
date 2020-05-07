@@ -1,39 +1,82 @@
 #include "common.h"
 
-void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t value) {
+void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float &value) {
     switch (cmd) {
         case CMD_SET_DURATION::CALIBRATION:
-            durations.calibration     = value;
+            durations.calibration     = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::BUFF_PURGE:
-            durations.buff_purge      = value;
+            durations.buff_purge      = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::BUFF_FLUSH:
-            durations.buff_flush      = value;
+            durations.buff_flush      = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::BUFF_PREFILL:
-            durations.buff_prefill    = value;
+            durations.buff_prefill    = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::BUFF_FILL:
-            durations.buff_fill       = value;
+            durations.buff_fill       = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::BUFF_LOADED:
-            durations.buff_loaded     = value;
+            durations.buff_loaded     = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::BUFF_PRE_INHALE:
-            durations.buff_pre_inhale = value;
+            durations.buff_pre_inhale = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::INHALE:
-            durations.inhale          = value;
+            durations.inhale          = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::PAUSE:
-            durations.pause           = value;
+            durations.pause           = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::EXHALE_FILL:
-            durations.exhale_fill     = value;
+            durations.exhale_fill     = static_cast<uint32_t>(value);
             break;
         case CMD_SET_DURATION::EXHALE:
-            durations.exhale          = value;
+            durations.exhale          = static_cast<uint32_t>(value);
+            break;
+        default:
+            break;
+    }
+}
+
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, float &value)
+{
+    switch(cmd){
+        case CMD_SET_VALVE::AIR_IN_ENABLE :
+            valves_controller->enableAirInValve( (value > 0) );
+            break;
+        case CMD_SET_VALVE::O2_IN_ENABLE :
+            valves_controller->enableO2InValve( (value > 0) );
+            break;
+        case CMD_SET_VALVE::PURGE_ENABLE :
+            valves_controller->enablePurgeValve( (value > 0) );
+            break;
+        case CMD_SET_VALVE::INHALE_DUTY_CYCLE :
+            valves_controller->setInhaleDutyCycle(value); // should be 0-100
+            break;
+        case CMD_SET_VALVE::INHALE_OPEN_MIN :
+            valves_controller->setInhaleOpenMin(value); // should be 0-100
+            break;
+        case CMD_SET_VALVE::INHALE_OPEN_MAX :
+            valves_controller->setInhaleOpenMax(value); // should be 0-100
+            break;
+        default:
+            break;
+    }
+}
+
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value)
+{
+    switch(cmd){
+        case CMD_SET_PID::KP:
+            pid.Kp = value/1000.0;
+            break;
+        case CMD_SET_PID::KI:
+            pid.Ki = value/1000.0;
+            break;
+        case CMD_SET_PID::KD:
+            pid.Kd = value/1000.0;
             break;
         default:
             break;
@@ -65,7 +108,7 @@ int16_t adcToMillibar(int16_t adc, int16_t offset)
     //return static_cast<int16_t>(adc);
 } 
 
-float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0)
+float adcToMillibarFloat(int16_t adc, int16_t offset)
 {
     // TODO -  a proper calibration
     // rough guess - ADP51A11 spec sheet -Panasonic ADP5 pressure sensor
@@ -80,6 +123,6 @@ float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0)
     float c = max_p - m * max_adc;
     float mbar = m*(adc-offset) + c; 
 
-    return static_cast<float_t>(mbar);
+    return static_cast<float>(mbar);
     //return static_cast<int16_t>(adc);
 } 

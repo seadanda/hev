@@ -206,7 +206,7 @@ void UILoop::cmdGeneral(cmd_format &cf) {
 }
 
 void UILoop::cmdSetDuration(cmd_format &cf) {
-    setDuration(static_cast<CMD_SET_DURATION>(cf.cmd_code), _breathing_loop->getDurations(), static_cast<uint32_t>(cf.param));
+    setDuration(static_cast<CMD_SET_DURATION>(cf.cmd_code), _breathing_loop->getDurations(), cf.param);
 }
 
 void UILoop::cmdSetMode(cmd_format &cf) {
@@ -214,7 +214,6 @@ void UILoop::cmdSetMode(cmd_format &cf) {
 }
 
 void UILoop::cmdSetPID(cmd_format &cf){
-
     setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
 }
 

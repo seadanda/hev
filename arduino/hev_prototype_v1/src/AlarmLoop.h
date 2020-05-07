@@ -6,12 +6,6 @@
 #include "CommsFormat.h"
 #include "AudioVisualController.h"
 
-// general function to set alarm of any defined kind
-template <typename T>
-void setAlarm(ALARM_CODES alarm_code, T *alarms, T value) {
-    alarms[alarm_code] = value;
-}
-
 class AlarmLoop {
 
 public:

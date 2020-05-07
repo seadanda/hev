@@ -425,11 +425,14 @@ struct pid_variables {
 // static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
 // static int chan_to_pin[50];  
 
-void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t value);
-void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t &value);
-void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value);
+template <typename T>
+void setAlarm(ALARM_CODES alarm_code, T *alarms, T value) { alarms[alarm_code] = value; }
+
+void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float &value);
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, float &value);
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
-float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
+float adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
 
 // used for calculating averages, template due to different size for sums and averages
