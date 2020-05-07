@@ -216,6 +216,7 @@ struct readback_data_format {
 };
 #pragma pack()
 
+#pragma pack(1)
 struct ivt_data_format {
 // readback values
     uint8_t  version                  = HEV_FORMAT_VERSION;

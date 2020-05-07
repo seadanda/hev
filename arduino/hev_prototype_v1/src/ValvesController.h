@@ -52,7 +52,7 @@ public:
     void setInhaleOpenMin(float value);
     void setInhaleOpenMax(float value);
 
-    void updateIV(valve v);
+    void updateIV(valve &v);
     void updateAllIV();
     IV_readings<float>* getIVReadings();
 

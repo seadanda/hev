@@ -163,6 +163,7 @@ class PayloadFormat():
             #4: ThresholdFormat,
             5: CommandFormat,
             6: AlarmFormat,
+            8: IVTFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()

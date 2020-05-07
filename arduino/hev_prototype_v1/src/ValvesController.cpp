@@ -233,7 +233,7 @@ valve_params& ValvesController::getValveParams()
     return _valve_params;
 }
 
-void ValvesController::updateIV(valve v)
+void ValvesController::updateIV(valve &v)
 {
     v.voltage = (float)(_INA->getBusMilliVolts(v.device_number)/1000.0);
     v.current = (float)(_INA->getShuntMicroVolts(v.device_number)/5.0);
