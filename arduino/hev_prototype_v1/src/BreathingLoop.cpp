@@ -419,8 +419,6 @@ void BreathingLoop::FSM_breathCycle()
             _fsm_timeout = _states_durations.exhale_fill;
             break;
         case BL_STATES::EXHALE:
-            // TODO: exhale timeout based on 
-            // (inhale_time* (Exhale/Inhale ratio))  - exhale fill time
             _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;

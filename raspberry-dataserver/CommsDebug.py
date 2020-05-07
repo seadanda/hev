@@ -44,6 +44,8 @@ class Dependant(object):
             logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
             logging.info(f"payload received: peep = {payload.peep} ")
             logging.info(f"payload received: valve air in = {payload.valve_air_in} ")
+        if hasattr(payload, 'respiratory_rate'):
+            logging.info(f"payload received: RR = {payload.respiratory_rate} ")
             #print(binascii.hexlify(payload._byteArray))
         self._llipacket = payload.getDict() # returns a dict
 
