@@ -15,9 +15,12 @@ public:
     UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms);
     ~UILoop();
     int doCommand(cmd_format &cf);
+
     void reportFastReadings();
     void reportReadbackValues();
     void reportCycleReadings();
+    void reportAlarms();
+
     void receiveCommands();
 
 private:
@@ -46,6 +49,8 @@ private:
     readback_data_format _readback_data;
     cycle_data_format _cycle_data;
 
+    uint32_t _alarm_report_timeout;
+    alarm_format _alarm;
 };
 
 #endif

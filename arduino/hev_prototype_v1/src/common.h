@@ -1,6 +1,7 @@
 #ifndef COMMON_H
 #define COMMON_H
 #include <Arduino.h>
+#include <limits>
 #include "ValvesController.h"
 
 //#define HEV_MINI_SYSTEM  // uncomment this if using lab 14-1-014
@@ -51,7 +52,6 @@ enum CMD_GENERAL : uint8_t {
     RESET =  3
 };
 
-
 // Taken from the FSM doc. Correct as of 1400 on 20200417
 enum CMD_SET_DURATION : uint8_t {
     CALIBRATION     =  1,
@@ -100,18 +100,20 @@ struct cmd_format {
     uint8_t  payload_type = PAYLOAD_TYPE::CMD;
     uint8_t  cmd_type     = 0;
     uint8_t  cmd_code     = 0;
-    uint32_t param        = 0;
+    float    param        = 0;
 };
 #pragma pack()
 
 
 enum ALARM_TYPE: uint8_t {
-    LP   = 1,
-    MP   = 2,
-    HP   = 3
+    ALARM_TYPE_UNKNOWN  =  0,
+    PRIORITY_LOW        =  1,
+    PRIORITY_MEDIUM     =  2,
+    PRIORITY_HIGH       =  3
 };
 
 enum ALARM_CODES: uint8_t {
+    ALARM_CODE_UNKNOWN             =  0,
     APNEA                          =  1,  // HP
     CHECK_VALVE_EXHALE             =  2,  // HP
     CHECK_P_PATIENT                =  3,  // HP
@@ -136,7 +138,9 @@ enum ALARM_CODES: uint8_t {
     AIR_FAIL                       = 22,  // HP
     O2_FAIL                        = 23,  // HP
     PRESSURE_SENSOR_FAULT          = 24,  // HP
-    ARDUINO_FAIL                   = 25   // HP
+    ARDUINO_FAIL                   = 25,  // HP
+
+    ALARMS_COUNT                   = 26
 };
 
 #pragma pack(1)
@@ -146,7 +150,7 @@ struct alarm_format {
     uint8_t  payload_type = PAYLOAD_TYPE::ALARM;
     uint8_t  alarm_type   = 0;
     uint8_t  alarm_code   = 0;
-    uint32_t param        = 0;
+    float    param        = 0;
 };
 #pragma pack()
 
@@ -209,7 +213,6 @@ struct readback_data_format {
     uint8_t exhale_trigger_enable     = 0;
     float   peep                      = 0.0;
     float   inhale_exhale_ratio       = 0.0;
-
 };
 #pragma pack()
 
@@ -268,32 +271,148 @@ struct states_durations {
     uint32_t exhale; // has to be calculated using function getTimeoutExhale()
 };
 
-struct alarm_thresholds {
-    uint32_t apnea;
-    uint32_t check_valve_exhale;
-    uint32_t check_p_patient;
-    uint32_t expiration_sense_fault_or_leak;
-    uint32_t expiration_valve_leak;
-    uint32_t high_fio2;
-    uint32_t high_pressure;
-    uint32_t high_rr;
-    uint32_t high_vte;
-    uint32_t low_vte;
-    uint32_t high_vti;
-    uint32_t low_vti;
-    uint32_t intentional_stop;
-    uint32_t low_battery;
-    uint32_t low_fio2;
-    uint32_t occlusion;
-    uint32_t high_peep;
-    uint32_t low_peep;
-    uint32_t ac_power_disconnection;
-    uint32_t battery_fault_srvc;
-    uint32_t battery_charge;
-    uint32_t air_fail;
-    uint32_t o2_fail;
-    uint32_t pressure_sensor_fault;
-    uint32_t arduino_fail;
+struct alarms {
+    ALARM_TYPE  priorities     [ALARM_CODES::ALARMS_COUNT] = {
+        ALARM_TYPE::ALARM_TYPE_UNKNOWN,    // TEMPORARY VALUE DUE TO START FROM 1
+        ALARM_TYPE::PRIORITY_HIGH     ,    // APNEA
+        ALARM_TYPE::PRIORITY_HIGH     ,    // CHECK_VALVE_EXHALE
+        ALARM_TYPE::PRIORITY_HIGH     ,    // CHECK_P_PATIENT
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // EXPIRATION_VALVE_Leak
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // HIGH_FIO2
+        ALARM_TYPE::PRIORITY_HIGH     ,    // HIGH_PRESSURE
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // HIGH_RR
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // HIGH_VTE
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // LOW_VTE
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // HIGH_VTI
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // LOW_VTI
+        ALARM_TYPE::PRIORITY_HIGH     ,    // INTENTIONAL_STOP
+        ALARM_TYPE::PRIORITY_HIGH     ,    // LOW_BATTERY
+        ALARM_TYPE::PRIORITY_HIGH     ,    // LOW_FIO2
+        ALARM_TYPE::PRIORITY_HIGH     ,    // OCCLUSION
+        ALARM_TYPE::PRIORITY_HIGH     ,    // HIGH_PEEP
+        ALARM_TYPE::PRIORITY_HIGH     ,    // LOW_PEEP
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // AC_POWER_DISCONNECTION
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // BATTERY_FAULT_SRVC
+        ALARM_TYPE::PRIORITY_MEDIUM   ,    // BATTERY_CHARGE
+        ALARM_TYPE::PRIORITY_HIGH     ,    // AIR_FAIL
+        ALARM_TYPE::PRIORITY_HIGH     ,    // O2_FAIL
+        ALARM_TYPE::PRIORITY_HIGH     ,    // PRESSURE_SENSOR_FAULT
+        ALARM_TYPE::PRIORITY_HIGH          // ARDUINO_FAIL
+    };
+    bool        actives        [ALARM_CODES::ALARMS_COUNT] = {
+        false,    // TEMPORARY VALUE DUE TO START FROM 1
+        false,    // APNEA
+        false,    // CHECK_VALVE_EXHALE
+        false,    // CHECK_P_PATIENT
+        false,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        false,    // EXPIRATION_VALVE_Leak
+        false,    // HIGH_FIO2
+        false,    // HIGH_PRESSURE
+        false,    // HIGH_RR
+        false,    // HIGH_VTE
+        false,    // LOW_VTE
+        false,    // HIGH_VTI
+        false,    // LOW_VTI
+        false,    // INTENTIONAL_STOP
+        false,    // LOW_BATTERY
+        false,    // LOW_FIO2
+        false,    // OCCLUSION
+        false,    // HIGH_PEEP
+        false,    // LOW_PEEP
+        false,    // AC_POWER_DISCONNECTION
+        false,    // BATTERY_FAULT_SRVC
+        false,    // BATTERY_CHARGE
+        false,    // AIR_FAIL
+        false,    // O2_FAIL
+        false,    // PRESSURE_SENSOR_FAULT
+        false     // ARDUINO_FAIL
+    };
+    uint32_t    last_broadcasts[ALARM_CODES::ALARMS_COUNT] = {
+        0,    // TEMPORARY VALUE DUE TO START FROM 1
+        0,    // APNEA
+        0,    // CHECK_VALVE_EXHALE
+        0,    // CHECK_P_PATIENT
+        0,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        0,    // EXPIRATION_VALVE_Leak
+        0,    // HIGH_FIO2
+        0,    // HIGH_PRESSURE
+        0,    // HIGH_RR
+        0,    // HIGH_VTE
+        0,    // LOW_VTE
+        0,    // HIGH_VTI
+        0,    // LOW_VTI
+        0,    // INTENTIONAL_STOP
+        0,    // LOW_BATTERY
+        0,    // LOW_FIO2
+        0,    // OCCLUSION
+        0,    // HIGH_PEEP
+        0,    // LOW_PEEP
+        0,    // AC_POWER_DISCONNECTION
+        0,    // BATTERY_FAULT_SRVC
+        0,    // BATTERY_CHARGE
+        0,    // AIR_FAIL
+        0,    // O2_FAIL
+        0,    // PRESSURE_SENSOR_FAULT
+        0     // ARDUINO_FAIL
+    };
+    float       thresholds_min [ALARM_CODES::ALARMS_COUNT] = {
+        std::numeric_limits<float>::lowest(),    // TEMPORARY VALUE DUE TO START FROM 1
+        std::numeric_limits<float>::lowest(),    // APNEA
+        std::numeric_limits<float>::lowest(),    // CHECK_VALVE_EXHALE
+        std::numeric_limits<float>::lowest(),    // CHECK_P_PATIENT
+        std::numeric_limits<float>::lowest(),    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        std::numeric_limits<float>::lowest(),    // EXPIRATION_VALVE_Leak
+        std::numeric_limits<float>::lowest(),    // HIGH_FIO2
+        std::numeric_limits<float>::lowest(),    // HIGH_PRESSURE
+        std::numeric_limits<float>::lowest(),    // HIGH_RR
+        std::numeric_limits<float>::lowest(),    // HIGH_VTE
+        std::numeric_limits<float>::lowest(),    // LOW_VTE
+        std::numeric_limits<float>::lowest(),    // HIGH_VTI
+        std::numeric_limits<float>::lowest(),    // LOW_VTI
+        std::numeric_limits<float>::lowest(),    // INTENTIONAL_STOP
+        std::numeric_limits<float>::lowest(),    // LOW_BATTERY
+        std::numeric_limits<float>::lowest(),    // LOW_FIO2
+        std::numeric_limits<float>::lowest(),    // OCCLUSION
+        std::numeric_limits<float>::lowest(),    // HIGH_PEEP
+        std::numeric_limits<float>::lowest(),    // LOW_PEEP
+        std::numeric_limits<float>::lowest(),    // AC_POWER_DISCONNECTION
+        std::numeric_limits<float>::lowest(),    // BATTERY_FAULT_SRVC
+        std::numeric_limits<float>::lowest(),    // BATTERY_CHARGE
+        std::numeric_limits<float>::lowest(),    // AIR_FAIL
+        std::numeric_limits<float>::lowest(),    // O2_FAIL
+        std::numeric_limits<float>::lowest(),    // PRESSURE_SENSOR_FAULT
+        std::numeric_limits<float>::lowest()     // ARDUINO_FAIL
+    };
+    float       thresholds_max [ALARM_CODES::ALARMS_COUNT] = {
+        std::numeric_limits<float>::max()   ,    // TEMPORARY VALUE DUE TO START FROM 1
+        std::numeric_limits<float>::max()   ,    // APNEA
+        std::numeric_limits<float>::max()   ,    // CHECK_VALVE_EXHALE
+        std::numeric_limits<float>::max()   ,    // CHECK_P_PATIENT
+        std::numeric_limits<float>::max()   ,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        std::numeric_limits<float>::max()   ,    // EXPIRATION_VALVE_Leak
+        std::numeric_limits<float>::max()   ,    // HIGH_FIO2
+        std::numeric_limits<float>::max()   ,    // HIGH_PRESSURE
+        std::numeric_limits<float>::max()   ,    // HIGH_RR
+        std::numeric_limits<float>::max()   ,    // HIGH_VTE
+        std::numeric_limits<float>::max()   ,    // LOW_VTE
+        std::numeric_limits<float>::max()   ,    // HIGH_VTI
+        std::numeric_limits<float>::max()   ,    // LOW_VTI
+        std::numeric_limits<float>::max()   ,    // INTENTIONAL_STOP
+        std::numeric_limits<float>::max()   ,    // LOW_BATTERY
+        std::numeric_limits<float>::max()   ,    // LOW_FIO2
+        std::numeric_limits<float>::max()   ,    // OCCLUSION
+        std::numeric_limits<float>::max()   ,    // HIGH_PEEP
+        std::numeric_limits<float>::max()   ,    // LOW_PEEP
+        std::numeric_limits<float>::max()   ,    // AC_POWER_DISCONNECTION
+        std::numeric_limits<float>::max()   ,    // BATTERY_FAULT_SRVC
+        std::numeric_limits<float>::max()   ,    // BATTERY_CHARGE
+        std::numeric_limits<float>::max()   ,    // AIR_FAIL
+        std::numeric_limits<float>::max()   ,    // O2_FAIL
+        std::numeric_limits<float>::max()   ,    // PRESSURE_SENSOR_FAULT
+        std::numeric_limits<float>::max()        // ARDUINO_FAIL
+    };
+    float       values         [ALARM_CODES::ALARMS_COUNT];
 };
 
 struct pid_variables {
@@ -306,17 +425,19 @@ struct pid_variables {
 // static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
 // static int chan_to_pin[50];  
 
-void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
-void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t &value);
-void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t &value);
-void setPID(CMD_SET_PID cmd, pid_variables &pid, uint32_t &value);
+template <typename T>
+void setAlarm(ALARM_CODES alarm_code, T *alarms, T value) { alarms[alarm_code] = value; }
+
+void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float &value);
+void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, float &value);
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
-float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
+float adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{
-    uint64_t timestamp       = 0; //
+    uint32_t timestamp       = 0; //
     T pressure_air_supply    = 0;
     T pressure_air_regulated = 0;
     T pressure_buffer        = 0;

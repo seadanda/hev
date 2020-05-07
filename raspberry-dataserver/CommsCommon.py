@@ -71,9 +71,9 @@ class CMD_SET_PID(Enum):
 
 @unique
 class ALARM_TYPE(Enum):
-    LP   = 1
-    MP   = 2
-    HP   = 3
+    PRIORITY_LOW    = 1
+    PRIORITY_MEDIUM = 2
+    PRIORITY_HIGH   = 3
 
 @unique
 class ALARM_CODES(Enum):
@@ -404,12 +404,12 @@ class CycleFormat(PayloadFormat):
 # =======================================
 @dataclass
 class CommandFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBBI")
+    _dataStruct = Struct("<BIBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.CMD
 
     cmd_type: int = 0
     cmd_code: int = 0
-    param: int    = 0
+    param: float  = 0.0
 
     def fromByteArray(self, byteArray):
         tmp_payload_type = 0
@@ -430,24 +430,26 @@ class CommandFormat(PayloadFormat):
 # =======================================
 @dataclass
 class AlarmFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBBI")
+    _dataStruct = Struct("<BIBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.ALARM
 
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
-    param: int = 0
+    param: float = 0.0
 
     def fromByteArray(self, byteArray):
         alarm = 0
+        priority = 0
         tmp_payload_type = 0
         (self.version,
         self.timestamp,
         tmp_payload_type,
-        self.alarm_type,
+        priority,
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
 
         self.checkVersion()
+        self.alarm_type = ALARM_TYPE(priority)
         self.alarm_code = ALARM_CODES(alarm)
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray

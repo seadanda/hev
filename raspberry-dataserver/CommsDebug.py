@@ -33,7 +33,9 @@ class Dependant(object):
 
     def update_llipacket(self, payload):
         #logging.info(f"payload received: {payload}")
-        if payload.getType() == 1:
+        if payload.getType() == PAYLOAD_TYPE.ALARM.value:
+            logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
+        if payload.getType() == PAYLOAD_TYPE.DATA.value:
             #logging.info(f"payload received: {payload}")
             logging.info(f"Fsm state: {payload.fsm_state}")
         if hasattr(payload, 'ventilation_mode'):
@@ -50,13 +52,17 @@ class Dependant(object):
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
-    #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
+#     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.STOP.value, param=0)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     comms.writePayload(cmd)
     print('sent cmd start')
     toggle = 2
     while True:
+        # alarm testing
+        await asyncio.sleep(5)
+        cmd = CommandFormat(cmd_type=CMD_TYPE.SET_THRESHOLD_MAX.value, cmd_code=ALARM_CODES.APNEA.value, param=-10)
+        comms.writePayload(cmd)
         await asyncio.sleep(15)
         #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=200) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)

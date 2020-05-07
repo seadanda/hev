@@ -26,7 +26,7 @@ INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/toolchain-atmelavr/lib/gcc/avr/
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/tool-unity"
 
 DEFINES += "PLATFORMIO=40301"
-DEFINES += "ARDUINO_AVR_UNO"
+DEFINES += "ARDUINO_NodeMCU_32S"
 DEFINES += "F_CPU=16000000L"
 DEFINES += "ARDUINO_ARCH_AVR"
 DEFINES += "ARDUINO=10808"
@@ -37,7 +37,9 @@ OTHER_FILES += platformio.ini
 HEADERS += src/common.h \
             src/MemoryFree.h \
             src/AlarmLoop.h \
+            src/AudioVisualController.h \
             src/BreathingLoop.h \
+            src/ValvesController.h \
             src/UILoop.h \
             ../common/lib/CommsControl/CommsCommon.h \
             ../common/lib/CommsControl/CommsControl.h \
@@ -47,7 +49,9 @@ SOURCES += src/main.cpp \
             src/common.cpp \
             src/MemoryFree.cpp \
             src/AlarmLoop.cpp \
+            src/AudioVisualController.cpp \
             src/BreathingLoop.cpp \
+            src/ValvesController.cpp \
             src/UILoop.cpp \
             ../common/lib/CommsControl/CommsControl.cpp \
             ../common/lib/CommsControl/CommsFormat.cpp

@@ -14,6 +14,8 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _fast_report_timeout = 50;  //ms
     _readback_report_timeout = 300; 
     _cycle_report_timeout = 500;  // this should probably be based on fsm state
+
+    _alarm_report_timeout = 1000; // max timeout to report, actual sending timeout is timeout/priority
 }
 
 UILoop::~UILoop()
@@ -72,7 +74,6 @@ void UILoop::reportFastReadings()
 
 void UILoop::reportReadbackValues()
 {
-
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _readback_report_time > _readback_report_timeout)
     {
@@ -136,6 +137,30 @@ void UILoop::reportCycleReadings()
 
 }
 
+void UILoop::reportAlarms()
+{
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    // loop all alarms
+    for (uint8_t alarm_num = 0; alarm_num < ALARM_CODES::ALARMS_COUNT; alarm_num++) {
+        // get active ones
+        if (_alarm_loop->getActives()[alarm_num]) {
+            ALARM_TYPE type = _alarm_loop->getTypes()[alarm_num];
+            uint32_t *last_broadcast = &_alarm_loop->getLastBroadcasts()[alarm_num];
+            // refresh on timeout
+            if (tnow - (*last_broadcast) > static_cast<uint32_t>(_alarm_report_timeout / type)) {
+                _alarm.timestamp  = tnow;
+                _alarm.alarm_type = type;
+                _alarm.alarm_code = alarm_num;
+                _alarm.param      = _alarm_loop->getValues()[alarm_num];
+
+                _plSend.setPayload(PRIORITY::ALARM_ADDR, reinterpret_cast<void *>(&_alarm), sizeof(_alarm));
+                _comms->writePayload(_plSend);
+
+                *last_broadcast = tnow;
+            }
+        }
+    }
+}
 
 int UILoop::doCommand(cmd_format &cf)
 {
@@ -189,17 +214,16 @@ void UILoop::cmdSetMode(cmd_format &cf) {
 }
 
 void UILoop::cmdSetPID(cmd_format &cf){
-
     setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
 }
 
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
+    setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
 }
 
 void UILoop::cmdSetThresholdMax(cmd_format &cf) {
-    setThreshold(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
+    setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
 }
 
 void UILoop::cmdSetValve(cmd_format &cf) {
