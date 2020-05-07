@@ -46,9 +46,9 @@ class HEVClient(object):
                 if payload["type"] == "keepalive":
                     #Still alive
                     continue
-                elif payload["type"] == "broadcast":
+                elif payload["type"] == "DATA":
                     with self._lock:
-                        self._fastdata = payload["sensors"]
+                        self._fastdata = payload["DATA"]
                 elif payload["type"] == "READBACK":
                     with self._lock:
                         self._readback = payload["READBACK"]
@@ -77,7 +77,6 @@ class HEVClient(object):
     async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
-
         if reqtype == "cmd":
             payload = {
                 "type": "cmd",
@@ -85,11 +84,13 @@ class HEVClient(object):
                 "cmd": cmd,
                 "param": param
             }
-        elif reqtype == "alarm":
+        elif reqtype == "ALARM":
             payload = {
-                "type": "alarm",
+                "type": "ALARM",
                 "ack": alarm
             }
+        else:
+            raise HEVPacketError("Invalid packet type")
 
         logging.info(payload)
         packet = json.dumps(payload).encode() + b'\0'
@@ -123,7 +124,7 @@ class HEVClient(object):
 
     def ack_alarm(self, alarm: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list
-        return asyncio.run(self.send_request("alarm", alarm=alarm))
+        return asyncio.run(self.send_request("ALARM", alarm=alarm))
 
     def get_values(self) -> Dict:
         # get sensor values from db
@@ -158,6 +159,7 @@ if __name__ == "__main__":
     for i in range(20):
         values = hevclient.get_values() # returns a dict or None
         alarms = hevclient.get_alarms() # returns a list of alarms currently ongoing
+        print(values)
         if values is None:
             i = i+1 if i > 0 else 0
         else:
