@@ -404,12 +404,12 @@ class CycleFormat(PayloadFormat):
 # =======================================
 @dataclass
 class CommandFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBBI")
+    _dataStruct = Struct("<BIBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.CMD
 
     cmd_type: int = 0
     cmd_code: int = 0
-    param: int    = 0
+    param: float  = 0.0
 
     def fromByteArray(self, byteArray):
         tmp_payload_type = 0
@@ -430,12 +430,12 @@ class CommandFormat(PayloadFormat):
 # =======================================
 @dataclass
 class AlarmFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBBI")
+    _dataStruct = Struct("<BIBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.ALARM
 
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
-    param: int = 0
+    param: float = 0.0
 
     def fromByteArray(self, byteArray):
         alarm = 0

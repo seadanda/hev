@@ -206,7 +206,7 @@ void UILoop::cmdGeneral(cmd_format &cf) {
 }
 
 void UILoop::cmdSetDuration(cmd_format &cf) {
-    setDuration(static_cast<CMD_SET_DURATION>(cf.cmd_code), _breathing_loop->getDurations(), cf.param);
+    setDuration(static_cast<CMD_SET_DURATION>(cf.cmd_code), _breathing_loop->getDurations(), static_cast<uint32_t>(cf.param));
 }
 
 void UILoop::cmdSetMode(cmd_format &cf) {
@@ -220,11 +220,11 @@ void UILoop::cmdSetPID(cmd_format &cf){
 
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
-    setAlarm<uint32_t>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
+    setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
 }
 
 void UILoop::cmdSetThresholdMax(cmd_format &cf) {
-    setAlarm<uint32_t>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
+    setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
 }
 
 void UILoop::cmdSetValve(cmd_format &cf) {

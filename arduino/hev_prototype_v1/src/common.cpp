@@ -1,6 +1,6 @@
 #include "common.h"
 
-void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t &value) {
+void setDuration(CMD_SET_DURATION cmd, states_durations &durations, uint32_t value) {
     switch (cmd) {
         case CMD_SET_DURATION::CALIBRATION:
             durations.calibration     = value;

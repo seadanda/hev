@@ -21,9 +21,9 @@ public:
     void fireAlarms();
     void updateValues(readings<int16_t> fast_data);
 
-    uint32_t *getValues       () { return _alarms.values        ; }
-    uint32_t *getThresholdsMin() { return _alarms.thresholds_min; }
-    uint32_t *getThresholdsMax() { return _alarms.thresholds_max; }
+    float *getValues       () { return _alarms.values        ; }
+    float *getThresholdsMin() { return _alarms.thresholds_min; }
+    float *getThresholdsMax() { return _alarms.thresholds_max; }
 
     uint32_t *getLastBroadcasts() { return _alarms.last_broadcasts; }
 

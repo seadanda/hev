@@ -4,7 +4,7 @@ AlarmLoop::AlarmLoop()
 {
     // make sure starting value is between thresholds
     for (uint8_t alarm_num = 0; alarm_num < ALARM_CODES::ALARMS_COUNT; alarm_num++) {
-        _alarms.values[alarm_num] = static_cast<uint32_t>((_alarms.thresholds_max[alarm_num] + _alarms.thresholds_min[alarm_num]) / 2);
+        _alarms.values[alarm_num] = (_alarms.thresholds_max[alarm_num] + _alarms.thresholds_min[alarm_num]) / 2;
     }
 }
 
@@ -28,16 +28,16 @@ ALARM_TYPE AlarmLoop::checkTresholds() {
 void AlarmLoop::fireAlarms() {
     switch (checkTresholds()) {
         case ALARM_TYPE::PRIORITY_LOW:
-            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_ON , AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
+            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_ON , AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   );
             break;
         case ALARM_TYPE::PRIORITY_MEDIUM:
-            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   , AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
+            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   , AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   );
             break;
         case ALARM_TYPE::PRIORITY_HIGH:
-            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   , AV_STYLE::PERM_OFF);
+            _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   , AV_STYLE::OSCIL   );
             break;
         default:
-            _av_controller.setAVs(AV_STYLE::PERM_ON, AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
+            _av_controller.setAVs(AV_STYLE::PERM_ON , AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF, AV_STYLE::PERM_OFF);
             break;
     }
 
@@ -45,5 +45,5 @@ void AlarmLoop::fireAlarms() {
 }
 
 void AlarmLoop::updateValues(readings<int16_t> fast_data) {
-    _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = fast_data.pressure_patient;
+    _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = static_cast<float>(fast_data.pressure_patient);
 }
