@@ -408,7 +408,7 @@ class CycleFormat(PayloadFormat):
 # =======================================
 @dataclass
 class IVTFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBfffffffffff")
+    _dataStruct = Struct("<BIBffffffffffbbbbbf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.IVT
 
     inhale_current : float = 0.0
@@ -421,6 +421,11 @@ class IVTFormat(PayloadFormat):
     purge_voltage  : float = 0.0
     air_in_voltage : float = 0.0
     o2_in_voltage  : float = 0.0
+    inhale_i2caddr : int = 0.0
+    exhale_i2caddr : int = 0.0
+    purge_i2caddr  : int = 0.0
+    air_in_i2caddr : int = 0.0
+    o2_in_i2caddr  : int = 0.0
     system_temp    : float = 0.0
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -441,6 +446,11 @@ class IVTFormat(PayloadFormat):
         self.purge_voltage  ,
         self.air_in_voltage ,
         self.o2_in_voltage  ,
+        self.inhale_i2caddr ,
+        self.exhale_i2caddr ,
+        self.purge_i2caddr  ,
+        self.air_in_i2caddr ,
+        self.o2_in_i2caddr  ,
         self.system_temp    
         ) = self._dataStruct.unpack(byteArray) 
 

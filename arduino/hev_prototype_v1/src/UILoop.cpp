@@ -180,6 +180,11 @@ void UILoop::reportIVTReadings()
         _ivt_data.purge_current = iv->purge_current;
         _ivt_data.inhale_current = iv->inhale_current;
         _ivt_data.exhale_current = iv->exhale_current;
+        _ivt_data.air_in_i2caddr = iv->air_in_i2caddr;
+        _ivt_data.o2_in_i2caddr = iv->o2_in_i2caddr;
+        _ivt_data.purge_i2caddr = iv->purge_i2caddr;
+        _ivt_data.inhale_i2caddr = iv->inhale_i2caddr;
+        _ivt_data.exhale_i2caddr = iv->exhale_i2caddr;
         _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_ivt_data), sizeof(_ivt_data));
         _comms->writePayload(_plSend);
         _ivt_report_time = tnow;

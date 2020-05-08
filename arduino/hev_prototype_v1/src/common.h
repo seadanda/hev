@@ -221,7 +221,7 @@ struct readback_data_format {
 
 #pragma pack(1)
 struct ivt_data_format {
-// readback values
+// IVT  values
     uint8_t  version                  = HEV_FORMAT_VERSION;
     uint32_t timestamp                = 0;
     uint8_t  payload_type             = PAYLOAD_TYPE::IVT;
@@ -235,6 +235,11 @@ struct ivt_data_format {
     float purge_voltage  = 0.0;
     float air_in_voltage = 0.0;
     float o2_in_voltage  = 0.0;
+    uint8_t inhale_i2caddr = 0.0;
+    uint8_t exhale_i2caddr = 0.0;
+    uint8_t purge_i2caddr  = 0.0;
+    uint8_t air_in_i2caddr = 0.0;
+    uint8_t o2_in_i2caddr  = 0.0;
 
     float system_temp    = 0.0;
 
@@ -478,6 +483,11 @@ template <typename T> struct IV_readings{
     T purge_voltage  = 0;
     T air_in_voltage = 0;
     T o2_in_voltage  = 0;
+    uint8_t inhale_i2caddr = 0;
+    uint8_t exhale_i2caddr = 0;
+    uint8_t purge_i2caddr  = 0;
+    uint8_t air_in_i2caddr = 0;
+    uint8_t o2_in_i2caddr  = 0;
 };
 
 struct valve_params{

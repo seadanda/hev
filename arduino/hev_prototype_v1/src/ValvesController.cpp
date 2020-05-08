@@ -35,7 +35,6 @@ ValvesController::ValvesController()
     _purge.state = VALVE_STATE::CLOSED;
     _purge.voltage = 0;
     _purge.current = 0;
-    _purge.i2caddr = 0x40; 
     _purge.device_number = -1;
 
 #ifdef CHIP_ESP32
@@ -258,6 +257,11 @@ IV_readings<float>* ValvesController::getIVReadings()
     _iv_readings.purge_voltage = _purge.voltage;
     _iv_readings.o2_in_voltage = _o2_in.voltage;
     _iv_readings.air_in_voltage = _air_in.voltage;
+    _iv_readings.inhale_i2caddr = _inhale.i2caddr;
+    _iv_readings.exhale_i2caddr = _exhale.i2caddr;
+    _iv_readings.purge_i2caddr = _purge.i2caddr;
+    _iv_readings.o2_in_i2caddr = _o2_in.i2caddr;
+    _iv_readings.air_in_i2caddr = _air_in.i2caddr;
 
     return &_iv_readings;
 }

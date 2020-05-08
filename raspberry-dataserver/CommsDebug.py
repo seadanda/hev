@@ -25,6 +25,8 @@ def getTTYPort():
     return port_device
 
 
+fsm=''
+
 class Dependant(object):
     def __init__(self, lli):
         self._llipacket = None
@@ -32,15 +34,17 @@ class Dependant(object):
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
+        global fsm
         #logging.info(f"payload received: {payload}")
-        if payload.getType() == PAYLOAD_TYPE.ALARM.value:
-            logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
+        #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
+        #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
-        #if payload.getType() == 1:
-            logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload}")
             #logging.info(f"Fsm state: {payload.fsm_state}")
-        if payload.getType() == 8:
-            logging.info(f"IV: {payload.air_in_current:.3f} {payload.o2_in_current:.3f} {payload.purge_current:.3f} {payload.inhale_current:.3f} {payload.exhale_current:.3f} ")
+            fsm = payload.fsm_state
+        if payload.getType() == PAYLOAD_TYPE.IVT.value:
+            logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
+            #logging.info(f"IV: air {payload.air_in_i2caddr:x} o2 {payload.o2_in_i2caddr:x} purge {payload.purge_i2caddr:x} inhale {payload.inhale_i2caddr:x} exhale {payload.exhale_i2caddr:x} fsm {fsm} ")
         #logging.info(f"payload received: {payload}")
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
