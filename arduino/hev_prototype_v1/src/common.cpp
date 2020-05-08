@@ -1,6 +1,6 @@
 #include "common.h"
 
-void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float &value) {
+void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value) {
     switch (cmd) {
         case CMD_SET_DURATION::CALIBRATION:
             durations.calibration     = static_cast<uint32_t>(value);
@@ -72,7 +72,7 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value)
     }
 }
 
-void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value)
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
 {
     switch(cmd){
         case CMD_SET_PID::KP:
@@ -114,7 +114,7 @@ int16_t adcToMillibar(int16_t adc, int16_t offset)
     //return static_cast<int16_t>(adc);
 } 
 
-float adcToMillibarFloat(int16_t adc, int16_t offset)
+float adcToMillibarFloat(float adc, float offset = 0)
 {
     // TODO -  a proper calibration
     // rough guess - ADP51A11 spec sheet -Panasonic ADP5 pressure sensor
@@ -128,6 +128,12 @@ float adcToMillibarFloat(int16_t adc, int16_t offset)
     float m = (max_p - min_p) / (max_adc - min_adc );
     float c = max_p - m * max_adc;
     float mbar = m*(adc-offset) + c; 
+
+    float PCB_Gain		= 2.		; // real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
+    float Sensor_Gain		= 400./4000.	; // the sensor gain is 400 mbar / 4000 mVolts
+    float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
+    
+    mbar = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); // same calculation as in the Labview Code  
 
     return static_cast<float>(mbar);
     //return static_cast<int16_t>(adc);

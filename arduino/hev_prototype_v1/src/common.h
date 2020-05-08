@@ -18,7 +18,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA6
+#define HEV_FORMAT_VERSION 0xA7
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
@@ -33,8 +33,8 @@ enum PAYLOAD_TYPE : uint8_t {
     THRESHOLDS   = 4,
     CMD          = 5,
     ALARM        = 6,
+    DEBUG        = 7,
     IVT          = 8
-
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -281,6 +281,24 @@ struct cycle_data_format {
 };
 #pragma pack()
 
+#pragma pack(1)
+struct debug_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::DEBUG;
+
+    float kp = 0.0;
+    float ki = 0.0;
+    float kd = 0.0;
+    float target_pressure  = 0.0; //
+    float process_pressure = 0.0; 
+    float output           = 0.0; 
+    float proportional     = 0.0; 
+    float integral         = 0.0; //
+    float derivative       = 0.0;
+};
+#pragma pack()
 
 //enum VALVE_STATES : bool {
 //    V_OPEN = HIGH,
@@ -502,10 +520,10 @@ struct valve_params{
 };
 
 //void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
-void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float &value);
+void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float value);
 void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
-void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value);
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
-float adcToMillibarFloat(int16_t adc, int16_t offset = 0);
+float adcToMillibarFloat(float adc, float offset = 0);
 
 #endif
