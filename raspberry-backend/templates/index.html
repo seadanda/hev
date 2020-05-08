@@ -314,6 +314,7 @@ class input_controller_ie extends input_controller{
 	    var ratio = parseFloat(val);
 	    if( ratio < 1 ){
 		var invRatio = (1/ratio);
+		invRatio.toFixed(1); // in case of 0.75 -> 1.3333333333333333333:1 formating problems
 		this.element.value = invRatio.toString() + ":1";
 	    }else{
 		this.element.value = "1:"+val;
