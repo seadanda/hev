@@ -144,7 +144,7 @@
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">I:E</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading input-editable" id = "ie_ratio_input" value=1.3 readOnly disabled onclick="show_easy_numpad(this,ie_ratio_controller)"> </div>
+              <div class="card-body px-1 py-1 tiny"><input class = "input-reading input-editable" id = "ie_ratio_input" value=1:1.3 readOnly disabled onclick="format_ie(this,ie_ratio_controller)"> </div> 
 	    </div>
 	</div>
 	<!-- end row 4 -->
@@ -261,7 +261,6 @@ p_plateau_controller = new gauge_controller("p_plateau_gauge");
 var peep_input = document.getElementById("PEEP_input");
 peep_controller = new input_controller("peep", peep_input);
 var ie_ratio_input = document.getElementById("ie_ratio_input");
-ie_ratio_controller = new input_controller("ie_ratio", ie_ratio_input);
 
 /*
 var gauge_fio_container = document.getElementById("gauge-fio-container");
@@ -285,6 +284,51 @@ Object.defineProperty(gauge_fio_container, 'getValue', {
   });
 
 </script>
+
+
+<script>
+function format_ie(thisElement,ie_cont)
+{
+    if (thisElement.disabled) return;
+    var value = ie_cont.getValue()
+    var posColon = value.search(":");
+    console.info("format_ie value",value,"posColon",posColon);
+    var ratio = -1.;
+    if ( posColon != -1 ) {
+	// set back to just a number 1.2:1 or 1:1.5 to 1/1.2 or 1.5/1 repspectively
+	ratio = parseFloat(value.substr(posColon+1))/parseFloat(value.substr(0,posColon));
+    }else{
+	ratio = parseFloat(value);
+    }
+    ie_cont.setValueNoFormat(ratio.toString());
+    show_easy_numpad(thisElement,ie_ratio_controller);   
+}
+
+class input_controller_ie extends input_controller{
+    setValue(val){
+	var posColon = val.search(":");
+	if( posColon != -1 ) {
+	    // already have colon...
+	    this.element.value = val;
+	}else{
+	    var ratio = parseFloat(val);
+	    if( ratio < 1 ){
+		var invRatio = (1/ratio);
+		this.element.value = invRatio.toString() + ":1";
+	    }else{
+		this.element.value = "1:"+val;
+	    }
+	}
+    }
+    setValueNoFormat(val){
+	this.element.value = val;
+    }
+}
+
+var ie_ratio_controller = new input_controller_ie("ie_ratio", ie_ratio_input);
+
+</script>
+
 
 
 {% endblock %}
