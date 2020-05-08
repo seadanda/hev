@@ -39,13 +39,12 @@ class Dependant(object):
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
-        logging.info(f"Type: {payload.getType()}")
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            #logging.info(f"payload received: {payload}")
-            logging.info(f"Fsm state: {payload.fsm_state}")
+            logging.info(f"payload received: {payload}")
+            #logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
-        if payload.getType() == PAYLOAD_TYPE.IVT.value:
-            logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
+        #if payload.getType() == PAYLOAD_TYPE.IVT.value:
+        #    logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
         #logging.info(f"payload received: {payload}")
         #if hasattr(payload, 'inhale_exhale_ratio'):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
@@ -66,16 +65,14 @@ async def commsDebug():
 
     await asyncio.sleep(5)
     await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.0033) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.01) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0022) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0004) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
-    await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     comms.writePayload(cmd)
@@ -83,15 +80,15 @@ async def commsDebug():
     toggle = 2
     while True:
         # alarm testing
-        await asyncio.sleep(5)
-        cmd = CommandFormat(cmd_type=CMD_TYPE.SET_THRESHOLD_MAX.value, cmd_code=ALARM_CODES.APNEA.value, param=-10)
-        comms.writePayload(cmd)
+        #await asyncio.sleep(5)
+        #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_THRESHOLD_MAX.value, cmd_code=ALARM_CODES.APNEA.value, param=-10)
+        #comms.writePayload(cmd)
         await asyncio.sleep(15)
         #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=200) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
-        cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1010)
-        comms.writePayload(cmd)
+        #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1010)
+        #comms.writePayload(cmd)
         #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
