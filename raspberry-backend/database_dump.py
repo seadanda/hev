@@ -67,8 +67,10 @@ def printRows(dataTable):
     #
     # header
     #
-    header = "#  Date    Time   Temp.  Pres. "
-    for col in tableInfo[4:]:
+    #header = "#  Date    Time   Temp.  Pres. "
+    header = "#  "
+    for col in tableInfo[0:]:
+        print(col)
         colNameFull = col[1]
         colNameShort = col[1]
         if(len(colNameFull)>8):
@@ -85,28 +87,36 @@ def printRows(dataTable):
                 colNameShort = colNameFull[:2] # first two char + 2 after each _
                 for p in underScorePos[:3]: # first three only if more
                     colNameShort += colNameFull[p+1].upper()+colNameFull[p+2]
-        header += " {:>8s}".format(colNameShort)
-    header += " : Alarm state"
+        header += "  {:>8s}".format(colNameShort)
+    #header += " : Alarm state"
     #
     # Loop over rows passed and print
     #
     nPrint = 0
     for r in rows:
-        if( nPrint%50 == 0 ): print(header) # header every 50 rows
+        if( nPrint%50 == 0 ): print("\n", header, "\n") # header every 50 rows
         nPrint += 1
         otherTxt = ""
-        for i in range(len(r[4:])-1):
-            otherTxt += fmtOther[i].format(r[4+i])
+        for el in range(len(r)):
+            if isinstance(r[el], float) or isinstance(r[el], int):
+                otherTxt += f'{r[el]:8.2f}' 
+            else: # isinstance(r[el], str):
+                otherTxt += f'  { r[el] }'
+
+
+                
+            #otherTxt += f'{i:8.2f}' if isinstance(i, float) or isinstance(i, int) else f'  {i}  '
+            #print(r[i])
+            #otherTxt += fmtOther[i].format(r[4+i])
+        #print(otherTxt)
         rowDateTime = (epoch + timedelta(seconds=r[0]/1000))
         print(fmt.format(yyyy=rowDateTime.year,
                          mm=rowDateTime.month,
                          dd=rowDateTime.day,
                          HH=rowDateTime.hour,
                          MM=rowDateTime.minute,
-                         temperature=r[2],
-                         pressure=r[3],
                          other=otherTxt,
-                         alarm=r[1]))
+                         alarm=r[0]))
                          
 
 
