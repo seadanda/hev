@@ -32,9 +32,22 @@ def getList(dict):
 data_format = getList(DataFormat().getDict())    
 
 class ArduinoClient(HEVClient):
-    def extra_setup(self):
+    def __init__(self):
+        super().__init__(polling=False)
         self.conn = None
+        self._polling = True
+
+    def start_client(self):
+        """runs in other thread - works as long as super goes last and nothing
+        else is blocking. If something more than a one-shot process is needed
+        then use async"""
         self.database_setup()
+        super().start_client()
+
+    def get_updates(self, payload):
+        """callback from the polling function, payload is data from socket"""
+        self.monitoring()
+
     def check_table(self,tableName):
         c = self.conn.cursor()    			
         #get the count of tables with the name
@@ -139,9 +152,6 @@ class ArduinoClient(HEVClient):
             if(backupCon):
                 backupCon.close()
 
-    def get_updates(self):
-        self.monitoring()
-        return True
     def number_rows(self):
         c = self.conn.cursor()    			
         #get the count of tables with the name
