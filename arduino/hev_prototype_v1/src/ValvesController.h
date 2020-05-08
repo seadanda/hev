@@ -32,7 +32,7 @@ public:
                    uint8_t vexhale, bool vpurge);
     void getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
                    uint8_t &vexhale, bool &vpurge);
-    int calcValveDutyCycle(int pwm_resolution, float frac_open);
+    uint32_t calcValveDutyCycle(uint32_t pwm_resolution, float frac_open);
     uint8_t getValveInhalePercent();
     uint8_t getValveExhalePercent();
     uint8_t valveAirInEnabled();

@@ -41,5 +41,5 @@ const int pin_spare_2       = 23; // I2C SCL
 // PWM channels
 const int pwm_chan_inhale = 0;
 const int pwm_chan_exhale = 1;
-const int pwm_resolution = 8; // 8 bit resolution; up to 16 possible
+const int pwm_resolution = 16; // 8 bit resolution; up to 16 possible
 const int pwm_frequency  = 900; // frequency in Hz

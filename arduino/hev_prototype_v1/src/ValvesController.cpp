@@ -46,23 +46,23 @@ ValvesController::ValvesController()
 ValvesController::~ValvesController()
 { ; }
 
-int ValvesController::calcValveDutyCycle(int pwm_resolution, float frac_open)
+uint32_t ValvesController::calcValveDutyCycle(uint32_t pwm_resolution, float frac_open)
 {
-    // Here the duty cycle is an integer in the range of the PWM resolution
+    // Here the duty cycle is an uint32_teger in the range of the PWM resolution
     // - for 8 bit, we have range 0-255
     // => duty_cycle = frac_open * 255
     // there's a hard limit set by MAX_VALVE_FRAC_OPEN
-    int range_upper_val = pow(2, pwm_resolution) - 1;
+    uint32_t range_upper_val = pow(2, pwm_resolution) - 1;
     if (frac_open > MAX_VALVE_FRAC_OPEN) 
-        return (int)(range_upper_val * MAX_VALVE_FRAC_OPEN);
-    return (int)(range_upper_val  * frac_open);
+        return (uint32_t)(range_upper_val * MAX_VALVE_FRAC_OPEN);
+    return (uint32_t)(range_upper_val  * frac_open);
 }
 
 void ValvesController::setPWMValve(int pin, float frac_open)
 {
 
 #ifdef CHIP_ESP32
-    int duty_cycle = calcValveDutyCycle(pwm_resolution, frac_open);
+    uint32_t duty_cycle = calcValveDutyCycle(pwm_resolution, frac_open);
     int chan = _pin_to_chan[pin];
     //if (pin == pin_valve_exhale)
     //    chan = pwm_chan_exhale;
