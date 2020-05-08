@@ -329,7 +329,7 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, uint32_t valu
 void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, uint32_t value);
 void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
-float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0);
+float adcToMillibarFloat(float adc, float offset = 0);
 
 // used for calculating averages, template due to different size for sums and averages
 template <typename T> struct readings{

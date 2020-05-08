@@ -25,8 +25,8 @@ public:
     bool getRunning();
     void updateReadings();
     void updateRawReadings();
-    readings<int16_t> getReadingAverages();
-    readings<int16_t> getRawReadings();
+    readings<float> getReadingAverages();
+    readings<float> getRawReadings();
     float getRespiratoryRate();
     float getIERatio();
     float getMinuteVolume();
@@ -88,19 +88,19 @@ private:
     uint32_t _calib_time;
     uint32_t _calib_timeout;
     bool _calibrated;
-    readings<int32_t> _calib_sums;
-    readings<int16_t> _calib_avgs;
+    readings<float> _calib_sums;
+    readings<float> _calib_avgs;
 
     // timeouts
     uint32_t calculateDurationExhale();
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
-    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 100, 200, 1000, 200, 600, 400};
+    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1000, 0, 600, 1400};
 
     // readings
     void resetReadingSums();
-    readings<int32_t> _readings_sums; // 32 bit due to possible analog read overflow
-    readings<int16_t> _readings_avgs;
-    readings<int16_t> _readings_raw;
+    readings<float> _readings_sums; // 32 bit due to possible analog read overflow
+    readings<float> _readings_avgs;
+    readings<float> _readings_raw;
     bool     _readings_reset;
     uint32_t _readings_N;
     uint32_t _readings_time;
@@ -126,6 +126,7 @@ private:
 
     // PID vars
 
+    float _pid_process_pressure_derivative; 
     float _pid_integral; 
     float _pid_set_point; 
 };

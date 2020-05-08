@@ -21,7 +21,7 @@ class LabPlots(QtWidgets.QMainWindow):
     def __init__(self, dark=False, throttle=20, *args, **kwargs):
         super(LabPlots, self).__init__(*args, **kwargs)
 
-        self.history_length = 5000
+        self.history_length = 500
         self.throttle = throttle
 
         self.graphWidget = pg.PlotWidget()
@@ -51,8 +51,8 @@ class LabPlots(QtWidgets.QMainWindow):
         #Add grid
         self.graphWidget.showGrid(x=True, y=True)
         #Set Range
-        self.graphWidget.setXRange(self.history_length * (-1), 0, padding=0)
-        self.graphWidget.setYRange(-50, 300, padding=0)
+        self.graphWidget.setXRange(self.history_length * (-1) * 0.1, 0, padding=0)
+        self.graphWidget.setYRange(0, 40, padding=0)
 
         self.line1 = self.plot(self.timestamp, self.pressure_inhale, "Buffer", "F00")
         self.line2 = self.plot(self.timestamp, self.pressure_buffer, "Inhale", "0F0")
@@ -131,8 +131,23 @@ def getTTYPort():
 async def commsDebug(comms):
     #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
+
+    #Defining the PID parameters, derivative not implemented yet
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.01) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+
+    #Start command
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     await asyncio.sleep(1)
+
     comms.writePayload(cmd)
     print('sent cmd start')
     toggle = 2

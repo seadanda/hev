@@ -66,11 +66,11 @@ async def commsDebug():
     print('sent cmd start')
     toggle = 2
     while True:
-        await asyncio.sleep(10)
+        await asyncio.sleep(120)
         #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
-        await asyncio.sleep(10)
+        await asyncio.sleep(120)
         cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=toggle, param=0)
         if toggle == 2 :
             toggle = 1

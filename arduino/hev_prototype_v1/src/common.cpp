@@ -192,7 +192,7 @@ int16_t adcToMillibar(int16_t adc, int16_t offset = 0)
     //return static_cast<int16_t>(adc);
 } 
 
-float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0)
+float adcToMillibarFloat(float adc, float offset = 0)
 {
     // TODO -  a proper calibration
     // rough guess - ADP51A11 spec sheet -Panasonic ADP5 pressure sensor
@@ -213,6 +213,6 @@ float_t adcToMillibarFloat(int16_t adc, int16_t offset = 0)
     
     mbar = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); // same calculation as in the Labview Code  
 
-    return static_cast<float_t>(mbar);
+    return static_cast<float>(mbar);
     //return static_cast<int16_t>(adc);
 } 
