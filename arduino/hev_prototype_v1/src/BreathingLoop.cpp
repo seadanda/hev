@@ -33,9 +33,11 @@ BreathingLoop::BreathingLoop()
     _volume = 0;
     _airway_pressure = 0;
 
-    _pid.Kp = 0.1; // proportional factor
-    _pid.Ki = 0;   // integral factor
+    _pid.Kp = 0.0007; // proportional factor
+    _pid.Ki = 0.000007;   // integral factor
     _pid.Kd = 0;   // derivative factor
+
+    _pid_integral = 0.;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -59,16 +61,16 @@ void BreathingLoop::updateReadings()
 
         _readings_sums.timestamp                = tnow;
 #ifdef CHIP_ESP32
-        _readings_sums.pressure_air_supply      += static_cast<uint32_t>(analogRead(pin_pressure_air_supply)    );
-        _readings_sums.pressure_o2_supply       += static_cast<uint32_t>(analogRead(pin_pressure_o2_supply)     );
+        _readings_sums.pressure_air_supply      += static_cast<float>(analogRead(pin_pressure_air_supply)    );
+        _readings_sums.pressure_o2_supply       += static_cast<float>(analogRead(pin_pressure_o2_supply)     );
 #endif
-        _readings_sums.pressure_air_regulated   += static_cast<uint32_t>(analogRead(pin_pressure_air_regulated) );
-        _readings_sums.pressure_buffer          += static_cast<uint32_t>(analogRead(pin_pressure_buffer)        );
-        _readings_sums.pressure_inhale          += static_cast<uint32_t>(analogRead(pin_pressure_inhale)        );
-        _readings_sums.pressure_patient         += static_cast<uint32_t>(analogRead(pin_pressure_patient)       );
-        _readings_sums.temperature_buffer       += static_cast<uint32_t>(analogRead(pin_temperature_buffer)     );
-        _readings_sums.pressure_o2_regulated    += static_cast<uint32_t>(analogRead(pin_pressure_o2_regulated)  );
-        _readings_sums.pressure_diff_patient    += static_cast<uint32_t>(analogRead(pin_pressure_diff_patient)  );
+        _readings_sums.pressure_air_regulated   += static_cast<float>(analogRead(pin_pressure_air_regulated) );
+        _readings_sums.pressure_buffer          += static_cast<float>(analogRead(pin_pressure_buffer)        );
+        _readings_sums.pressure_inhale          += static_cast<float>(analogRead(pin_pressure_inhale)        );
+        _readings_sums.pressure_patient         += static_cast<float>(analogRead(pin_pressure_patient)       );
+        _readings_sums.temperature_buffer       += static_cast<float>(analogRead(pin_temperature_buffer)     );
+        _readings_sums.pressure_o2_regulated    += static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
+        _readings_sums.pressure_diff_patient    += static_cast<float>(analogRead(pin_pressure_diff_patient)  );
     }
 
     // to make sure the readings correspond only to the same fsm mode
@@ -76,15 +78,15 @@ void BreathingLoop::updateReadings()
         resetReadingSums();
     } else if (tnow - _readings_avgs_time > _readings_avgs_timeout) {
         _readings_avgs.timestamp                = static_cast<uint32_t>(_readings_sums.timestamp);
-        _readings_avgs.pressure_air_supply      = adcToMillibar((_readings_sums.pressure_air_supply      / _readings_N));
-        _readings_avgs.pressure_air_regulated   = adcToMillibar((_readings_sums.pressure_air_regulated   / _readings_N));
-        _readings_avgs.pressure_buffer          = adcToMillibar((_readings_sums.pressure_buffer          / _readings_N), _calib_avgs.pressure_buffer       );
-        _readings_avgs.pressure_inhale          = adcToMillibar((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale       );
-        _readings_avgs.pressure_patient         = adcToMillibar((_readings_sums.pressure_patient         / _readings_N), _calib_avgs.pressure_patient      );
-        _readings_avgs.temperature_buffer       = adcToMillibar((_readings_sums.temperature_buffer       / _readings_N), _calib_avgs.temperature_buffer    );
-#ifdef HEV_FULL_SYSTEM                                                                                                                                     
-        _readings_avgs.pressure_o2_supply       = adcToMillibar((_readings_sums.pressure_o2_supply       / _readings_N));
-        _readings_avgs.pressure_o2_regulated    = adcToMillibar((_readings_sums.pressure_o2_regulated    / _readings_N));
+        _readings_avgs.pressure_air_supply      = adcToMillibarFloat((_readings_sums.pressure_air_supply      / _readings_N));
+        _readings_avgs.pressure_air_regulated   = adcToMillibarFloat((_readings_sums.pressure_air_regulated   / _readings_N));
+        _readings_avgs.pressure_buffer          = adcToMillibarFloat((_readings_sums.pressure_buffer          / _readings_N), _calib_avgs.pressure_buffer       );
+        _readings_avgs.pressure_inhale          = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale       );
+        _readings_avgs.pressure_patient         = adcToMillibarFloat((_readings_sums.pressure_patient         / _readings_N), _calib_avgs.pressure_patient      );
+        _readings_avgs.temperature_buffer       = adcToMillibarFloat((_readings_sums.temperature_buffer       / _readings_N), _calib_avgs.temperature_buffer    );
+#ifdef HEV_FULL_SYSTEM                                         
+        _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
+        _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
         _readings_avgs.pressure_diff_patient    = (_readings_sums.pressure_diff_patient    / _readings_N) ;
 #endif
         
@@ -96,17 +98,17 @@ void BreathingLoop::updateReadings()
 
                 float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
-                float output = 0.;
-
                 doPID(10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
-                _valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
+		//_volume = _valve_inhale_PID_percentage;
+
+		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
                 //Lazy approach
                 //airway_pressure = Proportional
                 //volume = Integral
                 //flow = Derivative
 
-                //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, _valve_inhale_PID_percentage*VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-            
+                _valves_controller.setPIDoutput(_valve_inhale_PID_percentage);
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
 
         }
 
@@ -150,13 +152,13 @@ VENTILATION_MODE BreathingLoop::getVentilationMode()
 }
 
 
-readings<int16_t> BreathingLoop::getReadingAverages()
+readings<float> BreathingLoop::getReadingAverages()
 {
     return _readings_avgs;
 
 }
 
-readings<int16_t> BreathingLoop::getRawReadings()
+readings<float> BreathingLoop::getRawReadings()
 {
     return _readings_raw;
 
@@ -349,7 +351,7 @@ void BreathingLoop::FSM_breathCycle()
             } else {
                 _fsm_timeout = 1000;
             }
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             initCalib();
             break;
         case BL_STATES::CALIBRATION : 
@@ -397,6 +399,8 @@ void BreathingLoop::FSM_breathCycle()
                 default:
                     _fsm_timeout = _states_durations.buff_pre_inhale;
             }
+
+	    _pid_integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
         
             break;
         case BL_STATES::INHALE:
@@ -406,7 +410,7 @@ void BreathingLoop::FSM_breathCycle()
             // TODO : spontaneous trigger
             // if p_inhale > max thresh pressure(def: 50?)
             // go to exhale fill
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);//Comment this line for the PID control during inhale
             _fsm_timeout = _states_durations.inhale;
             
             break;
@@ -440,7 +444,7 @@ void BreathingLoop::FSM_breathCycle()
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = 1000;
             break;
     }
@@ -487,16 +491,16 @@ void BreathingLoop::calibrate()
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _calib_time > _calib_timeout ) {
         _calib_N++;
-        _calib_sums.pressure_air_regulated += static_cast<uint32_t>(analogRead(pin_pressure_air_regulated));
-        _calib_avgs.pressure_air_regulated  = static_cast<float   >(_calib_sums.pressure_air_regulated/ _calib_N);
-        _calib_sums.pressure_o2_regulated += static_cast<uint32_t>(analogRead(pin_pressure_o2_regulated));
-        _calib_avgs.pressure_o2_regulated  = static_cast<float   >(_calib_sums.pressure_o2_regulated/ _calib_N);
-        _calib_sums.pressure_buffer += static_cast<uint32_t>(analogRead(pin_pressure_buffer));
-        _calib_avgs.pressure_buffer  = static_cast<float   >(_calib_sums.pressure_buffer/ _calib_N);
-        _calib_sums.pressure_inhale += static_cast<uint32_t>(analogRead(pin_pressure_inhale));
-        _calib_avgs.pressure_inhale  = static_cast<float   >(_calib_sums.pressure_inhale/ _calib_N);
-        _calib_sums.pressure_patient += static_cast<uint32_t>(analogRead(pin_pressure_patient));
-        _calib_avgs.pressure_patient = static_cast<float   >(_calib_sums.pressure_patient/ _calib_N);
+        _calib_sums.pressure_air_regulated += static_cast<float>(analogRead(pin_pressure_air_regulated));
+        _calib_avgs.pressure_air_regulated  = static_cast<float>(_calib_sums.pressure_air_regulated/ _calib_N);
+        _calib_sums.pressure_o2_regulated += static_cast<float>(analogRead(pin_pressure_o2_regulated));
+        _calib_avgs.pressure_o2_regulated  = static_cast<float>(_calib_sums.pressure_o2_regulated/ _calib_N);
+        _calib_sums.pressure_buffer += static_cast<float>(analogRead(pin_pressure_buffer));
+        _calib_avgs.pressure_buffer  = static_cast<float>(_calib_sums.pressure_buffer/ _calib_N);
+        _calib_sums.pressure_inhale += static_cast<float>(analogRead(pin_pressure_inhale));
+        _calib_avgs.pressure_inhale  = static_cast<float>(_calib_sums.pressure_inhale/ _calib_N);
+        _calib_sums.pressure_patient += static_cast<float>(analogRead(pin_pressure_patient));
+        _calib_avgs.pressure_patient = static_cast<float>(_calib_sums.pressure_patient/ _calib_N);
 
 	_calib_time = tnow;
 	_calib_timeout = 10;
@@ -564,11 +568,21 @@ void BreathingLoop::doPID(float target_pressure, float process_pressure, float &
 
     float error = target_pressure - process_pressure;
 
-    proportional = _pid.Kp*error;
+    proportional       = _pid.Kp*error;
+    _pid_integral     += _pid.Ki*error;
+
+    integral = _pid_integral;
 
     //TODO integral and derivative
+    
+    float minimum_open_frac = 0.54; //Minimum opening to avoid vibrations on the valve control
+    float maximum_open_frac = 0.64; //Maximum opening for the PID control
 
-    output = proportional;
+    output = proportional + integral + minimum_open_frac;
+
+    if(output > maximum_open_frac) output = maximum_open_frac;
+    if(output < minimum_open_frac) output = minimum_open_frac;
+
 }
 
 pid_variables& BreathingLoop::getPIDVariables()

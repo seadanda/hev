@@ -44,22 +44,27 @@ ValvesController::ValvesController()
 
     _valve_params.inhale_duty_cycle = 0;
     _valve_params.inhale_open_max = MAX_VALVE_FRAC_OPEN;
-    _valve_params.inhale_open_min = 0;
+    _valve_params.inhale_open_min = 0.54;
     _valve_params.valve_air_in_enable       = 1;
     _valve_params.valve_o2_in_enable        = 1;
     _valve_params.valve_purge_enable        = 1;
     _valve_params.inhale_trigger_enable     = 0;   // params - associated val of peak flow
     _valve_params.exhale_trigger_enable     = 0;
+    _PID_output                = 0;
+
+    _INA_found = false;
 }
 
 ValvesController::~ValvesController()
 { ; }
 
+bool ValvesController::INAFound(){ return _INA_found; }
+
 void ValvesController::setupINA(INA_Class *ina, uint8_t num_devices)
 {
     _INA = ina;
     for(int i=0; i<num_devices; i++){
-
+        _INA_found = true; 
         uint8_t addr = ina->getDeviceAddress(i);
         switch(addr){
             case 0x40 :   // shared inhale and exhale
@@ -81,23 +86,23 @@ void ValvesController::setupINA(INA_Class *ina, uint8_t num_devices)
 
 }
 
-int ValvesController::calcValveDutyCycle(int pwm_resolution, float frac_open)
+uint32_t ValvesController::calcValveDutyCycle(uint32_t pwm_resolution, float frac_open)
 {
-    // Here the duty cycle is an integer in the range of the PWM resolution
+    // Here the duty cycle is an uint32_teger in the range of the PWM resolution
     // - for 8 bit, we have range 0-255
     // => duty_cycle = frac_open * 255
     // there's a hard limit set by MAX_VALVE_FRAC_OPEN
-    int range_upper_val = pow(2, pwm_resolution) - 1;
+    uint32_t range_upper_val = pow(2, pwm_resolution) - 1;
     if (frac_open > MAX_VALVE_FRAC_OPEN) 
-        return (int)(range_upper_val * MAX_VALVE_FRAC_OPEN);
-    return (int)(range_upper_val  * frac_open);
+        return (uint32_t)(range_upper_val * MAX_VALVE_FRAC_OPEN);
+    return (uint32_t)(range_upper_val  * frac_open);
 }
 
 void ValvesController::setPWMValve(int pin, float frac_open)
 {
 
 #ifdef CHIP_ESP32
-    int duty_cycle = calcValveDutyCycle(pwm_resolution, frac_open);
+    uint32_t duty_cycle = calcValveDutyCycle(pwm_resolution, frac_open);
     int chan = _pin_to_chan[pin];
     //if (pin == pin_valve_exhale)
     //    chan = pwm_chan_exhale;
@@ -164,7 +169,7 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
         case VALVE_STATE::PID:
             // placeholder - this should be replaced by:
             //doPID(_inhale.pin);
-            setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
+            setPWMValve(_inhale.pin, _PID_output);//_inhale_open_max);
             break;
         default:
             break;
@@ -234,8 +239,10 @@ valve_params& ValvesController::getValveParams()
 
 void ValvesController::updateIV(valve &v)
 {
-    v.voltage = (float)(_INA->getBusMilliVolts(v.device_number)/1000.0);
-    v.current = (float)(_INA->getShuntMicroVolts(v.device_number)/5.0);
+    if(_INA_found){
+        v.voltage = (float)(_INA->getBusMilliVolts(v.device_number) / 1000.0);
+        v.current = (float)(_INA->getShuntMicroVolts(v.device_number) / 5.0);
+    }
 }
 
 IV_readings<float>* ValvesController::getIVReadings()
@@ -264,4 +271,12 @@ IV_readings<float>* ValvesController::getIVReadings()
     _iv_readings.air_in_i2caddr = _air_in.i2caddr;
 
     return &_iv_readings;
+}
+
+void ValvesController::setPIDoutput(float value){
+	_PID_output = value;
+}
+
+float ValvesController::getPIDoutput(){
+	return _PID_output;
 }

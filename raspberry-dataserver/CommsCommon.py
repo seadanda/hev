@@ -139,12 +139,13 @@ class PAYLOAD_TYPE(IntEnum):
     THRESHOLDS = 4
     CMD        = 5
     ALARM      = 6
+    DEBUG      = 7
     IVT        = 8
 
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA6, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA7, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -163,6 +164,7 @@ class PayloadFormat():
             #4: ThresholdFormat,
             5: CommandFormat,
             6: AlarmFormat,
+            7: DebugFormat,
             8: IVTFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
@@ -397,6 +399,46 @@ class CycleFormat(PayloadFormat):
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
+# =======================================
+# debug data payload; this can change
+# =======================================
+@dataclass
+class DebugFormat(PayloadFormat):
+    # subclass dataformat
+    _dataStruct = Struct("<BIBfffffffff")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DEBUG
+
+    kp              : float = 0.0
+    ki              : float = 0.0
+    kd              : float = 0.0
+    target_pressure : float = 0.0 ##
+    process_pressure: float = 0.0 
+    output          : float = 0.0 
+    proportional    : float = 0.0 
+    integral        : float = 0.0 ##
+    derivative      : float = 0.0
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        tmp_payload_type = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.kp              , 
+        self.ki              ,
+        self.kd              ,
+        self.target_pressure ,
+        self.process_pressure,
+        self.output          ,
+        self.proportional    ,
+        self.integral        ,
+        self.derivative      
+        ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
 
 # =======================================
 # thresholds eata payload
@@ -495,6 +537,9 @@ class AlarmFormat(PayloadFormat):
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
     param: float = 0.0
+        
+    def __eq__(self, other):
+        return  (self.alarm_type == other.alarm_type) and (self.alarm_code == other.alarm_code)
 
     def fromByteArray(self, byteArray):
         alarm = 0
