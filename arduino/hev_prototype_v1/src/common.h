@@ -22,7 +22,7 @@
 #define HEV_FORMAT_VERSION 0xA5
 
 // 
-const float MAX_VALVE_FRAC_OPEN = 0.68;
+const float MAX_VALVE_FRAC_OPEN = 0.70;
 const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
 // input params
 enum PAYLOAD_TYPE : uint8_t {

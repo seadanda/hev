@@ -30,7 +30,7 @@ ValvesController::ValvesController()
 
     _inhale_duty_cycle = 0;
     _inhale_open_max = MAX_VALVE_FRAC_OPEN;
-    _inhale_open_min = 0.54;
+    _inhale_open_min = 0.53;
 
     _valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     _valve_exhale_percent      = 0;

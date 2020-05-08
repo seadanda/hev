@@ -33,8 +33,8 @@ class Dependant(object):
     def update_llipacket(self, payload):
         #logging.info(f"payload received: {payload}")
         if payload.getType() == 1:
-        #    logging.info(f"payload received: {payload}")
-            logging.info(f"Fsm state: {payload.fsm_state} ")
+            logging.info(f"payload received: {payload}")
+            #logging.info(f"Fsm state: {payload.fsm_state} ")
         if payload.getType() == 7:
             logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f}")
         #if hasattr(payload, 'ventilation_mode'):
@@ -51,10 +51,10 @@ async def commsDebug():
     #comms.writePayload(cmd)
 
     await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.0033) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.01) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0022) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
@@ -66,11 +66,11 @@ async def commsDebug():
     print('sent cmd start')
     toggle = 2
     while True:
-        await asyncio.sleep(30)
+        await asyncio.sleep(10)
         #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
-        await asyncio.sleep(30)
+        await asyncio.sleep(10)
         cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=toggle, param=0)
         if toggle == 2 :
             toggle = 1
