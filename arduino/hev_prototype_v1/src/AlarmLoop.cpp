@@ -44,6 +44,6 @@ void AlarmLoop::fireAlarms() {
     _av_controller.update();
 }
 
-void AlarmLoop::updateValues(readings<int16_t> fast_data) {
+void AlarmLoop::updateValues(readings<float> fast_data) {
     _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = static_cast<float>(fast_data.pressure_patient);
 }

@@ -34,8 +34,8 @@ void setup()
 #ifdef CHIP_ESP32
     WiFi.mode(WIFI_OFF);
     btStop();
-    ledcSetup(pwm_chan_inhale, pwm_frequency, pwm_resolution);
-    ledcSetup(pwm_chan_exhale, pwm_frequency, pwm_resolution);
+    ledcSetup(pwm_chan_inhale, 500, pwm_resolution); // 500 Hz for proportional valves
+    ledcSetup(pwm_chan_exhale, 500, pwm_resolution); // 500 Hz for proportional valves
     ledcSetup(3, 2000, pwm_resolution);
     ledcAttachPin(pin_buzzer, 3);  
     ledcAttachPin(pin_valve_inhale , pwm_chan_inhale);  
@@ -120,6 +120,7 @@ void loop()
     ui_loop.reportCycleReadings();
     ui_loop.reportAlarms();
     ui_loop.reportIVTReadings();
+    ui_loop.reportDebugValues();
 
     // per cycle sender
     comms.sender();

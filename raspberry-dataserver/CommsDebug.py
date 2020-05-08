@@ -38,31 +38,44 @@ class Dependant(object):
         #logging.info(f"payload received: {payload}")
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
+        
+        logging.info(f"Type: {payload.getType()}")
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
             #logging.info(f"payload received: {payload}")
-            #logging.info(f"Fsm state: {payload.fsm_state}")
+            logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
         if payload.getType() == PAYLOAD_TYPE.IVT.value:
             logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
-            #logging.info(f"IV: air {payload.air_in_i2caddr:x} o2 {payload.o2_in_i2caddr:x} purge {payload.purge_i2caddr:x} inhale {payload.inhale_i2caddr:x} exhale {payload.exhale_i2caddr:x} fsm {fsm} ")
         #logging.info(f"payload received: {payload}")
-        #if hasattr(payload, 'ventilation_mode'):
-        #    logging.info(f"payload received: {payload.ventilation_mode}")
-        #if hasattr(payload, 'duration_inhale'):
-        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
         #if hasattr(payload, 'inhale_exhale_ratio'):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
-        #    logging.info(f"payload received: peep = {payload.peep} ")
-        #    logging.info(f"payload received: valve air in = {payload.valve_air_in} ")
-        #if hasattr(payload, 'respiratory_rate'):
-        #    logging.info(f"payload received: RR = {payload.respiratory_rate} ")
-            #print(binascii.hexlify(payload._byteArray))
+        if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f}")
+        #if hasattr(payload, 'ventilation_mode'):
+        #    logging.info(f"payload received: {payload.ventilation_mode}")
+        if hasattr(payload, 'duration_inhale'):
+            logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
         self._llipacket = payload.getDict() # returns a dict
 
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
-#     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.STOP.value, param=0)
+    #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
+    #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1000)
+    #comms.writePayload(cmd)
+
+    await asyncio.sleep(5)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.0033) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0022) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     comms.writePayload(cmd)
@@ -79,7 +92,10 @@ async def commsDebug():
         #print('sent cmd set Kp = 0.2')
         cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1010)
         comms.writePayload(cmd)
-        await asyncio.sleep(15)
+        #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
+        #comms.writePayload(cmd)
+        #print('sent cmd set Kp = 0.2')
+        await asyncio.sleep(30)
         cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=toggle, param=0)
         if toggle == 2 :
             toggle = 1

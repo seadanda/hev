@@ -51,7 +51,7 @@ class HEVServer(object):
             # let broadcast thread know there is data to send
             with self._dvlock:
                 self._datavalid.set()
-        elif payload_type in [1,2,3,4,8] : 
+        elif payload_type in [1,2,3,4,7,8] : 
             # pass data to db
             with self._dblock:
                 self._values = payload
@@ -59,6 +59,9 @@ class HEVServer(object):
             with self._dvlock:
                 self._datavalid.set()
         elif payload_type == PAYLOAD_TYPE.CMD:
+            # ignore for the minute
+            pass
+        elif payload_type == PAYLOAD_TYPE.DEBUG:
             # ignore for the minute
             pass
         elif payload_type == PAYLOAD_TYPE.UNSET:
@@ -110,6 +113,9 @@ class HEVServer(object):
                 # ignore for the minute
                 pass
             elif reqtype == "IVT":
+                # ignore for the minute
+                pass
+            elif reqtype == "DEBUG":
                 # ignore for the minute
                 pass
             elif reqtype == "alarm":
