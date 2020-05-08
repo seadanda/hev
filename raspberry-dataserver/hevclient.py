@@ -58,6 +58,13 @@ class HEVClient(object):
                 elif payload["type"] == "THRESHOLDS":
                     with self._lock:
                         self._thresholds = payload["THRESHOLDS"]
+                elif payload["type"] == "ALARM":
+                    with self._lock:
+                        self._alarms = payload["ALARM"]
+                elif payload["type"] == "IVT":
+                    pass
+                elif payload["type"] == "DEBUG":
+                    pass
                 else:
                     raise HEVPacketError("Invalid broadcast type")
 
