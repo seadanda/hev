@@ -8,37 +8,39 @@ import time
 import json
 import threading
 from typing import List, Dict, Union
+from CommsCommon import PayloadFormat
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
-
-polling = True
-setflag = False
 
 class HEVPacketError(Exception):
     pass
 
 class HEVClient(object):
-    def extra_setup(self)->bool:
-        return True
-    def __init__(self):
+    def __init__(self, polling=True):
         self._alarms = []  # db for alarms
         self._fastdata = None  # db for sensor values
         self._readback = None  # db for sensor values
         self._cycle = None  # db for sensor values
         self._thresholds = None  # db for sensor values
         self._thresholds = []  # db for threshold settings
-        self._polling = True  # keep reading data into db
+        self._polling = polling  # keep reading data into db
         self._lock = threading.Lock()  # lock for the database
 
-        self.extra_setup()
-        # start worker thread to update db in the background
+        # start polling in another thread unless told otherwise
+        if self._polling:
+            self.start_polling()
+
+    def start_polling(self):
+        """start worker thread to update db in the background"""
         worker = threading.Thread(target=self.start_client, daemon=True)
         worker.start()
 
-        
+    def start_client(self) -> None:
+        asyncio.run(self.polling())
+
     async def polling(self) -> None:
-        # open persistent connection with server
+        """open persistent connection with server"""
         reader, writer = await asyncio.open_connection("127.0.0.1", 54320)
 
         # grab data from the socket as soon as it is available and dump it in the db
@@ -73,7 +75,7 @@ class HEVClient(object):
                     raise HEVPacketError("Invalid broadcast type")
 
                 self._alarms = payload["alarms"]
-                self.get_updates()
+                self.get_updates(payload) # callback function to be overridden
             except json.decoder.JSONDecodeError:
                 logging.warning(f"Could not decode packet: {data}")
             except KeyError:
@@ -82,9 +84,10 @@ class HEVClient(object):
         # close connection
         writer.close()
         await writer.wait_closed()
-
-    def start_client(self) -> None:
-        asyncio.run(self.polling())
+    
+    def get_updates(self, payload) -> None:
+        """Overrideable function called after receiving data from the socket, with that data as an argument"""
+        pass
 
     async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
@@ -157,11 +160,6 @@ class HEVClient(object):
     def get_alarms(self) -> List[str]:
         # get alarms from db
         return self._alarms
-
-    def get_updates(self) -> bool:
-        # apply updates when data is received
-        #to be implemented in derived classes
-        return True
 
 
 if __name__ == "__main__":
