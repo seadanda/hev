@@ -495,6 +495,9 @@ class AlarmFormat(PayloadFormat):
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
     param: float = 0.0
+        
+    def __eq__(self, other):
+        return  (self.alarm_type == other.alarm_type) and (self.alarm_code == other.alarm_code)
 
     def fromByteArray(self, byteArray):
         alarm = 0
