@@ -62,7 +62,9 @@ class CMD_SET_VALVE(Enum):
     PURGE_ENABLE  = 3,
     INHALE_DUTY_CYCLE = 4,
     INHALE_OPEN_MIN = 5,
-    INHALE_OPEN_MAX = 6
+    INHALE_OPEN_MAX = 6,
+    INHALE_TRIGGER_ENABLE = 7,
+    EXHALE_TRIGGER_ENABLE = 8
 
 class CMD_SET_PID(Enum):
     KP = 1
@@ -137,11 +139,12 @@ class PAYLOAD_TYPE(IntEnum):
     THRESHOLDS = 4
     CMD        = 5
     ALARM      = 6
+    IVT        = 8
 
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA4, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA6, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -160,6 +163,7 @@ class PayloadFormat():
             #4: ThresholdFormat,
             5: CommandFormat,
             6: AlarmFormat,
+            8: IVTFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -398,6 +402,51 @@ class CycleFormat(PayloadFormat):
 # thresholds eata payload
 # =======================================
 # TODO
+
+# =======================================
+# IVT data payload
+# =======================================
+@dataclass
+class IVTFormat(PayloadFormat):
+    _dataStruct = Struct("<BIBfffffffffff")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.IVT
+
+    inhale_current : float = 0.0
+    exhale_current : float = 0.0
+    purge_current  : float = 0.0
+    air_in_current : float = 0.0
+    o2_in_current  : float = 0.0
+    inhale_voltage : float = 0.0
+    exhale_voltage : float = 0.0
+    purge_voltage  : float = 0.0
+    air_in_voltage : float = 0.0
+    o2_in_voltage  : float = 0.0
+    system_temp    : float = 0.0
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.inhale_current ,
+        self.exhale_current ,
+        self.purge_current  ,
+        self.air_in_current ,
+        self.o2_in_current  ,
+        self.inhale_voltage ,
+        self.exhale_voltage ,
+        self.purge_voltage  ,
+        self.air_in_voltage ,
+        self.o2_in_voltage  ,
+        self.system_temp    
+        ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
 
 # =======================================
 # cmd type payload

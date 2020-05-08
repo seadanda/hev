@@ -40,26 +40,32 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float &value
     }
 }
 
-void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, float &value)
+void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value)
 {
     switch(cmd){
         case CMD_SET_VALVE::AIR_IN_ENABLE :
-            valves_controller->enableAirInValve( (value > 0) );
+            vparams.valve_air_in_enable = (value > 0.9);
             break;
         case CMD_SET_VALVE::O2_IN_ENABLE :
-            valves_controller->enableO2InValve( (value > 0) );
+            vparams.valve_o2_in_enable = (value > 0.9);
             break;
         case CMD_SET_VALVE::PURGE_ENABLE :
-            valves_controller->enablePurgeValve( (value > 0) );
+            vparams.valve_purge_enable = (value > 0.9);
             break;
-        case CMD_SET_VALVE::INHALE_DUTY_CYCLE :
-            valves_controller->setInhaleDutyCycle(value); // should be 0-100
+        case CMD_SET_VALVE::INHALE_TRIGGER_ENABLE :
+            vparams.inhale_trigger_enable = (value > 0.9);
+            break;
+        case CMD_SET_VALVE::EXHALE_TRIGGER_ENABLE :
+            vparams.exhale_trigger_enable = (value > 0.9);
+            break;
+        case CMD_SET_VALVE::INHALE_DUTY_CYCLE : 
+            vparams.inhale_duty_cycle = (value < 0) ? 0.0 : (value > MAX_VALVE_FRAC_OPEN) ? MAX_VALVE_FRAC_OPEN : value;
             break;
         case CMD_SET_VALVE::INHALE_OPEN_MIN :
-            valves_controller->setInhaleOpenMin(value); // should be 0-100
+            vparams.inhale_open_min = (value < 0) ? 0.0 : (value > MAX_VALVE_FRAC_OPEN) ? MAX_VALVE_FRAC_OPEN : value;
             break;
         case CMD_SET_VALVE::INHALE_OPEN_MAX :
-            valves_controller->setInhaleOpenMax(value); // should be 0-100
+            vparams.inhale_open_max = (value < 0) ? 0.0 : (value > MAX_VALVE_FRAC_OPEN) ? MAX_VALVE_FRAC_OPEN : value;
             break;
         default:
             break;
@@ -70,13 +76,13 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value)
 {
     switch(cmd){
         case CMD_SET_PID::KP:
-            pid.Kp = value/1000.0;
+            pid.Kp = value;
             break;
         case CMD_SET_PID::KI:
-            pid.Ki = value/1000.0;
+            pid.Ki = value;
             break;
         case CMD_SET_PID::KD:
-            pid.Kd = value/1000.0;
+            pid.Kd = value;
             break;
         default:
             break;

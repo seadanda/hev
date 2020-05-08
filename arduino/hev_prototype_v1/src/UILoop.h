@@ -21,6 +21,7 @@ public:
     void reportCycleReadings();
     void reportAlarms();
 
+    void reportIVTReadings();
     void receiveCommands();
 
 private:
@@ -42,12 +43,15 @@ private:
     uint32_t _fast_report_time;
     uint32_t _readback_report_time;
     uint32_t _cycle_report_time;
+    uint32_t _ivt_report_time;
     uint16_t _fast_report_timeout;
     uint16_t _readback_report_timeout;
     uint16_t _cycle_report_timeout;
+    uint16_t _ivt_report_timeout;
     fast_data_format _fast_data;
     readback_data_format _readback_data;
     cycle_data_format _cycle_data;
+    ivt_data_format _ivt_data;
 
     uint32_t _alarm_report_timeout;
     alarm_format _alarm;

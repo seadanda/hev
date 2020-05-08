@@ -2,9 +2,7 @@
 #define COMMON_H
 #include <Arduino.h>
 #include <limits>
-#include "ValvesController.h"
 
-//#define HEV_MINI_SYSTEM  // uncomment this if using lab 14-1-014
 
 #if defined(ARDUINO_FEATHER_ESP32)
 #include <huzzah32_pinout.h>
@@ -20,10 +18,11 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA4
+#define HEV_FORMAT_VERSION 0xA6
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.68;
+
 const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
 // input params
 enum PAYLOAD_TYPE : uint8_t {
@@ -33,7 +32,9 @@ enum PAYLOAD_TYPE : uint8_t {
     CYCLE        = 3,
     THRESHOLDS   = 4,
     CMD          = 5,
-    ALARM        = 6
+    ALARM        = 6,
+    IVT          = 8
+
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -84,7 +85,9 @@ enum CMD_SET_VALVE: uint8_t {
     PURGE_ENABLE  = 3,
     INHALE_DUTY_CYCLE = 4,
     INHALE_OPEN_MIN = 5,
-    INHALE_OPEN_MAX = 6
+    INHALE_OPEN_MAX = 6,
+    INHALE_TRIGGER_ENABLE = 7,
+    EXHALE_TRIGGER_ENABLE = 8
 };
 
 enum CMD_SET_PID : uint8_t {
@@ -186,23 +189,23 @@ struct readback_data_format {
     uint32_t timestamp                = 0;
     uint8_t  payload_type             = PAYLOAD_TYPE::READBACK;
     uint16_t duration_calibration     = 0;
-    uint16_t duration_buff_purge      = 0;
+    uint16_t duration_buff_purge      = 0;//
     uint16_t duration_buff_flush      = 0;
     uint16_t duration_buff_prefill    = 0;
     uint16_t duration_buff_fill       = 0;
     uint16_t duration_buff_loaded     = 0;
-    uint16_t duration_buff_pre_inhale = 0;
+    uint16_t duration_buff_pre_inhale = 0;//
     uint16_t duration_inhale          = 0;
     uint16_t duration_pause           = 0;
     uint16_t duration_exhale_fill     = 0;
     uint16_t duration_exhale          = 0;
 
-    float    valve_air_in             = 0.0;
+    float    valve_air_in             = 0.0;//
     float    valve_o2_in              = 0.0;
     uint8_t  valve_inhale             = 0;
     uint8_t  valve_exhale             = 0;
     uint8_t  valve_purge              = 0;
-    uint8_t  ventilation_mode         = VENTILATION_MODE::HEV_MODE_PS;
+    uint8_t  ventilation_mode         = VENTILATION_MODE::HEV_MODE_PS;//
 
     uint8_t valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     uint8_t valve_exhale_percent      = 0;
@@ -211,8 +214,30 @@ struct readback_data_format {
     uint8_t valve_purge_enable        = 0;
     uint8_t inhale_trigger_enable     = 0;   // params - associated val of peak flow
     uint8_t exhale_trigger_enable     = 0;
-    float   peep                      = 0.0;
+    float   peep                      = 0.0;//
     float   inhale_exhale_ratio       = 0.0;
+};
+#pragma pack()
+
+#pragma pack(1)
+struct ivt_data_format {
+// readback values
+    uint8_t  version                  = HEV_FORMAT_VERSION;
+    uint32_t timestamp                = 0;
+    uint8_t  payload_type             = PAYLOAD_TYPE::IVT;
+    float inhale_current = 0.0;
+    float exhale_current = 0.0;
+    float purge_current  = 0.0;
+    float air_in_current = 0.0;
+    float o2_in_current  = 0.0;
+    float inhale_voltage = 0.0;
+    float exhale_voltage = 0.0;
+    float purge_voltage  = 0.0;
+    float air_in_voltage = 0.0;
+    float o2_in_voltage  = 0.0;
+
+    float system_temp    = 0.0;
+
 };
 #pragma pack()
 
@@ -421,18 +446,10 @@ struct pid_variables {
     float Kd; // derivative factor
 };
 
-// static uint32_t valve_port_states = 0x0; 
-// static int pin_to_chan[50];  // too lazy to create a proper hashmap for 2 variables; 50 pins is probably fine
-// static int chan_to_pin[50];  
 
 template <typename T>
 void setAlarm(ALARM_CODES alarm_code, T *alarms, T value) { alarms[alarm_code] = value; }
 
-void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float &value);
-void setValveParam(CMD_SET_VALVE cmd, ValvesController *valves_controller, float &value);
-void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value);
-int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
-float adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
 
 // used for calculating averages, template due to different size for sums and averages
@@ -448,5 +465,37 @@ template <typename T> struct readings{
     T pressure_o2_regulated  = 0;
     T pressure_diff_patient  = 0;
 };
+
+template <typename T> struct IV_readings{
+    uint64_t timestamp       = 0; //
+    T inhale_current = 0;
+    T exhale_current = 0;
+    T purge_current  = 0;
+    T air_in_current = 0;
+    T o2_in_current  = 0;
+    T inhale_voltage = 0;
+    T exhale_voltage = 0;
+    T purge_voltage  = 0;
+    T air_in_voltage = 0;
+    T o2_in_voltage  = 0;
+};
+
+struct valve_params{
+    bool valve_air_in_enable   ;
+    bool valve_o2_in_enable    ;
+    bool valve_purge_enable    ;
+    bool inhale_trigger_enable ;   // params - associated val of peak flow
+    bool exhale_trigger_enable ;
+    float inhale_duty_cycle;
+    float inhale_open_min;
+    float inhale_open_max;
+};
+
+//void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
+void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float &value);
+void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
+void setPID(CMD_SET_PID cmd, pid_variables &pid, float &value);
+int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
+float adcToMillibarFloat(int16_t adc, int16_t offset = 0);
 
 #endif

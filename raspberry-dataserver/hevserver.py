@@ -109,6 +109,9 @@ class HEVServer(object):
             elif reqtype == "CYCLE":
                 # ignore for the minute
                 pass
+            elif reqtype == "IVT":
+                # ignore for the minute
+                pass
             elif reqtype == "alarm":
                 # acknowledgement of alarm from gui
                 alarm_to_ack = AlarmFormat(**request["ack"])
