@@ -19,6 +19,8 @@ class HEVPacketError(Exception):
     pass
 
 class HEVClient(object):
+    def extra_setup(self)->bool:
+        return True
     def __init__(self):
         self._alarms = []  # db for alarms
         self._fastdata = None  # db for sensor values
@@ -29,10 +31,12 @@ class HEVClient(object):
         self._polling = True  # keep reading data into db
         self._lock = threading.Lock()  # lock for the database
 
+        self.extra_setup()
         # start worker thread to update db in the background
         worker = threading.Thread(target=self.start_client, daemon=True)
         worker.start()
 
+        
     async def polling(self) -> None:
         # open persistent connection with server
         reader, writer = await asyncio.open_connection("127.0.0.1", 54320)
@@ -69,6 +73,7 @@ class HEVClient(object):
                     raise HEVPacketError("Invalid broadcast type")
 
                 self._alarms = payload["alarms"]
+                self.get_updates()
             except json.decoder.JSONDecodeError:
                 logging.warning(f"Could not decode packet: {data}")
             except KeyError:
@@ -152,6 +157,11 @@ class HEVClient(object):
     def get_alarms(self) -> List[str]:
         # get alarms from db
         return self._alarms
+
+    def get_updates(self) -> bool:
+        # apply updates when data is received
+        #to be implemented in derived classes
+        return True
 
 
 if __name__ == "__main__":

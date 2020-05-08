@@ -214,26 +214,26 @@
 									
 									var alarmLogs;
           clearInterval(alarmLogs);
-
-	  function update_alarms() {
-        $.getJSON("live-alarms", function (data) {
-	       if (data != null && data.alarms !== '') {
-	          document.getElementById("alarms").innerHTML = data.alarms;
-	          var el = document.getElementById("alarm_ul");
-	          el.classList.add("alarm-red");
-	          var el2 = document.getElementById("path-alarm");
-	          el2.classList.add("path-icon-alarm");
-            } else {  
-	           document.getElementById("alarms").innerHTML = ''
-	           var el = document.getElementById("alarm_ul");
-	           el.classList.remove("alarm-red");
-	           var el2 = document.getElementById("path-alarm");
-	           el2.classList.remove("path-icon-alarm");
-	        }    
-	    });
-	  }
-	  var alarmInterval = setInterval('update_alarms()', 1000);
-
+	//
+	//  function update_alarms() {
+    //    $.getJSON("live-alarms", function (data) {
+	//       if (data != null && data.alarms !== '') {
+	//          document.getElementById("alarms").innerHTML = data.alarms;
+	//          var el = document.getElementById("alarm_ul");
+	//          el.classList.add("alarm-red");
+	//          var el2 = document.getElementById("path-alarm");
+	//          el2.classList.add("path-icon-alarm");
+    //        } else {  
+	//           document.getElementById("alarms").innerHTML = ''
+	//           var el = document.getElementById("alarm_ul");
+	//           el.classList.remove("alarm-red");
+	//           var el2 = document.getElementById("path-alarm");
+	//           el2.classList.remove("path-icon-alarm");
+	//        }    
+	//    });
+	//  }
+	//  var alarmInterval = setInterval('update_alarms()', 1000);
+	//
 	  function unlock(){
 	  var x = document.getElementsByClassName("input-editable");
 	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
