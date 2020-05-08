@@ -33,7 +33,7 @@ class Dependant(object):
     def update_llipacket(self, payload):
         #logging.info(f"payload received: {payload}")
         if payload.getType() == 1:
-        #    logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload}")
             logging.info(f"Fsm state: {payload.fsm_state} ")
         if payload.getType() == 7:
             logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f}")

@@ -46,7 +46,7 @@ void UILoop::reportFastReadings()
     {
 
 	    // TO SWITCH BETWEEN RAW AND MILLIBAR DATA UNCOMMENT BELOW
-        readings<int16_t> readings = _breathing_loop->getReadingAverages();
+        readings<float> readings = _breathing_loop->getReadingAverages();
         //readings<int16_t> readings = _breathing_loop->getRawReadings();
 
         _fast_data.timestamp = static_cast<uint32_t>(readings.timestamp);
