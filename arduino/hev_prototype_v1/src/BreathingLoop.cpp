@@ -16,6 +16,8 @@ BreathingLoop::BreathingLoop()
     _reset = false;
     _safe  = true;
 
+    _peep = 5.0;
+
     initCalib();
     resetReadingSums();
 
@@ -35,9 +37,7 @@ BreathingLoop::BreathingLoop()
     _pid.Ki = 0.000007;   // integral factor
     _pid.Kd = 0;   // derivative factor
 
-    _pid_integral  = 0.;
-    _pid_process_pressure_derivative  = 0.;
-    _pid_set_point = 0.;
+    _pid.integral = 0.;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -96,7 +96,7 @@ void BreathingLoop::updateReadings()
 
                 //TODO
 
-                float_t _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
+                float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
                 doPID(3, 10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
 		//_volume = _valve_inhale_PID_percentage;
@@ -210,6 +210,11 @@ float    BreathingLoop::getIERatio(){
     float total_inhale_time = _states_durations.inhale + _states_durations.pause;
     float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale;
     return total_inhale_time/total_exhale_time;
+}
+
+float BreathingLoop::getPEEP()
+{
+    return _peep;
 }
 
 float BreathingLoop::getMinuteVolume(){
@@ -396,9 +401,7 @@ void BreathingLoop::FSM_breathCycle()
                     _fsm_timeout = _states_durations.buff_pre_inhale;
             }
 
-	    _pid_integral  = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
-	    _pid_process_pressure_derivative = 0.;
-	    _pid_set_point = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
+	    _pid.integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
         
             break;
         case BL_STATES::INHALE:
@@ -421,8 +424,6 @@ void BreathingLoop::FSM_breathCycle()
             _fsm_timeout = _states_durations.exhale_fill;
             break;
         case BL_STATES::EXHALE:
-            // TODO: exhale timeout based on 
-            // (inhale_time* (Exhale/Inhale ratio))  - exhale fill time
             _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
@@ -579,9 +580,9 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
     float error = _pid_set_point - process_pressure;
 
     proportional       = _pid.Kp*error;
-    _pid_integral     += _pid.Ki*error;
+    _pid.integral     += _pid.Ki*error;
 
-    integral = _pid_integral;
+    integral = _pid.integral;
 
     //TODO derivative
     
@@ -593,6 +594,13 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
     if(output > maximum_open_frac) output = maximum_open_frac;
     if(output < minimum_open_frac) output = minimum_open_frac;
 
+    // KH
+    _pid.derivative       = derivative;
+    _pid.integral         = integral;
+    _pid.proportional     = proportional;
+    _pid.target_pressure  = target_pressure;
+    _pid.process_pressure = process_pressure;
+    _pid.valve_duty_cycle = output;
 }
 
 //void BreathingLoop::PID_process_pressure_derivative(float &_pid_process_pressure_derivative, float process_pressure){

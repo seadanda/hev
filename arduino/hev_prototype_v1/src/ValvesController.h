@@ -2,12 +2,20 @@
 #define VALVES_CONTROLLER_H
 
 #include <Arduino.h>
+#include <INA.h>
+#include "common.h"
 
 struct valve {
     int pin = -1;
     bool proportional = false;
     uint8_t state; 
+    float voltage;
+    float current;
+    uint8_t i2caddr;
+    int8_t device_number;
 };
+
+
 
 enum VALVE_STATE : uint8_t
 {
@@ -27,29 +35,31 @@ class ValvesController
 public:
     ValvesController();
     ~ValvesController();
+    void setupINA(INA_Class *ina, uint8_t num_devices);
     void setPWMValve(int pin, float frac_open);
     void setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
                    uint8_t vexhale, bool vpurge);
     void getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
                    uint8_t &vexhale, bool &vpurge);
     uint32_t calcValveDutyCycle(uint32_t pwm_resolution, float frac_open);
-    uint8_t getValveInhalePercent();
-    uint8_t getValveExhalePercent();
-    uint8_t valveAirInEnabled();
-    uint8_t valveO2InEnabled();
-    uint8_t valvePurgeEnabled();
-    uint8_t inhaleTriggerEnabled();
-    uint8_t exhaleTriggerEnabled();
+
+    valve_params& getValveParams();
 
     void enableO2InValve(bool en);
     void enablePurgeValve(bool en);
     void enableAirInValve(bool en);
-    void setInhaleDutyCycle(uint32_t value);
-    void setInhaleOpenMin(uint32_t value);
-    void setInhaleOpenMax(uint32_t value);
+    void setInhaleDutyCycle(float value);
+    void setInhaleOpenMin(float value);
+    void setInhaleOpenMax(float value);
+
+    void updateIV(valve &v);
+    void updateAllIV();
+    IV_readings<float>* getIVReadings();
 
     void    setPIDoutput(float value);
     float   getPIDoutput();
+
+    bool INAFound();
 
 private:
     valve _air_in;
@@ -57,20 +67,14 @@ private:
     valve _inhale;
     valve _exhale;
     valve _purge;
+
     uint8_t _pin_to_chan[50]; 
 
-    uint8_t _valve_inhale_percent  ;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
-    uint8_t _valve_exhale_percent  ;
-    uint8_t _valve_air_in_enable   ;
-    uint8_t _valve_o2_in_enable    ;
-    uint8_t _valve_purge_enable    ;
-    uint8_t _inhale_trigger_enable ;   // params - associated val of peak flow
-    uint8_t _exhale_trigger_enable ;
+    valve_params _valve_params;
 
-    float _inhale_duty_cycle;
-    float _inhale_open_min;
-    float _inhale_open_max;
-
+    INA_Class *_INA;
+    bool _INA_found;
+    IV_readings<float> _iv_readings; 
     float _PID_output;
 };
 

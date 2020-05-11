@@ -7,6 +7,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 from serial.tools import list_ports
 import sys
 import time
+import binascii
 
 def getTTYPort():
     port_device = "" 
@@ -24,6 +25,8 @@ def getTTYPort():
     return port_device
 
 
+fsm=''
+
 class Dependant(object):
     def __init__(self, lli):
         self._llipacket = None
@@ -31,16 +34,30 @@ class Dependant(object):
         self._lli.bind_to(self.update_llipacket)
 
     def update_llipacket(self, payload):
+        global fsm
         #logging.info(f"payload received: {payload}")
         if payload.getType() == 1:
             logging.info(f"payload received: {payload}")
             #logging.info(f"Fsm state: {payload.fsm_state} ")
-        if payload.getType() == 7:
-            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f}")
+        #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
+        #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
+        
+        if payload.getType() == PAYLOAD_TYPE.DATA.value:
+            #logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
+            #logging.info(f"Fsm state: {payload.fsm_state}")
+            fsm = payload.fsm_state
+        #if payload.getType() == PAYLOAD_TYPE.IVT.value:
+        #    logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
+        #logging.info(f"payload received: {payload}")
+        #if hasattr(payload, 'inhale_exhale_ratio'):
+        #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
+        if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
-        if hasattr(payload, 'duration_inhale'):
-            logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+        #if hasattr(payload, 'duration_inhale'):
+        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
         self._llipacket = payload.getDict() # returns a dict
 
 
@@ -50,6 +67,7 @@ async def commsDebug():
     #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1000)
     #comms.writePayload(cmd)
 
+    await asyncio.sleep(5)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.004) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
@@ -61,7 +79,6 @@ async def commsDebug():
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
-    await asyncio.sleep(1)
     comms.writePayload(cmd)
     print('sent cmd start')
     toggle = 2

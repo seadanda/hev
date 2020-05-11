@@ -62,7 +62,9 @@ class CMD_SET_VALVE(Enum):
     PURGE_ENABLE  = 3,
     INHALE_DUTY_CYCLE = 4,
     INHALE_OPEN_MIN = 5,
-    INHALE_OPEN_MAX = 6
+    INHALE_OPEN_MAX = 6,
+    INHALE_TRIGGER_ENABLE = 7,
+    EXHALE_TRIGGER_ENABLE = 8
 
 class CMD_SET_PID(Enum):
     KP = 1
@@ -71,9 +73,9 @@ class CMD_SET_PID(Enum):
 
 @unique
 class ALARM_TYPE(Enum):
-    LP   = 1
-    MP   = 2
-    HP   = 3
+    PRIORITY_LOW    = 1
+    PRIORITY_MEDIUM = 2
+    PRIORITY_HIGH   = 3
 
 @unique
 class ALARM_CODES(Enum):
@@ -138,11 +140,12 @@ class PAYLOAD_TYPE(IntEnum):
     CMD        = 5
     ALARM      = 6
     DEBUG      = 7
+    IVT        = 8
 
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA5, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA7, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -162,6 +165,7 @@ class PayloadFormat():
             5: CommandFormat,
             6: AlarmFormat,
             7: DebugFormat,
+            8: IVTFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -207,7 +211,6 @@ class DataFormat(PayloadFormat):
     # subclass dataformat
     _dataStruct = Struct("<BIBBHfHffffHfHHfff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
-
     # subclass member variables
     fsm_state: BL_STATES          = BL_STATES.IDLE
     pressure_air_supply: int      = 0
@@ -262,8 +265,9 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBBf")
+    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
+
 
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
@@ -291,7 +295,7 @@ class ReadbackFormat(PayloadFormat):
     valve_purge_enable: int       = 0
     inhale_trigger_enable: int    = 0
     exhale_trigger_enable: int    = 0
-    peep: int                     = 0
+    peep: float                   = 0.0
     inhale_exhale_ratio: float    = 0.0
 
     # for receiving DataFormat from microcontroller
@@ -329,7 +333,7 @@ class ReadbackFormat(PayloadFormat):
         self.inhale_trigger_enable,
         self.exhale_trigger_enable,
         self.peep,
-        self.inhale_exhate_ratio) = self._dataStruct.unpack(byteArray) 
+        self.inhale_exhale_ratio) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.ventilation_mode = VENTILATION_MODE(tmp_mode)
@@ -409,7 +413,7 @@ class DebugFormat(PayloadFormat):
     kd              : float = 0.0
     target_pressure : float = 0.0 ##
     process_pressure: float = 0.0 
-    output          : float = 0.0 
+    valve_duty_cycle: float = 0.0 
     proportional    : float = 0.0 
     integral        : float = 0.0 ##
     derivative      : float = 0.0
@@ -426,7 +430,7 @@ class DebugFormat(PayloadFormat):
         self.kd              ,
         self.target_pressure ,
         self.process_pressure,
-        self.output          ,
+        self.valve_duty_cycle,
         self.proportional    ,
         self.integral        ,
         self.derivative      
@@ -442,6 +446,61 @@ class DebugFormat(PayloadFormat):
 # TODO
 
 # =======================================
+# IVT data payload
+# =======================================
+@dataclass
+class IVTFormat(PayloadFormat):
+    _dataStruct = Struct("<BIBffffffffffbbbbbf")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.IVT
+
+    inhale_current : float = 0.0
+    exhale_current : float = 0.0
+    purge_current  : float = 0.0
+    air_in_current : float = 0.0
+    o2_in_current  : float = 0.0
+    inhale_voltage : float = 0.0
+    exhale_voltage : float = 0.0
+    purge_voltage  : float = 0.0
+    air_in_voltage : float = 0.0
+    o2_in_voltage  : float = 0.0
+    inhale_i2caddr : int = 0.0
+    exhale_i2caddr : int = 0.0
+    purge_i2caddr  : int = 0.0
+    air_in_i2caddr : int = 0.0
+    o2_in_i2caddr  : int = 0.0
+    system_temp    : float = 0.0
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.inhale_current ,
+        self.exhale_current ,
+        self.purge_current  ,
+        self.air_in_current ,
+        self.o2_in_current  ,
+        self.inhale_voltage ,
+        self.exhale_voltage ,
+        self.purge_voltage  ,
+        self.air_in_voltage ,
+        self.o2_in_voltage  ,
+        self.inhale_i2caddr ,
+        self.exhale_i2caddr ,
+        self.purge_i2caddr  ,
+        self.air_in_i2caddr ,
+        self.o2_in_i2caddr  ,
+        self.system_temp    
+        ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
+
+# =======================================
 # cmd type payload
 # =======================================
 @dataclass
@@ -451,7 +510,7 @@ class CommandFormat(PayloadFormat):
 
     cmd_type: int = 0
     cmd_code: int = 0
-    param: float    = 0
+    param: float  = 0.0
 
     def fromByteArray(self, byteArray):
         tmp_payload_type = 0
@@ -472,24 +531,29 @@ class CommandFormat(PayloadFormat):
 # =======================================
 @dataclass
 class AlarmFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBBI")
+    _dataStruct = Struct("<BIBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.ALARM
 
     alarm_type: int = 0
     alarm_code: ALARM_CODES = ALARM_CODES.UNKNOWN
-    param: int = 0
+    param: float = 0.0
+        
+    def __eq__(self, other):
+        return  (self.alarm_type == other.alarm_type) and (self.alarm_code == other.alarm_code)
 
     def fromByteArray(self, byteArray):
         alarm = 0
+        priority = 0
         tmp_payload_type = 0
         (self.version,
         self.timestamp,
         tmp_payload_type,
-        self.alarm_type,
+        priority,
         alarm,
         self.param) = self._dataStruct.unpack(byteArray)
 
         self.checkVersion()
+        self.alarm_type = ALARM_TYPE(priority)
         self.alarm_code = ALARM_CODES(alarm)
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray

@@ -93,7 +93,7 @@ function last_results() {
 // the initial values to be plotted on the charts
 //last_results();
 //Leave this out for now as there seems to be an issue with timestamps in the last data
-//init_results();
+init_results();
 
 function setGaugeValue(name, value){
     obj[name].data.datasets[0].gaugeData['setvalue'] = value;
@@ -446,6 +446,8 @@ function create_gauge_chart(var_name) {
 		}]
             },
             options: {
+
+	    maintainAspectRatio: true,
 		events: []
             }
 	});

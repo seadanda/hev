@@ -35,8 +35,6 @@ class HEVServer(object):
 
         self._broadcasting = True
         self._datavalid = None           # something has been received from arduino. placeholder for asyncio.Event()
-        self._dvlock = threading.Lock()  # make datavalid threadsafe
-        self._dvlock.acquire()           # come up locked to wait for loop
 
     def polling(self, payload):
         # get values when we get a callback from commsControl (lli)
@@ -49,15 +47,13 @@ class HEVServer(object):
                 if payload not in self._alarms:
                     self._alarms.append(payload)
             # let broadcast thread know there is data to send
-            with self._dvlock:
-                self._datavalid.set()
-        elif payload_type in [1,2,3,4] : 
+            self._datavalid.set()
+        elif payload_type in [1,2,3,4,7,8] : 
             # pass data to db
             with self._dblock:
                 self._values = payload
             # let broadcast thread know there is data to send
-            with self._dvlock:
-                self._datavalid.set()
+            self._datavalid.set()
         elif payload_type == PAYLOAD_TYPE.CMD:
             # ignore for the minute
             pass
@@ -85,13 +81,7 @@ class HEVServer(object):
             reqtype = request["type"]
             if reqtype == "cmd":
                 reqcmd = request["cmd"]
-                if reqcmd == "CMD_START" or reqcmd == "CMD_STOP":
-                    # temporary, since CMD_START and CMD_STOP are now deprecated
-                    reqcmdtype = "GENERAL" # fake a general command
-                    logging.warning("CMD_START AND CMD_STOP are deprecated and will be removed in a future release.")
-                    reqcmd = reqcmd.split("_")[1]
-                else:
-                    reqcmdtype = request["cmdtype"]
+                reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
 
                 command = CommandFormat(cmd_type=CMD_TYPE[reqcmdtype].value,
@@ -112,10 +102,13 @@ class HEVServer(object):
             elif reqtype == "CYCLE":
                 # ignore for the minute
                 pass
+            elif reqtype == "IVT":
+                # ignore for the minute
+                pass
             elif reqtype == "DEBUG":
                 # ignore for the minute
                 pass
-            elif reqtype == "alarm":
+            elif reqtype == "ALARM":
                 # acknowledgement of alarm from gui
                 alarm_to_ack = AlarmFormat(**request["ack"])
                 try:
@@ -145,7 +138,6 @@ class HEVServer(object):
 
         while self._broadcasting:
             # wait for data from serial port
-            # set timeout such that there is never pileup
             if not self._datavalid.is_set():
                 # make sure client is still connected
                 await asyncio.sleep(0.05)
@@ -161,16 +153,11 @@ class HEVServer(object):
                 data_type = values.getType().name
                 broadcast_packet = {"type": data_type}
 
-                if data_type == "DATA" : 
-                    broadcast_packet["type"] = "broadcast"
-                    broadcast_packet["sensors"] = values.getDict()
-                    
                 broadcast_packet[data_type] = values.getDict()
 
                 broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
                 # take control of datavalid and reset it
-                with self._dvlock:
-                    self._datavalid.clear()
+                self._datavalid.clear()
 
                 logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
                 logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
@@ -211,13 +198,11 @@ class HEVServer(object):
 
     async def main(self) -> None:
         self._datavalid = threading.Event() # initially false
-        self._dvlock.release()
         LOCALHOST = "127.0.0.1"
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
         r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
         b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
         tasks = [b1, r1, b2]
-        #tasks = [b1, r1]
         await asyncio.gather(*tasks, return_exceptions=True)
 
 

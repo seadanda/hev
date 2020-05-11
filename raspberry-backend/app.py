@@ -78,16 +78,23 @@ def send_cmd():
         print(hevclient.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
-    
+
+
+
 
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
     """
     Send timeout thresholds to the Arduino
     """
-    web_form = request.form
-    timeout_value = web_form.get('timeout_threshold')
-    print(hevclient.send_cmd("SET_TIMEOUT", "BUFF_FILL", int(timeout_value)))
+
+    data = request.get_json(force=True)
+    
+
+    #print(data['name'])
+    #print(data['value'])
+
+    print(hevclient.send_cmd("SET_TIMEOUT", data['name'].upper(), int(data['value'])))
 
     return ('', 204)
 

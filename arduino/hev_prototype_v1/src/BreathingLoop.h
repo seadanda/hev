@@ -29,6 +29,7 @@ public:
     readings<float> getRawReadings();
     float getRespiratoryRate();
     float getIERatio();
+    float getPEEP();
     float getMinuteVolume();
     ValvesController * getValvesController();
     uint8_t getValveInhalePercent();
@@ -108,6 +109,7 @@ private:
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
  
+    float _peep;
 
     // calculations
     void updateTotalCycleDuration(uint16_t newtotal);
@@ -126,9 +128,7 @@ private:
 
     // PID vars
 
-    float _pid_process_pressure_derivative; 
-    float _pid_integral; 
-    float _pid_set_point; 
+    //float _pid_integral;  // moved to pid_variable struct
 };
 
 

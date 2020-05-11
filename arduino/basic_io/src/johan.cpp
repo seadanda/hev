@@ -201,7 +201,6 @@ void loop() {
                 duty_cycle = max_duty_cycle;
         }
 
-
         //Serial.print("Pot ");
         //Serial.print(String((int)res));
         //Serial.print(" p_patient ");
