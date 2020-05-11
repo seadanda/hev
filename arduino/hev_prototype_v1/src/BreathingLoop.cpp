@@ -44,6 +44,18 @@ BreathingLoop::BreathingLoop()
     _pid.target_pressure = 0.;// Variable used to build the target pressure profile
     _pid.target_final_pressure = 10.; // Final pressure after the inhale pressure ramp up
     _pid.nsteps = 3; // Final pressure after the inhale pressure ramp up
+
+    for(int i=0; i<RUNNING_AVG_READINGS; i++){
+        _running_flows[i] = 0.0;
+    }
+    _running_index = 0;
+
+    _inhale_trigger_threshold = 2.0;  // abs flow ml/s
+    _exhale_trigger_threshold = 0.3;  // 30% of peak
+
+    _min_inhale_time = 300;
+    _min_exhale_time = 300;
+    _max_exhale_time = 3000;  // for mandatory cycle
 }
 
 BreathingLoop::~BreathingLoop()
@@ -119,8 +131,9 @@ void BreathingLoop::updateReadings()
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
 
         }
+        runningAvgs();
 
-	_pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
+        _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
 
@@ -424,7 +437,10 @@ void BreathingLoop::FSM_breathCycle()
             // go to exhale fill
             //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);//Comment this line for the PID control during inhale
             _fsm_timeout = _states_durations.inhale;
+
+            _valley_flow = 100000;  // reset valley after exhale
             
+            exhaleTrigger();
             break;
         case BL_STATES::PAUSE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
@@ -432,7 +448,9 @@ void BreathingLoop::FSM_breathCycle()
             break;
         case BL_STATES::EXHALE_FILL:
             _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::CLOSED);
+            _peak_flow = -100000;  // reset peak after inhale
             _fsm_timeout = _states_durations.exhale_fill;
+            inhaleTrigger();
             break;
         case BL_STATES::EXHALE:
             _states_durations.exhale = calculateDurationExhale();
@@ -445,6 +463,7 @@ void BreathingLoop::FSM_breathCycle()
                        +_states_durations.pause
                        +_states_durations.exhale_fill
                        +_states_durations.exhale);
+            
             break;
         case BL_STATES::BUFF_PURGE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN);
@@ -561,9 +580,12 @@ ValvesController* BreathingLoop::getValvesController()
 
 void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
 {
-    _total_cycle_duration[0] = _total_cycle_duration[1];
-    _total_cycle_duration[1] = _total_cycle_duration[2];
-    _total_cycle_duration[2] = newtotal;
+    const uint8_t N = 3;
+    for(int i=0; i<N-1; i++){
+        _total_cycle_duration[i] = _total_cycle_duration[i+1];
+
+    }
+    _total_cycle_duration[N-1] = newtotal;
 }
 
 float BreathingLoop::getFlow(){
@@ -621,4 +643,59 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 pid_variables& BreathingLoop::getPIDVariables()
 {
     return _pid;
+}
+
+
+void BreathingLoop::inhaleTrigger()
+{
+    bool en = _valves_controller.getValveParams().inhale_trigger_enable;
+    if(en == true){
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        if(_running_avg_flow < _inhale_trigger_threshold) {
+            if (tnow - _fsm_time > _min_exhale_time ) {
+                // TRIGGER
+                _fsm_timeout = 0; // go to next state immediately
+            }
+        } else if (tnow - _fsm_time > _max_exhale_time){
+                // TRIGGER
+                _fsm_timeout = 0; // go to next state immediately
+        }
+    } 
+}
+
+void BreathingLoop::exhaleTrigger()
+{
+    bool en = _valves_controller.getValveParams().exhale_trigger_enable;
+    if(en == true){
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        if(_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) {
+            if (tnow - _fsm_time > _min_inhale_time ) {
+                // TRIGGER
+                _fsm_timeout = 0; // go to next state immediately
+            }
+        }
+    } 
+}
+
+
+void BreathingLoop::runningAvgs()
+{
+
+    // take the average of the last N flows 
+    float sum = 0;
+    _running_flows[_running_index] = _flow;
+    for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
+        // use absolute value to avoid averaging out negative vals
+        sum += static_cast<float>(fabs(_running_flows[i]));
+    }
+
+    _running_avg_flow = sum/RUNNING_AVG_READINGS;
+    _running_index = (_running_index == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index+1;
+
+    if (_flow > _peak_flow)
+        _peak_flow = _flow;
+    
+    if (_flow < _valley_flow)
+        _valley_flow = _flow;
+
 }

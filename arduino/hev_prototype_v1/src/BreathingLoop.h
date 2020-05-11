@@ -129,6 +129,23 @@ private:
     // PID vars
 
     //float _pid_integral;  // moved to pid_variable struct
+    // triggers
+    void runningAvgs();
+    void inhaleTrigger();
+    void exhaleTrigger();
+    float _running_flows[RUNNING_AVG_READINGS];
+    float _running_avg_flow;
+    uint8_t _running_index;
+
+    float _inhale_trigger_threshold;
+    float _exhale_trigger_threshold;
+    float _peak_flow;
+    float _valley_flow;
+
+    uint32_t _min_inhale_time;
+    uint32_t _min_exhale_time;
+    uint32_t _max_exhale_time;
+
 };
 
 
