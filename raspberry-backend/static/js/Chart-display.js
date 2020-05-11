@@ -50,9 +50,7 @@ function init_results(){
             initial_yaxis_volume.reverse();
             initial_yaxis_flow.reverse();
 
-	    console.log('init results, timestamp: ',timestamp);
 	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
-		console.log('filling up with ',initial_yaxis_pressure[i]['x'], ' - ',timestamp);
 		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - timestamp;
 		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
 		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
@@ -108,11 +106,11 @@ function getGaugeMaxValue(name){
     return obj[name].data.datasets[0].gaugeLimits[obj[name].data.datasets[0].gaugeLimits.length-1];
 }
 
-
 function requestChartVar() {
     $.ajax({
-        url: '/live-data',
+        url: '/last-data',
         success: function(point) {
+
         fio_reading = (point["airway_pressure"]).toFixed(0) ;
         p_plateau_reading = (point["volume"]).toFixed(0) ;
         //console.log(fio_reading);
@@ -121,12 +119,10 @@ function requestChartVar() {
             }
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
 
-
         var seconds = point["timestamp"]/1000;
-
 	    // this is a hack for the test data so that we can cycle data
 	    if ( seconds < current_timestamp ) current_timestamp = seconds - 0.20;
-	    
+        //if ( seconds - current_timestamp > 1.0) { console.log("Current Timestamp: ",current_timestamp, " against ",seconds);}
 	    //protect against bogus timestamps, skip those that are earlier than we already have
 	    if (current_timestamp == -1 || seconds > current_timestamp )
 	    {
@@ -163,10 +159,13 @@ function requestChartVar() {
 		chart_pressure.update();
 		chart_flow.update();
 		chart_volume.update();
-	    }
+        }
+        else{
+            console.log("Skipping point as trying to replace ",current_timestamp," with ",seconds)
+        }
 	    // we can update these with new value even if there is a timestamp issue
-            if ("fio_gauge" in obj) obj["fio_gauge"].update();
-            if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
+        if ("fio_gauge" in obj) obj["fio_gauge"].update();
+        if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
         },
         cache: false
     });

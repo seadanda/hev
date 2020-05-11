@@ -22,7 +22,8 @@ from datetime import datetime
 import threading
 
 #SQLITE_FILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite database file
-SQLITE_FILE = ':memory:'
+#SQLITE_FILE = 'hev::memory:?cache=shared'
+SQLITE_FILE = 'file:hev?mode=memory&cache=shared'
 TABLE_NAME = 'hev_monitor'  # name of the table to be created
 
 def getList(dict): 
@@ -33,9 +34,8 @@ data_format = getList(DataFormat().getDict())
 
 class ArduinoClient(HEVClient):
     def __init__(self):
-        super().__init__(polling=False)
+        super().__init__(polling=True)
         self.conn = None
-        self._polling = True
 
     def start_client(self):
         """runs in other thread - works as long as super goes last and nothing
@@ -74,7 +74,7 @@ class ArduinoClient(HEVClient):
         # Create the table if it does not exist
         try:
             # Connecting to the database file
-            self.conn = sqlite3.connect(SQLITE_FILE)
+            self.conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
    
             exec_string = "created_at  INTEGER  NOT NULL, "
             for var in data_format:
@@ -129,9 +129,7 @@ class ArduinoClient(HEVClient):
                         'INSERT INTO {tn} VALUES {ex_str} '
                         .format(tn=TABLE_NAME, ex_str=exec_string), data_packet
                 )
-
                 self.conn.commit()
-
             except sqlite3.Error as err:
                 raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
             finally:                  
@@ -152,7 +150,7 @@ class ArduinoClient(HEVClient):
             if(backupCon):
                 backupCon.close()
 
-    def number_rows(self):
+    def number_rows(self, table_name):
         c = self.conn.cursor()    			
         #get the count of tables with the name
         c.execute(''' SELECT count(*) FROM {tn} '''.format(tn=table_name))  
@@ -161,28 +159,8 @@ class ArduinoClient(HEVClient):
         print(values[0])
 
         #commit the changes to db			
-        conn.commit()
-        #close the connection
-        conn.close()
+        self.conn.commit()
         return values[0]
-    def check_table(self,table_name):
-        c = self.conn.cursor()    			
-        #get the count of tables with the name
-        c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=table_name))  
-        existence = False
-
-        #if the count is 1, then table exists
-        if c.fetchone()[0]==1 : 
-            existence = True
-            print('Table exists.')
-        else :
-        	print('Table does not exist.')
-    			
-        #commit the changes to db			
-        conn.commit()
-        #close the connection
-        conn.close()
-        return existence
 
 def progress(status, remaining, total):
     print(f'Copied {total-remaining} of {total} pages...')
@@ -198,19 +176,19 @@ N = 300 # number of entries to request for alarms and data (300 = 60 s of data d
 
 @WEBAPP.route('/', methods=['GET', 'POST'])
 def hello_world():
-   return render_template('index.html', result=last_data(client))
+   return render_template('index.html', result=last_data())
 
 @WEBAPP.route('/testing', methods=['GET', 'POST'])
 def prototype():
-   return render_template('index_prototype.html', result=last_data(client))
+   return render_template('index_prototype.html', result=last_data())
 
 @WEBAPP.route('/settings')
 def settings():
-    return render_template('settings.html', result=last_data(client))
+    return render_template('settings.html', result=last_data())
 
 @WEBAPP.route('/charts')
 def charts():
-    return render_template('charts.html', result=last_N_data(client))
+    return render_template('charts.html', result=last_N_data())
 
 @WEBAPP.route('/charts2')
 def charts2():
@@ -222,11 +200,11 @@ def chartsLoop():
 
 @WEBAPP.route('/logs')
 def logs():
-    return render_template('logs.html', result=last_N_alarms(client))    
+    return render_template('logs.html', result=last_N_alarms())    
 
 @WEBAPP.route('/fan')
 def fan():
-    return render_template('fan.html', result=live_data(client))
+    return render_template('fan.html', result=live_data())
 
 
 def multiple_appends(listname, *element):
@@ -288,7 +266,7 @@ def live_data():
     return response
 
 @WEBAPP.route('/last-data', methods=['GET'])
-def last_data(client):
+def last_data():
     """
     Query the sqlite3 table for variables
     Output in json format
@@ -303,8 +281,8 @@ def last_data(client):
 
     fetched_all = []
     
-    if check_table(TABLE_NAME) and number_rows(TABLE_NAME) > 0:
-        cursor = self.conn.cursor()
+    if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > 0:
+        cursor = client.conn.cursor()
         cursor.execute(" SELECT {var} "
         " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=1))
             
@@ -330,7 +308,7 @@ def last_data(client):
     return response
 
 @WEBAPP.route('/last_N_data', methods=['GET'])
-def last_N_data(client):
+def last_N_data():
     """
     Query the sqlite3 table for variables
     Output in json format
@@ -344,8 +322,8 @@ def last_N_data(client):
 
     fetched_all = []
     
-    if check_table(TABLE_NAME) and number_rows(TABLE_NAME) > N:
-        cursor = conn.cursor()
+    if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > N:
+        cursor = client.conn.cursor()
         cursor.execute(" SELECT {var} "
         " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=N))
             
@@ -372,7 +350,7 @@ def last_N_data(client):
 
 
 @WEBAPP.route('/live-alarms', methods=['GET'])
-def live_alarms(client):
+def live_alarms():
     """
     Get live alarms from the hevserver
     Output in json format
@@ -398,7 +376,7 @@ def live_alarms(client):
 
 
 @WEBAPP.route('/last_N_alarms', methods=['GET'])
-def last_N_alarms(client):
+def last_N_alarms():
     """
     Query the sqlite3 table for the last N alarms
     Output in json format
