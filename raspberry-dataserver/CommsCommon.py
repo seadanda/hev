@@ -70,6 +70,8 @@ class CMD_SET_PID(Enum):
     KP = 1
     KI = 2
     KD = 3
+    TARGET_FINAL_PRESSURE = 4
+    NSTEPS = 5
 
 @unique
 class ALARM_TYPE(Enum):

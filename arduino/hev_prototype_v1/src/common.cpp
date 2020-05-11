@@ -84,6 +84,12 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
         case CMD_SET_PID::KD:
             pid.Kd = value;
             break;
+        case CMD_SET_PID::TARGET_FINAL_PRESSURE:
+            pid.target_final_pressure = value;
+            break;
+        case CMD_SET_PID::NSTEPS:
+            pid.nsteps = value;
+            break;
         default:
             break;
     }

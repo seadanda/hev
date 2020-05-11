@@ -78,6 +78,12 @@ async def commsDebug():
     cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.TARGET_FINAL_PRESSURE.value, param=10.0) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.NSTEPS.value, param=3) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     comms.writePayload(cmd)
     print('sent cmd start')

@@ -2,6 +2,7 @@ import sys
 import re
 import queue
 import time
+import datetime
 
 #import matplotlib
 #matplotlib.use('Agg')
@@ -12,6 +13,7 @@ counter = 0
 
 history_length = 2000
 
+xtime = queue.Queue(history_length)
 pressure_buffer = queue.Queue(history_length)
 pressure_inhale = queue.Queue(history_length)
 pressure_patient = queue.Queue(history_length)
@@ -63,6 +65,7 @@ for i in range(history_length):
     PID_P.put(-1)
     PID_I.put(-1)
     PID_D.put(-1)
+    xtime.put(-1)
 
 
 #plt.ion()
@@ -118,8 +121,22 @@ counter += 1.
 if not _data: sys.exit()
 #print(data)
 
+x0 = -99999
+
 for _entry in _data:
     data = re.split(",", _entry)
+    print(data)
+    xtime.get()
+    _time = data[0]
+    print(_time)
+    x = time.strptime(_time,'%Y-%m-%d %H:%M:%S')
+    print(x)
+    print(time.mktime(x))
+    print(float(data[1][:3]))
+    if x0 == -99999:
+        x0 = time.mktime(x)*1000 + float(data[1][:3])
+    x = time.mktime(x)*1000+float(data[1][:3])-x0
+    xtime.put(x)
     for entry in data:
         if "pressure_diff_patient" in entry and not "mean" in entry: 
             _diff_patient_p = float( entry.strip().split("=")[-1] )
@@ -196,7 +213,7 @@ for _entry in _data:
 #h1.set_xdata(np.array(range(history_length)))
 #h1.set_ydata(list(pressure_buffer.queue))#list(pressure_inhale.queue))
 
-h2.set_xdata(np.array(range(history_length)))
+h2.set_xdata(np.array(list(xtime.queue)))
 h2.set_ydata(list(pressure_inhale.queue))#list(pressure_buffer.queue))
 
 #h3.set_xdata(np.array(range(history_length)))
@@ -205,7 +222,7 @@ h2.set_ydata(list(pressure_inhale.queue))#list(pressure_buffer.queue))
 #h4.set_xdata(np.array(range(history_length)))
 #h4.set_ydata(list(PID_I.queue))#list(pressure_buffer.queue))
 #
-h5.set_xdata(np.array(range(history_length)))
+h5.set_xdata(np.array(list(xtime.queue)))
 h5.set_ydata(np.array(list(PID_D.queue)))#list(pressure_buffer.queue))
 #
 #h6.set_xdata(np.array(range(history_length)))
@@ -217,14 +234,14 @@ h5.set_ydata(np.array(list(PID_D.queue)))#list(pressure_buffer.queue))
 #h8.set_xdata(np.array(range(history_length)))
 #h8.set_ydata(20.-np.array(list(pressure_inhale.queue)))#list(pressure_buffer.queue))
 
-h9.set_xdata(np.array(range(history_length)))
-h9.set_ydata(derivative(list(pressure_inhale.queue)))
+#h9.set_xdata(np.array(range(history_length)))
+#h9.set_ydata(derivative(list(pressure_inhale.queue)))
 
-h10.set_xdata(np.array(range(history_length)))
-h10.set_ydata(derivative_exp(list(pressure_inhale.queue)))
-
-h11.set_xdata(np.array(range(history_length)))
-h11.set_ydata(derivative_withthreshold(list(pressure_inhale.queue), 2.0))
+#h10.set_xdata(np.array(range(history_length)))
+#h10.set_ydata(derivative_exp(list(pressure_inhale.queue)))
+#
+#h11.set_xdata(np.array(range(history_length)))
+#h11.set_ydata(derivative_withthreshold(list(pressure_inhale.queue), 2.0))
 
 
 plt.legend()

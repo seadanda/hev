@@ -92,7 +92,9 @@ enum CMD_SET_VALVE: uint8_t {
 enum CMD_SET_PID : uint8_t {
     KP = 1,
     KI = 2,
-    KD = 3
+    KD = 3,
+    TARGET_FINAL_PRESSURE = 4,
+    NSTEPS = 5
 };
 
 #pragma pack(1)

@@ -111,13 +111,16 @@ void BreathingLoop::updateReadings()
                 //Lazy approach
                 //airway_pressure = Proportional
                 //volume = Integral
-                _flow = _pid.valve_duty_cycle;
+                //_flow = _pid.valve_duty_cycle;
+                _flow = _pid.derivative;
                 //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
 
         }
+
+	_pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
         resetReadingSums();
 
@@ -593,18 +596,22 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
     _pid.proportional       = _pid.Kp*error;
     _pid.integral          += _pid.Ki*error;
 
-    //TODO derivative
+    //Derivative calculation
+
+    float _derivative = _pid.process_pressure - _pid.previous_process_pressure;
+
+    _pid.derivative = 0.7*_pid.derivative + 0.3*_derivative;
+
+    //Checking minium and maximum duty cycle
     
     float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
-    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + minimum_open_frac;
+    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;
 
     if(_pid.valve_duty_cycle > maximum_open_frac) _pid.valve_duty_cycle = maximum_open_frac;
     if(_pid.valve_duty_cycle < minimum_open_frac) _pid.valve_duty_cycle = minimum_open_frac;
 
-    // KH
-    _pid.derivative       = derivative;
 }
 
 //void BreathingLoop::PID_process_pressure_derivative(float &_pid_process_pressure_derivative, float process_pressure){
