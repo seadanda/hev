@@ -537,5 +537,6 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
 void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
+float adcToMillibarDPFloat(float adc, float offset = 0);
 
 #endif
