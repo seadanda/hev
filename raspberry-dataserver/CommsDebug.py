@@ -51,10 +51,10 @@ async def commsDebug():
     #comms.writePayload(cmd)
 
     await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.01) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.004) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0010)#0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
@@ -66,11 +66,11 @@ async def commsDebug():
     print('sent cmd start')
     toggle = 2
     while True:
-        await asyncio.sleep(120)
+        await asyncio.sleep(300)
         #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
-        await asyncio.sleep(120)
+        await asyncio.sleep(300)
         cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=toggle, param=0)
         if toggle == 2 :
             toggle = 1
