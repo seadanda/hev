@@ -37,7 +37,7 @@ BreathingLoop::BreathingLoop()
     _pid.Ki = 0.000007;   // integral factor
     _pid.Kd = 0;   // derivative factor
 
-    _pid_integral = 0.;
+    _pid.integral = 0.;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -400,7 +400,7 @@ void BreathingLoop::FSM_breathCycle()
                     _fsm_timeout = _states_durations.buff_pre_inhale;
             }
 
-	    _pid_integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
+	    _pid.integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
         
             break;
         case BL_STATES::INHALE:
@@ -569,9 +569,9 @@ void BreathingLoop::doPID(float target_pressure, float process_pressure, float &
     float error = target_pressure - process_pressure;
 
     proportional       = _pid.Kp*error;
-    _pid_integral     += _pid.Ki*error;
+    _pid.integral     += _pid.Ki*error;
 
-    integral = _pid_integral;
+    integral = _pid.integral;
 
     //TODO integral and derivative
     
@@ -583,6 +583,13 @@ void BreathingLoop::doPID(float target_pressure, float process_pressure, float &
     if(output > maximum_open_frac) output = maximum_open_frac;
     if(output < minimum_open_frac) output = minimum_open_frac;
 
+    // KH
+    _pid.derivative       = derivative;
+    _pid.integral         = integral;
+    _pid.proportional     = proportional;
+    _pid.target_pressure  = target_pressure;
+    _pid.process_pressure = process_pressure;
+    _pid.valve_duty_cycle = output;
 }
 
 pid_variables& BreathingLoop::getPIDVariables()

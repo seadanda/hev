@@ -127,7 +127,7 @@ private:
 
     // PID vars
 
-    float _pid_integral; 
+    //float _pid_integral;  // moved to pid_variable struct
 };
 
 

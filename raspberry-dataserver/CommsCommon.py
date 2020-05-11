@@ -413,7 +413,7 @@ class DebugFormat(PayloadFormat):
     kd              : float = 0.0
     target_pressure : float = 0.0 ##
     process_pressure: float = 0.0 
-    output          : float = 0.0 
+    valve_duty_cycle: float = 0.0 
     proportional    : float = 0.0 
     integral        : float = 0.0 ##
     derivative      : float = 0.0
@@ -430,7 +430,7 @@ class DebugFormat(PayloadFormat):
         self.kd              ,
         self.target_pressure ,
         self.process_pressure,
-        self.output          ,
+        self.valve_duty_cycle,
         self.proportional    ,
         self.integral        ,
         self.derivative      

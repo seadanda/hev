@@ -40,7 +40,8 @@ class Dependant(object):
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
             #logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
         #if payload.getType() == PAYLOAD_TYPE.IVT.value:
@@ -49,11 +50,11 @@ class Dependant(object):
         #if hasattr(payload, 'inhale_exhale_ratio'):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
         if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f}")
+            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
-        if hasattr(payload, 'duration_inhale'):
-            logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+        #if hasattr(payload, 'duration_inhale'):
+        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
         self._llipacket = payload.getDict() # returns a dict
 
 

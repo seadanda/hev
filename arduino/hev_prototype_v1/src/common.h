@@ -293,7 +293,7 @@ struct debug_data_format {
     float kd = 0.0;
     float target_pressure  = 0.0; //
     float process_pressure = 0.0; 
-    float output           = 0.0; 
+    float valve_duty_cycle = 0.0; 
     float proportional     = 0.0; 
     float integral         = 0.0; //
     float derivative       = 0.0;
@@ -464,9 +464,17 @@ struct alarms {
 };
 
 struct pid_variables {
+    // input
     float Kp; // proportional factor
     float Ki; // integral factor
     float Kd; // derivative factor
+    // results of calculation
+    float target_pressure  ; 
+    float process_pressure ; 
+    float valve_duty_cycle ; 
+    float proportional     ; 
+    float integral         ; 
+    float derivative       ;
 };
 
 
