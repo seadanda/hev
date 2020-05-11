@@ -474,6 +474,9 @@ struct pid_variables {
     float proportional     ; 
     float integral         ; 
     float derivative       ;
+    float previous_process_pressure ;
+    float target_final_pressure;
+    int nsteps		   ;
 };
 
 

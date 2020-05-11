@@ -33,11 +33,17 @@ BreathingLoop::BreathingLoop()
     _volume = 0;
     _airway_pressure = 0;
 
-    _pid.Kp = 0.0007; // proportional factor
-    _pid.Ki = 0.000007;   // integral factor
-    _pid.Kd = 0;   // derivative factor
+    _pid.Kp = 0.004; // proportional factor
+    _pid.Ki = 0.0010;   // integral factor
+    _pid.Kd = 0.;   // derivative factor
 
-    _pid.integral = 0.;
+    _pid.integral   = 0.;
+    _pid.derivative = 0.;
+
+    _pid.process_pressure = 0.;// Variable used to build the target pressure profile
+    _pid.target_pressure = 0.;// Variable used to build the target pressure profile
+    _pid.target_final_pressure = 10.; // Final pressure after the inhale pressure ramp up
+    _pid.nsteps = 3; // Final pressure after the inhale pressure ramp up
 }
 
 BreathingLoop::~BreathingLoop()
@@ -98,17 +104,17 @@ void BreathingLoop::updateReadings()
 
                 float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
-                doPID(3, 10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
+                doPID(3, _pid.target_final_pressure, _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
 		//_volume = _valve_inhale_PID_percentage;
 
 		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
                 //Lazy approach
                 //airway_pressure = Proportional
                 //volume = Integral
-                _flow = _valve_inhale_PID_percentage;
+                _flow = _pid.valve_duty_cycle;
                 //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
-                _valves_controller.setPIDoutput(_valve_inhale_PID_percentage);
+                _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
 
         }
@@ -402,6 +408,8 @@ void BreathingLoop::FSM_breathCycle()
             }
 
 	    _pid.integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
+	    _pid.target_pressure = 0.; // Resets the target pressure for the PID target profile 
+	    _pid.derivative = 0.; // Resets the derivative for Inhale PID
         
             break;
         case BL_STATES::INHALE:
@@ -569,38 +577,34 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     // Set PID profile using the set point
     // nsteps defines the number of intermediate steps
+    //
 
-    float _pid_set_point_step = target_pressure/nsteps;
+    _pid.process_pressure = process_pressure;
 
-    _pid_set_point += _pid_set_point_step;
+    float _pid_set_point_step = _pid.target_final_pressure/_pid.nsteps;
 
-    if(_pid_set_point > target_pressure) _pid_set_point = target_pressure;
+    _pid.target_pressure += _pid_set_point_step;
+
+    if(_pid.target_pressure > _pid.target_final_pressure) _pid.target_pressure = _pid.target_final_pressure;
 
     //Calculate the PID error based on the pid set point
-    float error = _pid_set_point - process_pressure;
+    float error = _pid.target_pressure - _pid.process_pressure;
 
-    proportional       = _pid.Kp*error;
-    _pid.integral     += _pid.Ki*error;
-
-    integral = _pid.integral;
+    _pid.proportional       = _pid.Kp*error;
+    _pid.integral          += _pid.Ki*error;
 
     //TODO derivative
     
     float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
-    output = proportional + integral + minimum_open_frac;
+    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + minimum_open_frac;
 
-    if(output > maximum_open_frac) output = maximum_open_frac;
-    if(output < minimum_open_frac) output = minimum_open_frac;
+    if(_pid.valve_duty_cycle > maximum_open_frac) _pid.valve_duty_cycle = maximum_open_frac;
+    if(_pid.valve_duty_cycle < minimum_open_frac) _pid.valve_duty_cycle = minimum_open_frac;
 
     // KH
     _pid.derivative       = derivative;
-    _pid.integral         = integral;
-    _pid.proportional     = proportional;
-    _pid.target_pressure  = target_pressure;
-    _pid.process_pressure = process_pressure;
-    _pid.valve_duty_cycle = output;
 }
 
 //void BreathingLoop::PID_process_pressure_derivative(float &_pid_process_pressure_derivative, float process_pressure){
