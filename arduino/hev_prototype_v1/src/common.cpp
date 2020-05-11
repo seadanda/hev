@@ -144,3 +144,24 @@ float adcToMillibarFloat(float adc, float offset = 0)
     return static_cast<float>(mbar);
     //return static_cast<int16_t>(adc);
 } 
+
+float adcToMillibarDPFloat(float adc, float offset = 0)
+{
+    // The calibration for the DP sensor is provided by the manufacturer
+    // https://docs.rs-online.com/7d77/0900766b81568899.pdf
+
+    float PCB_Gain		= 2.		; // real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
+    float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
+
+    float _voltage = PCB_Gain * ADC_to_Voltage_Gain * (adc - offset);
+
+    float PaTombar = 0.01;
+
+    float AoutVdd  = _voltage/5000.; // The board provides 5000 mV to the input of the DP sensor
+
+    float sign = 2*((AoutVdd-0.5 > 0.)-0.5);
+    
+    float dp_mbar = PaTombar * sign * pow(((AoutVdd/0.4)-1.25), 2)*525; // same calculation as in the Labview Code  
+
+    return static_cast<float>(dp_mbar);
+} 

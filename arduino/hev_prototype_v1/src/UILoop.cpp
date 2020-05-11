@@ -12,7 +12,7 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _ivt_report_time = tnow;
     _debug_report_time = tnow;
 
-    _fast_report_timeout = 50;  //ms
+    _fast_report_timeout = 10;  //ms
     _readback_report_timeout = 300; 
     _cycle_report_timeout = 500;  // this should probably be based on fsm state
 

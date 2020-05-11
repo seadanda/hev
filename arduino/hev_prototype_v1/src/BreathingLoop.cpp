@@ -105,7 +105,7 @@ void BreathingLoop::updateReadings()
 #ifdef HEV_FULL_SYSTEM                                         
         _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
-        _readings_avgs.pressure_diff_patient    = (_readings_sums.pressure_diff_patient    / _readings_N) ;
+        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat(_readings_sums.pressure_diff_patient    / _readings_N) ;
 #endif
         
 
@@ -124,7 +124,6 @@ void BreathingLoop::updateReadings()
                 //airway_pressure = Proportional
                 //volume = Integral
                 //_flow = _pid.valve_duty_cycle;
-                _flow = _pid.derivative;
                 //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
@@ -133,7 +132,8 @@ void BreathingLoop::updateReadings()
         }
         runningAvgs();
 
-        _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
+	_flow = _readings_avgs.pressure_diff_patient;
+	_pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
 
