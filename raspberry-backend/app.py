@@ -136,7 +136,7 @@ class ArduinoClient(HEVClient):
                 sys.stdout.flush()
 
     def db_backup(self,backup_time):
-        threading.Timer(backup_time, db_backup, [backup_time]).start()
+        threading.Timer(backup_time, self.db_backup, [backup_time]).start()
         print("Executing DB backup")
         try:
             # Backup DB
@@ -385,8 +385,8 @@ def last_N_alarms():
     """
     data = {'timestamp' : None, 'alarms' : None}
 
-    if check_table(TABLE_NAME):
-        cursor = self.conn.cursor()
+    if client.check_table(TABLE_NAME):
+        cursor = client.conn.cursor()
         cursor.execute("SELECT timestamp, alarms "
         "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=TABLE_NAME, size=N))
         fetched = cursor.fetchall()
