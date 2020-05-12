@@ -105,7 +105,7 @@ void BreathingLoop::updateReadings()
 #ifdef HEV_FULL_SYSTEM                                         
         _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
-        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat(_readings_sums.pressure_diff_patient    / _readings_N) ;
+        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
 #endif
         
 
@@ -127,7 +127,7 @@ void BreathingLoop::updateReadings()
                 //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
-                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
 
         }
         runningAvgs();
@@ -629,7 +629,7 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     //Checking minium and maximum duty cycle
     
-    float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
+    float minimum_open_frac = 0.52; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
     _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;

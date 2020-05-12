@@ -44,7 +44,7 @@ ValvesController::ValvesController()
 
     _valve_params.inhale_duty_cycle = 0;
     _valve_params.inhale_open_max = MAX_VALVE_FRAC_OPEN;
-    _valve_params.inhale_open_min = 0.53;
+    _valve_params.inhale_open_min = 0.52;
     _valve_params.valve_air_in_enable       = 1;
     _valve_params.valve_o2_in_enable        = 1;
     _valve_params.valve_purge_enable        = 1;

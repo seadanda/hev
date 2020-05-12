@@ -125,14 +125,14 @@ x0 = -99999
 
 for _entry in _data:
     data = re.split(",", _entry)
-    print(data)
+    #print(data)
     xtime.get()
     _time = data[0]
-    print(_time)
+    #print(_time)
     x = time.strptime(_time,'%Y-%m-%d %H:%M:%S')
-    print(x)
-    print(time.mktime(x))
-    print(float(data[1][:3]))
+    #print(x)
+    #print(time.mktime(x))
+    #print(float(data[1][:3]))
     if x0 == -99999:
         x0 = time.mktime(x)*1000 + float(data[1][:3])
     x = time.mktime(x)*1000+float(data[1][:3])-x0
@@ -216,11 +216,11 @@ for _entry in _data:
 h2.set_xdata(np.array(list(xtime.queue)))
 h2.set_ydata(list(pressure_inhale.queue))#list(pressure_buffer.queue))
 
-#h3.set_xdata(np.array(range(history_length)))
-#h3.set_ydata(list(PID_P.queue))#list(pressure_buffer.queue))
+h3.set_xdata(np.array(list(xtime.queue)))
+h3.set_ydata(list(PID_P.queue))#list(pressure_buffer.queue))
 #
-#h4.set_xdata(np.array(range(history_length)))
-#h4.set_ydata(list(PID_I.queue))#list(pressure_buffer.queue))
+h4.set_xdata(np.array(list(xtime.queue)))
+h4.set_ydata(list(PID_I.queue))#list(pressure_buffer.queue))
 #
 h5.set_xdata(np.array(list(xtime.queue)))
 h5.set_ydata(np.array(list(PID_D.queue)))#list(pressure_buffer.queue))
