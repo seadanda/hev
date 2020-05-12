@@ -217,11 +217,11 @@ def send_cmd():
     """ 
     web_form = request.form
     if web_form.get('start') == "START":
-        print(hevclient.send_cmd("GENERAL", "START"))
+        print(client.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
-        print(hevclient.send_cmd("GENERAL", "STOP"))
+        print(client.send_cmd("GENERAL", "STOP"))
     elif web_form.get('reset') == "RESET":
-        print(hevclient.send_cmd("GENERAL", "RESET"))
+        print(client.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
     
@@ -246,7 +246,9 @@ def data_handler():
     
     converted_output = [float(i) for i in output] 
 
-    hevclient.set_thresholds(converted_output)
+    print(converted_output)
+    print("The thresholds are set with a command, not with a set threshold function")
+    #hevclient.set_thresholds(converted_output)
 
     return render_template('index.html', result=live_data(), patient=patient_name)
 
@@ -295,7 +297,7 @@ def last_data():
 
         fetched_all.append(data)
     else:
-        for i in range(1):
+        for _ in range(1):
             data = {key: None for key in list_variables}
             for index, item in enumerate(list_variables):
                 data[item] = ""
@@ -336,7 +338,7 @@ def last_N_data():
 
             fetched_all.append(data)
     else:
-        for i in range(N):
+        for _ in range(N):
             data = {key: None for key in list_variables}
             for index, item in enumerate(list_variables):
                 data[item] = ""
@@ -390,7 +392,7 @@ def last_N_alarms():
         fetched = cursor.fetchall()
     else:
         fetched = []
-        for i in range(N):
+        for _ in range(N):
               data['timestamp'] = "none"
               data['alarms'] = "none"
               fetched.append(data)
