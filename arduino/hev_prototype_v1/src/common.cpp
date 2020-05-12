@@ -155,9 +155,9 @@ float adcToMillibarDPFloat(float adc, float offset = 0)
     float PCB_Gain		= 2.		; // real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
     float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
 
-    float zeroDPvoltageInADC    = 2500./PCB_Gain/ADC_to_Voltage_Gain;
+    float zeroDPvoltageInADC    = (2500./PCB_Gain)*(1./ADC_to_Voltage_Gain);
 
-    float _voltage = PCB_Gain * ADC_to_Voltage_Gain * (adc - offset - zeroDPvoltageInADC);
+    float _voltage = PCB_Gain * ADC_to_Voltage_Gain * (adc - offset + zeroDPvoltageInADC);
 
     float PaTombar = 0.01;
 
