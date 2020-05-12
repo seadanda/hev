@@ -143,11 +143,12 @@ class PAYLOAD_TYPE(IntEnum):
     ALARM      = 6
     DEBUG      = 7
     IVT        = 8
+    LOGMSG     = 9
 
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA7, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA8, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -168,6 +169,7 @@ class PayloadFormat():
             6: AlarmFormat,
             7: DebugFormat,
             8: IVTFormat,
+            9: LogMsgFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -497,6 +499,30 @@ class IVTFormat(PayloadFormat):
         self.o2_in_i2caddr  ,
         self.system_temp    
         ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
+
+# =======================================
+# Log msg payload
+# =======================================
+@dataclass
+class LogMsgFormat(PayloadFormat):
+    _dataStruct = Struct("<BIB50s")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.LOGMSG
+
+    chararray : str = ""
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.chararray) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)

@@ -165,3 +165,13 @@ float adcToMillibarDPFloat(float adc, float offset = 0)
 
     return static_cast<float>(dp_mbar);
 } 
+
+void logMsg(CommsControl *comms, String s)
+{
+        Payload pl_send;
+
+        logmsg_data_format log;
+        s.toCharArray(log.chararray, 50);
+        pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&log), sizeof(log));
+        comms->writePayload(pl_send);
+}

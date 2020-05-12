@@ -132,8 +132,8 @@ void BreathingLoop::updateReadings()
         }
         runningAvgs();
 
-	_flow = _readings_avgs.pressure_diff_patient;
-	_pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
+        _flow = _readings_avgs.pressure_diff_patient;
+        _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
 
@@ -532,6 +532,8 @@ void BreathingLoop::calibrate()
         _calib_avgs.pressure_inhale  = static_cast<float>(_calib_sums.pressure_inhale/ _calib_N);
         _calib_sums.pressure_patient += static_cast<float>(analogRead(pin_pressure_patient));
         _calib_avgs.pressure_patient = static_cast<float>(_calib_sums.pressure_patient/ _calib_N);
+        _calib_sums.pressure_diff_patient += static_cast<float>(analogRead(pin_pressure_diff_patient));
+        _calib_avgs.pressure_diff_patient = static_cast<float>(_calib_sums.pressure_diff_patient/ _calib_N);
 
 	_calib_time = tnow;
 	_calib_timeout = 10;
@@ -556,6 +558,7 @@ void BreathingLoop::initCalib()
     _calib_avgs.pressure_buffer = 0;
     _calib_avgs.pressure_inhale = 0;
     _calib_avgs.pressure_patient = 0;
+    _calib_avgs.pressure_diff_patient = 0;
     _calib_N = 0;
 }
 

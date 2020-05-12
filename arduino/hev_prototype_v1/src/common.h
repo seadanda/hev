@@ -2,6 +2,8 @@
 #define COMMON_H
 #include <Arduino.h>
 #include <limits>
+#include "CommsCommon.h"
+#include "CommsControl.h"
 
 
 #if defined(ARDUINO_FEATHER_ESP32)
@@ -18,7 +20,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA7
+#define HEV_FORMAT_VERSION 0xA8
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -34,7 +36,8 @@ enum PAYLOAD_TYPE : uint8_t {
     CMD          = 5,
     ALARM        = 6,
     DEBUG        = 7,
-    IVT          = 8
+    IVT          = 8,
+    LOGMSG       = 9
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -302,6 +305,17 @@ struct debug_data_format {
 };
 #pragma pack()
 
+
+#pragma pack(1)
+struct logmsg_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::LOGMSG;
+
+    char chararray[50];
+};
+#pragma pack()
 //enum VALVE_STATES : bool {
 //    V_OPEN = HIGH,
 //    V_CLOSED = LOW
@@ -539,5 +553,6 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
 float adcToMillibarDPFloat(float adc, float offset = 0);
+void logMsg(CommsControl *comms, String s);
 
 #endif
