@@ -54,6 +54,8 @@ class Dependant(object):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
         if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
             logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+        # if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+        #     logging.info(f"LOGMSG {payload.message} ") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -87,6 +89,12 @@ async def commsDebug():
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     comms.writePayload(cmd)
     print('sent cmd start')
+    #await asyncio.sleep(1)
+    #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.INHALE_TRIGGER_ENABLE.value, param=1) 
+    #comms.writePayload(cmd)
+    #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.EXHALE_TRIGGER_ENABLE.value, param=1) 
+    #comms.writePayload(cmd)
+    #print('sent inhale + exhale trigger -> 1')
     toggle = 2
     while True:
         await asyncio.sleep(300)

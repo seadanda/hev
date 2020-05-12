@@ -1,5 +1,7 @@
 #include "common.h"
 
+CommsControl* globalComms;
+
 void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value) {
     switch (cmd) {
         case CMD_SET_DURATION::CALIBRATION:
@@ -166,12 +168,17 @@ float adcToMillibarDPFloat(float adc, float offset = 0)
     return static_cast<float>(dp_mbar);
 } 
 
-void logMsg(CommsControl *comms, String s)
+void logMsg(String s)
 {
+        CommsControl *comms = getGlobalComms();
         Payload pl_send;
 
         logmsg_data_format log;
-        s.toCharArray(log.chararray, 50);
+        sprintf(log.message, "%50s", "");
+        sprintf(log.message, "%s", s.c_str() );
         pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&log), sizeof(log));
         comms->writePayload(pl_send);
 }
+
+CommsControl* getGlobalComms() { return globalComms; }
+void setGlobalComms(CommsControl *comms){ globalComms = comms; }
