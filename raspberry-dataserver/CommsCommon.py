@@ -46,6 +46,7 @@ class CMD_SET_TIMEOUT(Enum):
     EXHALE_FILL     = 10
     EXHALE          = 11
 
+@unique
 class VENTILATION_MODE(Enum):
     UNKNOWN          = 0
     HEV_MODE_PS      = 1
@@ -56,6 +57,7 @@ class VENTILATION_MODE(Enum):
     LAB_MODE_PURGE   = 6
     LAB_MODE_FLUSH   = 7
 
+@unique
 class CMD_SET_VALVE(Enum):
     AIR_IN_ENABLE = 1
     O2_IN_ENABLE  = 2
@@ -66,6 +68,7 @@ class CMD_SET_VALVE(Enum):
     INHALE_TRIGGER_ENABLE = 7
     EXHALE_TRIGGER_ENABLE = 8
 
+@unique
 class CMD_SET_PID(Enum):
     KP = 1
     KI = 2
@@ -112,6 +115,8 @@ class CMD_MAP(Enum):
     GENERAL           =  CMD_GENERAL
     SET_TIMEOUT       =  CMD_SET_TIMEOUT
     SET_MODE          =  VENTILATION_MODE
+    SET_VALVE         =  CMD_SET_VALVE
+    SET_PID           =  CMD_SET_PID
     SET_THRESHOLD_MIN =  ALARM_CODES
     SET_THRESHOLD_MAX =  ALARM_CODES
 
@@ -512,19 +517,21 @@ class LogMsgFormat(PayloadFormat):
     _dataStruct = Struct("<BIB50s")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.LOGMSG
 
-    chararray : str = ""
+    message   : str = ""
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
     def fromByteArray(self, byteArray):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
         tmp_payload_type = 0
+        tmp_chararray  = ""
         (self.version,
         self.timestamp,
         tmp_payload_type,
-        self.chararray) = self._dataStruct.unpack(byteArray) 
+        tmp_chararray) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
+        self.message = tmp_chararray.decode('ascii')
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 

@@ -2,7 +2,6 @@
 #define COMMON_H
 #include <Arduino.h>
 #include <limits>
-#include "CommsCommon.h"
 #include "CommsControl.h"
 
 
@@ -26,6 +25,8 @@
 const float MAX_VALVE_FRAC_OPEN = 0.74;
 const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
 const uint8_t RUNNING_AVG_READINGS = 3;
+
+
 // input params
 enum PAYLOAD_TYPE : uint8_t {
     UNSET        = 0,
@@ -313,7 +314,7 @@ struct logmsg_data_format {
     uint32_t timestamp                  = 0;
     uint8_t  payload_type               = PAYLOAD_TYPE::LOGMSG;
 
-    char chararray[50];
+    char message[50];
 };
 #pragma pack()
 //enum VALVE_STATES : bool {
@@ -553,6 +554,8 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
 float adcToMillibarDPFloat(float adc, float offset = 0);
-void logMsg(CommsControl *comms, String s);
+void logMsg(String s);
+CommsControl* getGlobalComms();
+void setGlobalComms(CommsControl *comms);
 
 #endif

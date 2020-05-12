@@ -71,6 +71,7 @@ void setup()
     //pinMode(pin_buzzer, OUTPUT);
 
     comms.beginSerial();
+    setGlobalComms(&comms);
 
     Wire.begin(22, 23);
     I2CMCP9808.begin(22, 23);

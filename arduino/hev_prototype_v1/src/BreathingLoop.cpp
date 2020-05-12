@@ -653,14 +653,18 @@ void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
     if(en == true){
+        //logMsg("inhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
         if(_running_avg_flow < _inhale_trigger_threshold) {
+            //TODO - check we're past 'valley'
             if (tnow - _fsm_time > _min_exhale_time ) {
                 // TRIGGER
+                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_inhale_trigger_threshold));
                 _fsm_timeout = 0; // go to next state immediately
             }
         } else if (tnow - _fsm_time > _max_exhale_time){
                 // TRIGGER
+                logMsg("inhale trigger - max exhale time exceeded");
                 _fsm_timeout = 0; // go to next state immediately
         }
     } 
@@ -670,8 +674,11 @@ void BreathingLoop::exhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().exhale_trigger_enable;
     if(en == true){
+        //logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
         if(_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) {
+            //TODO - check we're past 'peak'
+            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time > _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
