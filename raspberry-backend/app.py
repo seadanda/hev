@@ -62,7 +62,7 @@ class ArduinoClient(HEVClient):
         	print('Table does not exist.')
     			
         #commit the changes to db			
-        self.conn.commit()
+        #self.conn.commit()
         return existence
     def database_setup(self):
         '''
@@ -159,7 +159,7 @@ class ArduinoClient(HEVClient):
         print(values[0])
 
         #commit the changes to db			
-        self.conn.commit()
+        #self.conn.commit()
         return values[0]
 
 def progress(status, remaining, total):
