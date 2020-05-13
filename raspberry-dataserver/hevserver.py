@@ -79,7 +79,7 @@ class HEVServer(object):
         
         try:
             reqtype = request["type"]
-            if reqtype == "cmd":
+            if reqtype == "CMD":
                 reqcmd = request["cmd"]
                 reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
@@ -110,7 +110,14 @@ class HEVServer(object):
                 pass
             elif reqtype == "ALARM":
                 # acknowledgement of alarm from gui
-                alarm_to_ack = AlarmFormat(**request["ack"])
+                reqalarm_type = request["alarm_type"]
+                reqalarm_code = ALARM_CODES[request["alarm_code"]].value
+                reqparam = request["param"] if request["param"] is not None else 0
+
+                alarm_to_ack = AlarmFormat(alarm_type=reqalarm_type,
+                                           alarm_code=reqalarm_code,
+                                           param=reqparam)
+
                 try:
                     # delete alarm if it exists
                     with self._dblock:
