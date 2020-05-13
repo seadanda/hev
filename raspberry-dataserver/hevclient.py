@@ -92,9 +92,9 @@ class HEVClient(object):
     async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
-        if reqtype == "cmd":
+        if reqtype == "CMD":
             payload = {
-                "type": "cmd",
+                "type": "CMD",
                 "cmdtype": cmdtype,
                 "cmd": cmd,
                 "param": param
@@ -135,7 +135,7 @@ class HEVClient(object):
 
     def send_cmd(self, cmdtype:str, cmd: str, param: Union[float,int]=None) -> bool:
         # send a cmd and wait to see if it's valid
-        return asyncio.run(self.send_request("cmd", cmdtype=cmdtype, cmd=cmd, param=param))
+        return asyncio.run(self.send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param))
 
     def ack_alarm(self, alarm: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list

@@ -79,7 +79,7 @@ class HEVServer(object):
         
         try:
             reqtype = request["type"]
-            if reqtype == "cmd":
+            if reqtype == "CMD":
                 reqcmd = request["cmd"]
                 reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
