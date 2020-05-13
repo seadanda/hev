@@ -87,7 +87,7 @@ async def commsDebug():
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Enable inhale trigger
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.INHALE_TRIGGER_ENABLE.value, param=0.) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.INHALE_TRIGGER_ENABLE.value, param=1.) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Enable exhale trigger
@@ -95,7 +95,7 @@ async def commsDebug():
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Change TIMEOUT of breathing cycle (INHALE)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1200.) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=30000.) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Change TIMEOUT of breathing cycle (INHALE)
@@ -103,7 +103,7 @@ async def commsDebug():
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Change TIMEOUT of breathing cycle (INHALE)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.EXHALE.value, param=1200.) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.EXHALE.value, param=20000.) # to set Kp=0.0002, param=200 i.e., micro_Kp
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Start the cycles

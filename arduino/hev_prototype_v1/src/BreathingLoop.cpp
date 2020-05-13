@@ -50,10 +50,10 @@ BreathingLoop::BreathingLoop()
     }
     _running_index = 0;
 
-    _inhale_trigger_threshold = 2.0;  // abs flow ml/s
+    _inhale_trigger_threshold = 0.01;  // abs flow ml/s
     _exhale_trigger_threshold = 0.3;  // 30% of peak
 
-    _min_inhale_time = 300;
+    _min_inhale_time = 150;
     _min_exhale_time = 300;
     _max_exhale_time = 3000;  // for mandatory cycle
 }
@@ -123,7 +123,7 @@ void BreathingLoop::updateReadings()
                 //Lazy approach
                 _airway_pressure = _pid.proportional;
                 _volume = _pid.integral;
-                _flow = (_pid.Kd*_pid.derivative);
+                //_flow = (_pid.Kd*_pid.derivative);
                 //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
@@ -132,7 +132,7 @@ void BreathingLoop::updateReadings()
         }
         runningAvgs();
 
-        //_flow = _readings_avgs.pressure_diff_patient;
+        _flow = _readings_avgs.pressure_diff_patient;
         _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
@@ -464,6 +464,8 @@ void BreathingLoop::FSM_breathCycle()
                        +_states_durations.pause
                        +_states_durations.exhale_fill
                        +_states_durations.exhale);
+
+            inhaleTrigger();
             
             break;
         case BL_STATES::BUFF_PURGE:
@@ -663,7 +665,7 @@ void BreathingLoop::inhaleTrigger()
     if(en == true){
         _fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_running_avg_flow < _inhale_trigger_threshold) 
+        if((_flow > _inhale_trigger_threshold) 
             && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
             //TODO - check we're past 'valley'
             if (tnow - _fsm_time > _min_exhale_time ) {
