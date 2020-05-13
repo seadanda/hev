@@ -495,6 +495,7 @@ struct pid_variables {
     float previous_process_pressure ;
     float target_final_pressure;
     int nsteps		   ;
+    int istep		   ;
 };
 
 

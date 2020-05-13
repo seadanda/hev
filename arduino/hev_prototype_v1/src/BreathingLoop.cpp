@@ -121,9 +121,9 @@ void BreathingLoop::updateReadings()
 
 		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
                 //Lazy approach
-                //airway_pressure = Proportional
-                //volume = Integral
-                //_flow = _pid.valve_duty_cycle;
+                _airway_pressure = _pid.proportional;
+                _volume = _pid.integral;
+                _flow = (_pid.Kd*_pid.derivative);
                 //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
@@ -132,7 +132,7 @@ void BreathingLoop::updateReadings()
         }
         runningAvgs();
 
-        _flow = _readings_avgs.pressure_diff_patient;
+        //_flow = _readings_avgs.pressure_diff_patient;
         _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
@@ -426,6 +426,7 @@ void BreathingLoop::FSM_breathCycle()
 	    _pid.integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
 	    _pid.target_pressure = 0.; // Resets the target pressure for the PID target profile 
 	    _pid.derivative = 0.; // Resets the derivative for Inhale PID
+	    _pid.istep = 0;
         
             break;
         case BL_STATES::INHALE:
@@ -606,12 +607,19 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
     // Set PID profile using the set point
     // nsteps defines the number of intermediate steps
     //
+    //
+
+    _pid.istep +=1;
 
     _pid.process_pressure = process_pressure;
 
     float _pid_set_point_step = _pid.target_final_pressure/_pid.nsteps;
 
     _pid.target_pressure += _pid_set_point_step;
+
+    if (_pid.istep == 1) _pid.target_pressure = 0.1*_pid.target_final_pressure;
+    if (_pid.istep == 2) _pid.target_pressure = 0.4*_pid.target_final_pressure;
+    if (_pid.istep >= 3) _pid.target_pressure = _pid.target_final_pressure;
 
     if(_pid.target_pressure > _pid.target_final_pressure) _pid.target_pressure = _pid.target_final_pressure;
 
@@ -623,13 +631,13 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     //Derivative calculation
 
-    float _derivative = _pid.process_pressure - _pid.previous_process_pressure;
+    float _derivative = _pid.previous_process_pressure - _pid.process_pressure ;
 
     _pid.derivative = 0.7*_pid.derivative + 0.3*_derivative;
 
     //Checking minium and maximum duty cycle
     
-    float minimum_open_frac = 0.52; //Minimum opening to avoid vibrations on the valve control
+    float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
     _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;

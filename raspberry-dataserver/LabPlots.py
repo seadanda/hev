@@ -21,7 +21,7 @@ class LabPlots(QtWidgets.QMainWindow):
     def __init__(self, dark=False, throttle=1, *args, **kwargs):
         super(LabPlots, self).__init__(*args, **kwargs)
 
-        self.history_length = 500
+        self.history_length = 5000
         self.throttle = throttle
 
         self.graphWidget = pg.PlotWidget()
@@ -51,7 +51,7 @@ class LabPlots(QtWidgets.QMainWindow):
         #Add grid
         self.graphWidget.showGrid(x=True, y=True)
         #Set Range
-        self.graphWidget.setXRange(self.history_length * (-1) * 0.1, 0, padding=0)
+        self.graphWidget.setXRange(self.history_length * (-1) , 0, padding=0)
         self.graphWidget.setYRange(0, 40, padding=0)
 
         self.line1 = self.plot(self.timestamp, self.pressure_inhale, "Buffer", "F00")

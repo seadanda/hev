@@ -11,7 +11,7 @@ import numpy as np
 
 counter = 0
 
-history_length = 2000
+history_length = 5000
 
 xtime = queue.Queue(history_length)
 pressure_buffer = queue.Queue(history_length)
@@ -210,8 +210,8 @@ for _entry in _data:
 #    print('exiting')
 #    sys.exit()
 
-#h1.set_xdata(np.array(range(history_length)))
-#h1.set_ydata(list(pressure_buffer.queue))#list(pressure_inhale.queue))
+h1.set_xdata(np.array(list(xtime.queue)))
+h1.set_ydata(list(pressure_buffer.queue))#list(pressure_inhale.queue))
 
 h2.set_xdata(np.array(list(xtime.queue)))
 h2.set_ydata(list(pressure_inhale.queue))#list(pressure_buffer.queue))
@@ -225,8 +225,8 @@ h4.set_ydata(list(PID_I.queue))#list(pressure_buffer.queue))
 h5.set_xdata(np.array(list(xtime.queue)))
 h5.set_ydata(np.array(list(PID_D.queue)))#list(pressure_buffer.queue))
 #
-#h6.set_xdata(np.array(range(history_length)))
-#h6.set_ydata(list(pressure_patient.queue))#list(pressure_buffer.queue))
+h6.set_xdata(np.array(list(xtime.queue)))
+h6.set_ydata(list(pressure_patient.queue))#list(pressure_buffer.queue))
 #
 #h7.set_xdata(np.array(range(history_length)))
 #h7.set_ydata(list(pressure_diff_patient.queue))#list(pressure_buffer.queue))
