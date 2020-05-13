@@ -13,7 +13,7 @@ import svpi
 import hevfromtxt
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
-from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, VENTILATION_MODE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
@@ -111,17 +111,19 @@ class HEVServer(object):
             elif reqtype == "ALARM":
                 # acknowledgement of alarm from gui
                 reqalarm_type = request["alarm_type"]
-                reqalarm_code = ALARM_CODES[request["alarm_code"]].value
+                reqalarm_code = ALARM_CODES[request["alarm_code"]]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                alarm_to_ack = AlarmFormat(alarm_type=reqalarm_type,
+                alarm_to_ack = AlarmFormat(alarm_type=ALARM_TYPE[reqalarm_type],
                                            alarm_code=reqalarm_code,
                                            param=reqparam)
-
                 try:
                     # delete alarm if it exists
                     with self._dblock:
-                        self._alarms.remove(alarm_to_ack)
+                        for alarm in self._alarms:
+                            if alarm == alarm_to_ack:
+                                print(alarm, alarm_to_ack)
+                                self._alarms.remove(alarm)
                     payload = {"type": "ack"}
                 except NameError as e:
                     raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
