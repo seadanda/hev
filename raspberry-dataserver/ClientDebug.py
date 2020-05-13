@@ -17,11 +17,12 @@ import os
 from hevclient import HEVClient
 
 class ClientPlots(QtWidgets.QMainWindow):
-    def __init__(self, light=False, *args, **kwargs):
+    def __init__(self, light=False, port=54322, *args, **kwargs):
         super(ClientPlots, self).__init__(*args, **kwargs)
 
         self.history_length = 300
         self.xrange = 300
+        self.port = port
 
         self.setWindowTitle("HEV socket debug")
         self.graphWidget = pg.GraphicsLayoutWidget()
@@ -90,7 +91,7 @@ class ClientPlots(QtWidgets.QMainWindow):
            return canvas.plot(x, y, name=plotname, pen=pen)
 
     async def redraw(self):
-        reader, writer = await asyncio.open_connection("127.0.0.1", 54322)
+        reader, writer = await asyncio.open_connection("127.0.0.1", self.port)
         while True:
             try:
                 data = await reader.readuntil(separator=b'\0')
@@ -161,6 +162,7 @@ if __name__ == "__main__":
     # parse args and setup logging
     parser = argparse.ArgumentParser(description='Plotting script for the HEV lab setup')
     parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
+    parser.add_argument('--native', action='store_true', help="Use a port that doesn't clash with NativeUI")
     parser.add_argument('--light', action='store_true', help='Use light mode')
 
     args = parser.parse_args()
@@ -173,6 +175,7 @@ if __name__ == "__main__":
 
     # setup pyqtplot widget
     app = QtWidgets.QApplication(sys.argv)
-    dep = ClientPlots(light=args.light)
+    port = 54320 if args.native else 54322
+    dep = ClientPlots(light=args.light, port=port)
     dep.show()
     sys.exit(app.exec_())
