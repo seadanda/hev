@@ -3,10 +3,6 @@ var chart_flow;
 var chart_volume;
 
 var size_data;
-var initial_xaxis = [];
-var initial_yaxis_pressure = [];
-var initial_yaxis_volume = [];
-var initial_yaxis_flow = [];
 
 var fio_reading;
 var p_plateau_reading
@@ -36,6 +32,9 @@ function init_results(){
         url: '/last_N_data',
         success: function(data) {
         var timestamp = 0;
+        var initial_yaxis_flow = [];
+        var initial_yaxis_pressure = [];
+        var initial_yaxis_volume = [];
         console.log("Getting initial results");
             for (let i=Math.min(data.length,1000)-1; i>=0; i--) {
                 console.log(i, data[i]["timestamp"]);
@@ -53,6 +52,10 @@ function init_results(){
     		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
     		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
             }
+            chart_pressure.data.datasets[0].data = initial_yaxis_pressure;
+            chart_volume.data.datasets[0].data = initial_yaxis_volume;
+            chart_flow.data.datasets[0].data = initial_yaxis_flow;
+
         },
         cache: false
     });
@@ -144,7 +147,7 @@ function requestChartVar() {
 		if(chart_volume.data.datasets[0].data.length > 1000){
                     chart_volume.data.datasets[0].data.shift();
 		}
-		for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		for ( let i = 0 ; i < chart_pressure.data.datasets[0].data.length; i++){
 		    chart_pressure.data.datasets[0].data[i]['x'] = chart_pressure.data.datasets[0].data[i]['x'] - diff;
 		    chart_flow.data.datasets[0].data[i]['x'] = chart_flow.data.datasets[0].data[i]['x'] - diff;
 		    chart_volume.data.datasets[0].data[i]['x'] = chart_volume.data.datasets[0].data[i]['x'] - diff;
@@ -181,7 +184,7 @@ $(document).ready(function() {
         type: 'scatter',
         data: {
             datasets: [{
-                data: initial_yaxis_pressure,
+                data: [],
                 label: "Var1",
                 borderColor: "#0049b8",
                 borderWidth: 4,
@@ -258,7 +261,7 @@ $(document).ready(function() {
         data: {
             //labels: initial_xaxis,
             datasets: [{
-                data: initial_yaxis_flow,
+                data: {},
                 label: "Var1",
                 //borderColor: "#3e95cd",
                 borderColor: "#000000",
@@ -334,7 +337,7 @@ $(document).ready(function() {
         data: {
             //labels: initial_xaxis,
             datasets: [{
-                data: initial_yaxis_volume,
+                data: {},
                 label: "Var1",
                 borderColor: "#ba0202",
                 borderWidth: 4,
