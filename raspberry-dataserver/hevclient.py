@@ -92,18 +92,15 @@ class HEVClient(object):
     async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
+        payload = {"type": reqtype}
         if reqtype == "CMD":
-            payload = {
-                "type": "CMD",
-                "cmdtype": cmdtype,
-                "cmd": cmd,
-                "param": param
-            }
+            payload["cmdtype"] = cmdtype
+            payload["cmd"] = cmd
+            payload["param"] = param
         elif reqtype == "ALARM":
-            payload = {
-                "type": "ALARM",
-                "ack": alarm
-            }
+            payload["alarm_type"] = alarm["alarm_type"]
+            payload["alarm_code"] = alarm["alarm_code"]
+            payload["param"] = param
         else:
             raise HEVPacketError("Invalid packet type")
 
