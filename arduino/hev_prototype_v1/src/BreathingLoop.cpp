@@ -661,9 +661,10 @@ void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
     if(en == true){
-        //logMsg("inhale trigger");
+        _fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if(_running_avg_flow < _inhale_trigger_threshold) {
+        if((_running_avg_flow < _inhale_trigger_threshold) 
+            && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
             //TODO - check we're past 'valley'
             if (tnow - _fsm_time > _min_exhale_time ) {
                 // TRIGGER
@@ -684,7 +685,8 @@ void BreathingLoop::exhaleTrigger()
     if(en == true){
         //logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if(_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) {
+        if((_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) 
+            && (tnow - _peak_flow_time > 10)){ // wait 10ms after peak
             //TODO - check we're past 'peak'
             logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time > _min_inhale_time ) {
@@ -710,10 +712,16 @@ void BreathingLoop::runningAvgs()
     _running_avg_flow = sum/RUNNING_AVG_READINGS;
     _running_index = (_running_index == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index+1;
 
-    if (_flow > _peak_flow)
+    if ((_flow > _peak_flow) && (_bl_state == BL_STATES::INHALE)){
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        _peak_flow_time = tnow;
         _peak_flow = _flow;
+    }
     
-    if (_flow < _valley_flow)
+    if ((_flow < _valley_flow) && ((_bl_state == BL_STATES::EXHALE_FILL ) || (_bl_state == BL_STATES::EXHALE) )){
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        _valley_flow_time = tnow;
         _valley_flow = _flow;
+    }
 
 }

@@ -141,6 +141,8 @@ private:
     float _exhale_trigger_threshold;
     float _peak_flow;
     float _valley_flow;
+    uint32_t _peak_flow_time;
+    uint32_t _valley_flow_time;
 
     uint32_t _min_inhale_time;
     uint32_t _min_exhale_time;
