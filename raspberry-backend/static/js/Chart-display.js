@@ -35,26 +35,24 @@ function init_results(){
     $.getJSON({
         url: '/last_N_data',
         success: function(data) {
-	    var timestamp = 0;
-            for (i=0; i<data.length; i++) {
-		var seconds = data[i]["timestamp"]/1000;
-		if (i==data.length-1) timestamp = seconds;
-		if ( seconds == "" ) continue;
-		initial_yaxis_pressure.push({x : seconds, y : data[i]["airway_pressure"]});
-		initial_yaxis_volume.push({x : seconds, y : data[i]["volume"]});
-		initial_yaxis_flow.push({x : seconds, y : data[i]["flow"]});
+        var timestamp = 0;
+        console.log("Getting initial results");
+            for (let i=Math.min(data.length,1000)-1; i>=0; i--) {
+                console.log(i, data[i]["timestamp"]);
+                var seconds = data[i]["timestamp"]/1000;
+            if ( seconds == "" ) continue;
+            if (seconds <= timestamp) continue;
+    		timestamp = seconds;
+    		initial_yaxis_pressure.push({x : seconds, y : data[i]["airway_pressure"]});
+	    	initial_yaxis_volume.push({x : seconds, y : data[i]["volume"]});
+		    initial_yaxis_flow.push({x : seconds, y : data[i]["flow"]});
             }
-            //reverse because data is read from the other way
-            initial_xaxis.reverse();
-            initial_yaxis_pressure.reverse();
-            initial_yaxis_volume.reverse();
-            initial_yaxis_flow.reverse();
 
 	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
-		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - timestamp;
-		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
-		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
-        }
+		    initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - timestamp;
+    		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
+    		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
+            }
         },
         cache: false
     });
@@ -135,15 +133,15 @@ function requestChartVar() {
 		    diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
 		}
 		current_timestamp = seconds;
-		if(chart_pressure.data.datasets[0].data.length > 300){
+		if(chart_pressure.data.datasets[0].data.length > 1000){
                     chart_pressure.data.datasets[0].data.shift();
 		}
 		
-		if(chart_flow.data.datasets[0].data.length > 300){
+		if(chart_flow.data.datasets[0].data.length > 1000){
                     chart_flow.data.datasets[0].data.shift();
 		}
 		
-		if(chart_volume.data.datasets[0].data.length > 300){
+		if(chart_volume.data.datasets[0].data.length > 1000){
                     chart_volume.data.datasets[0].data.shift();
 		}
 		for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){

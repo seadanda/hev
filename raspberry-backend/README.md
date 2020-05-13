@@ -52,11 +52,6 @@ firefox 127.0.0.1:5000
 ```
 
 
-License
-----
-
-For the benefit of everyone.
-
 
 # Apache
 To use with a full production level Apache2 server deployed with mod wsgi, 
@@ -65,20 +60,36 @@ use the following instructions. Apache2 should already be installed on raspian
 First install the mod wsgi apache component for python 3 and enable
 ```sh
 sudo apt-get install libapache2-mod-wsgi-py3
+#disable first in case we have a python2 version enabled
+sudo a2dismode wsgi
 sudo a2enmode wsgi
 ```
 
 Add the user pi (or whatever you are using) to the group www-data
 
 ```sh
-sudo usermod –a -G \"www-data\" pi
+sudo usermod –a -G "www-data" pi
 ```
 
 Now copy our site config to the apache location for available sites and enable it
 ```sh
+#update the locations in hev.conf if needed
 sudo cp share/hev.conf /etc/apache2/sites-available/
+#disable default location
+sudo a2dissite 000-default.conf
+#enable our hev site
 sudo a2ensite hev.conf
 #reload apache
 sudo systemctl reload apache2
 ```
-The web page is now served on the default port 80, so you should be able to access on any computer on your local network
+The web page is now served on the default port 80, so you should be able to access on any computer on your local network.
+Note that the hev server must be running when apache is started or the page won't load, as it throws an error. It can be restarted with
+```sh
+sudo systemctl reload apache2
+```
+
+
+License
+----
+
+For the benefit of everyone.
