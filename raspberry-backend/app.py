@@ -14,6 +14,8 @@ import chardet
 from hevclient import HEVClient
 from CommsCommon import DataFormat
 from datetime import datetime
+import logging
+logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
 import sys
 import argparse
@@ -57,19 +59,19 @@ class ArduinoClient(HEVClient):
         #if the count is 1, then table exists
         if c.fetchone()[0]==1 : 
             existence = True
-            print('Table exists.')
         else :
-        	print('Table does not exist.')
+        	logging.warning('Table does not exist.')
     			
         #commit the changes to db			
         self.conn.commit()
         return existence
+
     def database_setup(self):
         '''
         This function creates the sqlite3 table with the timestamp column 
         and the columns for the arduino packet data  
         '''
-        print('Creating ' + TABLE_NAME + ' table..' )
+        logging.debug('Creating ' + TABLE_NAME + ' table..' )
 
         # Create the table if it does not exist
         try:
@@ -91,7 +93,7 @@ class ArduinoClient(HEVClient):
         except sqlite3.Error as err:
             raise Exception("sqlite3 Error. Create failed: {}".format(str(err)))
         finally:
-            print('Table ' + TABLE_NAME + ' created successfully!')
+            logging.info('Table ' + TABLE_NAME + ' created successfully!')
 
     def monitoring(self):
         '''
@@ -118,7 +120,7 @@ class ArduinoClient(HEVClient):
             data_packet.update({"DB_time" : timestamp})
             data_packet.update({"alarms" : data_alarms})
 
-            print("Writing to database ...")
+            logging.debug("Writing to database ...")
             try:
                 exec_string = "( :DB_time, "
                 for el in data_format: 
@@ -137,13 +139,13 @@ class ArduinoClient(HEVClient):
 
     def db_backup(self,backup_time):
         threading.Timer(backup_time, self.db_backup, [backup_time]).start()
-        print("Executing DB backup")
+        logging.debug("Executing DB backup")
         try:
             # Backup DB
             backupCon = sqlite3.connect("database/HEC_monitoringDB_backup.sqlite")    
             with backupCon:
                 self.conn.backup(backupCon, pages=5, progress=progress)
-                print("Backup successful")
+                logging.debug("Backup successful")
         except sqlite3.Error as err:
             raise Exception("sqlite3 error. Error during backup: {}".format(str(err)))
         finally: 
@@ -156,14 +158,14 @@ class ArduinoClient(HEVClient):
         c.execute(''' SELECT count(*) FROM {tn} '''.format(tn=table_name))  
 
         values = c.fetchone()
-        print(values[0])
+        logging.debug(f"{values[0]}") # TODO give a more meaningful log message
 
         #commit the changes to db			
         self.conn.commit()
         return values[0]
 
 def progress(status, remaining, total):
-    print(f'Copied {total-remaining} of {total} pages...')
+    logging.debug(f'Copied {total-remaining} of {total} pages...')
 
 
 WEBAPP = Flask(__name__)
