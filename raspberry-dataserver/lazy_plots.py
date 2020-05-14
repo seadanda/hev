@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import sys
 import re
 import queue
@@ -8,6 +9,42 @@ import datetime
 #matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
+
+def buffer_flow(xtime, pbuff, pinhale, vbuff = 10.):# inputs should be numpy arrays
+
+    pinhale = pinhale + 1013. # absolute pressure in mbar
+    pbuff   = pbuff   + 1013. # absolute pressure in mbar
+
+    dpbuff = []
+    counter = 0.
+
+    fooflow = 0.
+
+    for i in range(len(pbuff)):
+
+        if counter == 0.: dpbuff.append(0.)
+
+        else:
+
+            _dpbuff = pbuff[i]-pbuff[i-1]
+            dt     = xtime[i] - xtime[i-1]
+
+
+            _flow = _dpbuff*1000.*1000./dt
+
+            #print(_flow)
+            
+            fooflow = fooflow + (0.3*_flow)
+
+            print(fooflow)
+
+            dpbuff.append(fooflow) 
+
+        counter += 1.
+
+    buffer_flow = (-1)*np.array(dpbuff)*vbuff/pinhale
+
+    return buffer_flow 
 
 counter = 0
 
@@ -93,6 +130,8 @@ h9, = ax.plot([],[], "+-", label="inhale derivative")
 
 h10, = ax.plot([],[], "+-", label="inhale derivative exp")
 h11, = ax.plot([],[], "+-", label="inhale derivative threshold")
+
+h12, = ax.plot([],[], "+-", label="calc buffer flow")
 #plt.axes()
 #an = []
 
@@ -242,6 +281,14 @@ h6.set_ydata(list(pressure_patient.queue))#list(pressure_buffer.queue))
 #
 #h11.set_xdata(np.array(range(history_length)))
 #h11.set_ydata(derivative_withthreshold(list(pressure_inhale.queue), 2.0))
+
+b_flow = buffer_flow(np.array(list(xtime.queue)), 
+        np.array(list(pressure_buffer.queue)), 
+        np.array(list(pressure_inhale.queue)))#, 
+#        vbuff = 10.)# inputs should be numpy arrays
+
+h12.set_xdata(np.array(list(xtime.queue)))
+h12.set_ydata(b_flow)
 
 
 plt.legend()

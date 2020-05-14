@@ -50,12 +50,12 @@ BreathingLoop::BreathingLoop()
     }
     _running_index = 0;
 
-    _inhale_trigger_threshold = 0.01;  // abs flow ml/s
-    _exhale_trigger_threshold = 0.3;  // 30% of peak
+    _inhale_trigger_threshold = 0.0005;  // abs flow ml/s
+    _exhale_trigger_threshold = 0.1;  // 30% of peak
 
     _min_inhale_time = 150;
     _min_exhale_time = 300;
-    _max_exhale_time = 3000;  // for mandatory cycle
+    _max_exhale_time = 30000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
 }
 
 BreathingLoop::~BreathingLoop()
@@ -89,6 +89,8 @@ void BreathingLoop::updateReadings()
         _readings_sums.temperature_buffer       += static_cast<float>(analogRead(pin_temperature_buffer)     );
         _readings_sums.pressure_o2_regulated    += static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
         _readings_sums.pressure_diff_patient    += static_cast<float>(analogRead(pin_pressure_diff_patient)  );
+ 
+
     }
 
     // to make sure the readings correspond only to the same fsm mode
@@ -107,7 +109,7 @@ void BreathingLoop::updateReadings()
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
         _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
 #endif
-        
+
 
         // add Oscar code here:
         if (getFsmState() == BL_STATES::INHALE){
@@ -619,6 +621,7 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     _pid.target_pressure += _pid_set_point_step;
 
+    // Slightly ad hoc way of setting the target pressure steps! NB! the number of statements must match the number of steps (_pid.nsteps)
     if (_pid.istep == 1) _pid.target_pressure = 0.1*_pid.target_final_pressure;
     if (_pid.istep == 2) _pid.target_pressure = 0.4*_pid.target_final_pressure;
     if (_pid.istep >= 3) _pid.target_pressure = _pid.target_final_pressure;
@@ -639,7 +642,7 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     //Checking minium and maximum duty cycle
     
-    float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
+    float minimum_open_frac = 0.52; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
     _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;
@@ -663,7 +666,7 @@ void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
     if(en == true){
-        _fsm_timeout = _max_exhale_time;
+        //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
         if((_flow > _inhale_trigger_threshold) 
             && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
@@ -685,7 +688,7 @@ void BreathingLoop::exhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().exhale_trigger_enable;
     if(en == true){
-        //logMsg("exhale trigger");
+        logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
         if((_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) 
             && (tnow - _peak_flow_time > 10)){ // wait 10ms after peak
