@@ -46,6 +46,7 @@ class CMD_SET_TIMEOUT(Enum):
     EXHALE_FILL     = 10
     EXHALE          = 11
 
+@unique
 class VENTILATION_MODE(Enum):
     UNKNOWN          = 0
     HEV_MODE_PS      = 1
@@ -56,20 +57,24 @@ class VENTILATION_MODE(Enum):
     LAB_MODE_PURGE   = 6
     LAB_MODE_FLUSH   = 7
 
+@unique
 class CMD_SET_VALVE(Enum):
-    AIR_IN_ENABLE = 1,
-    O2_IN_ENABLE  = 2,
-    PURGE_ENABLE  = 3,
-    INHALE_DUTY_CYCLE = 4,
-    INHALE_OPEN_MIN = 5,
-    INHALE_OPEN_MAX = 6,
-    INHALE_TRIGGER_ENABLE = 7,
+    AIR_IN_ENABLE = 1
+    O2_IN_ENABLE  = 2
+    PURGE_ENABLE  = 3
+    INHALE_DUTY_CYCLE = 4
+    INHALE_OPEN_MIN = 5
+    INHALE_OPEN_MAX = 6
+    INHALE_TRIGGER_ENABLE = 7
     EXHALE_TRIGGER_ENABLE = 8
 
+@unique
 class CMD_SET_PID(Enum):
     KP = 1
     KI = 2
     KD = 3
+    TARGET_FINAL_PRESSURE = 4
+    NSTEPS = 5
 
 @unique
 class ALARM_TYPE(Enum):
@@ -110,6 +115,8 @@ class CMD_MAP(Enum):
     GENERAL           =  CMD_GENERAL
     SET_TIMEOUT       =  CMD_SET_TIMEOUT
     SET_MODE          =  VENTILATION_MODE
+    SET_VALVE         =  CMD_SET_VALVE
+    SET_PID           =  CMD_SET_PID
     SET_THRESHOLD_MIN =  ALARM_CODES
     SET_THRESHOLD_MAX =  ALARM_CODES
 
@@ -141,11 +148,12 @@ class PAYLOAD_TYPE(IntEnum):
     ALARM      = 6
     DEBUG      = 7
     IVT        = 8
+    LOGMSG     = 9
 
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA7, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA8, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -166,6 +174,7 @@ class PayloadFormat():
             6: AlarmFormat,
             7: DebugFormat,
             8: IVTFormat,
+            9: LogMsgFormat,
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -413,7 +422,7 @@ class DebugFormat(PayloadFormat):
     kd              : float = 0.0
     target_pressure : float = 0.0 ##
     process_pressure: float = 0.0 
-    output          : float = 0.0 
+    valve_duty_cycle: float = 0.0 
     proportional    : float = 0.0 
     integral        : float = 0.0 ##
     derivative      : float = 0.0
@@ -430,7 +439,7 @@ class DebugFormat(PayloadFormat):
         self.kd              ,
         self.target_pressure ,
         self.process_pressure,
-        self.output          ,
+        self.valve_duty_cycle,
         self.proportional    ,
         self.integral        ,
         self.derivative      
@@ -497,6 +506,32 @@ class IVTFormat(PayloadFormat):
         ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
+
+# =======================================
+# Log msg payload
+# =======================================
+@dataclass
+class LogMsgFormat(PayloadFormat):
+    _dataStruct = Struct("<BIB50s")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.LOGMSG
+
+    message   : str = ""
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        tmp_chararray  = ""
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        tmp_chararray) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.message = tmp_chararray.decode('ascii')
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 

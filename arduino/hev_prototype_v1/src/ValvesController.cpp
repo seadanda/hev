@@ -24,8 +24,8 @@ ValvesController::ValvesController()
     _inhale.device_number = -1;
 
     _exhale.pin = pin_valve_exhale;
-    _exhale.proportional = true;
-    _exhale.state = VALVE_STATE::FULLY_CLOSED;
+    _exhale.proportional = false;
+    _exhale.state = VALVE_STATE::OPEN;
     _exhale.voltage = 0;
     _exhale.current = 0;
     _exhale.device_number = -1;
@@ -44,12 +44,13 @@ ValvesController::ValvesController()
 
     _valve_params.inhale_duty_cycle = 0;
     _valve_params.inhale_open_max = MAX_VALVE_FRAC_OPEN;
-    _valve_params.inhale_open_min = 0.54;
+    _valve_params.inhale_open_min = 0.52;
     _valve_params.valve_air_in_enable       = 1;
     _valve_params.valve_o2_in_enable        = 1;
     _valve_params.valve_purge_enable        = 1;
     _valve_params.inhale_trigger_enable     = 0;   // params - associated val of peak flow
     _valve_params.exhale_trigger_enable     = 0;
+
     _PID_output                = 0;
 
     _INA_found = false;
@@ -155,13 +156,13 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
             setPWMValve(_inhale.pin, 0.0);
             break;
         case VALVE_STATE::FULLY_OPEN:
-            setPWMValve(_inhale.pin, MAX_VALVE_FRAC_OPEN); 
+            setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
             break;
         case VALVE_STATE::OPEN:
             setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
             break;
         case VALVE_STATE::CALIB_OPEN:
-            setPWMValve(_inhale.pin, 0.9); 
+            setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
             break;
         case VALVE_STATE::CLOSED:
             setPWMValve(_inhale.pin, _valve_params.inhale_open_min); 
@@ -174,29 +175,39 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
         default:
             break;
     }
-
-    switch(vexhale){
-        case VALVE_STATE::FULLY_CLOSED:
-            setPWMValve(_exhale.pin, 0.0);
-            break;
-        case VALVE_STATE::FULLY_OPEN:
-            setPWMValve(_exhale.pin, MAX_VALVE_FRAC_OPEN); 
-            break;
-        case VALVE_STATE::CALIB_OPEN:
-            setPWMValve(_exhale.pin, 0.9); 
-            break;
-        case VALVE_STATE::OPEN:
-            setPWMValve(_exhale.pin, 0.8); 
-            break;
-        case VALVE_STATE::CLOSED:
-            setPWMValve(_exhale.pin, 0); 
-            break;
-        default:
-            //doPID(_exhale.pin);
-            break;
-
+/*
+    if(_exhale.proportional == true){
+	    switch(vexhale){
+		    case VALVE_STATE::FULLY_CLOSED:
+			    setPWMValve(_exhale.pin, 0.0);
+			    break;
+		    case VALVE_STATE::FULLY_OPEN:
+			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
+			    break;
+		    case VALVE_STATE::CALIB_OPEN:
+			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
+			    break;
+		    case VALVE_STATE::OPEN:
+			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
+			    break;
+		    case VALVE_STATE::CLOSED:
+			    setPWMValve(_exhale.pin, 0); 
+			    break;
+		    default:
+			    //doPID(_exhale.pin);
+			    break;
+	    }
+    } else if(_exhale.proportional == false){
+	    //digitalWrite(_exhale.pin,  vexhale == VALVE_STATE::CLOSED );  //inverted logic; normally open;
+	    digitalWrite(_exhale.pin,  vexhale);  //inverted logic; normally open;
+	    // lOw = open
     }
 
+    */
+    if(vexhale == VALVE_STATE::OPEN)
+	    digitalWrite(_exhale.pin,  VALVE_STATE::CLOSED);  //inverted logic; normally open;
+    else 
+	    digitalWrite(_exhale.pin,  VALVE_STATE::OPEN);  //inverted logic; normally open;
     // save the state 
     _air_in.state = vin_air;
     _o2_in.state  = vin_o2;

@@ -12,7 +12,7 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _ivt_report_time = tnow;
     _debug_report_time = tnow;
 
-    _fast_report_timeout = 50;  //ms
+    _fast_report_timeout = 10;  //ms
     _readback_report_timeout = 300; 
     _cycle_report_timeout = 500;  // this should probably be based on fsm state
 
@@ -207,6 +207,12 @@ void UILoop::reportDebugValues()
         _debug_data.ki = pid.Ki;
         _debug_data.kd = pid.Kd;
 
+        _debug_data.proportional       = pid.proportional;
+        _debug_data.integral           = pid.integral;
+        _debug_data.derivative         = pid.derivative;
+        _debug_data.target_pressure    = pid.target_pressure;
+        _debug_data.process_pressure   = pid.process_pressure;
+        _debug_data.valve_duty_cycle   = pid.valve_duty_cycle;
 
         _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_debug_data), sizeof(_debug_data));
         _comms->writePayload(_plSend);

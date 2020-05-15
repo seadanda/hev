@@ -2,6 +2,7 @@
 #define COMMON_H
 #include <Arduino.h>
 #include <limits>
+#include "CommsControl.h"
 
 
 #if defined(ARDUINO_FEATHER_ESP32)
@@ -18,12 +19,14 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA7
+#define HEV_FORMAT_VERSION 0xA8
 
 // 
-const float MAX_VALVE_FRAC_OPEN = 0.68;
-
+const float MAX_VALVE_FRAC_OPEN = 0.74;
 const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
+const uint8_t RUNNING_AVG_READINGS = 3;
+
+
 // input params
 enum PAYLOAD_TYPE : uint8_t {
     UNSET        = 0,
@@ -34,7 +37,8 @@ enum PAYLOAD_TYPE : uint8_t {
     CMD          = 5,
     ALARM        = 6,
     DEBUG        = 7,
-    IVT          = 8
+    IVT          = 8,
+    LOGMSG       = 9
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -93,7 +97,9 @@ enum CMD_SET_VALVE: uint8_t {
 enum CMD_SET_PID : uint8_t {
     KP = 1,
     KI = 2,
-    KD = 3
+    KD = 3,
+    TARGET_FINAL_PRESSURE = 4,
+    NSTEPS = 5
 };
 
 #pragma pack(1)
@@ -293,13 +299,24 @@ struct debug_data_format {
     float kd = 0.0;
     float target_pressure  = 0.0; //
     float process_pressure = 0.0; 
-    float output           = 0.0; 
+    float valve_duty_cycle = 0.0; 
     float proportional     = 0.0; 
     float integral         = 0.0; //
     float derivative       = 0.0;
 };
 #pragma pack()
 
+
+#pragma pack(1)
+struct logmsg_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::LOGMSG;
+
+    char message[50];
+};
+#pragma pack()
 //enum VALVE_STATES : bool {
 //    V_OPEN = HIGH,
 //    V_CLOSED = LOW
@@ -464,9 +481,21 @@ struct alarms {
 };
 
 struct pid_variables {
+    // input
     float Kp; // proportional factor
     float Ki; // integral factor
     float Kd; // derivative factor
+    // results of calculation
+    float target_pressure  ; 
+    float process_pressure ; 
+    float valve_duty_cycle ; 
+    float proportional     ; 
+    float integral         ; 
+    float derivative       ;
+    float previous_process_pressure ;
+    float target_final_pressure;
+    int nsteps		   ;
+    int istep		   ;
 };
 
 
@@ -525,5 +554,9 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
 void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
+float adcToMillibarDPFloat(float adc, float offset = 0);
+void logMsg(String s);
+CommsControl* getGlobalComms();
+void setGlobalComms(CommsControl *comms);
 
 #endif

@@ -33,11 +33,29 @@ BreathingLoop::BreathingLoop()
     _volume = 0;
     _airway_pressure = 0;
 
-    _pid.Kp = 0.0007; // proportional factor
-    _pid.Ki = 0.000007;   // integral factor
-    _pid.Kd = 0;   // derivative factor
+    _pid.Kp = 0.004; // proportional factor
+    _pid.Ki = 0.0010;   // integral factor
+    _pid.Kd = 0.;   // derivative factor
 
-    _pid_integral = 0.;
+    _pid.integral   = 0.;
+    _pid.derivative = 0.;
+
+    _pid.process_pressure = 0.;// Variable used to build the target pressure profile
+    _pid.target_pressure = 0.;// Variable used to build the target pressure profile
+    _pid.target_final_pressure = 10.; // Final pressure after the inhale pressure ramp up
+    _pid.nsteps = 3; // Final pressure after the inhale pressure ramp up
+
+    for(int i=0; i<RUNNING_AVG_READINGS; i++){
+        _running_flows[i] = 0.0;
+    }
+    _running_index = 0;
+
+    _inhale_trigger_threshold = 0.00025;  // abs flow ?unit
+    _exhale_trigger_threshold = 0.1;  // 30% of peak
+
+    _min_inhale_time = 150;
+    _min_exhale_time = 300;
+    _max_exhale_time = 30000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
 }
 
 BreathingLoop::~BreathingLoop()
@@ -71,6 +89,8 @@ void BreathingLoop::updateReadings()
         _readings_sums.temperature_buffer       += static_cast<float>(analogRead(pin_temperature_buffer)     );
         _readings_sums.pressure_o2_regulated    += static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
         _readings_sums.pressure_diff_patient    += static_cast<float>(analogRead(pin_pressure_diff_patient)  );
+ 
+
     }
 
     // to make sure the readings correspond only to the same fsm mode
@@ -87,9 +107,9 @@ void BreathingLoop::updateReadings()
 #ifdef HEV_FULL_SYSTEM                                         
         _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
-        _readings_avgs.pressure_diff_patient    = (_readings_sums.pressure_diff_patient    / _readings_N) ;
+        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
 #endif
-        
+
 
         // add Oscar code here:
         if (getFsmState() == BL_STATES::INHALE){
@@ -98,19 +118,24 @@ void BreathingLoop::updateReadings()
 
                 float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
 
-                doPID(10., _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
+                doPID(3, _pid.target_final_pressure, _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
 		//_volume = _valve_inhale_PID_percentage;
 
 		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
                 //Lazy approach
-                //airway_pressure = Proportional
-                //volume = Integral
-                //flow = Derivative
+                _airway_pressure = _pid.proportional;
+                _volume = _pid.integral;
+                //_flow = (_pid.Kd*_pid.derivative);
+                //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
 
-                _valves_controller.setPIDoutput(_valve_inhale_PID_percentage);
-                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+                _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
 
         }
+        runningAvgs();
+
+        _flow = _readings_avgs.pressure_diff_patient;
+        _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
 
@@ -355,7 +380,7 @@ void BreathingLoop::FSM_breathCycle()
             initCalib();
             break;
         case BL_STATES::CALIBRATION : 
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CALIB_OPEN, VALVE_STATE::CALIB_OPEN, VALVE_STATE::OPEN);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             calibrate();
             _fsm_timeout = _states_durations.calibration;
             break;
@@ -400,7 +425,10 @@ void BreathingLoop::FSM_breathCycle()
                     _fsm_timeout = _states_durations.buff_pre_inhale;
             }
 
-	    _pid_integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
+	    _pid.integral = 0.;//Resets the integral of the Inhale Valve PID before the inhale cycle starts 
+	    _pid.target_pressure = 0.; // Resets the target pressure for the PID target profile 
+	    _pid.derivative = 0.; // Resets the derivative for Inhale PID
+	    _pid.istep = 0;
         
             break;
         case BL_STATES::INHALE:
@@ -412,19 +440,24 @@ void BreathingLoop::FSM_breathCycle()
             // go to exhale fill
             //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);//Comment this line for the PID control during inhale
             _fsm_timeout = _states_durations.inhale;
+
+            _valley_flow = 100000;  // reset valley after exhale
             
+            exhaleTrigger();
             break;
         case BL_STATES::PAUSE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.pause;
             break;
         case BL_STATES::EXHALE_FILL:
-            _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _peak_flow = -100000;  // reset peak after inhale
             _fsm_timeout = _states_durations.exhale_fill;
+            inhaleTrigger();
             break;
         case BL_STATES::EXHALE:
             _states_durations.exhale = calculateDurationExhale();
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
             //update total cycle time
             updateTotalCycleDuration(_states_durations.buff_loaded
@@ -433,13 +466,16 @@ void BreathingLoop::FSM_breathCycle()
                        +_states_durations.pause
                        +_states_durations.exhale_fill
                        +_states_durations.exhale);
+
+            inhaleTrigger();
+            
             break;
         case BL_STATES::BUFF_PURGE:
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_purge;
             break;
         case BL_STATES::BUFF_FLUSH:
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::FULLY_OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.buff_flush;
             break;
         case BL_STATES::STOP: 
@@ -501,6 +537,8 @@ void BreathingLoop::calibrate()
         _calib_avgs.pressure_inhale  = static_cast<float>(_calib_sums.pressure_inhale/ _calib_N);
         _calib_sums.pressure_patient += static_cast<float>(analogRead(pin_pressure_patient));
         _calib_avgs.pressure_patient = static_cast<float>(_calib_sums.pressure_patient/ _calib_N);
+        _calib_sums.pressure_diff_patient += static_cast<float>(analogRead(pin_pressure_diff_patient));
+        _calib_avgs.pressure_diff_patient = static_cast<float>(_calib_sums.pressure_diff_patient/ _calib_N);
 
 	_calib_time = tnow;
 	_calib_timeout = 10;
@@ -525,6 +563,7 @@ void BreathingLoop::initCalib()
     _calib_avgs.pressure_buffer = 0;
     _calib_avgs.pressure_inhale = 0;
     _calib_avgs.pressure_patient = 0;
+    _calib_avgs.pressure_diff_patient = 0;
     _calib_N = 0;
 }
 
@@ -549,9 +588,12 @@ ValvesController* BreathingLoop::getValvesController()
 
 void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
 {
-    _total_cycle_duration[0] = _total_cycle_duration[1];
-    _total_cycle_duration[1] = _total_cycle_duration[2];
-    _total_cycle_duration[2] = newtotal;
+    const uint8_t N = 3;
+    for(int i=0; i<N-1; i++){
+        _total_cycle_duration[i] = _total_cycle_duration[i+1];
+
+    }
+    _total_cycle_duration[N-1] = newtotal;
 }
 
 float BreathingLoop::getFlow(){
@@ -564,28 +606,127 @@ float BreathingLoop::getAirwayPressure(){
     return _airway_pressure;
 }
 
-void BreathingLoop::doPID(float target_pressure, float process_pressure, float &output, float &proportional, float &integral, float &derivative){
+void BreathingLoop::doPID(int nsteps, float target_pressure, float process_pressure, float &output, float &proportional, float &integral, float &derivative){
 
-    float error = target_pressure - process_pressure;
+    // Set PID profile using the set point
+    // nsteps defines the number of intermediate steps
+    //
+    //
 
-    proportional       = _pid.Kp*error;
-    _pid_integral     += _pid.Ki*error;
+    _pid.istep +=1;
 
-    integral = _pid_integral;
+    _pid.process_pressure = process_pressure;
 
-    //TODO integral and derivative
+    float _pid_set_point_step = _pid.target_final_pressure/_pid.nsteps;
+
+    _pid.target_pressure += _pid_set_point_step;
+
+    // Slightly ad hoc way of setting the target pressure steps! NB! the number of statements must match the number of steps (_pid.nsteps)
+    if (_pid.istep == 1) _pid.target_pressure = 0.1*_pid.target_final_pressure;
+    if (_pid.istep == 2) _pid.target_pressure = 0.4*_pid.target_final_pressure;
+    if (_pid.istep >= 3) _pid.target_pressure = _pid.target_final_pressure;
+
+    if(_pid.target_pressure > _pid.target_final_pressure) _pid.target_pressure = _pid.target_final_pressure;
+
+    //Calculate the PID error based on the pid set point
+    float error = _pid.target_pressure - _pid.process_pressure;
+
+    _pid.proportional       = _pid.Kp*error;
+    _pid.integral          += _pid.Ki*error;
+
+    //Derivative calculation
+
+    float _derivative = _pid.previous_process_pressure - _pid.process_pressure ;
+
+    _pid.derivative = 0.7*_pid.derivative + 0.3*_derivative;
+
+    //Checking minium and maximum duty cycle
     
-    float minimum_open_frac = 0.54; //Minimum opening to avoid vibrations on the valve control
-    float maximum_open_frac = 0.64; //Maximum opening for the PID control
+    float minimum_open_frac = 0.52; //Minimum opening to avoid vibrations on the valve control
+    float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
-    output = proportional + integral + minimum_open_frac;
+    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;
 
-    if(output > maximum_open_frac) output = maximum_open_frac;
-    if(output < minimum_open_frac) output = minimum_open_frac;
+    if(_pid.valve_duty_cycle > maximum_open_frac) _pid.valve_duty_cycle = maximum_open_frac;
+    if(_pid.valve_duty_cycle < minimum_open_frac) _pid.valve_duty_cycle = minimum_open_frac;
 
 }
+
+//void BreathingLoop::PID_process_pressure_derivative(float &_pid_process_pressure_derivative, float process_pressure){
+	//process_pressure
+//}
 
 pid_variables& BreathingLoop::getPIDVariables()
 {
     return _pid;
+}
+
+
+void BreathingLoop::inhaleTrigger()
+{
+    bool en = _valves_controller.getValveParams().inhale_trigger_enable;
+    if(en == true){
+        //_fsm_timeout = _max_exhale_time;
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        if((_flow > _inhale_trigger_threshold) 
+            && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
+            //TODO - check we're past 'valley'
+            if (tnow - _fsm_time > _min_exhale_time ) {
+                // TRIGGER
+                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_inhale_trigger_threshold));
+                _fsm_timeout = 0; // go to next state immediately
+            }
+        } else if (tnow - _fsm_time > _max_exhale_time){
+                // TRIGGER
+                logMsg("inhale trigger - max exhale time exceeded");
+                _fsm_timeout = 0; // go to next state immediately
+        }
+    } 
+}
+
+void BreathingLoop::exhaleTrigger()
+{
+    bool en = _valves_controller.getValveParams().exhale_trigger_enable;
+    if(en == true){
+        logMsg("exhale trigger");
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        if((_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) 
+            && (tnow - _peak_flow_time > 10)){ // wait 10ms after peak
+            //TODO - check we're past 'peak'
+            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_exhale_trigger_threshold)+" "+String(_peak_flow));
+            if (tnow - _fsm_time > _min_inhale_time ) {
+                // TRIGGER
+                _fsm_timeout = 0; // go to next state immediately
+            }
+        }
+    } 
+}
+
+
+void BreathingLoop::runningAvgs()
+{
+
+    // take the average of the last N flows 
+    float sum = 0;
+    _running_flows[_running_index] = _flow;
+    for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
+        // use absolute value to avoid averaging out negative vals
+        sum += static_cast<float>(fabs(_running_flows[i]));
+    }
+
+    _running_avg_flow = sum/RUNNING_AVG_READINGS;
+    _running_index = (_running_index == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index+1;
+
+    if ((_flow > _peak_flow) && (_bl_state == BL_STATES::INHALE)){
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        _peak_flow_time = tnow;
+        _peak_flow = _flow;
+    }
+    
+    if ((_flow < _valley_flow) && ((_bl_state == BL_STATES::EXHALE_FILL ) || (_bl_state == BL_STATES::EXHALE) )){
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        _valley_flow_time = tnow;
+        _valley_flow = _flow;
+    }
+
 }

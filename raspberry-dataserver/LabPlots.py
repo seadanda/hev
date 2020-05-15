@@ -18,7 +18,7 @@ import os
 
 class LabPlots(QtWidgets.QMainWindow):
 
-    def __init__(self, dark=False, throttle=20, *args, **kwargs):
+    def __init__(self, dark=False, throttle=1, *args, **kwargs):
         super(LabPlots, self).__init__(*args, **kwargs)
 
         self.history_length = 5000
@@ -51,8 +51,8 @@ class LabPlots(QtWidgets.QMainWindow):
         #Add grid
         self.graphWidget.showGrid(x=True, y=True)
         #Set Range
-        self.graphWidget.setXRange(self.history_length * (-1), 0, padding=0)
-        self.graphWidget.setYRange(-50, 300, padding=0)
+        self.graphWidget.setXRange(self.history_length * (-1) , 0, padding=0)
+        self.graphWidget.setYRange(0, 40, padding=0)
 
         self.line1 = self.plot(self.timestamp, self.pressure_inhale, "Buffer", "F00")
         self.line2 = self.plot(self.timestamp, self.pressure_buffer, "Inhale", "0F0")
@@ -122,8 +122,6 @@ def getTTYPort():
             port_device = port.device 
         elif vidpid == "10C4:EA60" :
             port_device = port.device 
-        elif len(sys.argv) > 1:
-            port_device = sys.argv[1]
     return port_device
 
 
@@ -131,8 +129,23 @@ def getTTYPort():
 async def commsDebug(comms):
     #cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     #cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.INHALE.value, param=1111)
+
+    #Defining the PID parameters, derivative not implemented yet
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KP.value, param=0.01) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KI.value, param=0.0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_PID.value, cmd_code=CMD_SET_PID.KD.value, param=0.0011) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+
+    #Start command
     cmd = CommandFormat(cmd_type=CMD_TYPE.GENERAL.value, cmd_code=CMD_GENERAL.START.value, param=0)
     await asyncio.sleep(1)
+
     comms.writePayload(cmd)
     print('sent cmd start')
     toggle = 2
@@ -156,8 +169,9 @@ if __name__ == "__main__":
     # parse args and setup logging
     parser = argparse.ArgumentParser(description='Plotting script for the HEV lab setup')
     parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
-    parser.add_argument('--throttle', type=int, default=20, help='Reduce rate from LLI')
+    parser.add_argument('--throttle', type=int, default=1, help='Reduce rate from LLI')
     parser.add_argument('--dark', action='store_true', help='Use dark mode')
+    parser.add_argument('--qtopts', type=str, default='', help='Options to pass to qt main window as a string in quotes')
 
     args = parser.parse_args()
     if args.debug == 0:
@@ -168,7 +182,7 @@ if __name__ == "__main__":
         logging.getLogger().setLevel(logging.DEBUG)
 
     # setup pyqtplot widget
-    app = QtWidgets.QApplication(sys.argv)
+    app = QtWidgets.QApplication(args.qtopts.split(' '))
     dep = LabPlots(dark=args.dark, throttle=args.throttle)
     dep.show()
     sys.exit(app.exec_())

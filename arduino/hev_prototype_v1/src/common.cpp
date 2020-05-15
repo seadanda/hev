@@ -1,5 +1,7 @@
 #include "common.h"
 
+CommsControl* globalComms;
+
 void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value) {
     switch (cmd) {
         case CMD_SET_DURATION::CALIBRATION:
@@ -84,6 +86,12 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
         case CMD_SET_PID::KD:
             pid.Kd = value;
             break;
+        case CMD_SET_PID::TARGET_FINAL_PRESSURE:
+            pid.target_final_pressure = value;
+            break;
+        case CMD_SET_PID::NSTEPS:
+            pid.nsteps = value;
+            break;
         default:
             break;
     }
@@ -138,3 +146,41 @@ float adcToMillibarFloat(float adc, float offset = 0)
     return static_cast<float>(mbar);
     //return static_cast<int16_t>(adc);
 } 
+
+float adcToMillibarDPFloat(float adc, float offset = 0)
+{
+    // The calibration for the DP sensor is provided by the manufacturer
+    // https://docs.rs-online.com/7d77/0900766b81568899.pdf
+
+    float PCB_Gain		= 2.		; // real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
+    float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
+
+    float zeroDPvoltageInADC    = (2500./PCB_Gain)*(1./ADC_to_Voltage_Gain);
+
+    float _voltage = PCB_Gain * ADC_to_Voltage_Gain * (adc - offset + zeroDPvoltageInADC);
+
+    float PaTombar = 0.01;
+
+    float AoutVdd  = _voltage/5000.; // The board provides 5000 mV to the input of the DP sensor
+
+    float sign = 2*((AoutVdd-0.5 > 0.)-0.5);
+    
+    float dp_mbar = PaTombar * sign * pow(((AoutVdd/0.4)-1.25), 2)*525; // same calculation as in the Labview Code  
+
+    return static_cast<float>(dp_mbar);
+} 
+
+void logMsg(String s)
+{
+        CommsControl *comms = getGlobalComms();
+        Payload pl_send;
+
+        logmsg_data_format log;
+        sprintf(log.message, "%50s", "");
+        sprintf(log.message, "%s", s.c_str() );
+        pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&log), sizeof(log));
+        comms->writePayload(pl_send);
+}
+
+CommsControl* getGlobalComms() { return globalComms; }
+void setGlobalComms(CommsControl *comms){ globalComms = comms; }
