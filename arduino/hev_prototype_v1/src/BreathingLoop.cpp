@@ -50,7 +50,7 @@ BreathingLoop::BreathingLoop()
     }
     _running_index = 0;
 
-    _inhale_trigger_threshold = 0.0005;  // abs flow ml/s
+    _inhale_trigger_threshold = 0.00025;  // abs flow ?unit
     _exhale_trigger_threshold = 0.1;  // 30% of peak
 
     _min_inhale_time = 150;
