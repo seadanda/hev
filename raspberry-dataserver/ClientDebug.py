@@ -48,18 +48,18 @@ class ClientPlots(QtWidgets.QMainWindow):
             # dark theme
             self.graphWidget.setBackground(mkColor(30,30,30))
 
-        #Add grid
+        # Add grid
         self.flowPlot.showGrid(x=True, y=True)
         self.volumePlot.showGrid(x=True, y=True)
         self.pressurePlot.showGrid(x=True, y=True)
-        #Set Range
+        # Set Range
         self.flowPlot.setXRange(self.xrange * (-1), 0, padding=0)
         self.volumePlot.setXRange(self.xrange * (-1), 0, padding=0)
         self.pressurePlot.setXRange(self.xrange * (-1), 0, padding=0)
         self.flowPlot.enableAutoRange('y', True)
         self.volumePlot.enableAutoRange('y', True)
         self.pressurePlot.enableAutoRange('y', True)
-
+        # Plot styles
         self.line1 = self.plot(self.flowPlot, self.timestamp, self.PID_D, "Flow", "00F")
         self.line2 = self.plot(self.volumePlot, self.timestamp, self.PID_I, "Volume", "707")
         self.line3 = self.plot(self.pressurePlot, self.timestamp, self.PID_P, "Airway Pressure", "077")
@@ -91,59 +91,65 @@ class ClientPlots(QtWidgets.QMainWindow):
            return canvas.plot(x, y, name=plotname, pen=pen)
 
     async def redraw(self):
-        reader, writer = await asyncio.open_connection("127.0.0.1", self.port)
         while True:
             try:
-                data = await reader.readuntil(separator=b'\0')
-                data = data[:-1] # snip off nullbyte
-                packet = json.loads(data.decode("utf-8"))
-                brtype = packet["type"]
-                if brtype == "keepalive":
-                    continue
-                
-                payload = packet[packet["type"]]
-                logging.debug(f"Received {brtype} packet: {payload}")
-                if brtype == "DATA":
-                    self.statusBar().showMessage(f"Got data for timestamp {payload['timestamp']}")
-                    logging.info("data acquired")
-                    self.PID_D.append(payload["flow"])
-                    self.PID_I.append(payload["volume"])
-                    self.PID_P.append(payload["airway_pressure"])
-                    if len(self.PID_D) > self.history_length:
-                        self.PID_D = self.PID_D[1:]
-                        self.PID_I = self.PID_I[1:]
-                        self.PID_P = self.PID_P[1:]
-                    self.line1.setData(self.timestamp, self.PID_D)
-                    self.line2.setData(self.timestamp, self.PID_I)
-                    self.line3.setData(self.timestamp, self.PID_P)
-                elif brtype == "READBACK":
-                    pass
-                elif brtype == "CYCLE":
-                    pass
-                elif brtype == "THRESHOLDS":
-                    pass
-                elif brtype == "ALARM":
-                    logging.error(f"received ALARM {payload}")
-                elif brtype == "IVT":
-                    pass
-                elif brtype == "DEBUG":
-                    pass
-                else:
-                    raise KeyError
+                reader, writer = await asyncio.open_connection("127.0.0.1", self.port)
+                print("Connected successfully")
+                while True:
+                    try:
+                        data = await reader.readuntil(separator=b'\0')
+                        data = data[:-1] # snip off nullbyte
+                        packet = json.loads(data.decode("utf-8"))
+                        brtype = packet["type"]
+                        if brtype == "keepalive":
+                            continue
 
-                self._alarms = packet["alarms"]
-            except json.decoder.JSONDecodeError:
-                logging.warning(f"Could not decode packet: {data}")
-            except KeyError as e:
-                logging.warning(f"Invalid payload: {data}")
-                logging.error(e)
+                        payload = packet[packet["type"]]
+                        logging.debug(f"Received {brtype} packet: {payload}")
+                        if brtype == "DATA":
+                            self.statusBar().showMessage(f"Got data for timestamp {payload['timestamp']}")
+                            logging.info("data acquired")
+                            self.PID_D.append(payload["flow"])
+                            self.PID_I.append(payload["volume"])
+                            self.PID_P.append(payload["airway_pressure"])
+                            if len(self.PID_D) > self.history_length:
+                                self.PID_D = self.PID_D[1:]
+                                self.PID_I = self.PID_I[1:]
+                                self.PID_P = self.PID_P[1:]
+                            self.line1.setData(self.timestamp, self.PID_D)
+                            self.line2.setData(self.timestamp, self.PID_I)
+                            self.line3.setData(self.timestamp, self.PID_P)
+                        elif brtype == "READBACK":
+                            pass
+                        elif brtype == "CYCLE":
+                            pass
+                        elif brtype == "THRESHOLDS":
+                            pass
+                        elif brtype == "ALARM":
+                            logging.error(f"received ALARM {payload}")
+                        elif brtype == "IVT":
+                            pass
+                        elif brtype == "DEBUG":
+                            pass
+                        else:
+                            raise KeyError
+
+                        self._alarms = packet["alarms"]
+                    except json.decoder.JSONDecodeError:
+                        logging.warning(f"Could not decode packet: {data}")
+                    except KeyError as e:
+                        logging.warning(f"Invalid payload: {data}")
+                        logging.error(e)
+                    except Exception as e:
+                        logging.error(e)
+                        raise
+
+                # close connection
+                writer.close()
+                await writer.wait_closed()
             except Exception as e:
                 logging.error(e)
-                raise
-
-        # close connection
-        writer.close()
-        await writer.wait_closed()
+                await asyncio.sleep(2)
 
     async def cmdDebug(self):
         """Put debug code here"""
