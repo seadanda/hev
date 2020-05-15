@@ -259,7 +259,7 @@ $(document).ready(function() {
         data: {
             //labels: initial_xaxis,
             datasets: [{
-                data: {},
+                data: [],
                 label: "Var1",
                 //borderColor: "#3e95cd",
                 borderColor: "#000000",
@@ -335,7 +335,7 @@ $(document).ready(function() {
         data: {
             //labels: initial_xaxis,
             datasets: [{
-                data: {},
+                data: [],
                 label: "Var1",
                 borderColor: "#ba0202",
                 borderWidth: 4,
