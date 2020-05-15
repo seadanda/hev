@@ -216,7 +216,7 @@ if __name__ == "__main__":
     print(f"Alarms: {hevclient.get_alarms()}")
 
     # set a timeout
-    hevclient.send_cmd("SET_TIMEOUT", "INHALE", 1111)
+    hevclient.send_cmd("SET_DURATION", "INHALE", 1111)
 
     # check for the readback
     for i in range(10):
