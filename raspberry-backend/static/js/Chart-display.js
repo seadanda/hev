@@ -35,9 +35,7 @@ function init_results(){
         var initial_yaxis_flow = [];
         var initial_yaxis_pressure = [];
         var initial_yaxis_volume = [];
-        console.log("Getting initial results");
             for (let i=Math.min(data.length,1000)-1; i>=0; i--) {
-                console.log(i, data[i]["timestamp"]);
                 var seconds = data[i]["timestamp"]/1000;
             if ( seconds == "" ) continue;
             if (seconds <= timestamp) continue;
@@ -447,7 +445,7 @@ function create_gauge_chart(var_name) {
             },
             options: {
 
-	    maintainAspectRatio: true,
+	    maintainAspectRatio: false,
 		events: []
             }
 	});
