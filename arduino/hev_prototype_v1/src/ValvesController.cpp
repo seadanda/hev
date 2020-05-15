@@ -25,7 +25,7 @@ ValvesController::ValvesController()
 
     _exhale.pin = pin_valve_exhale;
     _exhale.proportional = false;
-    _exhale.state = VALVE_STATE::CLOSED;
+    _exhale.state = VALVE_STATE::OPEN;
     _exhale.voltage = 0;
     _exhale.current = 0;
     _exhale.device_number = -1;
@@ -175,7 +175,7 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
         default:
             break;
     }
-
+/*
     if(_exhale.proportional == true){
 	    switch(vexhale){
 		    case VALVE_STATE::FULLY_CLOSED:
@@ -197,10 +197,17 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
 			    //doPID(_exhale.pin);
 			    break;
 	    }
-    } else {
-	    digitalWrite(_exhale.pin,  vexhale == VALVE_STATE::CLOSED );  //inverted logic; normally open;
+    } else if(_exhale.proportional == false){
+	    //digitalWrite(_exhale.pin,  vexhale == VALVE_STATE::CLOSED );  //inverted logic; normally open;
+	    digitalWrite(_exhale.pin,  vexhale);  //inverted logic; normally open;
+	    // lOw = open
     }
 
+    */
+    if(vexhale == VALVE_STATE::OPEN)
+	    digitalWrite(_exhale.pin,  VALVE_STATE::CLOSED);  //inverted logic; normally open;
+    else 
+	    digitalWrite(_exhale.pin,  VALVE_STATE::OPEN);  //inverted logic; normally open;
     // save the state 
     _air_in.state = vin_air;
     _o2_in.state  = vin_o2;
