@@ -13,6 +13,12 @@ import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
+# use /dev/shm (in memory tmpfs) to hold the data, should be stable over Flask shenanigans when restaring scripts
+import mmap
+import pickle
+import os
+mmFileName = "/dev/shm/HEVClient_lastData.mmap"
+
 class HEVPacketError(Exception):
     pass
 
@@ -27,9 +33,21 @@ class HEVClient(object):
         self._polling = polling  # keep reading data into db
         self._lock = threading.Lock()  # lock for the database
 
+        self._mmFile = None
+        if( os.access(  mmFileName, os.F_OK ) ):
+            self._mmFile = open(mmFileName, "a+b")
+        else:
+            self._mmFile = open(mmFileName, "x+b")
+            self._mmFile.write(b'0' * 10000) # ~10kb is enough I hope for one event
+        self._mmMap = mmap.mmap(self._mmFile.fileno(), 0) # Map to in memory object
+        
         # start polling in another thread unless told otherwise
         if self._polling:
             self.start_polling()
+    
+    def __del__(self):
+        self._mmMap.close()
+        self._mmFile.close()
 
     def start_polling(self):
         """start worker thread to update db in the background"""
@@ -55,6 +73,9 @@ class HEVClient(object):
                 elif payload["type"] == "DATA":
                     with self._lock:
                         self._fastdata = payload["DATA"]
+                        self._mmMap.seek(0)
+                        self._mmMap.write(pickle.dumps(self._fastdata))
+                        self._mmMap.flush()
                 elif payload["type"] == "READBACK":
                     with self._lock:
                         self._readback = payload["READBACK"]
@@ -140,7 +161,13 @@ class HEVClient(object):
 
     def get_values(self) -> Dict:
         # get sensor values from db
-        return self._fastdata
+        self._mmFile.seek(0)
+        fastdata = pickle.load(self._mmFile)
+        if(type(fastdata) is dict):
+            return fastdata
+        else:
+            logging.warning("Missing/wrong data in mmMap")
+            return None
 
     def get_readback(self) -> Dict:
         # get readback from db
@@ -189,7 +216,7 @@ if __name__ == "__main__":
     print(f"Alarms: {hevclient.get_alarms()}")
 
     # set a timeout
-    hevclient.send_cmd("SET_TIMEOUT", "INHALE", 1111)
+    hevclient.send_cmd("SET_DURATION", "INHALE", 1111)
 
     # check for the readback
     for i in range(10):
