@@ -237,7 +237,30 @@ def data_handler():
     print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
     return ('', 204)
 
+def modeSwitchter(modeName):
+    switcher = {
+        0: "UNKNOWN",
+        "PC-PSV": "HEV_MODE_PS",
+        "CPAP": "HEV_MODE_CPAP",
+        "PC-A/C-PRVC": "HEV_MODE_PRVC",
+        "PC-A/C": "HEV_MODE_TEST",
+        7: "LAB_MODE_BREATHE",
+        8: "LAB_MODE_PURGE",
+        10: "LAB_MODE_FLUSH"
+    }
+    return switcher.get(modeName, "Invalid ventilation mode")
 
+
+@WEBAPP.route('/mode_handler', methods=['POST'])
+def mode_handler():
+    """
+    Set mode for the ventilator
+    """
+    data = request.get_json(force=True)
+    #modeSwitchter(data['name'])
+    print(client.send_cmd("SET_MODE", modeSwitchter(data['name'])))
+    print(data)
+    return ('', 204)
 
 
 
