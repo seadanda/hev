@@ -35,11 +35,15 @@ void setup()
     WiFi.mode(WIFI_OFF);
     btStop();
     ledcSetup(pwm_chan_inhale, 500, pwm_resolution); // 500 Hz for proportional valves
+#ifdef EXHALE_VALVE_PROPORTIONAL
     ledcSetup(pwm_chan_exhale, 500, pwm_resolution); // 500 Hz for proportional valves
+    ledcAttachPin(pin_valve_exhale , pwm_chan_exhale);  
+#else
+    pinMode(pin_valve_exhale, OUTPUT);
+#endif
     ledcSetup(3, 2000, pwm_resolution);
     ledcAttachPin(pin_buzzer, 3);  
     ledcAttachPin(pin_valve_inhale , pwm_chan_inhale);  
-    ledcAttachPin(pin_valve_exhale , pwm_chan_exhale);  
 
 // map<int,int> pin_to_chan; // = { pin_valve_inhale : pwm_chan_inhale , pin_valve_exhale : pwm_chan_exhale};
 
@@ -71,6 +75,7 @@ void setup()
     //pinMode(pin_buzzer, OUTPUT);
 
     comms.beginSerial();
+    setGlobalComms(&comms);
 
     Wire.begin(22, 23);
     I2CMCP9808.begin(22, 23);
