@@ -23,7 +23,8 @@ import sqlite3
 from datetime import datetime
 import threading
 
-import RPi.GPIO as gpio
+
+readBattery = True
 
 pin_bat     = 5
 pin_ok      = 6
@@ -31,19 +32,20 @@ pin_alarm   = 12
 pin_rdy2buf = 13
 pin_bat85   = 19
 
-gpio.setmode(gpio.BCM)
 
-gpio.setup(pin_bat     , gpio.IN)
-gpio.setup(pin_ok      , gpio.IN)
-gpio.setup(pin_alarm   , gpio.IN)
-gpio.setup(pin_rdy2buf , gpio.IN)
-gpio.setup(pin_bat85   , gpio.IN)
+try:
+    import RPi.GPIO as gpio
+    gpio.setmode(gpio.BCM)
+    gpio.setup(pin_bat     , gpio.IN)
+    gpio.setup(pin_ok      , gpio.IN)
+    gpio.setup(pin_alarm   , gpio.IN)
+    gpio.setup(pin_rdy2buf , gpio.IN)
+    gpio.setup(pin_bat85   , gpio.IN)
+except ImportError:
+    print("No Raspberry Pi GPIO Module, battery information won't be reliable")
+    readBattery = False
 
-bat     = gpio.input(pin_bat    ) 
-ok      = gpio.input(pin_ok     ) 
-alarm   = gpio.input(pin_alarm  ) 
-rdy2buf = gpio.input(pin_rdy2buf) 
-bat85   = gpio.input(pin_bat85  ) 
+
 
 #SQLITE_FILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite database file
 #SQLITE_FILE = 'hev::memory:?cache=shared'
@@ -305,13 +307,15 @@ def live_battery():
     Get battery info
     Output in json format
     """
-    battery = {
-    'bat'     : gpio.input(pin_bat    ) ,
-    'ok'      : gpio.input(pin_ok     ) ,
-    'alarm'   : gpio.input(pin_alarm  ) ,
-    'rdy2buf' : gpio.input(pin_rdy2buf) ,
-    'bat85'   : gpio.input(pin_bat85  ) 
-    }
+    battery = {'bat' : 0, 'ok' : 0, 'alarm' : 0, 'rdy2buf' : 0, 'bat85' : 0}
+    if readBattery:
+        battery = {
+        'bat'     : gpio.input(pin_bat    ) ,
+        'ok'      : gpio.input(pin_ok     ) ,
+        'alarm'   : gpio.input(pin_alarm  ) ,
+        'rdy2buf' : gpio.input(pin_rdy2buf) ,
+        'bat85'   : gpio.input(pin_bat85  ) 
+        }
     response = make_response(json.dumps(battery).encode('utf-8') )
     response.content_type = 'application/json'
     return response
