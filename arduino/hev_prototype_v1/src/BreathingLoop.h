@@ -28,7 +28,11 @@ public:
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     float getRespiratoryRate();
+    void  setTargetRespiratoryRate(float rate);
+    float getTargetRespiratoryRate();
     float getIERatio();
+    void setIERatio(float ratio); 
+    void updateIE();
     float getPEEP();
     float getMinuteVolume();
     ValvesController * getValvesController();
@@ -96,7 +100,10 @@ private:
     uint32_t calculateDurationExhale();
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
     states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1600, 0, 1200, 2200};
-
+    // targets
+    float _target_RR;
+    float _target_IE_ratio;
+    
     // readings
     void resetReadingSums();
     readings<float> _readings_sums; // 32 bit due to possible analog read overflow

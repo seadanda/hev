@@ -169,6 +169,29 @@ void BreathingLoop::updateRawReadings()
 void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
 {
     _ventilation_mode = mode;
+    valve_params vp = _valves_controller.getValveParams();
+    switch(_ventilation_mode){
+
+        case VENTILATION_MODE::HEV_MODE_PC_AC :
+            vp.inhale_trigger_enable = true; 
+            vp.exhale_trigger_enable = false; 
+        break;
+        case VENTILATION_MODE::HEV_MODE_PC_AC_PRVC :
+            vp.inhale_trigger_enable = true; 
+            vp.exhale_trigger_enable = false; 
+        break;
+        case VENTILATION_MODE::HEV_MODE_PC_PSV :
+            vp.inhale_trigger_enable = true; 
+            vp.exhale_trigger_enable = true; 
+        break;
+        case VENTILATION_MODE::HEV_MODE_CPAP :
+            vp.inhale_trigger_enable = true; 
+            vp.exhale_trigger_enable = true; 
+        break;
+        default : 
+        break;
+
+    }
 }
 
 VENTILATION_MODE BreathingLoop::getVentilationMode()
@@ -188,13 +211,6 @@ readings<float> BreathingLoop::getRawReadings()
     return _readings_raw;
 
 }
-
-float BreathingLoop::getRespiratoryRate(){
-    // 60*1000ms / total time for a full cycle
-    float avg = (_total_cycle_duration[0]+_total_cycle_duration[1]+_total_cycle_duration[2])/3.0;
-    return 60000.0/avg;
-}
-
 /*
 float BreathingLoop::getFlow(){
     float normal_volume = 1;
@@ -229,12 +245,6 @@ float BreathingLoop::getFlow(){
 
 //}
 
-float    BreathingLoop::getIERatio(){
-    // TODO : check with Oscar/Xavier
-    float total_inhale_time = _states_durations.inhale + _states_durations.pause;
-    float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale;
-    return total_inhale_time/total_exhale_time;
-}
 
 float BreathingLoop::getPEEP()
 {
@@ -297,10 +307,10 @@ void BreathingLoop::FSM_assignment( ) {
         case BL_STATES::BUFF_LOADED:
             switch (_ventilation_mode)
             {
-            case LAB_MODE_FLUSH:
+            case VENTILATION_MODE::LAB_MODE_FLUSH:
                 next_state = BL_STATES::BUFF_FLUSH;
                 break;
-            case LAB_MODE_PURGE:
+            case VENTILATION_MODE::LAB_MODE_PURGE:
                 next_state = BL_STATES::BUFF_PURGE;
                 break;
             default:
@@ -456,7 +466,7 @@ void BreathingLoop::FSM_breathCycle()
             inhaleTrigger();
             break;
         case BL_STATES::EXHALE:
-            _states_durations.exhale = calculateDurationExhale();
+            // _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
             //update total cycle time
@@ -572,13 +582,70 @@ states_durations &BreathingLoop::getDurations() {
     return _states_durations;
 }
 
-uint32_t BreathingLoop::calculateDurationExhale() {
-    // TODO : should have sane minimum times
-    // for now min = 100ms
-    uint32_t exhale_duration = (_states_durations.inhale * getIERatio())  - _states_durations.exhale_fill ;
-    if (exhale_duration < 100)
-        exhale_duration = 100;
-    return static_cast<uint32_t>(exhale_duration);
+// uint32_t BreathingLoop::calculateDurationExhale() {
+//     // TODO : should have sane minimum times
+//     // for now min = 100ms
+//     uint32_t exhale_duration = (_states_durations.inhale * getIERatio())  - _states_durations.exhale_fill ;
+//     if (exhale_duration < _min_exhale_time)
+//         exhale_duration = _min_exhale_time;
+//     return static_cast<uint32_t>(exhale_duration);
+// }
+
+float    BreathingLoop::getIERatio(){
+    // TODO : check with Oscar/Xavier
+    float total_inhale_time = _states_durations.inhale + _states_durations.pause;
+    float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale;
+    return total_inhale_time/total_exhale_time;
+}
+
+float BreathingLoop::getRespiratoryRate(){
+    // 60*1000ms / total time for a full cycle
+    float avg = (_total_cycle_duration[0]+_total_cycle_duration[1]+_total_cycle_duration[2])/3.0;
+    return 60000.0/avg;
+}
+
+void BreathingLoop::setTargetRespiratoryRate(float rate){
+    //rate is per min (60*1000ms)
+    _target_RR = rate;
+    updateIE();
+}
+
+// KH 20200518 - TODO; 
+//   - need an update CycleReadings function called from exhale_fill
+//   - need to track times for inhale and exhale to measure IE
+//   - need to find peak and plateau of pressure
+void BreathingLoop::updateIE()
+{
+
+    uint32_t total_cycle = static_cast<uint32_t>(60*1000/_target_RR);
+    int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
+    int32_t exhale_duration = exhale_duration - _states_durations.exhale_fill;
+
+    int32_t min_exhale = (_min_exhale_time - _states_durations.exhale_fill < 0) ? 0 : _min_exhale_time - _states_durations.exhale_fill;
+    int32_t max_exhale = (_max_exhale_time - _states_durations.exhale_fill < 0) ? 0 : _max_exhale_time - _states_durations.exhale_fill;
+
+    if (exhale_duration < min_exhale)
+        _states_durations.exhale = min_exhale;
+    else if (exhale_duration > max_exhale)
+        _states_durations.exhale = max_exhale;
+    else 
+        _states_durations.exhale = exhale_duration; 
+    // TODO - what if exhale time is less than min; raise error?
+}
+
+void BreathingLoop::setIERatio(float ratio)
+{
+    int32_t exhale_duration = static_cast<uint32_t>(_states_durations.inhale * ratio)  - _states_durations.exhale_fill ;
+    if (exhale_duration < _min_exhale_time )
+        _states_durations.exhale = _min_exhale_time;
+    else if (exhale_duration > _max_exhale_time )
+        _states_durations.exhale = _max_exhale_time;
+    else 
+        _states_durations.exhale = exhale_duration; 
+}
+
+float BreathingLoop::getTargetRespiratoryRate(){
+    return _target_RR;
 }
 
 ValvesController* BreathingLoop::getValvesController()

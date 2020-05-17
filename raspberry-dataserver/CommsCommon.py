@@ -48,14 +48,15 @@ class CMD_SET_DURATION(Enum):
 
 @unique
 class VENTILATION_MODE(Enum):
-    UNKNOWN          = 0
-    HEV_MODE_PS      = 1
-    HEV_MODE_CPAP    = 2
-    HEV_MODE_PRVC    = 3
-    HEV_MODE_TEST    = 4
-    LAB_MODE_BREATHE = 5
-    LAB_MODE_PURGE   = 6
-    LAB_MODE_FLUSH   = 7
+    UNKNOWN             = 0
+    HEV_MODE_PC_AC      = 1
+    HEV_MODE_PC_AC_PRVC = 2
+    HEV_MODE_PC_PSV     = 3
+    HEV_MODE_CPAP       = 4
+    HEV_MODE_TEST       = 5
+    LAB_MODE_BREATHE    = 6
+    LAB_MODE_PURGE      = 7
+    LAB_MODE_FLUSH      = 8
 
 @unique
 class CMD_SET_VALVE(Enum):
@@ -295,7 +296,7 @@ class ReadbackFormat(PayloadFormat):
     valve_inhale: int             = 0
     valve_exhale: int             = 0
     valve_purge: int              = 0
-    ventilation_mode: int         = VENTILATION_MODE.HEV_MODE_PS
+    ventilation_mode: int         = VENTILATION_MODE.HEV_MODE_PC_AC
 
     valve_inhale_percent: int     = 0
     valve_exhale_percent: int     = 0
