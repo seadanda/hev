@@ -7,7 +7,19 @@ rpi_swlist:
   - python3-flask
   - sqlite3
   - fonts-open-sans
+  - cmake
   - libts0
+  - libglvnd-dev  
+  - libfontconfig1-dev 
+  - libdbus-1-dev 
+  - libicu-dev 
+  - libinput-dev
+  - libxkbcommon-dev 
+  - libsqlite3-dev 
+  - libssl-dev 
+  - libjpeg-dev 
+  - libglib2.0-dev
+
 
 pip_list: 
   - libscrc
