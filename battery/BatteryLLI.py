@@ -2,7 +2,11 @@
 
 import asyncio
 import logging
-import RPi.GPIO as gpio
+try:
+    import RPi.GPIO as gpio
+except ModuleNotFoundError:
+    logging.error("RPi gpio backend not found")
+    import hevgpio as gpio
 import copy
 
 # Set up logging
