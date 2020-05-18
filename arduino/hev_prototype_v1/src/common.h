@@ -20,7 +20,7 @@
 #endif
 
 #define HEV_FORMAT_VERSION 0xA8
-#define EXHALE_VALVE_PROPORTIONAL
+//#define EXHALE_VALVE_PROPORTIONAL
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -92,7 +92,9 @@ enum CMD_SET_VALVE: uint8_t {
     INHALE_OPEN_MIN = 5,
     INHALE_OPEN_MAX = 6,
     INHALE_TRIGGER_ENABLE = 7,
-    EXHALE_TRIGGER_ENABLE = 8
+    EXHALE_TRIGGER_ENABLE = 8,
+    INHALE_TRIGGER_THRESHOLD = 9,
+    EXHALE_TRIGGER_THRESHOLD = 10
 };
 
 enum CMD_SET_PID : uint8_t {
@@ -547,6 +549,9 @@ struct valve_params{
     float inhale_duty_cycle;
     float inhale_open_min;
     float inhale_open_max;
+    float inhale_trigger_threshold ;   // params - associated val of peak flow
+    float exhale_trigger_threshold ;
+
 };
 
 //void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);

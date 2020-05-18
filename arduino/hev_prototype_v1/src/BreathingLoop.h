@@ -120,7 +120,7 @@ private:
     float _airway_pressure;
     float _valve_inhale_PID_percentage;//from 0 to 1.
 
-    void doPID(int, float, float, float&, float&, float&, float&);
+    void doPID();
 
     // safety
     void safetyCheck();

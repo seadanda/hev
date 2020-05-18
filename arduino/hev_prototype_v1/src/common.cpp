@@ -69,6 +69,12 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value)
         case CMD_SET_VALVE::INHALE_OPEN_MAX :
             vparams.inhale_open_max = (value < 0) ? 0.0 : (value > MAX_VALVE_FRAC_OPEN) ? MAX_VALVE_FRAC_OPEN : value;
             break;
+        case CMD_SET_VALVE::INHALE_TRIGGER_THRESHOLD :
+            vparams.inhale_trigger_threshold = value;
+            break;
+        case CMD_SET_VALVE::EXHALE_TRIGGER_THRESHOLD :
+            vparams.exhale_trigger_threshold = value;
+            break;
         default:
             break;
     }

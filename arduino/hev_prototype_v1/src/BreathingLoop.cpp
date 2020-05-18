@@ -53,6 +53,9 @@ BreathingLoop::BreathingLoop()
     _inhale_trigger_threshold = 0.005;  // abs flow ?unit
     _exhale_trigger_threshold = 0.2;  // 30% of peak
 
+    _inhale_trigger_threshold = _valves_controller.getValveParams().inhale_trigger_threshold;
+    _exhale_trigger_threshold = _valves_controller.getValveParams().exhale_trigger_threshold;
+
     _min_inhale_time = 150;
     _min_exhale_time = 300;
     _max_exhale_time = 30000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
@@ -116,17 +119,7 @@ void BreathingLoop::updateReadings()
 
                 //TODO
 
-                float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
-
-                doPID(3, _pid.target_final_pressure, _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
-		//_volume = _valve_inhale_PID_percentage;
-
-		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
-                //Lazy approach
-                _airway_pressure = _pid.proportional;
-                _volume = _pid.integral;
-                //_flow = (_pid.Kd*_pid.derivative);
-                //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
+                doPID();
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
@@ -135,6 +128,7 @@ void BreathingLoop::updateReadings()
         runningAvgs();
 
         _flow = _readings_avgs.pressure_diff_patient;
+
         _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
@@ -606,7 +600,7 @@ float BreathingLoop::getAirwayPressure(){
     return _airway_pressure;
 }
 
-void BreathingLoop::doPID(int nsteps, float target_pressure, float process_pressure, float &output, float &proportional, float &integral, float &derivative){
+void BreathingLoop::doPID(){
 
     // Set PID profile using the set point
     // nsteps defines the number of intermediate steps
@@ -615,7 +609,7 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     _pid.istep +=1;
 
-    _pid.process_pressure = process_pressure;
+    _pid.process_pressure = _readings_avgs.pressure_inhale;
 
     float _pid_set_point_step = _pid.target_final_pressure/_pid.nsteps;
 
@@ -665,15 +659,18 @@ pid_variables& BreathingLoop::getPIDVariables()
 void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
+
+    //logMsg("inhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+
     if(en == true){
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_flow > _inhale_trigger_threshold) 
+        if((_flow > _valves_controller.getValveParams().inhale_trigger_threshold) 
             && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
             //TODO - check we're past 'valley'
             if (tnow - _fsm_time > _min_exhale_time ) {
                 // TRIGGER
-                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_inhale_trigger_threshold));
+                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
                 _fsm_timeout = 0; // go to next state immediately
             }
         } else if (tnow - _fsm_time > _max_exhale_time){
@@ -687,13 +684,16 @@ void BreathingLoop::inhaleTrigger()
 void BreathingLoop::exhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().exhale_trigger_enable;
+
+    //logMsg("EXhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().exhale_trigger_threshold)+" "+String(_peak_flow));
+
     if(en == true){
         logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) 
-            && (tnow - _peak_flow_time > 10)){ // wait 10ms after peak
+        if((_running_avg_flow < (_valves_controller.getValveParams().exhale_trigger_threshold * _peak_flow)) 
+            && (tnow - _peak_flow_time > 100)){ // wait 10ms after peak
             //TODO - check we're past 'peak'
-            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_exhale_trigger_threshold)+" "+String(_peak_flow));
+            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time > _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
