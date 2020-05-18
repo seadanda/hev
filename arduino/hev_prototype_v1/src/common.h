@@ -280,7 +280,7 @@ struct cycle_data_format {
     uint16_t plateau_pressure           = 0;  
     uint16_t mean_airway_pressure       = 0;
 
-    uint8_t  fi02_percent               = 0;  // device from Aurelio
+    uint8_t  fiO2_percent               = 0;  // device from Aurelio
 
     uint16_t apnea_index                = 0;
     uint16_t apnea_time                 = 0;
@@ -548,6 +548,36 @@ struct valve_params{
     float inhale_duty_cycle;
     float inhale_open_min;
     float inhale_open_max;
+};
+
+struct cycle_readings{
+
+    uint64_t timestamp       = 0; 
+    float respiratory_rate              = 0.0;
+
+    float tidal_volume                  = 0.0;
+    float exhaled_tidal_volume          = 0.0;
+    float inhaled_tidal_volume          = 0.0;
+
+    float minute_volume                 = 0.0;
+    float exhaled_minute_volume         = 0.0;
+    float inhaled_minute_volume         = 0.0;
+
+    float lung_compliance               = 0.0;
+    float static_compliance             = 0.0;
+
+    float inhalation_pressure        = 0;  
+    float peak_inspiratory_pressure  = 0;  
+    float plateau_pressure           = 0;  
+    float mean_airway_pressure       = 0;
+
+    uint8_t  fiO2_percent               = 0;  
+
+    uint16_t apnea_index                = 0;
+    uint16_t apnea_time                 = 0;
+
+    uint8_t mandatory_breath            = 0;
+
 };
 
 //void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);

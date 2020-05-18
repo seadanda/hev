@@ -25,6 +25,7 @@ public:
     bool getRunning();
     void updateReadings();
     void updateRawReadings();
+    void updateCycleReadings();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     float getRespiratoryRate();
@@ -51,6 +52,7 @@ public:
     float getAirwayPressure();
     pid_variables& getPIDVariables();
     states_durations &getDurations();
+    cycle_readings &getCycleReadings();
 
  
 
@@ -115,17 +117,25 @@ private:
     uint32_t _readings_timeout;
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
+    uint32_t _readings_cycle_time;
+    uint32_t _readings_cycle_timeout;
  
     float _peep;
 
     // calculations
+    cycle_readings _cycle_readings;
     void updateTotalCycleDuration(uint16_t newtotal);
+    float flowToVolume();
     uint16_t _total_cycle_duration[3];
+
 
     float _flow;
     float _volume;
     float _airway_pressure;
     float _valve_inhale_PID_percentage;//from 0 to 1.
+    float _volume_inhale;
+    float _volume_exhale;
+    float _volume_total;
 
     void doPID(int, float, float, float&, float&, float&, float&);
 
