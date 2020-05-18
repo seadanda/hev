@@ -25,18 +25,13 @@ class BatteryLLI:
             gpio.setup(self._pins[pin], gpio.IN)
             self._res[pin] = 0
             
-    async def getValues(self):
-        await asyncio.sleep(self._timeout)
-        for pin in self._pins:
-            self._res[pin] = gpio.input(self._pins[pin])
-        logging.info(f"Battery: {self._res}")
-    
     async def main(self) -> None:
         while True:
-            results = self.getValues()  # NativeUI broadcast
-            tasks = [results]
+            await asyncio.sleep(self._timeout)
+            for pin in self._pins:
+                self._res[pin] = gpio.input(self._pins[pin])
+            logging.info(f"Battery: {self._res}")
 
-            await asyncio.gather(*tasks, return_exceptions=True)
 
 if __name__ == "__main__":
     try:
@@ -44,7 +39,7 @@ if __name__ == "__main__":
         loop = asyncio.get_event_loop()
 
         # setup serial devices
-        battery = BatteryLLI(loop)
+        battery = BatteryLLI()
 
         asyncio.gather(battery.main(), return_exceptions=True)
         loop.run_forever()
