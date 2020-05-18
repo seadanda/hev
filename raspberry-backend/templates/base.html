@@ -18,7 +18,6 @@
 	<script src="{{ url_for('static', filename='js/easy-numpad.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/pickout.js') }}"></script>
 	<script src="{{ url_for('static', filename='js/notifications.js') }}"></script>
-	<script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 	<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename='img/apple-touch-icon.png') }}">
 	<link rel="icon" type="image/png" sizes="32x32" href="{{ url_for('static', filename='img/favicon-32x32.png') }}">
 	<link rel="icon" type="image/png" sizes="16x16" href="{{ url_for('static', filename='img/favicon-16x16.png') }}">
@@ -128,7 +127,7 @@
         <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
-	
+
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
@@ -140,8 +139,8 @@
 	  var idleTimer;
 	  var unlocked = Boolean(false);
 	  if (sessionStorage.getItem("unlocked")!=null){
-	  	if (sessionStorage.getItem("unlocked") == true){console.log("storage item has unlocked = true");unlocked = Boolean(true);}
-		  else {unlocked = Boolean(false);console.log("storage item has unlocked is false");}
+	  	if (sessionStorage.getItem("unlocked") == true){unlocked = Boolean(true);}
+		  else {unlocked = Boolean(false);}
 	  }
 
 	  //our default is locked, but if we load and the unlock is set, unlock page
@@ -302,34 +301,38 @@
 			  });
 
 			  
-	  var battery = 200;
-	  function update_battery() {
-	  // set all transparent
-	  var powered = document.getElementById("powered");
-          powered.classList.add("transparent");
-	  var full = document.getElementById("battery-full");
-          full.classList.add("transparent");
-	  three_qtr = document.getElementById("battery-three-quarter");
-          three_qtr.classList.add("transparent");
-	  var half = document.getElementById("battery-half");
-          half.classList.add("transparent");
-	  var one_qtr = document.getElementById("battery-one-quarter");
-          one_qtr.classList.add("transparent");
-	  var empty = document.getElementById("battery-empty");
-          empty.classList.add("transparent");
+function update_battery() {
+		$.ajax({
+			url: '/battery',
+			success: function(point) {
+		  	// set all transparent
+		  	var powered = document.getElementById("powered");
+	        powered.classList.add("transparent");
+		  	var full = document.getElementById("battery-full");
+	        full.classList.add("transparent");
+		  	three_qtr = document.getElementById("battery-three-quarter");
+	        three_qtr.classList.add("transparent");
+		  	var half = document.getElementById("battery-half");
+	        half.classList.add("transparent");
+			var one_qtr = document.getElementById("battery-one-quarter");
+	        one_qtr.classList.add("transparent");
+		  	var empty = document.getElementById("battery-empty");
+	        empty.classList.add("transparent");
 
-	  
-			  // find the one to show
-			  if (battery > 100.0) { powered.classList.remove("transparent"); }
-									else if ( battery >=87.5 && battery <= 100.0 ) {full.classList.remove("transparent");}
-		  else  if (battery >= 67.5 && battery < 87.5) { three_qtr.classList.remove("transparent"); }
-							 else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
-												else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
-																      else  { empty.classList.remove("transparent"); }
-																      battery = battery - 1;
-																      if (battery  <= 0 ) battery = 200;
-																		      }	var batteryInterval = setInterval('update_battery()', 1000);
-																		      var prev_val;
+			// find the one to show
+			if (point['ok']) { powered.classList.remove("transparent"); }
+			else if ( point["bat"] && point["bat85"] ) {full.classList.remove("transparent");}
+		  	else  if ( point["bat"] ) { three_qtr.classList.remove("transparent"); }
+			//else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
+			//else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
+			else  { empty.classList.remove("transparent"); }
+			}
+		})
+	}
+update_battery();																				
+var batteryInterval = setInterval('update_battery()', 1000);
+																			  var prev_val;
+																			  
 
 $('.input-editable').focus(function() {
     prev_val = $(this).val();

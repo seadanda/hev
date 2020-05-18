@@ -23,6 +23,30 @@ import sqlite3
 from datetime import datetime
 import threading
 
+
+readBattery = True
+
+pin_bat     = 5
+pin_ok      = 6
+pin_alarm   = 12
+pin_rdy2buf = 13
+pin_bat85   = 19
+
+
+try:
+    import RPi.GPIO as gpio
+    gpio.setmode(gpio.BCM)
+    gpio.setup(pin_bat     , gpio.IN)
+    gpio.setup(pin_ok      , gpio.IN)
+    gpio.setup(pin_alarm   , gpio.IN)
+    gpio.setup(pin_rdy2buf , gpio.IN)
+    gpio.setup(pin_bat85   , gpio.IN)
+except ImportError:
+    print("No Raspberry Pi GPIO Module, battery information won't be reliable")
+    readBattery = False
+
+
+
 #SQLITE_FILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite database file
 #SQLITE_FILE = 'hev::memory:?cache=shared'
 SQLITE_FILE = 'file:hev?mode=memory&cache=shared'
@@ -231,29 +255,36 @@ def send_cmd():
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
     """
-    Send configuration data to the Arduino
+    Set timeout threshold data to the Arduino
     """
-    output = []
-    var_1 = request.form['pressure_air_supply']
-    var_2 = request.form['variable2']
-    var_3 = request.form['variable3']
-    var_4 = request.form['variable4']
-    var_5 = request.form['variable5']
-    var_6 = request.form['variable6']
-  
-    patient_name = request.form['patient_name']
+    data = request.get_json(force=True)
+    print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
+    return ('', 204)
 
- 
-    multiple_appends(output, var_1, var_2, var_3, var_4, var_5, var_6)
-    
-    converted_output = [float(i) for i in output] 
+def modeSwitchter(modeName):
+    switcher = {
+        0: "UNKNOWN",
+        "PC-PSV": "HEV_MODE_PS",
+        "CPAP": "HEV_MODE_CPAP",
+        "PC-A/C-PRVC": "HEV_MODE_PRVC",
+        "PC-A/C": "HEV_MODE_TEST",
+        7: "LAB_MODE_BREATHE",
+        8: "LAB_MODE_PURGE",
+        10: "LAB_MODE_FLUSH"
+    }
+    return switcher.get(modeName, "Invalid ventilation mode")
 
-    print(converted_output)
-    print("The thresholds are set with a command, not with a set threshold function")
-    #hevclient.set_thresholds(converted_output)
 
-    return render_template('index.html', result=live_data(), patient=patient_name)
-
+@WEBAPP.route('/mode_handler', methods=['POST'])
+def mode_handler():
+    """
+    Set mode for the ventilator
+    """
+    data = request.get_json(force=True)
+    #modeSwitchter(data['name'])
+    print(client.send_cmd("SET_MODE", modeSwitchter(data['name'])))
+    print(data)
+    return ('', 204)
 
 
 
@@ -268,6 +299,27 @@ def live_data():
     response = make_response(json.dumps(client.get_values()).encode('utf-8') )
     response.content_type = 'application/json'
     return response
+
+
+@WEBAPP.route('/battery', methods=['GET'])
+def live_battery():
+    """
+    Get battery info
+    Output in json format
+    """
+    battery = {'bat' : 0, 'ok' : 0, 'alarm' : 0, 'rdy2buf' : 0, 'bat85' : 0}
+    if readBattery:
+        battery = {
+        'bat'     : gpio.input(pin_bat    ) ,
+        'ok'      : gpio.input(pin_ok     ) ,
+        'alarm'   : gpio.input(pin_alarm  ) ,
+        'rdy2buf' : gpio.input(pin_rdy2buf) ,
+        'bat85'   : gpio.input(pin_bat85  ) 
+        }
+    response = make_response(json.dumps(battery).encode('utf-8') )
+    response.content_type = 'application/json'
+    return response
+
 
 @WEBAPP.route('/last-data', methods=['GET'])
 def last_data():

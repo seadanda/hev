@@ -94,7 +94,8 @@ private:
 
     // timeouts
     uint32_t calculateDurationExhale();
-    states_durations _states_durations = {10000, 600, 600, 100, 600, 100, 100, 1000, 500, 600, 400};
+    //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
+    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1600, 0, 1200, 2200};
 
     // readings
     void resetReadingSums();
@@ -119,7 +120,7 @@ private:
     float _airway_pressure;
     float _valve_inhale_PID_percentage;//from 0 to 1.
 
-    void doPID(float, float, float&, float&, float&, float&);
+    void doPID(int, float, float, float&, float&, float&, float&);
 
     // safety
     void safetyCheck();
@@ -127,7 +128,26 @@ private:
 
     // PID vars
 
-    float _pid_integral; 
+    //float _pid_integral;  // moved to pid_variable struct
+    // triggers
+    void runningAvgs();
+    void inhaleTrigger();
+    void exhaleTrigger();
+    float _running_flows[RUNNING_AVG_READINGS];
+    float _running_avg_flow;
+    uint8_t _running_index;
+
+    float _inhale_trigger_threshold;
+    float _exhale_trigger_threshold;
+    float _peak_flow;
+    float _valley_flow;
+    uint32_t _peak_flow_time;
+    uint32_t _valley_flow_time;
+
+    uint32_t _min_inhale_time;
+    uint32_t _min_exhale_time;
+    uint32_t _max_exhale_time;
+
 };
 
 

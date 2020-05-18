@@ -1,8 +1,11 @@
 ---
-- hosts: hevpi
+- hosts: hevpi1
   remote_user: pi
   vars:
         download_dir: /home/pi/Downloads
+        repos: 
+            - hev-sw
+            - hev-display
 
   tasks: 
         - name: include vars
@@ -19,37 +22,30 @@
               executable: /usr/bin/pip3
               name: "{{ pip_list }}"  
         
-        - name: archive old hev-sw
+        - name: archive old repos
           archive:
-              path: "{{ ansible_env.HOME }}/hev-sw"
-              dest: "{{ ansible_env.HOME }}/hev-sw.{{ '%Y%m%d%H%M%S' | strftime }}.tgz"
+              path: "{{ ansible_env.HOME }}/{{ item }}"
+              dest: "{{ ansible_env.HOME }}/{{ item }}.{{ '%Y%m%d%H%M%S' | strftime }}.tgz"
+          loop: "{{ repos }}"
 
-        - name: remove old hev-sw
+        - name: remove old repos
           file:
-              path: "{{ ansible_env.HOME }}/hev-sw/"
+              path: "{{ ansible_env.HOME }}/{{ item }}/"
               state: absent
+          loop: "{{ repos }}"
 
-        - name: archive old hev-display
-          archive:
-              path: "{{ ansible_env.HOME }}/hev-display"
-              dest: "{{ ansible_env.HOME }}/hev-display.{{ '%Y%m%d%H%M%S' | strftime }}.tgz"
-
-        - name: remove old hev-display
-          file:
-              path: "{{ ansible_env.HOME }}/hev-display/"
-              state: absent
-
-        - name: clone git repo - hev-sw
+        - name: clone git repos
           git: 
-              repo: https://github.com/hev-sw/hev-sw.git
-              dest: "{{ ansible_env.HOME }}/hev-sw"
+              repo: https://gitlab+deploy-token-960:xusyzScX2ZMHzRsMyEey@gitlab.cern.ch/hev-sw/{{ item }}.git
+              dest: "{{ ansible_env.HOME }}/{{ item }}"
+          loop: "{{ repos }}"
 
-        - name: clone git repo - hev-display
-          git: 
-              repo: https://github.com/hev-sw/hev-display.git
-              dest: "{{ ansible_env.HOME }}/hev-display"
-
-
+        - name: reset git users 
+          replace: 
+              path: "{{ ansible_env.HOME }}/{{ item }}/.git/config"
+              regexp: 'url = .*'
+              replace: 'url =  https://gitlab.cern.ch/hev-sw/{{ item }}.git'
+          loop: "{{ repos }}"
 
         - name: upgrade hev-display via apt
           apt: 
