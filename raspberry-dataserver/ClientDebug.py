@@ -148,6 +148,7 @@ class ClientPlots(QtWidgets.QMainWindow):
                 writer.close()
                 await writer.wait_closed()
             except Exception as e:
+                # warn and reopen connection
                 logging.error(e)
                 await asyncio.sleep(2)
 

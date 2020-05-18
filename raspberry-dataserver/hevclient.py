@@ -59,52 +59,58 @@ class HEVClient(object):
 
     async def polling(self) -> None:
         """open persistent connection with server"""
-        reader, writer = await asyncio.open_connection("127.0.0.1", 54320)
-
-        # grab data from the socket as soon as it is available and dump it in the db
-        while self._polling:
+        while True:
             try:
-                data = await reader.readuntil(separator=b'\0')
-                data = data[:-1] # snip off nullbyte
-                payload = json.loads(data.decode("utf-8"))
-                if payload["type"] == "keepalive":
-                    #Still alive
-                    continue
-                elif payload["type"] == "DATA":
-                    with self._lock:
-                        self._fastdata = payload["DATA"]
-                        self._mmMap.seek(0)
-                        self._mmMap.write(pickle.dumps(self._fastdata))
-                        self._mmMap.flush()
-                elif payload["type"] == "READBACK":
-                    with self._lock:
-                        self._readback = payload["READBACK"]
-                elif payload["type"] == "CYCLE":
-                    with self._lock:
-                        self._cycle = payload["CYCLE"]
-                elif payload["type"] == "THRESHOLDS":
-                    with self._lock:
-                        self._thresholds = payload["THRESHOLDS"]
-                elif payload["type"] == "ALARM":
-                    with self._lock:
-                        self._alarms = payload["ALARM"]
-                elif payload["type"] == "IVT":
-                    pass
-                elif payload["type"] == "DEBUG":
-                    pass
-                else:
-                    raise HEVPacketError("Invalid broadcast type")
+                reader, writer = await asyncio.open_connection("127.0.0.1", 54320)
 
-                self._alarms = payload["alarms"]
-                self.get_updates(payload) # callback function to be overridden
-            except json.decoder.JSONDecodeError:
-                logging.warning(f"Could not decode packet: {data}")
-            except KeyError:
-                raise
+                # grab data from the socket as soon as it is available and dump it in the db
+                while self._polling:
+                    try:
+                        data = await reader.readuntil(separator=b'\0')
+                        data = data[:-1] # snip off nullbyte
+                        payload = json.loads(data.decode("utf-8"))
+                        if payload["type"] == "keepalive":
+                            #Still alive
+                            continue
+                        elif payload["type"] == "DATA":
+                            with self._lock:
+                                self._fastdata = payload["DATA"]
+                                self._mmMap.seek(0)
+                                self._mmMap.write(pickle.dumps(self._fastdata))
+                                self._mmMap.flush()
+                        elif payload["type"] == "READBACK":
+                            with self._lock:
+                                self._readback = payload["READBACK"]
+                        elif payload["type"] == "CYCLE":
+                            with self._lock:
+                                self._cycle = payload["CYCLE"]
+                        elif payload["type"] == "THRESHOLDS":
+                            with self._lock:
+                                self._thresholds = payload["THRESHOLDS"]
+                        elif payload["type"] == "ALARM":
+                            with self._lock:
+                                self._alarms = payload["ALARM"]
+                        elif payload["type"] == "IVT":
+                            pass
+                        elif payload["type"] == "DEBUG":
+                            pass
+                        else:
+                            raise HEVPacketError("Invalid broadcast type")
 
-        # close connection
-        writer.close()
-        await writer.wait_closed()
+                        self._alarms = payload["alarms"]
+                        self.get_updates(payload) # callback function to be overridden
+                    except json.decoder.JSONDecodeError:
+                        logging.warning(f"Could not decode packet: {data}")
+                    except KeyError:
+                        raise
+
+                # close connection
+                writer.close()
+                await writer.wait_closed()
+            except Exception as e:
+                # warn and reopen connection
+                logging.error(e)
+                await asyncio.sleep(2)
     
     def get_updates(self, payload) -> None:
         """Overrideable function called after receiving data from the socket, with that data as an argument"""
