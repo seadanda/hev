@@ -23,7 +23,7 @@
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
-const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
+const uint8_t MAX_PATIENT_PRESSURE = 45; //mbar
 const uint8_t RUNNING_AVG_READINGS = 3;
 
 
@@ -91,7 +91,7 @@ enum CMD_SET_VALVE: uint8_t {
     INHALE_OPEN_MIN = 5,
     INHALE_OPEN_MAX = 6,
     INHALE_TRIGGER_ENABLE = 7,
-    EXHALE_TRIGGER_ENABLE = 8
+    EXHALE_TRIGGER_ENABLE = 8.
 };
 
 enum CMD_SET_PID : uint8_t {
