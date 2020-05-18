@@ -8,33 +8,57 @@ import time
 import json
 import threading
 from typing import List, Dict, Union
+from CommsCommon import PayloadFormat
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
 
-polling = True
-setflag = False
+# use /dev/shm (in memory tmpfs) to hold the data, should be stable over Flask shenanigans when restaring scripts
+import mmap
+import pickle
+import os
+mmFileName = "/dev/shm/HEVClient_lastData.mmap"
 
 class HEVPacketError(Exception):
     pass
 
 class HEVClient(object):
-    def __init__(self):
+    def __init__(self, polling=True):
         self._alarms = []  # db for alarms
         self._fastdata = None  # db for sensor values
         self._readback = None  # db for sensor values
         self._cycle = None  # db for sensor values
         self._thresholds = None  # db for sensor values
         self._thresholds = []  # db for threshold settings
-        self._polling = True  # keep reading data into db
+        self._polling = polling  # keep reading data into db
         self._lock = threading.Lock()  # lock for the database
 
-        # start worker thread to update db in the background
+        self._mmFile = None
+        if( os.access(  mmFileName, os.F_OK ) ):
+            self._mmFile = open(mmFileName, "a+b")
+        else:
+            self._mmFile = open(mmFileName, "x+b")
+            self._mmFile.write(b'0' * 10000) # ~10kb is enough I hope for one event
+        self._mmMap = mmap.mmap(self._mmFile.fileno(), 0) # Map to in memory object
+        
+        # start polling in another thread unless told otherwise
+        if self._polling:
+            self.start_polling()
+    
+    def __del__(self):
+        self._mmMap.close()
+        self._mmFile.close()
+
+    def start_polling(self):
+        """start worker thread to update db in the background"""
         worker = threading.Thread(target=self.start_client, daemon=True)
         worker.start()
 
+    def start_client(self) -> None:
+        asyncio.run(self.polling())
+
     async def polling(self) -> None:
-        # open persistent connection with server
+        """open persistent connection with server"""
         reader, writer = await asyncio.open_connection("127.0.0.1", 54320)
 
         # grab data from the socket as soon as it is available and dump it in the db
@@ -49,6 +73,9 @@ class HEVClient(object):
                 elif payload["type"] == "DATA":
                     with self._lock:
                         self._fastdata = payload["DATA"]
+                        self._mmMap.seek(0)
+                        self._mmMap.write(pickle.dumps(self._fastdata))
+                        self._mmMap.flush()
                 elif payload["type"] == "READBACK":
                     with self._lock:
                         self._readback = payload["READBACK"]
@@ -69,6 +96,7 @@ class HEVClient(object):
                     raise HEVPacketError("Invalid broadcast type")
 
                 self._alarms = payload["alarms"]
+                self.get_updates(payload) # callback function to be overridden
             except json.decoder.JSONDecodeError:
                 logging.warning(f"Could not decode packet: {data}")
             except KeyError:
@@ -77,25 +105,23 @@ class HEVClient(object):
         # close connection
         writer.close()
         await writer.wait_closed()
-
-    def start_client(self) -> None:
-        asyncio.run(self.polling())
+    
+    def get_updates(self, payload) -> None:
+        """Overrideable function called after receiving data from the socket, with that data as an argument"""
+        pass
 
     async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
-        if reqtype == "cmd":
-            payload = {
-                "type": "cmd",
-                "cmdtype": cmdtype,
-                "cmd": cmd,
-                "param": param
-            }
+        payload = {"type": reqtype}
+        if reqtype == "CMD":
+            payload["cmdtype"] = cmdtype
+            payload["cmd"] = cmd
+            payload["param"] = param
         elif reqtype == "ALARM":
-            payload = {
-                "type": "ALARM",
-                "ack": alarm
-            }
+            payload["alarm_type"] = alarm["alarm_type"]
+            payload["alarm_code"] = alarm["alarm_code"]
+            payload["param"] = param
         else:
             raise HEVPacketError("Invalid packet type")
 
@@ -127,7 +153,7 @@ class HEVClient(object):
 
     def send_cmd(self, cmdtype:str, cmd: str, param: Union[float,int]=None) -> bool:
         # send a cmd and wait to see if it's valid
-        return asyncio.run(self.send_request("cmd", cmdtype=cmdtype, cmd=cmd, param=param))
+        return asyncio.run(self.send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param))
 
     def ack_alarm(self, alarm: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list
@@ -135,7 +161,13 @@ class HEVClient(object):
 
     def get_values(self) -> Dict:
         # get sensor values from db
-        return self._fastdata
+        self._mmFile.seek(0)
+        fastdata = pickle.load(self._mmFile)
+        if(type(fastdata) is dict):
+            return fastdata
+        else:
+            logging.warning("Missing/wrong data in mmMap")
+            return None
 
     def get_readback(self) -> Dict:
         # get readback from db
@@ -184,7 +216,7 @@ if __name__ == "__main__":
     print(f"Alarms: {hevclient.get_alarms()}")
 
     # set a timeout
-    hevclient.send_cmd("SET_TIMEOUT", "INHALE", 1111)
+    hevclient.send_cmd("SET_DURATION", "INHALE", 1111)
 
     # check for the readback
     for i in range(10):

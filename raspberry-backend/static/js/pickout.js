@@ -514,10 +514,21 @@ var pickout = (function(){
 	 * @param {HTMLObject} select
 	 * @param {Object} data
 	 */
+	function sendMode(var_name) {
+		var buffer = {name : var_name};
+		$.ajax({
+			  type: "POST",
+			  url:"/mode_handler",
+			  data: JSON.stringify(buffer)   // converts js value to JSON string
+			  })    
+	};
+
+
     function setOptionSimple(select, data, txt){
 	if (data.txt != select.parentElement.querySelector('.pk-field').innerHTML){
 	    var success = confirm("Are you sure you want to switch the ventilator mode to " + data.txt + "?");
 	    if (success){
+		sendMode(data.txt)
 		_.toArray(select).map(function(option, index){
 		    if (index === data.index) {
 			_.attr(option, 'selected', 'selected');

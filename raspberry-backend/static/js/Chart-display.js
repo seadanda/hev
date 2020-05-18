@@ -3,10 +3,6 @@ var chart_flow;
 var chart_volume;
 
 var size_data;
-var initial_xaxis = [];
-var initial_yaxis_pressure = [];
-var initial_yaxis_volume = [];
-var initial_yaxis_flow = [];
 
 var fio_reading;
 var p_plateau_reading
@@ -35,28 +31,29 @@ function init_results(){
     $.getJSON({
         url: '/last_N_data',
         success: function(data) {
-	    var timestamp = 0;
-            for (i=0; i<data.length; i++) {
-		var seconds = data[i]["timestamp"]/1000;
-		if (i==data.length-1) timestamp = seconds;
-		if ( seconds == "" ) continue;
-		initial_yaxis_pressure.push({x : seconds, y : data[i]["airway_pressure"]});
-		initial_yaxis_volume.push({x : seconds, y : data[i]["volume"]});
-		initial_yaxis_flow.push({x : seconds, y : data[i]["flow"]});
+        var timestamp = 0;
+        var initial_yaxis_flow = [];
+        var initial_yaxis_pressure = [];
+        var initial_yaxis_volume = [];
+            for (let i=Math.min(data.length,1000)-1; i>=0; i--) {
+                var seconds = data[i]["timestamp"]/1000;
+            if ( seconds == "" ) continue;
+            if (seconds <= timestamp) continue;
+    		timestamp = seconds;
+    		initial_yaxis_pressure.push({x : seconds, y : data[i]["airway_pressure"]});
+	    	initial_yaxis_volume.push({x : seconds, y : data[i]["volume"]});
+		    initial_yaxis_flow.push({x : seconds, y : data[i]["flow"]});
             }
-            //reverse because data is read from the other way
-            initial_xaxis.reverse();
-            initial_yaxis_pressure.reverse();
-            initial_yaxis_volume.reverse();
-            initial_yaxis_flow.reverse();
 
-	    console.log('init results, timestamp: ',timestamp);
 	    for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
-		console.log('filling up with ',initial_yaxis_pressure[i]['x'], ' - ',timestamp);
-		initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - timestamp;
-		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
-		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
-        }
+		    initial_yaxis_pressure[i]['x'] = initial_yaxis_pressure[i]['x'] - timestamp;
+    		initial_yaxis_volume[i]['x']   = initial_yaxis_volume[i]['x']   - timestamp;
+    		initial_yaxis_flow[i]['x']     = initial_yaxis_flow[i]['x']     - timestamp;
+            }
+            chart_pressure.data.datasets[0].data = initial_yaxis_pressure;
+            chart_volume.data.datasets[0].data = initial_yaxis_volume;
+            chart_flow.data.datasets[0].data = initial_yaxis_flow;
+
         },
         cache: false
     });
@@ -108,11 +105,11 @@ function getGaugeMaxValue(name){
     return obj[name].data.datasets[0].gaugeLimits[obj[name].data.datasets[0].gaugeLimits.length-1];
 }
 
-
 function requestChartVar() {
     $.ajax({
-        url: '/live-data',
+        url: '/last-data',
         success: function(point) {
+
         fio_reading = (point["airway_pressure"]).toFixed(0) ;
         p_plateau_reading = (point["volume"]).toFixed(0) ;
         //console.log(fio_reading);
@@ -121,12 +118,10 @@ function requestChartVar() {
             }
             if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
 
-
         var seconds = point["timestamp"]/1000;
-
 	    // this is a hack for the test data so that we can cycle data
 	    if ( seconds < current_timestamp ) current_timestamp = seconds - 0.20;
-	    
+        //if ( seconds - current_timestamp > 1.0) { console.log("Current Timestamp: ",current_timestamp, " against ",seconds);}
 	    //protect against bogus timestamps, skip those that are earlier than we already have
 	    if (current_timestamp == -1 || seconds > current_timestamp )
 	    {
@@ -139,18 +134,18 @@ function requestChartVar() {
 		    diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
 		}
 		current_timestamp = seconds;
-		if(chart_pressure.data.datasets[0].data.length > 300){
+		if(chart_pressure.data.datasets[0].data.length > 1000){
                     chart_pressure.data.datasets[0].data.shift();
 		}
 		
-		if(chart_flow.data.datasets[0].data.length > 300){
+		if(chart_flow.data.datasets[0].data.length > 1000){
                     chart_flow.data.datasets[0].data.shift();
 		}
 		
-		if(chart_volume.data.datasets[0].data.length > 300){
+		if(chart_volume.data.datasets[0].data.length > 1000){
                     chart_volume.data.datasets[0].data.shift();
 		}
-		for ( let i = 0 ; i < initial_yaxis_pressure.length; i++){
+		for ( let i = 0 ; i < chart_pressure.data.datasets[0].data.length; i++){
 		    chart_pressure.data.datasets[0].data[i]['x'] = chart_pressure.data.datasets[0].data[i]['x'] - diff;
 		    chart_flow.data.datasets[0].data[i]['x'] = chart_flow.data.datasets[0].data[i]['x'] - diff;
 		    chart_volume.data.datasets[0].data[i]['x'] = chart_volume.data.datasets[0].data[i]['x'] - diff;
@@ -163,10 +158,13 @@ function requestChartVar() {
 		chart_pressure.update();
 		chart_flow.update();
 		chart_volume.update();
-	    }
+        }
+        else{
+            console.log("Skipping point as trying to replace ",current_timestamp," with ",seconds)
+        }
 	    // we can update these with new value even if there is a timestamp issue
-            if ("fio_gauge" in obj) obj["fio_gauge"].update();
-            if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
+        if ("fio_gauge" in obj) obj["fio_gauge"].update();
+        if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
         },
         cache: false
     });
@@ -184,7 +182,7 @@ $(document).ready(function() {
         type: 'scatter',
         data: {
             datasets: [{
-                data: initial_yaxis_pressure,
+                data: [],
                 label: "Var1",
                 borderColor: "#0049b8",
                 borderWidth: 4,
@@ -261,7 +259,7 @@ $(document).ready(function() {
         data: {
             //labels: initial_xaxis,
             datasets: [{
-                data: initial_yaxis_flow,
+                data: [],
                 label: "Var1",
                 //borderColor: "#3e95cd",
                 borderColor: "#000000",
@@ -337,7 +335,7 @@ $(document).ready(function() {
         data: {
             //labels: initial_xaxis,
             datasets: [{
-                data: initial_yaxis_volume,
+                data: [],
                 label: "Var1",
                 borderColor: "#ba0202",
                 borderWidth: 4,
@@ -447,7 +445,7 @@ function create_gauge_chart(var_name) {
             },
             options: {
 
-	    maintainAspectRatio: true,
+	    maintainAspectRatio: false,
 		events: []
             }
 	});

@@ -18,7 +18,7 @@ logging.basicConfig(level=logging.INFO,
 @unique
 class CMD_TYPE(Enum):
     GENERAL           =  1
-    SET_TIMEOUT       =  2
+    SET_DURATION      =  2
     SET_MODE          =  3
     SET_THRESHOLD_MIN =  4
     SET_THRESHOLD_MAX =  5
@@ -33,7 +33,7 @@ class CMD_GENERAL(Enum):
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
-class CMD_SET_TIMEOUT(Enum):
+class CMD_SET_DURATION(Enum):
     CALIBRATION     =  1
     BUFF_PURGE      =  2
     BUFF_FLUSH      =  3
@@ -113,7 +113,7 @@ class ALARM_CODES(Enum):
 
 class CMD_MAP(Enum):
     GENERAL           =  CMD_GENERAL
-    SET_TIMEOUT       =  CMD_SET_TIMEOUT
+    SET_DURATION      =  CMD_SET_DURATION
     SET_MODE          =  VENTILATION_MODE
     SET_VALVE         =  CMD_SET_VALVE
     SET_PID           =  CMD_SET_PID

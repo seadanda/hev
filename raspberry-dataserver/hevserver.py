@@ -13,7 +13,7 @@ import svpi
 import hevfromtxt
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
-from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_TIMEOUT, VENTILATION_MODE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_DURATION, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
@@ -41,14 +41,7 @@ class HEVServer(object):
         logging.debug(f"Payload received: {payload}")
         # check if it is data or alarm
         payload_type = payload.getType()
-        if payload_type == PAYLOAD_TYPE.ALARM:
-            # Alarm is latched until acknowledged in GUI
-            with self._dblock:
-                if payload not in self._alarms:
-                    self._alarms.append(payload)
-            # let broadcast thread know there is data to send
-            self._datavalid.set()
-        elif payload_type in [1,2,3,4,7,8] : 
+        if payload_type in [1,2,3,4,6,7,8] :
             # pass data to db
             with self._dblock:
                 self._values = payload
@@ -79,7 +72,7 @@ class HEVServer(object):
         
         try:
             reqtype = request["type"]
-            if reqtype == "cmd":
+            if reqtype == "CMD":
                 reqcmd = request["cmd"]
                 reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
@@ -110,11 +103,19 @@ class HEVServer(object):
                 pass
             elif reqtype == "ALARM":
                 # acknowledgement of alarm from gui
-                alarm_to_ack = AlarmFormat(**request["ack"])
+                reqalarm_type = request["alarm_type"]
+                reqalarm_code = ALARM_CODES[request["alarm_code"]]
+                reqparam = request["param"] if request["param"] is not None else 0
+
+                alarm_to_ack = AlarmFormat(alarm_type=ALARM_TYPE[reqalarm_type],
+                                           alarm_code=reqalarm_code,
+                                           param=reqparam)
                 try:
                     # delete alarm if it exists
                     with self._dblock:
-                        self._alarms.remove(alarm_to_ack)
+                        for alarm in self._alarms:
+                            if alarm == alarm_to_ack:
+                                self._alarms.remove(alarm)
                     payload = {"type": "ack"}
                 except NameError as e:
                     raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
@@ -148,6 +149,15 @@ class HEVServer(object):
                     if self._values is None:
                         continue # should never get here
                     values: List[float] = self._values
+                    # Alarm is latched until acknowledged in GUI
+                    if self._values.getType() == PAYLOAD_TYPE.ALARM:
+                        if self._values not in self._alarms:
+                            self._alarms.append(self._values)
+                        else:
+                            # update param and timestamp
+                            idx = self._alarms.index(self._values)
+                            self._alarms[idx] = self._values
+
                     alarms = self._alarms if len(self._alarms) > 0 else None
 
                 data_type = values.getType().name
