@@ -2,7 +2,11 @@
 
 import asyncio
 import logging
-import RPi.GPIO as gpio
+try:
+    import RPi.GPIO as gpio
+except ModuleNotFoundError:
+    logging.error("RPi gpio backend not found")
+    import hevgpio as gpio
 import copy
 
 # Set up logging
@@ -19,6 +23,11 @@ class BatteryLLI:
                       "rdy2buf" : 13,
                       "bat85"   : 19}
         self._res = copy.deepcopy(self._pins)
+        try:
+            if gpio.DUMMY:
+                self._res["dummy"] = True
+        except:
+            self._res["dummy"] = False
 
         gpio.setmode(gpio.BCM)
         for pin in self._pins:
