@@ -12,6 +12,7 @@ BreathingLoop::BreathingLoop()
     _fsm_timeout = 1000;
     _ventilation_mode = VENTILATION_MODE::LAB_MODE_BREATHE;
     _bl_state = BL_STATES::IDLE;
+    _bl_laststate = BL_STATES::IDLE;
     _running = false;
     _reset = false;
     _safe  = true;
@@ -49,6 +50,7 @@ BreathingLoop::BreathingLoop()
         _running_flows[i] = 0.0;
     }
     _running_index = 0;
+    _cycle_index = 0;
 
     _inhale_trigger_threshold = 0.00025;  // abs flow ?unit
     _exhale_trigger_threshold = 0.1;  // 30% of peak
@@ -169,12 +171,35 @@ void BreathingLoop::updateRawReadings()
 void BreathingLoop::updateCycleReadings()
 {
 
-    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (_bl_state == BL_STATES::BUFF_LOADED){
+        if(_cycle_done == false){
+            uint32_t tnow = static_cast<uint32_t>(millis());
 
-    // to make sure the readings correspond only to the same fsm mode
-    if (tnow - _readings_cycle_time > _readings_cycle_timeout) {
-        _cycle_readings.timestamp = tnow;
-        _cycle_readings.fiO2_percent = 21;
+            _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
+
+            _cycle_readings.timestamp = tnow;
+            _cycle_readings.fiO2_percent = 21;
+            _cycle_done = true;
+            _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
+            _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
+            _total_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
+                       +_measured_durations.buff_pre_inhale
+                       +_measured_durations.inhale
+                       +_measured_durations.pause
+                       +_measured_durations.exhale_fill
+                       +_measured_durations.exhale);
+            _inhale_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
+                       +_measured_durations.buff_pre_inhale
+                       +_measured_durations.inhale
+                       +_measured_durations.pause);
+            _exhale_cycle_duration[_cycle_index] = (
+                       _measured_durations.exhale_fill
+                       +_measured_durations.exhale);
+
+            return 60000.0/avg;
+        }
+    } else {
+        _cycle_done = false;  // restart cycle
     }
 
 }
@@ -467,14 +492,6 @@ void BreathingLoop::FSM_breathCycle()
             // _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
-            //update total cycle time
-            updateTotalCycleDuration(_states_durations.buff_loaded
-                       +_states_durations.buff_pre_inhale
-                       +_states_durations.inhale
-                       +_states_durations.pause
-                       +_states_durations.exhale_fill
-                       +_states_durations.exhale);
-
             inhaleTrigger();
             
             break;
@@ -494,6 +511,46 @@ void BreathingLoop::FSM_breathCycle()
     }
     safetyCheck();
 
+}
+void BreathingLoop::measure_durations( ) {
+    if (_bl_state != _bl_laststate) {
+        uint32_t tnow = static_cast<uint32_t>(millis());
+        uint32_t tdiff = tnow - _lasttime;
+        switch (_bl_state)
+        {
+        case BL_STATES::CALIBRATION:
+            _measured_durations.calibration = tdiff;
+            break;
+        case BL_STATES::BUFF_LOADED:
+            _measured_durations.buff_loaded = tdiff;
+            break;
+        case BL_STATES::BUFF_PRE_INHALE:
+            _measured_durations.buff_pre_inhale = tdiff;
+            break;
+        case BL_STATES::INHALE:
+            _measured_durations.inhale = tdiff;
+            break;
+        case BL_STATES::PAUSE:
+            _measured_durations.pause = tdiff;
+            break;
+        case BL_STATES::EXHALE_FILL:
+            _measured_durations.exhale_fill = tdiff;
+            break;
+        case BL_STATES::EXHALE:
+            _measured_durations.exhale = tdiff;
+            break;
+        case BL_STATES::BUFF_PURGE:
+            _measured_durations.buff_purge = tdiff;
+            break;
+        case BL_STATES::BUFF_FLUSH:
+            _measured_durations.buff_flush = tdiff;
+            break;
+        default:
+            break;
+        }
+        _bl_laststate = _bl_state;
+        _lasttime = tnow;
+    }
 }
 
 void BreathingLoop::safetyCheck()
@@ -661,9 +718,23 @@ void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
 }
 
 float BreathingLoop::getFlow(){
-    return _flow;
+    const float temperature = 298.0;
+    const float pressure = 1030.0;
+    const float scale = 10.0;
+    float dp_raw = scale*_readings_avgs.pressure_diff_patient;
+    float dp;
+    if (dp_raw < 0)
+    {
+        dp = 43.046 * dp_raw + 71.576;
+    } else {
+        dp = 39.047 * dp_raw - 60.471;
+    }
+    float flow = dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
+    return flow;  // NL/h
 }
+
 float BreathingLoop::getVolume(){
+
     return _volume;
 }
 float BreathingLoop::getAirwayPressure(){
@@ -822,5 +893,10 @@ float BreathingLoop::flowToVolume()
 {
 
     // TODO: need a real calib here
-    return _readings_avgs.pressure_diff_patient;
+    const float temperature = 298.0;
+    const float pressure = 1030.0;
+    // normal litres/h to millilitres
+    //  need to get dt - assume dt = 10ms
+    float nl2l = (pressure * 273.15 * 3600)/(temperature *1013.25 * 1000) ; //ml/s
+    return getFlow() * nl2l /100;
 }

@@ -82,7 +82,9 @@ private:
     uint32_t            _fsm_time ;
     uint32_t            _fsm_timeout;
     VENTILATION_MODE        _ventilation_mode;
-    BL_STATES           _bl_state;
+    BL_STATES           _bl_state, _bl_laststate;
+
+    uint32_t            _lasttime;
     bool                _running;
     bool                _reset;
 
@@ -102,6 +104,8 @@ private:
     uint32_t calculateDurationExhale();
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
     states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1600, 0, 1200, 2200};
+    states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
+    void measure_durations();
     // targets
     float _target_RR;
     float _target_IE_ratio;
@@ -124,9 +128,10 @@ private:
 
     // calculations
     cycle_readings _cycle_readings;
+    bool _cycle_done;
     void updateTotalCycleDuration(uint16_t newtotal);
     float flowToVolume();
-    uint16_t _total_cycle_duration[3];
+    uint16_t _total_cycle_duration[CYCLE_AVG_READINGS];
 
 
     float _flow;
@@ -153,6 +158,11 @@ private:
     float _running_flows[RUNNING_AVG_READINGS];
     float _running_avg_flow;
     uint8_t _running_index;
+    uint8_t _cycle_index;
+    // float _running_minute_volume[CYCLE_AVG_READINGS];
+    float _running_inhale_minute_volume[CYCLE_AVG_READINGS];
+    float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
+    float _running_minute_volume[CYCLE_AVG_READINGS];
 
     float _inhale_trigger_threshold;
     float _exhale_trigger_threshold;

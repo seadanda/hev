@@ -26,6 +26,7 @@
 const float MAX_VALVE_FRAC_OPEN = 0.74;
 const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
 const uint8_t RUNNING_AVG_READINGS = 3;
+const uint8_t CYCLE_AVG_READINGS = 3;
 
 
 // input params
