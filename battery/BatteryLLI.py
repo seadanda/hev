@@ -1,21 +1,24 @@
 #!/usr/bin/env python3
 
 import asyncio
+import logging
 import RPi.GPIO as gpio
+import copy
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
 
 class BatteryLLI:
-    def __init__(self, loop, timeout=1):
+    def __init__(self, timeout=1):
         super().__init__()
         self._timeout = timeout
         self._pins = {"bat"     :  5,
                       "ok"      :  6,
                       "alarm"   : 12,
-                      "rdy2bif" : 13,
+                      "rdy2buf" : 13,
                       "bat85"   : 19}
+        self._res = copy.deepcopy(self._pins)
 
         gpio.setmode(gpio.BCM)
         for pin in self._pins:
@@ -26,13 +29,14 @@ class BatteryLLI:
         await asyncio.sleep(self._timeout)
         for pin in self._pins:
             self._res[pin] = gpio.input(self._pins[pin])
-        logging.info(f"Battery: {res}")
+        logging.info(f"Battery: {self._res}")
     
     async def main(self) -> None:
-        results = self.getValues()  # NativeUI broadcast
-        tasks = [results]
+        while True:
+            results = self.getValues()  # NativeUI broadcast
+            tasks = [results]
 
-        await asyncio.gather(*tasks, return_exceptions=True)
+            await asyncio.gather(*tasks, return_exceptions=True)
 
 if __name__ == "__main__":
     try:
