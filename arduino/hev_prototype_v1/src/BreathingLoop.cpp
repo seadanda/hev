@@ -22,14 +22,6 @@ BreathingLoop::BreathingLoop()
     initCalib();
     resetReadingSums();
 
-    _total_cycle_duration[0] = _states_durations.buff_loaded
-                       +_states_durations.buff_pre_inhale
-                       +_states_durations.inhale
-                       +_states_durations.pause
-                       +_states_durations.exhale_fill
-                       +_states_durations.exhale;
-    _total_cycle_duration[2] = _total_cycle_duration[1] = _total_cycle_duration[0];
-
     _flow = 0;
     _volume = 0;
     _airway_pressure = 0;
@@ -51,19 +43,38 @@ BreathingLoop::BreathingLoop()
     for(int i=0; i<RUNNING_AVG_READINGS; i++){
         _running_flows[i] = 0.0;
     }
-    for(int i=0; i<CYCLE_AVG_READINGS; i++){
-        _total_cycle_duration[i] = 0;
-        _inhale_cycle_duration[i] = 0;
-        _exhale_cycle_duration[i] = 0;
+
+    _total_cycle_duration[0] = _states_durations.buff_loaded
+                       +_states_durations.buff_pre_inhale
+                       +_states_durations.inhale
+                       +_states_durations.pause
+                       +_states_durations.exhale_fill
+                       +_states_durations.exhale;
+    _inhale_cycle_duration[0] =_states_durations.buff_loaded
+                       +_states_durations.buff_pre_inhale
+                       +_states_durations.inhale
+                       +_states_durations.pause;
+    _exhale_cycle_duration[0] = _states_durations.exhale_fill
+                       +_states_durations.exhale;
+
+    for (int i = 1; i < CYCLE_AVG_READINGS; i++)
+    {
+        _total_cycle_duration[i] = _total_cycle_duration[0];
+        _inhale_cycle_duration[i] = _inhale_cycle_duration[0];
+        _exhale_cycle_duration[i] = _exhale_cycle_duration[0];
     }
+
     _sum_airway_pressure = 0;
     _ap_readings_N = 0;
 
     _running_index = 0;
     _cycle_index = 0;
 
-    _inhale_trigger_threshold = 0.00025;  // abs flow ?unit
-    _exhale_trigger_threshold = 0.1;  // 30% of peak
+    _inhale_trigger_threshold = 0.005;  // abs flow ?unit
+    _exhale_trigger_threshold = 0.2;  // 30% of peak
+
+    _inhale_trigger_threshold = _valves_controller.getValveParams().inhale_trigger_threshold;
+    _exhale_trigger_threshold = _valves_controller.getValveParams().exhale_trigger_threshold;
 
     _min_inhale_time = 150;
     _min_exhale_time = 300;
@@ -128,17 +139,7 @@ void BreathingLoop::updateReadings()
 
                 //TODO
 
-                float _pressure_inhale = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale     );
-
-                doPID(3, _pid.target_final_pressure, _pressure_inhale, _valve_inhale_PID_percentage, _airway_pressure, _volume, _flow);
-		//_volume = _valve_inhale_PID_percentage;
-
-		//_valve_inhale_PID_percentage /= 10.; // In the Labview code the output was defined from 0-10V. It is a simple rescale to keep the same parameters
-                //Lazy approach
-                _airway_pressure = _pid.proportional;
-                _volume = _pid.integral;
-                //_flow = (_pid.Kd*_pid.derivative);
-                //_flow = _valves_controller.calcValveDutyCycle(pwm_resolution,_valve_inhale_PID_percentage);
+                doPID();
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
@@ -147,6 +148,7 @@ void BreathingLoop::updateReadings()
         runningAvgs();
 
         _flow = _readings_avgs.pressure_diff_patient;
+
         _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
@@ -210,13 +212,15 @@ void BreathingLoop::updateCycleReadings()
             uint16_t tot_sum = 0;
             // uint16_t inh_sum, exh_sum  = 0;
             for(int i=0 ; i<CYCLE_AVG_READINGS; i++){
-                mv_sum += _running_minute_volume[i];
+                mv_sum += _running_inhale_minute_volume[i] + _running_exhale_minute_volume[i];
                 mvi_sum += _running_inhale_minute_volume[i];
                 mve_sum += _running_exhale_minute_volume[i];
                 tot_sum += _total_cycle_duration[i];
                 // inh_sum += _inhale_cycle_duration[i];
                 // exh_sum += _exhale_cycle_duration[i];
             }
+            _airway_pressure =  _sum_airway_pressure / _ap_readings_N;
+
             _cycle_readings.respiratory_rate = 60000.0/(tot_sum/CYCLE_AVG_READINGS);
             _cycle_readings.minute_volume = 60000*mv_sum/tot_sum;
             _cycle_readings.inhaled_minute_volume = 60000*mvi_sum/tot_sum;
@@ -226,8 +230,8 @@ void BreathingLoop::updateCycleReadings()
             _cycle_readings.exhaled_tidal_volume = mve_sum/CYCLE_AVG_READINGS;
             _cycle_readings.lung_compliance = _cycle_readings.tidal_volume / (_cycle_readings.peak_inspiratory_pressure -_peep);
             _cycle_readings.static_compliance = _cycle_readings.tidal_volume / (_cycle_readings.plateau_pressure - _peep);
-            _cycle_readings.mean_airway_pressure =  _sum_airway_pressure / _ap_readings_N;
-            _cycle_readings.inhalation_pressure  =  _cycle_readings.mean_airway_pressure;
+            _cycle_readings.mean_airway_pressure =  _airway_pressure;
+            _cycle_readings.inhalation_pressure  =  _airway_pressure;
             _cycle_readings.apnea_index += _apnea_event ? 1 : 0;
             _cycle_readings.apnea_time = _measured_durations.buff_loaded
                        +_measured_durations.buff_pre_inhale
@@ -239,6 +243,8 @@ void BreathingLoop::updateCycleReadings()
             //reset
             _sum_airway_pressure = 0;
             _ap_readings_N = 0;
+            _volume_inhale = 0;
+            _volume_exhale = 0;
         }
     } else {
         _cycle_done = false;  // restart cycle
@@ -555,8 +561,9 @@ void BreathingLoop::FSM_breathCycle()
             break;
     }
     safetyCheck();
-
+    measure_durations();
 }
+
 void BreathingLoop::measure_durations( ) {
     if (_bl_state != _bl_laststate) {
         uint32_t tnow = static_cast<uint32_t>(millis());
@@ -778,15 +785,25 @@ float BreathingLoop::getFlow(){
     return flow;  // NL/h
 }
 
-float BreathingLoop::getVolume(){
+float BreathingLoop::getVolume()
+{
 
+    // TODO: need a real calib here
+    const float temperature = 298.0;
+    const float pressure = 1030.0;
+    // normal litres/h to millilitres
+    //  need to get dt - assume dt = 10ms
+    float nl2l = (pressure * 273.15 * 3600)/(temperature *1013.25 * 1000) ; //ml/s
+
+    _volume = getFlow() * nl2l /100;
     return _volume;
 }
+
 float BreathingLoop::getAirwayPressure(){
     return _airway_pressure;
 }
 
-void BreathingLoop::doPID(int nsteps, float target_pressure, float process_pressure, float &output, float &proportional, float &integral, float &derivative){
+void BreathingLoop::doPID(){
 
     // Set PID profile using the set point
     // nsteps defines the number of intermediate steps
@@ -795,7 +812,7 @@ void BreathingLoop::doPID(int nsteps, float target_pressure, float process_press
 
     _pid.istep +=1;
 
-    _pid.process_pressure = process_pressure;
+    _pid.process_pressure = _readings_avgs.pressure_inhale;
 
     float _pid_set_point_step = _pid.target_final_pressure/_pid.nsteps;
 
@@ -845,14 +862,17 @@ pid_variables& BreathingLoop::getPIDVariables()
 void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
+
+    //logMsg("inhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+
     if(en == true){
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_flow > _inhale_trigger_threshold) 
+        if((_flow > _valves_controller.getValveParams().inhale_trigger_threshold) 
             && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
             if (tnow - _fsm_time > _min_exhale_time ) {
                 // TRIGGER
-                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_inhale_trigger_threshold));
+                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
                 _mandatory_inhale = false;
@@ -872,12 +892,17 @@ void BreathingLoop::inhaleTrigger()
 void BreathingLoop::exhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().exhale_trigger_enable;
+
+    //logMsg("EXhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().exhale_trigger_threshold)+" "+String(_peak_flow));
+
     if(en == true){
         logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) 
-            && (tnow - _peak_flow_time > 10)){ // wait 10ms after peak
-            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_exhale_trigger_threshold)+" "+String(_peak_flow));
+        valve_params vp = _valves_controller.getValveParams();
+        if((_running_avg_flow < (vp.exhale_trigger_threshold * _peak_flow)) 
+            && (tnow - _peak_flow_time > 100)){ // wait 10ms after peak
+            //TODO - check we're past 'peak'
+            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time > _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
@@ -927,31 +952,19 @@ void BreathingLoop::runningAvgs()
     }
 
     if((_bl_state == BL_STATES::INHALE) || (_bl_state == BL_STATES::BUFF_PRE_INHALE)){
-        _volume_inhale += flowToVolume();
+        _volume_inhale += getVolume();
     } else if ((_bl_state == BL_STATES::EXHALE) || (_bl_state == BL_STATES::EXHALE_FILL)){
-        _volume_exhale += flowToVolume();
-    } else if (_bl_state == BL_STATES::BUFF_LOADED) {
+        _volume_exhale += getVolume();
+    // } else if (_bl_state == BL_STATES::BUFF_LOADED) {
 
-        _cycle_readings.inhaled_tidal_volume = _volume_inhale;
-        _cycle_readings.exhaled_tidal_volume = _volume_exhale;
-        _cycle_readings.tidal_volume = _volume_inhale + _volume_exhale;
-        // reset vals
-        _volume_inhale = 0;
-        _volume_exhale = 0;
+    //     _cycle_readings.inhaled_tidal_volume = _volume_inhale;
+    //     _cycle_readings.exhaled_tidal_volume = _volume_exhale;
+    //     _cycle_readings.tidal_volume = _volume_inhale + _volume_exhale;
+    //     // reset vals
+    //     _volume_inhale = 0;
+    //     _volume_exhale = 0;
     }
 
     _sum_airway_pressure += _readings_avgs.pressure_patient;
     _ap_readings_N++;
-}
-
-float BreathingLoop::flowToVolume()
-{
-
-    // TODO: need a real calib here
-    const float temperature = 298.0;
-    const float pressure = 1030.0;
-    // normal litres/h to millilitres
-    //  need to get dt - assume dt = 10ms
-    float nl2l = (pressure * 273.15 * 3600)/(temperature *1013.25 * 1000) ; //ml/s
-    return getFlow() * nl2l /100;
 }
