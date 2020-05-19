@@ -141,7 +141,7 @@ async def commsDebug():
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
         await asyncio.sleep(300)
-        cmd = send_cmd(cmd_type="GENERAL", cmd_code="toggle", param=0)
+        cmd = send_cmd(cmd_type="GENERAL", cmd_code=CMD_MAP.GENERAL.value(toggle), param=0)
         if toggle == 2 :
             toggle = 1
         else : 
