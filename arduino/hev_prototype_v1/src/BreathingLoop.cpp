@@ -457,7 +457,13 @@ void BreathingLoop::FSM_breathCycle()
             } else {
                 _fsm_timeout = 1000;
             }
+#ifdef EXHALE_VALVE_PROPORTIONAL	    
+	    // proportional valve normally closed
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+#else
+	    // digital valve normally open
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+#endif
             initCalib();
             break;
         case BL_STATES::CALIBRATION : 

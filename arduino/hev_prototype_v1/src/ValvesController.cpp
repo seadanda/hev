@@ -26,10 +26,11 @@ ValvesController::ValvesController()
     _exhale.pin = pin_valve_exhale;
 #ifdef EXHALE_VALVE_PROPORTIONAL
     _exhale.proportional = true;
+    _exhale.state = VALVE_STATE::FULLY_CLOSED;
 #else
     _exhale.proportional = false;
-#endif
     _exhale.state = VALVE_STATE::OPEN;
+#endif
     _exhale.voltage = 0;
     _exhale.current = 0;
     _exhale.device_number = -1;
