@@ -2,6 +2,7 @@
 #define COMMON_H
 #include <Arduino.h>
 #include <limits>
+#include "localconf.h"
 #include "CommsControl.h"
 
 
@@ -20,7 +21,6 @@
 #endif
 
 #define HEV_FORMAT_VERSION 0xA9
-#define EXHALE_VALVE_PROPORTIONAL
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;

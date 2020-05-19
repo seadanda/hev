@@ -96,7 +96,7 @@ void BreathingLoop::updateReadings()
     // calc pressure every 1ms
     // create averages every 10ms
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _readings_time > _readings_timeout) {
+    if (tnow - _readings_time >= _readings_timeout) {
         _readings_time = tnow;
         _readings_N++;
 
@@ -119,7 +119,7 @@ void BreathingLoop::updateReadings()
     // to make sure the readings correspond only to the same fsm mode
     if (_readings_reset) {
         resetReadingSums();
-    } else if (tnow - _readings_avgs_time > _readings_avgs_timeout) {
+    } else if (tnow - _readings_avgs_time >= _readings_avgs_timeout) {
         _readings_avgs.timestamp                = static_cast<uint32_t>(_readings_sums.timestamp);
         _readings_avgs.pressure_air_supply      = adcToMillibarFloat((_readings_sums.pressure_air_supply      / _readings_N));
         _readings_avgs.pressure_air_regulated   = adcToMillibarFloat((_readings_sums.pressure_air_regulated   / _readings_N));
@@ -163,7 +163,7 @@ void BreathingLoop::updateRawReadings()
     uint32_t tnow = static_cast<uint32_t>(millis());
 
     // to make sure the readings correspond only to the same fsm mode
-    if (tnow - _readings_avgs_time > _readings_avgs_timeout) {
+    if (tnow - _readings_avgs_time >= _readings_avgs_timeout) {
         _readings_raw.timestamp                = static_cast<uint32_t>(_readings_sums.timestamp);
 #ifdef CHIP_ESP32
         _readings_raw.pressure_air_supply      =analogRead(pin_pressure_air_supply)    ;
@@ -232,7 +232,7 @@ void BreathingLoop::updateCycleReadings()
             _cycle_readings.static_compliance = _cycle_readings.tidal_volume / (_cycle_readings.plateau_pressure - _peep);
             _cycle_readings.mean_airway_pressure =  _airway_pressure;
             _cycle_readings.inhalation_pressure  =  _airway_pressure;
-            _cycle_readings.apnea_index += _apnea_event ? 1 : 0;
+            _cycle_readings.apnea_index += (_apnea_event == true) ? 1 : 0;
             _cycle_readings.apnea_time = _measured_durations.buff_loaded
                        +_measured_durations.buff_pre_inhale
                        +_measured_durations.inhale
@@ -255,7 +255,7 @@ void BreathingLoop::updateCycleReadings()
 void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
 {
     _ventilation_mode = mode;
-    valve_params vp = _valves_controller.getValveParams();
+    valve_params &vp = _valves_controller.getValveParams();
     switch(_ventilation_mode){
 
         case VENTILATION_MODE::HEV_MODE_PC_AC :
@@ -353,7 +353,7 @@ void BreathingLoop::resetReadingSums()
 //This is used to assign the transitions of the fsm
 void BreathingLoop::FSM_assignment( ) {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _fsm_time > _fsm_timeout) {
+    if (tnow - _fsm_time >= _fsm_timeout) {
         BL_STATES next_state;
         switch (_bl_state)
         {
@@ -437,7 +437,7 @@ void BreathingLoop::FSM_assignment( ) {
         _readings_reset = true;
     }
     // safety check
-    if (tnow - _fsm_time > 10) {
+    if (tnow - _fsm_time >= 10) {
         if (_safe == false){
             _bl_state = BL_STATES::BUFF_PURGE;
             // TODO RAISE ALARM
@@ -457,7 +457,7 @@ void BreathingLoop::FSM_breathCycle()
             } else {
                 _fsm_timeout = 1000;
             }
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             initCalib();
             break;
         case BL_STATES::CALIBRATION : 
@@ -560,6 +560,7 @@ void BreathingLoop::FSM_breathCycle()
             // TODO - shouldn't get here: raise alarm
             break;
     }
+    //logMsg("fsm timeout " + String(_fsm_timeout) + " state "+String(_bl_state));;
     safetyCheck();
     measure_durations();
 }
@@ -642,7 +643,7 @@ void BreathingLoop::calibrate()
 {
     // get pressure_air_regulated over last sec of 10s calc mean
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _calib_time > _calib_timeout ) {
+    if (tnow - _calib_time >= _calib_timeout ) {
         _calib_N++;
         _calib_sums.pressure_air_regulated += static_cast<float>(analogRead(pin_pressure_air_regulated));
         _calib_avgs.pressure_air_regulated  = static_cast<float>(_calib_sums.pressure_air_regulated/ _calib_N);
@@ -667,7 +668,7 @@ void BreathingLoop::initCalib()
 {   // do calibration in last sec of calibration step (normally 10s) or default to 10ms
     _calibrated = false;
     _calib_timeout = 10;  
-    if (_states_durations.calibration - 1000 > 10)
+    if (_states_durations.calibration - 1000 >= 10)
         _calib_timeout = _states_durations.calibration - 1000;
     _calib_time = static_cast<uint32_t>(millis());
     _calib_sums.pressure_air_regulated = 0;
@@ -869,20 +870,21 @@ void BreathingLoop::inhaleTrigger()
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
         if((_flow > _valves_controller.getValveParams().inhale_trigger_threshold) 
-            && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
-            if (tnow - _fsm_time > _min_exhale_time ) {
+            && (tnow - _valley_flow_time >= 10)){  // wait 10ms after the valley
+            if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+                //logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
                 _mandatory_inhale = false;
             }
-        } else if (tnow - _fsm_time > _max_exhale_time){
+        } else if (tnow - _fsm_time >= _max_exhale_time){
                 // TRIGGER
                 _apnea_event = true;
-                logMsg("inhale trigger - max exhale time exceeded");
+                //logMsg("inhale trigger - max exhale time exceeded");
                 _fsm_timeout = 0; // go to next state immediately
                 _mandatory_inhale = true;
+                _apnea_event = true;
         }
     }  else {
         _mandatory_inhale = true;
@@ -896,14 +898,14 @@ void BreathingLoop::exhaleTrigger()
     //logMsg("EXhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().exhale_trigger_threshold)+" "+String(_peak_flow));
 
     if(en == true){
-        logMsg("exhale trigger");
+        //logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
         valve_params vp = _valves_controller.getValveParams();
         if((_running_avg_flow < (vp.exhale_trigger_threshold * _peak_flow)) 
-            && (tnow - _peak_flow_time > 100)){ // wait 10ms after peak
+            && (tnow - _peak_flow_time >= 100)){ // wait 10ms after peak
             //TODO - check we're past 'peak'
-            logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
-            if (tnow - _fsm_time > _min_inhale_time ) {
+            //logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
+            if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
                 _mandatory_exhale = false;

@@ -45,7 +45,7 @@ void UILoop::receiveCommands()
 void UILoop::reportFastReadings()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _fast_report_time > _fast_report_timeout)
+    if (tnow - _fast_report_time >= _fast_report_timeout)
     {
 
 	    // TO SWITCH BETWEEN RAW AND MILLIBAR DATA UNCOMMENT BELOW
@@ -78,7 +78,7 @@ void UILoop::reportFastReadings()
 void UILoop::reportReadbackValues()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _readback_report_time > _readback_report_timeout)
+    if (tnow - _readback_report_time >= _readback_report_timeout)
     {
         bool vin_air, vin_o2, vpurge;
         uint8_t vinhale, vexhale;
@@ -127,7 +127,7 @@ void UILoop::reportReadbackValues()
 void UILoop::reportCycleReadings()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _cycle_report_time > _cycle_report_timeout)
+    if (tnow - _cycle_report_time >= _cycle_report_timeout)
     {
 
         _cycle_data.timestamp =  tnow;
@@ -185,7 +185,7 @@ void UILoop::reportAlarms()
 void UILoop::reportIVTReadings()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _ivt_report_time > _ivt_report_timeout)
+    if (tnow - _ivt_report_time >= _ivt_report_timeout)
     {
 
         _ivt_data.timestamp =  tnow;
@@ -216,7 +216,7 @@ void UILoop::reportDebugValues()
 {
 
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _debug_report_time > _debug_report_timeout)
+    if (tnow - _debug_report_time >= _debug_report_timeout)
     {
 
         _debug_data.timestamp = static_cast<uint32_t>(tnow);
