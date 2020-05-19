@@ -3,133 +3,201 @@
 
 {% block content %}
 <div class="container">
-  <form action="{{ url_for('data_handler') }}" method="post">
-    <div class="row justify-content-center">
-      <div class="card rounded-lg px-0 py-0 my-1">
-        <div class="card-header px-1 py-1">Personal Details</div>
-        <div class="card-body px-1 py-1">
-          <div>
-            <table>
-              <tr><td>
-                <table>
-              <tr><td><span class="form-group"><label class="small" for="inputName">Name</label></td><td><input class="form-control py-1" id="inputName" type="name" value="John Smith" readOnly name='patient_name' /></span></td></tr>
-              <tr><td><span class="form-group"><label class="small" for="inputEmailAddress">Age</label></td><td><input class="form-control py-1" id="inputAge" type="number" readOnly placeholder=87 /></span></td></tr>
-                </table></td>
-                <td>
-                  <table>
-              <tr><td><span class="form-group"><label class="small" for="inputHeight">Height (cm)</label></td><td><input class="form-control py-1" id="inputHeight" type="number" readOnly placeholder=180 /></span></td></tr>
-              <tr><td><span class="form-group"><label class="small" for="inputWeight">Weight (kg)</label></td><td><input class="form-control py-1" id="inputWeight" type="number" readOnly placeholder=80 /></span></td></tr>
-                  </table></td>
-                </tr>
-            </table>
-            </div> 
-        </div>
+  <div class="tab">
+    <button class="tablinks" onclick="openSetting(this, 'Mode')">Mode</button>
+    <button class="tablinks" onclick="openSetting(this, 'Personal')">Personal</button>
+    <button class="tablinks" onclick="openSetting(this, 'Advanced')">Advanced</button>
+  </div>
+
+  <!-- Tab content -->
+  <div id="Personal" class="tabcontent">
+        <table class = "ml-auto mr-auto">
+      <tr><td><label class="small" for="inputName">Name</label></td><td><input class="form-control py-1" id="inputName" type="name" value="John Smith" readOnly name='patient_name' /></td></tr>
+      <tr><td><label class="small" for="inputEmailAddress">Age</label></td><td><input class="form-control py-1" id="inputAge" type="number" readOnly placeholder=87 /></td></tr>
+      <tr><td><label class="small" for="inputHeight">Height (cm)</label></td><td><input class="form-control py-1" id="inputHeight" type="number" readOnly placeholder=180 /></td></tr>
+      <tr><td><label class="small" for="inputWeight">Weight (kg)</label></td><td><input class="form-control py-1" id="inputWeight" type="number" readOnly placeholder=80 /></td></tr>
+        </table>
+        <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+  </div>
+
+  <div id="Mode" class="tabcontent">
+    <table class = "ml-auto mr-auto">
+    <tr>
+      <td></td><td><label class="small">Mode</label> </td>
+      <td>
+      <div class = "select-container lockable" disabled>
+		  <select class = "ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
+		  <option value = ""></option>
+		  <optgroup label = "Pressure Control Modes">
+		    <option value="pcac" selected>PC-A/C</option>
+		    <option value="prvc">PC-A/C-PRVC</option>
+		  </optgroup>
+		  <optgroup label = "Pressure Support Modes">
+		    <option value="psv">PC-PSV</option>
+		    <!--<option value="opt4">CPAP</option>-->
+		  </optgroup>
+      </select>
       </div>
+      </td></tr>
+
+      <tr><td></td><td><label class="small">Respiratory Rate</label></td><td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_respiratory_rate" type="number" value="" disabled/></td></tr>
+      <tr>
+        <td><input type="radio" name="time_or_ie" id = "edit_inhale_time" onclick = "edit_inhale_time()" checked></td><td><label class="small" for="edit_inhale_time">Inhale Time</label></td>
+        <td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_time" type="text" value="" disabled name='inhale_time' /></td></tr>
+      <tr>
+        <td><input type="radio" name="time_or_ie" id = "edit_ie_ratio" onclick="edit_ie_ratio()"></td><td><label class="small" for="edit_ie_ratio">I:E Ratio</label></td>
+        <td><input class="form-control py-1 lockOnly" id="mode_ie_ratio" type="text" value="" disabled name='i_e_ratio_mode' /></td>
+      </tr>
+      <tr><td></td><td><label class="small">Inhale Trigger Sensitivity</label></td><td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_trg_sensitivity" type="number" value="" disabled /></td></tr>
+      <tr><td></td><td><label class="small">Exhale Trigger Sensitivity</label></td><td><input class="form-control py-1 psv-edit lockOnly" id="mode_exhale_trg_sensitivity" type="number" value="" disabled /></td></tr>
+      <tr><td></td><td><label class="small">Inhale Pressure</label></td><td><input class="form-control py-1 psv-edit pcac-edit lockOnly" id="mode_inhale_trigger" type="number" value="" disabled /></td></tr>
+      <tr><td></td><td><label class="small">Inhale Volume</label></td><td><input class="form-control py-1 prvc-edit lockOnly" id="mode_inhale_volume" type="number" value="" disabled /></td></tr>
+      <tr><td></td><td><label class="small">PEEP</label></td><td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_peep" type="number" value="" disabled /></td></tr>
+    </table>
+      <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+
     </div>
-        <div class="card-body px-1 py-1">
-          <div>
-          <form action="{{ url_for('data_handler') }}" method="post">
-            <table>
-              <tr><td>
-                <table>
-              <tr>
-                <td> <label class="small" for="inputVar1" >Buffer fill [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="buff_fill" type="number" value="1"  onclick="show_easy_numpad(this, buff_fill_controller);lock();"  readOnly disabled/></td>
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar2">Buffer flush [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="buff_flush" type="number" value="1"   onclick="show_easy_numpad(this, buff_flush_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar3">Buffer loaded [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="buff_loaded" type="number" value="1"   onclick="show_easy_numpad(this, buff_loaded_controller);lock();"  readOnly disabled/></td>
+  <div id="Advanced" class="tabcontent">
+    <form action="{{ url_for('data_handler') }}" method="post">
+      <table class="ml-auto mr-auto">
+        <tr><td>
+          <table>
+        <tr>
+          <td> <label class="small" for="inputVar1" >Buffer fill [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="buff_fill" type="number" value="1"  onclick="show_easy_numpad(this, buff_fill_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar2">Buffer flush [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="buff_flush" type="number" value="1"   onclick="show_easy_numpad(this, buff_flush_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar4">Buffer pre-fill [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="buff_prefill" type="number" value="1"   onclick="show_easy_numpad(this, buff_prefill_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar3">Buffer loaded [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="buff_loaded" type="number" value="1"   onclick="show_easy_numpad(this, buff_loaded_controller);lock();"  readOnly disabled/></td>
 
-                
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar5">Buffer pre-inhale [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="buff_preinhale" type="number" value="1"   onclick="show_easy_numpad(this, buff_preinhale_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar4">Buffer pre-fill [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="buff_prefill" type="number" value="1"   onclick="show_easy_numpad(this, buff_prefill_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar5">Buffer pre-inhale [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="buff_preinhale" type="number" value="1"   onclick="show_easy_numpad(this, buff_preinhale_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar6">Buffer purge [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="buff_purge" type="number" value="1"   onclick="show_easy_numpad(this, buff_purge_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar6">Buffer purge [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="buff_purge" type="number" value="1"   onclick="show_easy_numpad(this, buff_purge_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar7">Inhale [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="inhale" type="number" value="1"   onclick="show_easy_numpad(this, inhale_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar7">Inhale [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="inhale" type="number" value="1"   onclick="show_easy_numpad(this, inhale_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar8">Pause [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="pause" type="number" value="1"   onclick="show_easy_numpad(this, pause_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar8">Pause [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="pause" type="number" value="1"   onclick="show_easy_numpad(this, pause_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr>
-                <td><span class="form-group"><label class="small" for="inputVar9">Exhale [ms]</label></td>
-                  <td><input class="form-control py-1 input-editable" id="exhale" type="number" value="1"   onclick="show_easy_numpad(this, exhale_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr>
+          <td><span class="form-group"><label class="small" for="inputVar9">Exhale [ms]</label></td>
+            <td><input class="form-control py-1 input-editable" id="exhale" type="number" value="1"   onclick="show_easy_numpad(this, exhale_controller);lock();"  readOnly disabled/></td>
 
-              </tr>
-              <tr><td><span class="form-group"><label class="small" for="inputVar10">Exhale fill[ms]</label></td>
-              <td><input class="form-control py-1 input-editable" id="exhale_fill" type="number" value="1"   onclick="show_easy_numpad(this, exhale_fill_controller);lock();"  readOnly disabled/></td>
+        </tr>
+        <tr><td><span class="form-group"><label class="small" for="inputVar10">Exhale fill[ms]</label></td>
+        <td><input class="form-control py-1 input-editable" id="exhale_fill" type="number" value="1"   onclick="show_easy_numpad(this, exhale_fill_controller);lock();"  readOnly disabled/></td>
 
-              <tr><td><span class="form-group"><label class="small" for="inputVar13">Calibration [ms]</label></td>
-                <td><input class="form-control py-1 input-editable" id="calibration" type="number" value="1"   onclick="show_easy_numpad(this, calibration_controller);lock();"  readOnly disabled/></td>
-    
+        <tr><td><span class="form-group"><label class="small" for="inputVar13">Calibration [ms]</label></td>
+          <td><input class="form-control py-1 input-editable" id="calibration" type="number" value="1"   onclick="show_easy_numpad(this, calibration_controller);lock();"  readOnly disabled/></td>
 
-            </table>
-          </td>
-          <td>
-            <table>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar11">Valve (Air)</label></td>
-            <td><input class="form-control py-1" id="valve_air" type="number" value="1"   onclick="show_easy_numpad(this, valve_air_controller);lock();"  readOnly disabled/></td>
+      </table>
+    </td>
+    <td>
+      <table>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar12">Valve (O2)</label></td>
-            <td><input class="form-control py-1" id="valve_o2" type="number" value="1"   onclick="show_easy_numpad(this, valve_02_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar11">Valve (Air)</label></td>
+      <td><input class="form-control py-1" id="valve_air" type="number" value="1"   onclick="show_easy_numpad(this, valve_air_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Inhale) [%]</label></td>
-            <td><input class="form-control py-1" id="valve_inhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_inhale_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar12">Valve (O2)</label></td>
+      <td><input class="form-control py-1" id="valve_o2" type="number" value="1"   onclick="show_easy_numpad(this, valve_02_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Exhale) [%]</label></td>
-            <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_exhale_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Inhale) [%]</label></td>
+      <td><input class="form-control py-1" id="valve_inhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_inhale_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Purge)</label></td>
-            <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_purge_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Exhale) [%]</label></td>
+      <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_exhale_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">PEEP [cmH2O]</label></td>
-            <td><input class="form-control py-1" id="peep" type="number" value="1"   onclick="show_easy_numpad(this, purge_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Purge)</label></td>
+      <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_purge_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">State</label></td>
-            <td><input class="form-control py-1" id="state" type="number" value="1"   onclick="show_easy_numpad(this, state_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">PEEP [cmH2O]</label></td>
+      <td><input class="form-control py-1" id="peep" type="number" value="1"   onclick="show_easy_numpad(this, purge_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">RPM</label></td>
-            <td><input class="form-control py-1" id="rpm" type="number" value="1"   onclick="show_easy_numpad(this, rpm_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">State</label></td>
+      <td><input class="form-control py-1" id="state" type="number" value="1"   onclick="show_easy_numpad(this, state_controller);lock();"  readOnly disabled/></td>
 
-          <tr><td><span class="form-group"><label class="small" for="inputVar13">Inhale:Exhale</label></td>
-            <td><input class="form-control py-1" id="inhale_exhale" type="number" value="1"   onclick="show_easy_numpad(this, inhale_exhale_controller);lock();"  readOnly disabled/></td>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">RPM</label></td>
+      <td><input class="form-control py-1" id="rpm" type="number" value="1"   onclick="show_easy_numpad(this, rpm_controller);lock();"  readOnly disabled/></td>
 
-            </table></td>
-          </tr>
-          </table>
-          </div>
-        </div>
-    <div class="row justify-content-center">
-          <span class="form-group" ><input class="form-button py-2" id="inputPassword" type="submit" value="Submit Changes"  /></span>
-    </div>
-  </form>
+    <tr><td><span class="form-group"><label class="small" for="inputVar13">Inhale:Exhale</label></td>
+      <td><input class="form-control py-1" id="inhale_exhale" type="number" value="1"   onclick="show_easy_numpad(this, inhale_exhale_controller);lock();"  readOnly disabled/></td>
+
+      </table></td>
+    </tr>
+    </table>
+    <input class="form-button float-bottom-right" type="submit" value="Update Settings">
+</form>
 </div>
+</div>
+
 {% endblock %}
 
 {% block body_scripts %}
 <script type=text/javascript>
+// get all of the elements and decide which are to be unlocked
+function unlock_mode_elements(mode){
+  //disable all of our ventilator mode options first
+  var ventOptions = document.querySelectorAll('.prvc-edit,.psv-edit,.pcac-edit');
+  for (let i = 0 ; i < ventOptions.length; i++) { 
+    ventOptions[i].disabled=true;
+    ventOptions[i].classList.remove("unlockOnly");
+  }
+  // now have a go at enabling
+  var unlock_elements = document.getElementsByClassName(mode+"-edit");
+  for (let i = 0 ; i < unlock_elements.length; i++){ 
+    unlock_elements[i].disabled = false;
+    ventOptions[i].classList.add("unlockOnly");
+  }
+
+}
+
+var object = document.getElementById("vent_mode");
+object.addEventListener("change", function(){
+  var object = document.getElementById("vent_mode");
+  var opt = object.options[object.selectedIndex];
+  unlock_mode_elements(opt.value);
+
+});
+
+function edit_ie_ratio(){
+  if (unlocked){
+    var ie_ratio_input = document.getElementById('mode_ie_ratio');
+    var inhale_time_input    = document.getElementById('mode_inhale_time');
+    ie_ratio_input.disabled = false;
+    inhale_time_input.disabled = true;
+  }
+}
+function edit_inhale_time(){
+  if (unlocked){
+    var ie_ratio_input = document.getElementById('mode_ie_ratio');
+    var inhale_time_input    = document.getElementById('mode_inhale_time');
+    ie_ratio_input.disabled = true;
+    inhale_time_input.disabled = false;
+  }
+}
 
 
 function sendCmd(var_name, var_value) {
@@ -141,8 +209,37 @@ function sendCmd(var_name, var_value) {
         })    
 };
 
+function openSetting(el, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
 
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
 
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  el.className += " active";
+}
+
+$(document).ready ( function(){
+  var tablinks = document.getElementsByClassName("tablinks");
+  if (tablinks.length > 0){
+    openSetting(tablinks[0],"Mode");
+  }
+  // decide what to unlock based on mode
+  var object = document.getElementById("vent_mode");
+  var opt = object.options[object.selectedIndex];
+  unlock_mode_elements(opt.value);
+});
 
   class input_controller{
 	constructor(name, element) {
@@ -177,6 +274,12 @@ function sendCmd(var_name, var_value) {
 	  else return null;
   }
 }
+
+
+pickout.to({
+  el:'.pickout',
+  theme:'MySelector'
+  });
 
 buff_fill_controller = new input_controller("buff_fill", document.getElementById("buff_fill"));
 buff_flush_controller = new input_controller("buff_flush", document.getElementById("buff_flush"));

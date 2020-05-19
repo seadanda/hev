@@ -32,12 +32,12 @@
         <a class="navbar-brand" href=""><img src="{{ url_for('static', filename='img/cern-hev-logo.png') }}" id="logo"></a>
 		<button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" class="svg-inline--fa fa-bars fa-w-14 fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" class="path-icon" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"></path></svg></button>
 	<!-- Alarm -->
-        <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0 alarm-ok px-2 py-0" id = "alarm_ul">
+        <ul class="navbar-nav ml-auuto mr-0 mr-md-3 my-2 my-md-0 alarm-ok px-2 py-0" id = "alarm_ul">
 	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="exclamation-circle" class="svg-inline--fa fa-exclamation-circle fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path id = "path-alarm" class="path-icon path-alarm" d="M504 256c0 136.997-111.043 248-248 248S8 392.997 8 256C8 119.083 119.043 8 256 8s248 111.083 248 248zm-248 50c-25.405 0-46 20.595-46 46s20.595 46 46 46 46-20.595 46-46-20.595-46-46-46zm-43.673-165.346l7.418 136c.347 6.364 5.609 11.346 11.982 11.346h48.546c6.373 0 11.635-4.982 11.982-11.346l7.418-136c.375-6.874-5.098-12.654-11.982-12.654h-63.383c-6.884 0-12.356 5.78-11.981 12.654z"></path></svg> <div id='alarms' class = "w-100"></div>
         </ul>
 
 	<!-- User-->
-        <ul class="navbar-nav ml-auto mr-0 mr-md-3 my-2 my-md-0">
+        <ul class="navbar-nav mr-0 mr-md-3 my-2 my-md-0">
 	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="user" class="svg-inline--fa fa-user fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path class="path-icon" d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0 96 57.3 96 128s57.3 128 128 128zm89.6 32h-16.7c-22.2 10.2-46.9 16-72.9 16s-50.6-5.8-72.9-16h-16.7C60.2 288 0 348.2 0 422.4V464c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48v-41.6c0-74.2-60.2-134.4-134.4-134.4z"></path></svg>
 	</ul>
 	<span class="patient small">John Smith, M, 66, 173cm, 78kg</span>
@@ -135,9 +135,11 @@
 	  var lockTimeOut = 200000; // 20 seconds lock time out ( * 10 for development)
 	  var idleTimeOut = 600000; // one minute idle time out ( * 10 for development)
 	  
+	  // set out lock timers
 	  var lockTimer;
 	  var idleTimer;
 	  var unlocked = Boolean(false);
+		// determine if the page is locked or unlocked on startup
 	  if (sessionStorage.getItem("unlocked")!=null){
 	  	if (sessionStorage.getItem("unlocked") == true){unlocked = Boolean(true);}
 		  else {unlocked = Boolean(false);}
@@ -152,22 +154,6 @@
 	  lock(); // should be locked already, this mainly tidies up the lock graphic
 	  }
 	  };
-
-			       
-	  function cmdNotification(element){
-	  if (!element.disabled){
-		window.createNotification({
-			closeOnClick: 1,
-			displayCloseButton: 0,
-			positionClass: "nfc-bottom-right",
-			showDuration: false,
-			theme: "info"
-		})({
-			title: "Issuing command",
-			message: "Sent the command " + element.value
-	  });
-	  }
-	  }
 
 
 	  //timer only to be used if we're not on our main page
@@ -212,7 +198,24 @@
 
 									
 									var alarmLogs;
-          clearInterval(alarmLogs);
+		  clearInterval(alarmLogs);
+		  
+
+			       
+	  function cmdNotification(element){
+		if (!element.disabled){
+		  window.createNotification({
+			  closeOnClick: 1,
+			  displayCloseButton: 0,
+			  positionClass: "nfc-bottom-right",
+			  showDuration: false,
+			  theme: "info"
+		  })({
+			  title: "Issuing command",
+			  message: "Sent the command " + element.value
+		});
+		}
+		}
 	//
 	//  function update_alarms() {
     //    $.getJSON("live-alarms", function (data) {
@@ -234,73 +237,85 @@
 	//  var alarmInterval = setInterval('update_alarms()', 1000);
 	//
 	  function unlock(){
-	  var x = document.getElementsByClassName("input-editable");
-	  for (i = 0; i < x.length; i++) {x[i].readOnly=false;x[i].disabled = false;}
+
+	  //remove disabled on any field we specified
 	  var select_fields = document.getElementsByClassName("lockable");			
 	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = false;}
+	  // do the same for any extra fields we specify to unlock (e.g. for selective option in mode)
+	  var select_fields = document.getElementsByClassName("unlockOnly");			
+	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = false;}
+	  //enable all our navigation links
 	  var l = document.getElementsByClassName("nav-link-href");
 	  for (i = 0; i < l.length; i++) {l[i].classList.remove("nav-link-disabled");}
-			  var el = document.getElementById("path-locked-main");
-			  el.classList.add("transparent");
-			  var el2 = document.getElementById("path-unlocked-main");
-			  el2.classList.remove("transparent");
-			  unlocked = Boolean(true);
-			  sessionStorage.setItem("unlocked",1);
-			  clearTimeout(lockTimer);
-			  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
+	  
+	  // use correct path icon 
+	  var el = document.getElementById("path-locked-main");
+	  el.classList.add("transparent");
+	  var el2 = document.getElementById("path-unlocked-main");
+	  el2.classList.remove("transparent");
+	
+	  // set out global variable to true and update session storage
+	  unlocked = Boolean(true);
+	  sessionStorage.setItem("unlocked",1);
+	  //reset our timer
+	  clearTimeout(lockTimer);
+	  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
 			  }
 	  
-			  function lock() {
-			  clearTimeout(lockTimer);
-			  var x = document.getElementsByClassName("input-editable");
-			  for (i = 0; i < x.length; i++) {x[i].readOnly=true;x[i].disabled = true;}
-					  
-	var select_fields = document.getElementsByClassName("lockable");											
-	  for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = true;}
-					  var l = document.getElementsByClassName("nav-link-href");
-					  for (i = 0; i < l.length; i++) {l[i].classList.add("nav-link-disabled");}
-			  var el = document.getElementById("path-locked-main");
-			  el.classList.remove("transparent");
-			  var el2 = document.getElementById("path-unlocked-main");
-			  el2.classList.add("transparent");
-			  unlocked = Boolean(false);
-			  sessionStorage.setItem("unlocked",false);
-					  }
-					  function toggle_lock() {
-					  setTimeout(function(){
-					  if (unlocked == true) {console.log("locking");lock();}
-			  else{ console.log("unlocking");unlock() ; }
-			  },500);
-			  }
-						  
-
-			  
-	  
+	function lock() {
+	     // clear lock timer
+		 clearTimeout(lockTimer);					  
+		 // lock all of our lockable fields
+	     var select_fields = document.getElementsByClassName("lockable");											
+		 for (let i = 0 ; i < select_fields.length ; i++) { select_fields[i].disabled = true;}
+		//these are field we should lock but not unlock
+	     var lock_fields = document.getElementsByClassName("lockOnly");											
+		 for (let i = 0 ; i < lock_fields.length ; i++) { lock_fields[i].disabled = true;}
+		  // lock all of our navigation links
+		 var l = document.getElementsByClassName("nav-link-href");
+		 for (i = 0; i < l.length; i++) {l[i].classList.add("nav-link-disabled");}
+		 // show locked icon
+		 var el = document.getElementById("path-locked-main");
+		 el.classList.remove("transparent");
+		 var el2 = document.getElementById("path-unlocked-main");
+		 el2.classList.add("transparent");
+		 //update global flag and session storage
+		 unlocked = Boolean(false);
+		 sessionStorage.setItem("unlocked",false);
+		}
+	function toggle_lock() {
+		 //check whether to lock or unlock based on global var
+		 // slight delay to make unlocking clear to user
+		  setTimeout(function(){
+		  if (unlocked == true) {lock();}
+		  else{ unlock() ; }
+		   },500);
+	}
+	// reset timers on key press or mouse move
 	$(this).mousemove(function (e) {
-			  if (unlocked) {
-			  clearTimeout(lockTimer);
-			  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
+		if (unlocked) {
+			clearTimeout(lockTimer);
+		 	lockTimer = setTimeout('timeOutLock()', lockTimeOut);
 			  
-			  }
+			 }
+	  {% if not fan_active %}
+	  clearTimeout(idleTimer);
+	  idleTimer = setTimeout( idleRedirect, idleTimeOut );
+	  {% endif %}
+	});
 			  
-			  {% if not fan_active %}
-			  clearTimeout(idleTimer);
-			  idleTimer = setTimeout( idleRedirect, idleTimeOut );
-			  {% endif %}
-			  });
-			  
-			  $(this).keypress(function (e) {
-			  if (unlocked) {
-			  clearTimeout(lockTimer);
-			  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
-			  }
-			  {% if not fan_active %}
-			  clearTimeout(idleTimer);
-			  idleTimer = setTimeout( idleRedirect, idleTimeOut );
-			  {% endif %}
-			  });
+	$(this).keypress(function (e) {
+	  if (unlocked) {
+		  clearTimeout(lockTimer);
+		  lockTimer = setTimeout('timeOutLock()', lockTimeOut);
+		}
+		{% if not fan_active %}
+		clearTimeout(idleTimer);
+		idleTimer = setTimeout( idleRedirect, idleTimeOut );
+		{% endif %}
+	});
 
-			  
+		//update battery
 function update_battery() {
 		$.ajax({
 			url: '/battery',
@@ -330,37 +345,7 @@ function update_battery() {
 		})
 	}
 update_battery();																				
-var batteryInterval = setInterval('update_battery()', 1000);
-																			  var prev_val;
-																			  
-
-$('.input-editable').focus(function() {
-    prev_val = $(this).val();
-}).change(function() {
-$(this).blur() // Firefox fix as suggested by AgDude
-
-/*window.createNotification({
-  closeOnClick: 0,
-  displayCloseButton: 1,
-  positionClass: "nfc-bottom-right",
-  showDuration: false,
-  theme: "info"
-  })({
-    title: "Screen Lock",
-    message: "Screen has locked due to timeout"
-  });*/
-    var success = confirm("Are you sure you want to change the " + $(this).name + " from " + prev_val + " to " + $(this).val());
-    if(success)
-{
-//send to hevserver
-$(this).val($(this).val());
-    }
-    else
-    {
-        $(this).val(prev_val);
-}
-lock();
-});
+var batteryInterval = setInterval('update_battery()', 10000);
 	</script>
 	
 	
