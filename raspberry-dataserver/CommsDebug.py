@@ -36,8 +36,8 @@ class Dependant(object):
     def update_llipacket(self, payload):
         global fsm
         #logging.info(f"payload received: {payload}")
-        if payload.getType() == 1:
-            logging.info(f"payload received: {payload}")
+        #if payload.getType() == 1:
+        #    logging.info(f"payload received: {payload}")
             #logging.info(f"Fsm state: {payload.fsm_state} ")
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
@@ -52,8 +52,10 @@ class Dependant(object):
         #logging.info(f"payload received: {payload}")
         #if hasattr(payload, 'inhale_exhale_ratio'):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
-        if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+        if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
+            logging.info(f"payload received: {payload}")
+        #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+        #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         # if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
         #     logging.info(f"LOGMSG {payload.message} ") 
         #if hasattr(payload, 'ventilation_mode'):
@@ -111,7 +113,7 @@ async def commsDebug():
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Change TIMEOUT of breathing cycle (EXHALE)
-    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_TIMEOUT.value, cmd_code=CMD_SET_TIMEOUT.EXHALE.value, param=0.) #
+    cmd = CommandFormat(cmd_type=CMD_TYPE.SET_OUMEOUT, cmd_code=CMD_SET_TIMEOUT.EXHALE.value, param=0.) #
     comms.writePayload(cmd)
     await asyncio.sleep(1)
     # Start the cycles

@@ -33,6 +33,8 @@ BreathingLoop::BreathingLoop()
     _flow = 0;
     _volume = 0;
     _airway_pressure = 0;
+    _mandatory_inhale = false;
+    _mandatory_exhale = false;
 
     _pid.Kp = 0.004; // proportional factor
     _pid.Ki = 0.0010;   // integral factor
@@ -49,6 +51,14 @@ BreathingLoop::BreathingLoop()
     for(int i=0; i<RUNNING_AVG_READINGS; i++){
         _running_flows[i] = 0.0;
     }
+    for(int i=0; i<CYCLE_AVG_READINGS; i++){
+        _total_cycle_duration[i] = 0;
+        _inhale_cycle_duration[i] = 0;
+        _exhale_cycle_duration[i] = 0;
+    }
+    _sum_airway_pressure = 0;
+    _ap_readings_N = 0;
+
     _running_index = 0;
     _cycle_index = 0;
 
@@ -188,15 +198,47 @@ void BreathingLoop::updateCycleReadings()
                        +_measured_durations.pause
                        +_measured_durations.exhale_fill
                        +_measured_durations.exhale);
-            _inhale_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
+            // _inhale_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
+            //            +_measured_durations.buff_pre_inhale
+            //            +_measured_durations.inhale
+            //            +_measured_durations.pause);
+            // _exhale_cycle_duration[_cycle_index] = (
+            //            _measured_durations.exhale_fill
+            //            +_measured_durations.exhale);
+
+            float mv_sum = 0, mvi_sum = 0, mve_sum = 0;
+            uint16_t tot_sum = 0;
+            // uint16_t inh_sum, exh_sum  = 0;
+            for(int i=0 ; i<CYCLE_AVG_READINGS; i++){
+                mv_sum += _running_minute_volume[i];
+                mvi_sum += _running_inhale_minute_volume[i];
+                mve_sum += _running_exhale_minute_volume[i];
+                tot_sum += _total_cycle_duration[i];
+                // inh_sum += _inhale_cycle_duration[i];
+                // exh_sum += _exhale_cycle_duration[i];
+            }
+            _cycle_readings.respiratory_rate = 60000.0/(tot_sum/CYCLE_AVG_READINGS);
+            _cycle_readings.minute_volume = 60000*mv_sum/tot_sum;
+            _cycle_readings.inhaled_minute_volume = 60000*mvi_sum/tot_sum;
+            _cycle_readings.exhaled_minute_volume = 60000*mve_sum/tot_sum;
+            _cycle_readings.tidal_volume = mv_sum/CYCLE_AVG_READINGS;
+            _cycle_readings.inhaled_tidal_volume = mvi_sum/CYCLE_AVG_READINGS;
+            _cycle_readings.exhaled_tidal_volume = mve_sum/CYCLE_AVG_READINGS;
+            _cycle_readings.lung_compliance = _cycle_readings.tidal_volume / (_cycle_readings.peak_inspiratory_pressure -_peep);
+            _cycle_readings.static_compliance = _cycle_readings.tidal_volume / (_cycle_readings.plateau_pressure - _peep);
+            _cycle_readings.mean_airway_pressure =  _sum_airway_pressure / _ap_readings_N;
+            _cycle_readings.inhalation_pressure  =  _cycle_readings.mean_airway_pressure;
+            _cycle_readings.apnea_index += _apnea_event ? 1 : 0;
+            _cycle_readings.apnea_time = _measured_durations.buff_loaded
                        +_measured_durations.buff_pre_inhale
                        +_measured_durations.inhale
-                       +_measured_durations.pause);
-            _exhale_cycle_duration[_cycle_index] = (
-                       _measured_durations.exhale_fill
-                       +_measured_durations.exhale);
+                       +_measured_durations.pause
+                       +_max_exhale_time;  // apnea time = time from breath start to maximum time allow for breath
+            _cycle_readings.mandatory_breath = _mandatory_inhale & _mandatory_exhale;
 
-            return 60000.0/avg;
+            //reset
+            _sum_airway_pressure = 0;
+            _ap_readings_N = 0;
         }
     } else {
         _cycle_done = false;  // restart cycle
@@ -508,6 +550,9 @@ void BreathingLoop::FSM_breathCycle()
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = 1000;
             break;
+        default:
+            // TODO - shouldn't get here: raise alarm
+            break;
     }
     safetyCheck();
 
@@ -673,7 +718,7 @@ void BreathingLoop::updateIE()
 
     uint32_t total_cycle = static_cast<uint32_t>(60*1000/_target_RR);
     int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
-    int32_t exhale_duration = exhale_duration - _states_durations.exhale_fill;
+    int32_t exhale_duration = exhale_plus_fill_duration - _states_durations.exhale_fill;
 
     int32_t min_exhale = (_min_exhale_time - _states_durations.exhale_fill < 0) ? 0 : _min_exhale_time - _states_durations.exhale_fill;
     int32_t max_exhale = (_max_exhale_time - _states_durations.exhale_fill < 0) ? 0 : _max_exhale_time - _states_durations.exhale_fill;
@@ -805,18 +850,23 @@ void BreathingLoop::inhaleTrigger()
         uint32_t tnow = static_cast<uint32_t>(millis());
         if((_flow > _inhale_trigger_threshold) 
             && (tnow - _valley_flow_time > 10)){  // wait 10ms after the valley
-            //TODO - check we're past 'valley'
             if (tnow - _fsm_time > _min_exhale_time ) {
                 // TRIGGER
                 logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_inhale_trigger_threshold));
                 _fsm_timeout = 0; // go to next state immediately
+                _apnea_event = false;
+                _mandatory_inhale = false;
             }
         } else if (tnow - _fsm_time > _max_exhale_time){
                 // TRIGGER
+                _apnea_event = true;
                 logMsg("inhale trigger - max exhale time exceeded");
                 _fsm_timeout = 0; // go to next state immediately
+                _mandatory_inhale = true;
         }
-    } 
+    }  else {
+        _mandatory_inhale = true;
+    }
 }
 
 void BreathingLoop::exhaleTrigger()
@@ -827,14 +877,16 @@ void BreathingLoop::exhaleTrigger()
         uint32_t tnow = static_cast<uint32_t>(millis());
         if((_running_avg_flow < (_exhale_trigger_threshold * _peak_flow)) 
             && (tnow - _peak_flow_time > 10)){ // wait 10ms after peak
-            //TODO - check we're past 'peak'
             logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(_exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time > _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
+                _mandatory_exhale = false;
             }
         }
-    } 
+    } else {
+        _mandatory_exhale = true;
+    }
 }
 
 
@@ -887,6 +939,9 @@ void BreathingLoop::runningAvgs()
         _volume_inhale = 0;
         _volume_exhale = 0;
     }
+
+    _sum_airway_pressure += _readings_avgs.pressure_patient;
+    _ap_readings_N++;
 }
 
 float BreathingLoop::flowToVolume()

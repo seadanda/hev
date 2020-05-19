@@ -154,7 +154,7 @@ class PAYLOAD_TYPE(IntEnum):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA8, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xA9, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -357,26 +357,26 @@ class ReadbackFormat(PayloadFormat):
 @dataclass
 class CycleFormat(PayloadFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBfffffffffHHHHBHHB")
+    _dataStruct = Struct("<BIBffffffffffffffHHB")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.CYCLE
 
-    respiratory_rate: float        = 0.0
-    tidal_volume: float            = 0.0
-    exhaled_tidal_volume: float    = 0.0
-    inhaled_tidal_volume: float    = 0.0
-    minute_volume: float           = 0.0
-    exhaled_minute_volume: float   = 0.0
-    inhaled_minute_volume: float   = 0.0
-    lung_compliance: float         = 0.0
-    static_compliance: float       = 0.0
-    inhalation_pressure: int       = 0
-    peak_inspiratory_pressure: int = 0
-    plateau_pressure: int          = 0
-    mean_airway_pressure: int      = 0
-    fi02_percent: int              = 0
-    apnea_index: int               = 0
-    apnea_time: int                = 0
-    mandatory_breath: int          = 0
+    respiratory_rate: float          = 0.0
+    tidal_volume: float              = 0.0
+    exhaled_tidal_volume: float      = 0.0
+    inhaled_tidal_volume: float      = 0.0
+    minute_volume: float             = 0.0
+    exhaled_minute_volume: float     = 0.0
+    inhaled_minute_volume: float     = 0.0
+    lung_compliance: float           = 0.0
+    static_compliance: float         = 0.0
+    inhalation_pressure: float       = 0.0
+    peak_inspiratory_pressure: float = 0.0
+    plateau_pressure: float          = 0.0
+    mean_airway_pressure: float      = 0.0
+    fi02_percent: float              = 0.0
+    apnea_index: int                 = 0
+    apnea_time: int                  = 0
+    mandatory_breath: int            = 0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 

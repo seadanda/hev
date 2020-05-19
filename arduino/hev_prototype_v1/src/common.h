@@ -19,7 +19,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA8
+#define HEV_FORMAT_VERSION 0xA9
 #define EXHALE_VALVE_PROPORTIONAL
 
 // 
@@ -276,12 +276,12 @@ struct cycle_data_format {
     float lung_compliance               = 0.0;
     float static_compliance             = 0.0;
 
-    uint16_t inhalation_pressure        = 0;  // mean airway pressure
-    uint16_t peak_inspiratory_pressure  = 0;  
-    uint16_t plateau_pressure           = 0;  
-    uint16_t mean_airway_pressure       = 0;
+    float inhalation_pressure        = 0;  // mean airway pressure
+    float peak_inspiratory_pressure  = 0;  
+    float plateau_pressure           = 0;  
+    float mean_airway_pressure       = 0;
 
-    uint8_t  fiO2_percent               = 0;  // device from Aurelio
+    float fiO2_percent               = 0.0;  // device from Aurelio
 
     uint16_t apnea_index                = 0;
     uint16_t apnea_time                 = 0;

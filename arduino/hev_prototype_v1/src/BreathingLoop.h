@@ -132,6 +132,8 @@ private:
     void updateTotalCycleDuration(uint16_t newtotal);
     float flowToVolume();
     uint16_t _total_cycle_duration[CYCLE_AVG_READINGS];
+    uint16_t _inhale_cycle_duration[CYCLE_AVG_READINGS];
+    uint16_t _exhale_cycle_duration[CYCLE_AVG_READINGS];
 
 
     float _flow;
@@ -141,6 +143,10 @@ private:
     float _volume_inhale;
     float _volume_exhale;
     float _volume_total;
+    float _sum_airway_pressure;
+    bool _mandatory_inhale;
+    bool _mandatory_exhale;
+    uint32_t _ap_readings_N;
 
     void doPID(int, float, float, float&, float&, float&, float&);
 
@@ -155,6 +161,7 @@ private:
     void runningAvgs();
     void inhaleTrigger();
     void exhaleTrigger();
+    bool _apnea_event;
     float _running_flows[RUNNING_AVG_READINGS];
     float _running_avg_flow;
     uint8_t _running_index;
