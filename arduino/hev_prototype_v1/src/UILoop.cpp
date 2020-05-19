@@ -45,7 +45,7 @@ void UILoop::receiveCommands()
 void UILoop::reportFastReadings()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _fast_report_time > _fast_report_timeout)
+    if (tnow - _fast_report_time >= _fast_report_timeout)
     {
 
 	    // TO SWITCH BETWEEN RAW AND MILLIBAR DATA UNCOMMENT BELOW
@@ -78,7 +78,7 @@ void UILoop::reportFastReadings()
 void UILoop::reportReadbackValues()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _readback_report_time > _readback_report_timeout)
+    if (tnow - _readback_report_time >= _readback_report_timeout)
     {
         bool vin_air, vin_o2, vpurge;
         uint8_t vinhale, vexhale;
@@ -127,12 +127,30 @@ void UILoop::reportReadbackValues()
 void UILoop::reportCycleReadings()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _cycle_report_time > _cycle_report_timeout)
+    if (tnow - _cycle_report_time >= _cycle_report_timeout)
     {
 
         _cycle_data.timestamp =  tnow;
 
-        _cycle_data.respiratory_rate = _breathing_loop->getRespiratoryRate();
+        //_cycle_data.respiratory_rate = _breathing_loop->getRespiratoryRate();
+        cycle_readings cr = _breathing_loop->getCycleReadings();
+        _cycle_data.respiratory_rate          = cr.respiratory_rate;
+        _cycle_data.tidal_volume              = cr.tidal_volume;
+        _cycle_data.exhaled_minute_volume     = cr.exhaled_minute_volume;
+        _cycle_data.inhaled_minute_volume     = cr.inhaled_minute_volume;
+        _cycle_data.minute_volume             = cr.minute_volume;
+        _cycle_data.exhaled_tidal_volume      = cr.exhaled_tidal_volume;
+        _cycle_data.inhaled_tidal_volume      = cr.inhaled_tidal_volume;
+        _cycle_data.lung_compliance           = cr.lung_compliance;
+        _cycle_data.static_compliance         = cr.static_compliance;
+        _cycle_data.inhalation_pressure       = cr.inhalation_pressure;
+        _cycle_data.peak_inspiratory_pressure = cr.peak_inspiratory_pressure;
+        _cycle_data.plateau_pressure          = cr.plateau_pressure;
+        _cycle_data.mean_airway_pressure      = cr.mean_airway_pressure;
+        _cycle_data.fiO2_percent              = cr.fiO2_percent;
+        _cycle_data.apnea_index               = cr.apnea_index;
+        _cycle_data.apnea_time                = cr.apnea_time;
+        _cycle_data.mandatory_breath          = cr.mandatory_breath;
         _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_cycle_data), sizeof(_cycle_data));
         _comms->writePayload(_plSend);
         _cycle_report_time = tnow;
@@ -167,7 +185,7 @@ void UILoop::reportAlarms()
 void UILoop::reportIVTReadings()
 {
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _ivt_report_time > _ivt_report_timeout)
+    if (tnow - _ivt_report_time >= _ivt_report_timeout)
     {
 
         _ivt_data.timestamp =  tnow;
@@ -198,7 +216,7 @@ void UILoop::reportDebugValues()
 {
 
     uint32_t tnow = static_cast<uint32_t>(millis());
-    if (tnow - _debug_report_time > _debug_report_timeout)
+    if (tnow - _debug_report_time >= _debug_report_timeout)
     {
 
         _debug_data.timestamp = static_cast<uint32_t>(tnow);

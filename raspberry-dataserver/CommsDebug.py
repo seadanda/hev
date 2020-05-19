@@ -36,28 +36,25 @@ class Dependant(object):
     def update_llipacket(self, payload):
         global fsm
         #logging.info(f"payload received: {payload}")
-        if payload.getType() == 1:
-            pass
-            #logging.info(f"payload received: {payload}")
-            #logging.info(f"Fsm state: {payload.fsm_state} ")
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
             #logging.info(f"payload received: {payload}")
             #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-            #logging.info(f"Fsm state: {payload.fsm_state}")
+            logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
         #if payload.getType() == PAYLOAD_TYPE.IVT.value:
         #    logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
         #logging.info(f"payload received: {payload}")
         #if hasattr(payload, 'inhale_exhale_ratio'):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
-        if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-            #logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-            pass
-        # if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-        #     logging.info(f"LOGMSG {payload.message} ") 
+        if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
+            logging.info(f"payload received:  {payload} {fsm}")
+        #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+        #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+        #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+        #    logging.info(f"LOGMSG {payload.message} ") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -67,6 +64,7 @@ class Dependant(object):
 def send_cmd(cmd_type, cmd_code, param=0.0):
     try:
         cmd = CommandFormat(cmd_type=CMD_TYPE[cmd_type].value, cmd_code=CMD_MAP[cmd_type].value[cmd_code].value, param=param)
+        comms.writePayload(cmd)
     except Exception as e:
         logging.critical(e)
         exit(1)
@@ -75,77 +73,48 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
-    #cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0)
-    #cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1000)
-    #comms.writePayload(cmd)
 
     await asyncio.sleep(5)
-    await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param= 2.5*0.001)#0.0108/5) # 108/4) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=2.5*0.0003)#0.00162*0.4)#0.0054/2) # 0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.8*0.001)#0.0108/5) # 108/4) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.8*0.0003)#0.00162*0.4)#0.0054/2) # 0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0)#0.00162*1.5)#0.0054/2) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="TARGET_FINAL_PRESSURE", param=18.)#set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="TARGET_FINAL_PRESSURE", param=20.)#set Kp=0.0002, param=200 i.e., micro_Kp
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
-    # Enable inhale trigger
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=1) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
-    # Enable exhale trigger
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=1) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
-    # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
+  #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=0.) # 
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
     # Change TIMEOUT of breathing cycle (INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1500.) #
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1200.) #
     # Change TIMEOUT of breathing cycle (PAUSE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=0.) #
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
     # Change TIMEOUT of breathing cycle (EXHALE-FILL)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=1500.) #
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=1600.) #
     # Change TIMEOUT of breathing cycle (EXHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=0.) #
-    comms.writePayload(cmd)
-    await asyncio.sleep(1)
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=200.) #
     # Start the cycles
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.005) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    # Enable exhale trigger threshold
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.1) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    # Start the cycles
+    cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="HEV_MODE_PC_PSV", param=0)
     cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0)
-    comms.writePayload(cmd)
+    #comms.writePayload(cmd)
     print('sent cmd start')
-    #await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
-    comms.writePayload(cmd)
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
-    comms.writePayload(cmd)
+    await asyncio.sleep(1)
+    #cmd = send_cmd(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.INHALE_TRIGGER_ENABLE.value, param=1) 
+    #cmd = send_cmd(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.EXHALE_TRIGGER_ENABLE.value, param=1) 
     #print('sent inhale + exhale trigger -> 1')
-    toggle = 2
+    toggle = "STOP"
     while True:
         await asyncio.sleep(300)
         #cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
         await asyncio.sleep(300)
-        cmd = send_cmd(cmd_type="GENERAL", cmd_code=CMD_MAP.GENERAL.value(toggle), param=0)
-        if toggle == 2 :
-            toggle = 1
+        cmd = send_cmd(cmd_type="GENERAL", cmd_code=toggle, param=0)
+        if toggle == "STOP" :
+            toggle = "START"
         else : 
-            toggle = 2
+            toggle = "STOP"
 
         comms.writePayload(cmd)
         print('sent cmd stop')

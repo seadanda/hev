@@ -7,7 +7,7 @@
 #define CONST_TIMEOUT_DATA  10
 #define CONST_TIMEOUT_CMD   50
 
-#define PAYLOAD_MAX_SIZE_BUFFER 64
+#define PAYLOAD_MAX_SIZE_BUFFER 128
 
 // UNO struggles with the RAM size for ring buffers
 #ifdef ARDUINO_AVR_UNO
@@ -18,8 +18,8 @@
 #define COMMS_MAX_SIZE_RB_SENDING    5
 #endif
 
-#define COMMS_MAX_SIZE_PACKET 64
-#define COMMS_MAX_SIZE_BUFFER 128
+#define COMMS_MAX_SIZE_PACKET 128
+#define COMMS_MAX_SIZE_BUFFER 256
 #define COMMS_MIN_SIZE_PACKET 7
 
 #define COMMS_FRAME_BOUNDARY 0x7E

@@ -2,6 +2,7 @@
 #define COMMON_H
 #include <Arduino.h>
 #include <limits>
+#include "localconf.h"
 #include "CommsControl.h"
 
 
@@ -19,13 +20,13 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA8
-#define EXHALE_VALVE_PROPORTIONAL
+#define HEV_FORMAT_VERSION 0xA9
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
-const uint8_t MAX_PATIENT_PRESSURE = 40; //mbar
+const uint8_t MAX_PATIENT_PRESSURE = 45; //mbar
 const uint8_t RUNNING_AVG_READINGS = 3;
+const uint8_t CYCLE_AVG_READINGS = 3;
 
 
 // input params
@@ -74,14 +75,15 @@ enum CMD_SET_DURATION : uint8_t {
 };
 
 enum VENTILATION_MODE : uint8_t {
-    UNKNOWN          = 0,
-    HEV_MODE_PS      = 1,
-    HEV_MODE_CPAP    = 2,
-    HEV_MODE_PRVC    = 3,
-    HEV_MODE_TEST    = 4,
-    LAB_MODE_BREATHE = 5,
-    LAB_MODE_PURGE   = 6,
-    LAB_MODE_FLUSH   = 7
+    UNKNOWN             = 0,
+    HEV_MODE_PC_AC      = 1,
+    HEV_MODE_PC_AC_PRVC = 2,
+    HEV_MODE_PC_PSV     = 3,
+    HEV_MODE_CPAP       = 4,
+    HEV_MODE_TEST       = 5,
+    LAB_MODE_BREATHE    = 6,
+    LAB_MODE_PURGE      = 7,
+    LAB_MODE_FLUSH      = 8
 };
 
 enum CMD_SET_VALVE: uint8_t {
@@ -92,7 +94,9 @@ enum CMD_SET_VALVE: uint8_t {
     INHALE_OPEN_MIN = 5,
     INHALE_OPEN_MAX = 6,
     INHALE_TRIGGER_ENABLE = 7,
-    EXHALE_TRIGGER_ENABLE = 8
+    EXHALE_TRIGGER_ENABLE = 8,
+    INHALE_TRIGGER_THRESHOLD = 9,
+    EXHALE_TRIGGER_THRESHOLD = 10
 };
 
 enum CMD_SET_PID : uint8_t {
@@ -212,7 +216,7 @@ struct readback_data_format {
     uint8_t  valve_inhale             = 0;
     uint8_t  valve_exhale             = 0;
     uint8_t  valve_purge              = 0;
-    uint8_t  ventilation_mode         = VENTILATION_MODE::HEV_MODE_PS;//
+    uint8_t  ventilation_mode         = VENTILATION_MODE::HEV_MODE_PC_AC;//
 
     uint8_t valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     uint8_t valve_exhale_percent      = 0;
@@ -274,12 +278,12 @@ struct cycle_data_format {
     float lung_compliance               = 0.0;
     float static_compliance             = 0.0;
 
-    uint16_t inhalation_pressure        = 0;  // mean airway pressure
-    uint16_t peak_inspiratory_pressure  = 0;  
-    uint16_t plateau_pressure           = 0;  
-    uint16_t mean_airway_pressure       = 0;
+    float inhalation_pressure        = 0;  // mean airway pressure
+    float peak_inspiratory_pressure  = 0;  
+    float plateau_pressure           = 0;  
+    float mean_airway_pressure       = 0;
 
-    uint8_t  fi02_percent               = 0;  // device from Aurelio
+    float fiO2_percent               = 0.0;  // device from Aurelio
 
     uint16_t apnea_index                = 0;
     uint16_t apnea_time                 = 0;
@@ -547,6 +551,39 @@ struct valve_params{
     float inhale_duty_cycle;
     float inhale_open_min;
     float inhale_open_max;
+    float inhale_trigger_threshold ;   // params - associated val of peak flow
+    float exhale_trigger_threshold ;
+
+};
+
+struct cycle_readings{
+
+    uint64_t timestamp       = 0; 
+    float respiratory_rate              = 0.0;
+
+    float tidal_volume                  = 0.0;
+    float exhaled_tidal_volume          = 0.0;
+    float inhaled_tidal_volume          = 0.0;
+
+    float minute_volume                 = 0.0;
+    float exhaled_minute_volume         = 0.0;
+    float inhaled_minute_volume         = 0.0;
+
+    float lung_compliance               = 0.0;
+    float static_compliance             = 0.0;
+
+    float inhalation_pressure        = 0;  
+    float peak_inspiratory_pressure  = 0;  
+    float plateau_pressure           = 0;  
+    float mean_airway_pressure       = 0;
+
+    uint8_t  fiO2_percent               = 0;  
+
+    uint16_t apnea_index                = 0;
+    uint16_t apnea_time                 = 0;
+
+    uint8_t mandatory_breath            = 0;
+
 };
 
 //void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);
