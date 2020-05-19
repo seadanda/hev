@@ -185,7 +185,7 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
     if(_exhale.proportional == true){
 	    switch(vexhale){
 		    case VALVE_STATE::FULLY_CLOSED:
-			    setPWMValve(_exhale.pin, 0.0);
+			    setPWMValve(_exhale.pin, 0);
 			    break;
 		    case VALVE_STATE::FULLY_OPEN:
 			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
