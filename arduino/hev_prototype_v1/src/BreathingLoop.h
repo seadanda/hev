@@ -170,6 +170,7 @@ private:
     float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_minute_volume[CYCLE_AVG_READINGS];
 
+    bool  _inhale_triggered;
     float _inhale_trigger_threshold;
     float _exhale_trigger_threshold;
     float _peak_flow;
