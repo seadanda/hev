@@ -125,6 +125,9 @@ class HEVServer(object):
             # invalid request: reject immediately
             logging.warning(f"Invalid packet: {e}")
             payload = {"type": "nack"}
+        except Exception as e:
+            logging.critical(e)
+            exit(1)
 
         # send reply and close connection
         packet = json.dumps(payload).encode() + b'\0'
