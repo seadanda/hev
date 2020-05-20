@@ -110,9 +110,20 @@ function requestChartVar() {
         url: '/last-data',
         success: function(point) {
 
+        var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
+                        "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state"];
+        for (let i = 0 ; i < readings.length; i++){
+            var el = document.getElementById(readings[i]);
+            var val = point[readings[i]];
+            //console.log(el," ",val);
+            if (el && val){
+                console.log("filling ",el," with ",val)
+                el.innerHTML = val.toprecision(5);
+            }
+        }
+
         fio_reading = (point["airway_pressure"]).toFixed(0) ;
         p_plateau_reading = (point["volume"]).toFixed(0) ;
-        //console.log(fio_reading);
             if ("fio_gauge" in obj) {
                 obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
             }

@@ -269,9 +269,15 @@ def data_handler():
     """
     Set timeout threshold data to the Arduino
     """
-    data = request.get_json(force=True)
-    print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
-    return ('', 204)
+    #data = request.get_json(force=True)
+    data = request.form
+    for d,v in data.items():
+        print(d,v)
+    #print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
+    # make this false if things don't go well
+    response = make_response(json.dumps(True))
+    response.content_type = 'application/json'
+    return (response)
 
 def modeSwitchter(modeName):
     switcher = {
