@@ -445,7 +445,7 @@ function create_gauge_chart(var_name) {
             },
             options: {
 
-	    maintainAspectRatio: false,
+	    maintainAspectRatio: true,
 		events: []
             }
 	});

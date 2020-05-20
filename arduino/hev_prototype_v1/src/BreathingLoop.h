@@ -25,10 +25,15 @@ public:
     bool getRunning();
     void updateReadings();
     void updateRawReadings();
+    void updateCycleReadings();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     float getRespiratoryRate();
+    void  setTargetRespiratoryRate(float rate);
+    float getTargetRespiratoryRate();
     float getIERatio();
+    void setIERatio(float ratio); 
+    void updateIE();
     float getPEEP();
     float getMinuteVolume();
     ValvesController * getValvesController();
@@ -47,6 +52,7 @@ public:
     float getAirwayPressure();
     pid_variables& getPIDVariables();
     states_durations &getDurations();
+    cycle_readings &getCycleReadings();
 
  
 
@@ -76,7 +82,9 @@ private:
     uint32_t            _fsm_time ;
     uint32_t            _fsm_timeout;
     VENTILATION_MODE        _ventilation_mode;
-    BL_STATES           _bl_state;
+    BL_STATES           _bl_state, _bl_laststate;
+
+    uint32_t            _lasttime;
     bool                _running;
     bool                _reset;
 
@@ -96,7 +104,12 @@ private:
     uint32_t calculateDurationExhale();
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
     states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1600, 0, 1200, 2200};
-
+    states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
+    void measure_durations();
+    // targets
+    float _target_RR;
+    float _target_IE_ratio;
+    
     // readings
     void resetReadingSums();
     readings<float> _readings_sums; // 32 bit due to possible analog read overflow
@@ -108,19 +121,33 @@ private:
     uint32_t _readings_timeout;
     uint32_t _readings_avgs_time;
     uint32_t _readings_avgs_timeout;
+    uint32_t _readings_cycle_time;
+    uint32_t _readings_cycle_timeout;
  
     float _peep;
 
     // calculations
+    cycle_readings _cycle_readings;
+    bool _cycle_done;
     void updateTotalCycleDuration(uint16_t newtotal);
-    uint16_t _total_cycle_duration[3];
+    uint16_t _total_cycle_duration[CYCLE_AVG_READINGS];
+    uint16_t _inhale_cycle_duration[CYCLE_AVG_READINGS];
+    uint16_t _exhale_cycle_duration[CYCLE_AVG_READINGS];
+
 
     float _flow;
     float _volume;
     float _airway_pressure;
     float _valve_inhale_PID_percentage;//from 0 to 1.
+    float _volume_inhale;
+    float _volume_exhale;
+    float _volume_total;
+    float _sum_airway_pressure;
+    bool _mandatory_inhale;
+    bool _mandatory_exhale;
+    uint32_t _ap_readings_N;
 
-    void doPID(int, float, float, float&, float&, float&, float&);
+    void doPID();
 
     // safety
     void safetyCheck();
@@ -133,9 +160,15 @@ private:
     void runningAvgs();
     void inhaleTrigger();
     void exhaleTrigger();
+    bool _apnea_event;
     float _running_flows[RUNNING_AVG_READINGS];
     float _running_avg_flow;
     uint8_t _running_index;
+    uint8_t _cycle_index;
+    // float _running_minute_volume[CYCLE_AVG_READINGS];
+    float _running_inhale_minute_volume[CYCLE_AVG_READINGS];
+    float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
+    float _running_minute_volume[CYCLE_AVG_READINGS];
 
     float _inhale_trigger_threshold;
     float _exhale_trigger_threshold;

@@ -538,10 +538,19 @@ var pickout = (function(){
 		    option.removeAttribute('selected');
 		});
 		feedField(select, data.txt);
-	    }
 	}
 	closeModal();
-	lock(); // added by S. Farry
+	if (success) {
+	if ("createEvent" in document) {
+		var evt = document.createEvent("HTMLEvents");
+		evt.initEvent("change", false, true);
+		select.dispatchEvent(evt);
+	}
+	else
+		select.fireEvent("onchange");
+		}
+	}
+	//lock(); // added by S. Farry
     }
 
 	function feedField(select, value){
