@@ -218,6 +218,30 @@ class HEVServer(object):
         tasks = [b1, r1, b2]
         await asyncio.gather(*tasks, return_exceptions=True)
 
+def getArduinoPort():
+    # get arduino serial port
+    port_device = None
+    for port in list_ports.comports():
+        vidpid = ""
+        if port.pid != None and port.vid != None:
+            vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
+            logging.debug(vidpid)
+        if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
+            port_device = port.device 
+        elif vidpid == "10C4:EA60" :
+            port_device = port.device 
+    if port_device is None:
+        logging.critical(f"Arduino disconnected")
+        exit(1)
+    return port_device
+
+
+async def arduinoConnected():
+    # TODO make this smarter and only run when no data has been seen for a while
+    while True:
+        await asyncio.sleep(1)
+        getArduinoPort()
+
 
 if __name__ == "__main__":
     tasks = [] # asyncio tasks
@@ -246,26 +270,18 @@ if __name__ == "__main__":
             else:
                 lli = svpi.svpi(args.inputFile)
         else:
-            # get arduino serial port
-            for port in list_ports.comports():
-                vidpid = ""
-                if port.pid != None and port.vid != None:
-                    vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
-                    logging.debug(vidpid)
-                if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
-                    port_device = port.device 
-                elif vidpid == "10C4:EA60" :
-                    port_device = port.device 
-
             # initialise low level interface
             try:
+                port_device = getArduinoPort()
+                connected = arduinoConnected()
                 # setup serial device and init server
                 lli = CommsLLI(loop)
                 comms = lli.main(port_device, 115200)
                 tasks.append(comms)
+                tasks.append(connected)
                 logging.info(f"Serving data from device {port_device}")
             except NameError:
-                logging.error("Arduino not connected")
+                logging.critical("Arduino not connected")
                 exit(1)
 
         # create tasks
