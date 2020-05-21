@@ -49,19 +49,19 @@ except ImportError:
 
 #SQLITE_FILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite database file
 #SQLITE_FILE = 'hev::memory:?cache=shared'
-SQLITE_FILE = 'file:hev?mode=memory&cache=shared'
+#SQLITE_FILE = 'file:hev?mode=memory&cache=shared'
+SQLITE_FILE = '/dev/shm/HEV_monitoringDB.sqlite'  # use the linux shared memory pool as a file system
 TABLE_NAME = 'hev_monitor'  # name of the table to be created
 
-def getList(dict): 
-    return [*dict] 
+def getList(dict):
+    return [*dict]
 
 # List of data variables in the data packet from the Arduino
-data_format = getList(DataFormat().getDict())    
+data_format = getList(DataFormat().getDict())
 
 class ArduinoClient(HEVClient):
     def __init__(self):
         super().__init__(polling=True)
-        self.conn = None
 
     def start_client(self):
         """runs in other thread - works as long as super goes last and nothing
@@ -75,62 +75,66 @@ class ArduinoClient(HEVClient):
         self.monitoring()
 
     def check_table(self,tableName):
-        c = self.conn.cursor()    			
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        c = conn.cursor()
         #get the count of tables with the name
-        c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=tableName))  
+        c.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='{tn}' '''.format(tn=tableName))
         existence = False
 
         #if the count is 1, then table exists
-        if c.fetchone()[0]==1 : 
+        if c.fetchone()[0]==1 :
             existence = True
         else :
         	logging.warning('Table does not exist.')
-    			
-        #commit the changes to db			
-        #self.conn.commit()
+
+        #commit the changes to db
+        conn.close()
         return existence
 
     def database_setup(self):
         '''
-        This function creates the sqlite3 table with the timestamp column 
-        and the columns for the arduino packet data  
+        This function creates the sqlite3 table with the timestamp column
+        and the columns for the arduino packet data
         '''
         logging.debug('Creating ' + TABLE_NAME + ' table..' )
 
         # Create the table if it does not exist
         try:
             # Connecting to the database file
-            self.conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
-   
+            conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+
             exec_string = "created_at  INTEGER  NOT NULL, "
             for var in data_format:
                exec_string += var + "  FLOAT  NOT NULL, "
             exec_string += "alarms  STRING  NOT NULL "
 
             # Setting the maximum size of the DB to 100 MB
-            self.conn.execute("PRAGMA max_page_count = 204800")
-            self.conn.execute("PRAGMA page_size = 512")
+            conn.execute("PRAGMA max_page_count = 204800")
+            conn.execute("PRAGMA page_size = 512")
 
-            self.conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
+            conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
             .format(tn=TABLE_NAME, ex_str=exec_string))
-            self.conn.commit()
+            conn.commit()
         except sqlite3.Error as err:
+            conn.close()
             raise Exception("sqlite3 Error. Create failed: {}".format(str(err)))
         finally:
+            conn.close()
             logging.info('Table ' + TABLE_NAME + ' created successfully!')
 
     def monitoring(self):
         '''
-        Store arduino data in the sqlite3 table. 
+        Store arduino data in the sqlite3 table.
         '''
         epoch = datetime(1970, 1, 1)
 
-        cursor = self.conn.cursor()
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
         current_time = datetime.now()
 
-        # Computing the time in seconds since the epoch because easier to manipulate. 
+        # Computing the time in seconds since the epoch because easier to manipulate.
         timestamp = (current_time -epoch).total_seconds() * 1000
-           
+
         data_receiver = self._fastdata
         data_alarms = self._alarms
         if data_receiver != None and len(data_receiver) > 0:
@@ -147,7 +151,7 @@ class ArduinoClient(HEVClient):
             logging.debug("Writing to database ...")
             try:
                 exec_string = "( :DB_time, "
-                for el in data_format: 
+                for el in data_format:
                     exec_string += ":" + el + ", "
                 exec_string += ":alarms) "
 
@@ -155,10 +159,12 @@ class ArduinoClient(HEVClient):
                         'INSERT INTO {tn} VALUES {ex_str} '
                         .format(tn=TABLE_NAME, ex_str=exec_string), data_packet
                 )
-                self.conn.commit()
+                conn.commit()
             except sqlite3.Error as err:
+                conn.close()
                 raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
-            finally:                  
+            finally:
+                conn.close()
                 sys.stdout.flush()
 
     def db_backup(self,backup_time):
@@ -166,26 +172,32 @@ class ArduinoClient(HEVClient):
         logging.debug("Executing DB backup")
         try:
             # Backup DB
-            backupCon = sqlite3.connect("database/HEC_monitoringDB_backup.sqlite")    
+            conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+            backupCon = sqlite3.connect("database/HEC_monitoringDB_backup.sqlite")
             with backupCon:
-                self.conn.backup(backupCon, pages=5, progress=progress)
+                conn.backup(backupCon, pages=5, progress=progress)
                 logging.debug("Backup successful")
         except sqlite3.Error as err:
+            conn.close()
+            backupCon.close()
             raise Exception("sqlite3 error. Error during backup: {}".format(str(err)))
-        finally: 
+        finally:
+            conn.close()
             if(backupCon):
                 backupCon.close()
 
     def number_rows(self, table_name):
-        c = self.conn.cursor()    			
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        c = conn.cursor()
         #get the count of tables with the name
-        c.execute(''' SELECT count(*) FROM {tn} '''.format(tn=table_name))  
+        c.execute(''' SELECT count(*) FROM {tn} '''.format(tn=table_name))
 
         values = c.fetchone()
         logging.debug(f"{values[0]}") # TODO give a more meaningful log message
 
-        #commit the changes to db			
+        #commit the changes to db
         #self.conn.commit()
+        conn.close()
         return values[0]
 
 def progress(status, remaining, total):
@@ -226,7 +238,7 @@ def chartsLoop():
 
 @WEBAPP.route('/logs')
 def logs():
-    return render_template('logs.html', result=last_N_alarms())    
+    return render_template('logs.html', result=last_N_alarms())
 
 @WEBAPP.route('/fan')
 def fan():
@@ -240,7 +252,7 @@ def multiple_appends(listname, *element):
 def send_cmd():
     """
     Send command to the data server
-    """ 
+    """
     web_form = request.form
     if web_form.get('start') == "START":
         print(client.send_cmd("GENERAL", "START"))
@@ -250,16 +262,22 @@ def send_cmd():
         print(client.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
-    
+
 
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
     """
     Set timeout threshold data to the Arduino
     """
-    data = request.get_json(force=True)
-    print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
-    return ('', 204)
+    #data = request.get_json(force=True)
+    data = request.form
+    for d,v in data.items():
+        print(d,v)
+    #print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
+    # make this false if things don't go well
+    response = make_response(json.dumps(True))
+    response.content_type = 'application/json'
+    return (response)
 
 def modeSwitchter(modeName):
     switcher = {
@@ -314,7 +332,7 @@ def live_battery():
         'ok'      : gpio.input(pin_ok     ) ,
         'alarm'   : gpio.input(pin_alarm  ) ,
         'rdy2buf' : gpio.input(pin_rdy2buf) ,
-        'bat85'   : gpio.input(pin_bat85  ) 
+        'bat85'   : gpio.input(pin_bat85  )
         }
     response = make_response(json.dumps(battery).encode('utf-8') )
     response.content_type = 'application/json'
@@ -336,16 +354,18 @@ def last_data():
     united_var = ','.join(list_variables)
 
     fetched_all = []
-    
+
     if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > 0:
-        cursor = client.conn.cursor()
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
         cursor.execute(" SELECT {var} "
         " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=1))
-            
+
         fetched = cursor.fetchall()
+        conn.close()
         for el in fetched:
             data = {key: None for key in list_variables}
-    
+
         for index, item in enumerate(list_variables):
             data[item] = el[index]
 
@@ -377,16 +397,18 @@ def last_N_data():
     united_var = ','.join(list_variables)
 
     fetched_all = []
-    
+
     if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > N:
-        cursor = client.conn.cursor()
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
         cursor.execute(" SELECT {var} "
         " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=N))
-            
+
         fetched = cursor.fetchall()
+        conn.close()
         for el in fetched:
             data = {key: None for key in list_variables}
-    
+
             for index, item in enumerate(list_variables):
                 data[item] = el[index]
 
@@ -440,10 +462,12 @@ def last_N_alarms():
     data = {'timestamp' : None, 'alarms' : None}
 
     if client.check_table(TABLE_NAME):
-        cursor = client.conn.cursor()
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
         cursor.execute("SELECT timestamp, alarms "
         "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=TABLE_NAME, size=N))
         fetched = cursor.fetchall()
+        conn.close()
     else:
         fetched = []
         for _ in range(N):
@@ -459,7 +483,7 @@ def last_N_alarms():
 
 def parse_args():
     parser = argparse.ArgumentParser(description='HEV webserver')
-    parser.add_argument('--host', default='127.0.0.1')    
+    parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--interval', type=float, default=0.02)
     parser.add_argument('--backup_time', type=int, default=600)
     return parser.parse_args()

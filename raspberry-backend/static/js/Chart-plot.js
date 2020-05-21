@@ -48,12 +48,41 @@ function init_results(){
   });
 }
 
-
-
+/*
+document.getElementById("pressure_buffer").innerHTML = (data.pressure_buffer).toFixed(2);
+document.getElementById("pressure_inhale").innerHTML = (data.pressure_inhale).toFixed(2);
+//document.getElementById("temperature_buffer").innerHTML = (data.temperature_buffer).toFixed(2);
+document.getElementById("pressure_air_supply").innerHTML = (data.pressure_air_supply).toFixed(2);
+document.getElementById("pressure_air_regulated").innerHTML = (data.pressure_air_regulated).toFixed(2);
+document.getElementById("pressure_o2_supply").innerHTML = (data.pressure_o2_supply).toFixed(2);
+document.getElementById("pressure_o2_regulated").innerHTML = (data.pressure_o2_regulated).toFixed(2);
+document.getElementById("pressure_patient").innerHTML = (data.pressure_patient).toFixed(2);
+document.getElementById("pressure_diff_patient").innerHTML = (data.pressure_diff_patient).toFixed(2);	
+document.getElementById("fsm_state").innerHTML = data.fsm_state;
+document.getElementById("airway_pressure").innerHTML = (data.airway_pressure).toFixed(2);	
+document.getElementById("volume").innerHTML = (data.volume).toFixed(2);	
+document.getElementById("flow").innerHTML = (data.flow).toFixed(2);	
+document.getElementById("data_type").innerHTML = data.data_type;
+document.getElementById("timestamp").innerHTML = (data.timestamp/1000).toFixed(2);
+document.getElementById("version").innerHTML = data.version; 
+//document.getElementById("version").innerHTML = (data.version).toFixed(2); //Commented because not included in the html part
+*/
 function requestDataVar1(var1, var2) {
   $.ajax({
       url: '/live-data',
       success: function(point) {
+        var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
+        "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state", "volume", "flow", "airway_pressure","fsm_state",
+        "version","data_type","timestamp"];
+        for (let i = 0 ; i < readings.length; i++){
+          var el = document.getElementById(readings[i]);
+          var val = point[readings[i]];
+          if (el && val){
+            if(readings[i] == "timestamp") el.innerHTML = (val/1000).toFixed(2);
+            else if (readings[i] == "version") el.innerHTML = val;
+            else el.innerHTML = val.toFixed(2);
+              }
+          }
 
         var seconds = point["timestamp"]/1000;
 
@@ -102,7 +131,7 @@ function requestDataVar1(var1, var2) {
 
 
 $(document).ready(function() {
-  var ctx = document.getElementById('pressure_air_supply');
+  var ctx = document.getElementById('pressure_air_supply_chart');
   chart = new Chart(ctx, {
     type: 'scatter',
     data: {
