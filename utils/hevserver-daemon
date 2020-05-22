@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ ! -f ${HOME}/.config/systemd/user/hevserver.service ]; then
+    mkdir -p ${HOME}/.config/systemd/user
+    cp ${HOME}/hev-sw/utils/hevserver.service ${HOME}/.config/systemd/user/
+fi
+
+systemctl --user daemon-reload
+systemctl --user enable --now hevserver.service
+
+# hevserver will restart itself constantly unless you `systemctl --user stop` it

@@ -64,6 +64,53 @@ def DP2flow(DP): #has to be a numpy array input
 
     return np.array(temp_flow)
 
+def linear_fit_derivative(xtime, ar, samplesfit):
+
+    result = []
+
+    for i in range(len(ar)):
+
+            if i > samplesfit and i < len(ar)-samplesfit:
+
+                (_dpbuff,offbuff) = np.polyfit(xtime[i-samplesfit:i+samplesfit]*1e-3,   ar[i-samplesfit:i+samplesfit], 1)
+
+            else:
+
+                (_dpbuff,offbuff) = (0,0)
+
+            result.append(_dpbuff) 
+
+    return np.array(result)
+
+def euler_flow_calc(xtime, pbuff, pinhale, trigger = 0., vbuff = 10.*1000., vtube = 1.6*1000.):
+
+    pinhale = pinhale   + 1013. # absolute pressure in mba
+    pbuff   = pbuff     + 1013. # absolute pressure in mbar
+
+    _vlung = 0.
+
+    list_vlung = []
+    list_buffer_flow = []
+
+    dpbuff   = linear_fit_derivative(xtime, pbuff, 15) # already in seconds
+    dpinhale = linear_fit_derivative(xtime, pinhale, 15) # already in seconds
+
+    for i in range(len(pbuff)):
+
+        print(i*1./len(pbuff))
+
+        _buffer_flow = ((-1./pinhale[i]) * ( ( dpinhale[i] * vtube) + ( dpbuff[i] * vbuff + (_vlung)) ) ) - (0.75*4*(dpinhale[i]))
+        list_buffer_flow.append(_buffer_flow)
+
+        _vlung += _buffer_flow*0.011
+
+        if type(trigger) != type(float(0.)) and trigger[i]:
+            _vlung = 0.
+
+        list_vlung.append(_vlung)
+
+    return (np.array(list_vlung), np.array(list_buffer_flow)) 
+
 def buffer_flow_pbuff(xtime, pbuff, pinhale, vbuff = 10.*1000., vtube = 1.6*1000.):# inputs should be numpy arrays
 
     pinhale = pinhale   + 1013. # absolute pressure in mba
@@ -95,10 +142,12 @@ def buffer_flow_pbuff(xtime, pbuff, pinhale, vbuff = 10.*1000., vtube = 1.6*1000
             _dpbuff /= dt
             _dptube /= dt
 
-            if i > 10 and i < len(pbuff)-10:
+            samplesfit = 10
 
-                (_dpbuff,offbuff) = np.polyfit(xtime[i-10:i+10]*1e-3,   pbuff[i-10:i+10], 1)
-                (_dptube,offtube) = np.polyfit(xtime[i-10:i+10]*1e-3, pinhale[i-10:i+10], 1)
+            if i > samplesfit and i < len(pbuff)-samplesfit:
+
+                (_dpbuff,offbuff) = np.polyfit(xtime[i-samplesfit:i+samplesfit]*1e-3,   pbuff[i-samplesfit:i+samplesfit], 1)
+                (_dptube,offtube) = np.polyfit(xtime[i-samplesfit:i+samplesfit]*1e-3, pinhale[i-samplesfit:i+samplesfit], 1)
 
             else:
 
@@ -111,7 +160,7 @@ def buffer_flow_pbuff(xtime, pbuff, pinhale, vbuff = 10.*1000., vtube = 1.6*1000
         counter += 1.
 
 
-    _buffer_flow = ((-1./pinhale) * ( ( np.array(dptube) * vtube) + ( np.array(dpbuff) * vbuff ) ) ) - (1.0*4*(pinhale-1013.))
+    _buffer_flow = ((-1./pinhale) * ( ( np.array(dptube) * vtube) + ( np.array(dpbuff) * vbuff ) ) ) - (1.00*4*(np.array(dptube)))
     #Clear plastique correction from https://link.springer.com/article/10.1007/BF01709728
     #+ ( np.array(dptube) * vtube ) )
 
@@ -482,6 +531,9 @@ h13, = ax2.plot([],[], "+-", label="calc buffer volume")
 
 h14, = ax2.plot([],[], "+-", label="calc volume measured")
 
+h15, = ax2.plot([],[], "+-", label="calc volume Euler")
+h16, = ax2.plot([],[], "+-", label="calc flow Euler")
+
 h5, = ax2.plot([],[], "+-", label="Flow (DP sensor)")
 
 b_flow = buffer_flow_pbuff(ar_xtime, 
@@ -518,6 +570,13 @@ print("Estimated leak rate: %f ml/s" % (fm*1000.))
 
 h13.set_ydata(integral(ar_xtime, b_flow, reset_trigger, fm))
 
+(euler_volume, euler_flow) = euler_flow_calc(ar_xtime, ar_pressure_buffer, ar_pressure_inhlale, reset_trigger)
+
+h15.set_xdata( ar_xtime )
+h15.set_ydata( euler_volume )
+
+h16.set_xdata( ar_xtime )
+h16.set_ydata( euler_flow )
 
 plt.legend()
 #plt.ylim(-2,20)
@@ -526,6 +585,7 @@ ax.relim()
 ax2.relim()
 ax3.relim()
 ax4.relim()
+
 ax.autoscale_view(True,True,True)
 ax2.autoscale_view(True,True,True)
 ax3.autoscale_view(True,True,True)
@@ -542,6 +602,17 @@ print(np.cov(ar_pressure_buffer,ar_pressure_inhlale))
 
 plt.plot(ar_xtime, 2.0*ar_pressure_inhlale*4)
 plt.show()
+
+plt.plot(ar_xtime, euler_flow_calc(ar_xtime, ar_pressure_buffer, ar_pressure_inhlale, reset_trigger)-integral(ar_xtime, ar_flow, reset_trigger), label="euler flow error")
+plt.plot(ar_xtime, integral(ar_xtime, b_flow, reset_trigger, fm)-integral(ar_xtime, ar_flow, reset_trigger), label="buf flow error")
+
+plt.legend()
+
+plt.show()
+
+
+h15.set_xdata(ar_xtime)
+h15.set_ydata( euler_flow_calc(ar_xtime, ar_pressure_buffer, ar_pressure_inhlale, reset_trigger) )
 
 logfile.seek(0)
 logfile.close()
