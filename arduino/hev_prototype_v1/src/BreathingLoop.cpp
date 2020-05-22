@@ -222,9 +222,9 @@ void BreathingLoop::updateCycleReadings()
             _airway_pressure =  _sum_airway_pressure / _ap_readings_N;
 
             _cycle_readings.respiratory_rate = 60000.0/(tot_sum/CYCLE_AVG_READINGS);
-            _cycle_readings.minute_volume = 60000*mv_sum/tot_sum;
-            _cycle_readings.inhaled_minute_volume = 60000*mvi_sum/tot_sum;
-            _cycle_readings.exhaled_minute_volume = 60000*mve_sum/tot_sum;
+            _cycle_readings.minute_volume = 60*mv_sum/tot_sum;
+            _cycle_readings.inhaled_minute_volume = 60*mvi_sum/tot_sum;  //(60 = 60000/1000 L/min rather than mL/min)
+            _cycle_readings.exhaled_minute_volume = 60*mve_sum/tot_sum;
             _cycle_readings.tidal_volume = mv_sum/CYCLE_AVG_READINGS;
             _cycle_readings.inhaled_tidal_volume = mvi_sum/CYCLE_AVG_READINGS;
             _cycle_readings.exhaled_tidal_volume = mve_sum/CYCLE_AVG_READINGS;
@@ -245,6 +245,7 @@ void BreathingLoop::updateCycleReadings()
             _ap_readings_N = 0;
             _volume_inhale = 0;
             _volume_exhale = 0;
+            _volume = 0;
         }
     } else {
         _cycle_done = false;  // restart cycle
@@ -781,14 +782,28 @@ float BreathingLoop::getFlow(){
     const float pressure = 1030.0;
     const float scale = 10.0;
     float dp_raw = scale*_readings_avgs.pressure_diff_patient;
+    //float dp_raw = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
     float dp;
-    if (dp_raw < 0)
-    {
+    if (dp_raw < 0) {
+
+        dp = 43.046 * dp_raw;
+    } else {
+        dp = 39.047 * dp_raw;
+    }
+    /*
+    if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero ignore offset
+	    if (dp_raw < 0) {
+		dp = 43.046 * dp_raw;
+	    } else {
+		dp = 39.047 * dp_raw;
+	    }
+    } else if (dp_raw < 0) {
+
         dp = 43.046 * dp_raw + 71.576;
     } else {
         dp = 39.047 * dp_raw - 60.471;
-    }
-    float flow = dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
+    }*/
+    float flow =  dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
     return flow;  // NL/h
 }
 
@@ -802,7 +817,7 @@ float BreathingLoop::getVolume()
     //  need to get dt - assume dt = 10ms
     float nl2l = (pressure * 273.15 * 3600)/(temperature *1013.25 * 1000) ; //ml/s
 
-    _volume = getFlow() * nl2l /100;
+    _volume += getFlow() * nl2l /100;
     return _volume;
 }
 
@@ -960,9 +975,9 @@ void BreathingLoop::runningAvgs()
     }
 
     if((_bl_state == BL_STATES::INHALE) || (_bl_state == BL_STATES::BUFF_PRE_INHALE)){
-        _volume_inhale += getVolume();
+        _volume_inhale = getVolume();
     } else if ((_bl_state == BL_STATES::EXHALE) || (_bl_state == BL_STATES::EXHALE_FILL)){
-        _volume_exhale += getVolume();
+        _volume_exhale = getVolume();
     // } else if (_bl_state == BL_STATES::BUFF_LOADED) {
 
     //     _cycle_readings.inhaled_tidal_volume = _volume_inhale;
