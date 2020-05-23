@@ -11,6 +11,7 @@
 #include "CommsControl.h"
 #include "BreathingLoop.h"
 #include "ValvesController.h"
+#include "SystemUtils.h"
 #include "AlarmLoop.h"
 #include "UILoop.h"
 
@@ -28,6 +29,7 @@ BreathingLoop breathing_loop;
 AlarmLoop     alarm_loop;
 UILoop        ui_loop(&breathing_loop, &alarm_loop, &comms);
 
+SystemUtils   sys_utils;
 
 void setup()
 {
@@ -80,20 +82,11 @@ void setup()
     Wire.begin(22, 23);
     I2CMCP9808.begin(22, 23);
 
-    int ntries = 3;
-    bool foundMCP9808 = false; 
-    while(!tempsensor.begin(0x18, &I2CMCP9808) && ntries > 0) {
-        //Serial.println("Couldn't find MCP9808! Check your connections and verify the address is correct.");
-        delay(1000); 
-        ntries--;
-    } 
-    if (ntries > 0)
-        foundMCP9808 = true;
-    if (foundMCP9808)
-        tempsensor.setResolution(3);
+    sys_utils.setupTempSensor(&tempsensor, &I2CMCP9808);
+    setSystemUtils(&sys_utils);
 
     bool foundINADevices = false;
-    ntries = 3; 
+    int8_t ntries = 3; 
     uint8_t devicesFound = INA.begin(1, 500000); // Set to an expected 1 Amp maximum and a 100000 microOhm resistor
     while ((INA.begin(1, 500000) == 0) && ntries > 0)
     {

@@ -4,6 +4,7 @@
 #include <limits>
 #include "localconf.h"
 #include "CommsControl.h"
+#include "SystemUtils.h"
 
 
 #if defined(ARDUINO_FEATHER_ESP32)
@@ -592,9 +593,11 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
 void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
-float adcToMillibarDPFloat(float adc, float offset = 0);
+float adcToMillibarDPFloat(float adc, float offset = 1500);
 void logMsg(String s);
 CommsControl* getGlobalComms();
 void setGlobalComms(CommsControl *comms);
+SystemUtils* getSystemUtils();
+void setSystemUtils(SystemUtils *sys_utils);
 
 #endif

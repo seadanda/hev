@@ -103,7 +103,7 @@ private:
     // timeouts
     uint32_t calculateDurationExhale();
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
-    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1600, 0, 1200, 2200};
+    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1200, 10, 1600, 200};
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
     void measure_durations();
     // targets
