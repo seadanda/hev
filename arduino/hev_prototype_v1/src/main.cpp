@@ -60,7 +60,6 @@ void setup()
     pinMode(pin_valve_air_in, OUTPUT);
     pinMode(pin_valve_o2_in, OUTPUT);
     pinMode(pin_valve_purge, OUTPUT);
-    pinMode(pin_spare_1, OUTPUT);
 
     pinMode(pin_pressure_air_regulated, INPUT);
     pinMode(pin_pressure_buffer, INPUT);
@@ -69,6 +68,7 @@ void setup()
     pinMode(pin_temperature_buffer, INPUT);
     pinMode(pin_pressure_o2_regulated, INPUT);
     pinMode(pin_pressure_diff_patient, INPUT);
+    pinMode(pin_o2_sensor, INPUT);
 
     pinMode(pin_led_green, OUTPUT);
     pinMode(pin_led_yellow, OUTPUT);

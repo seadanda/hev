@@ -6,7 +6,7 @@ const int pin_valve_o2_in      = 10;
 const int pin_valve_inhale     = 3;  // lab14
 const int pin_valve_exhale     = 9;  // lab14
 const int pin_valve_purge      = 6;
-const int pin_spare_1 = 4;
+const int pin_o2_sensor = 4;
 
     // adcs
 const int pin_pressure_air_supply     = A2;
@@ -27,6 +27,6 @@ const int pin_led_red          = 2;
     // buzzer
 const int pin_buzzer         = 5;
 
-const int pin_spare_2       = 13;
+const int pin_spare_1       = 13;
 
 const int pwm_resolution = 8; // 8 bit resolution

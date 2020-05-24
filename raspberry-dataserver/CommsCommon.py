@@ -156,7 +156,7 @@ class PAYLOAD_TYPE(IntEnum):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xA9, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAA, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
