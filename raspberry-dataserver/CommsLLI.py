@@ -65,11 +65,11 @@ class CommsLLI:
             self._reader, self._writer = await serial_asyncio.open_serial_connection(url=device, baudrate=baudrate, timeout = 2, dsrdtr = True)
             self._connected = True
             while self._connected:
-                #sendAlarm = self.send(0xC0)
+                sendAlarm = self.send(0xC0)
                 sendCmd = self.send(0x80)
-                #sendData = self.send(0x40)
+                sendData = self.send(0x40)
                 receiver = self.recv()
-                await asyncio.gather(*[receiver, sendCmd], return_exceptions=True)
+                await asyncio.gather(*[receiver, sendCmd, sendAlarm, sendData], return_exceptions=True)
         except Exception:
             raise
 
@@ -103,6 +103,7 @@ class CommsLLI:
                 4: generateData,
                 5: generateCmd,
                 6: generateAlarm,
+                7: generateData,
                 8: generateData,
             }
             generatePacket = PAYLOAD_TYPE_TO_GEN[payload.getType()]
@@ -116,6 +117,7 @@ class CommsLLI:
                 4: qlist[2],
                 5: qlist[1],
                 6: qlist[0],
+                7: qlist[2],
                 8: qlist[2],
             }
             queue = PAYLOAD_TYPE_TO_QUEUE[payload.getType()]
@@ -124,6 +126,16 @@ class CommsLLI:
             return True
         except KeyError:
             return False
+        except asyncio.queues.QueueFull:
+            try:
+                queue.get_nowait()
+                queue.task_done()
+                queue.put_nowait(tmp_comms)
+            except Exception as e:
+                logging.error(e)
+                return False
+            else:
+                return True
 
     async def sendPacket(self, packet):
         if isinstance(packet, CommsACK):
@@ -147,8 +159,13 @@ class CommsLLI:
 
     def finishPacket(self, address):
         self._sequence_send = (self._sequence_send + 1) % 128
-        self._queues[address].task_done()
-        self._acklist[address].set()
+        try:
+            self._queues[address].task_done()
+        except ValueError:
+            # task has already been purged from queue
+            pass
+        else:
+            self._acklist[address].set()
 
     async def recv(self):
         while self._connected:
@@ -204,7 +221,7 @@ class CommsLLI:
         if self._dumpfile != '':
             with open(self._dumpfile,'a') as f:
                 # dump the payload in a dict which can be unpacked directly into a payloadFormat object
-                f.write(f"{payload.byteArray}\n")
+                f.write(f"{binascii.hexlify(payload.byteArray)}\n")
             if self._packet_count >= self._dumpcount:
                 logging.critical("Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
                 exit(0)
@@ -240,4 +257,8 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logging.info("Closing LLI")
     finally:
-        loop.close()
+        try:
+            loop.close()
+        except (RuntimeError, NameError):
+            #loop already closed
+            pass
