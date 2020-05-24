@@ -1,6 +1,7 @@
 #include "common.h"
 
-CommsControl* globalComms;
+CommsControl* global_comms;
+SystemUtils* global_sys_utils;
 
 void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value) {
     switch (cmd) {
@@ -153,7 +154,7 @@ float adcToMillibarFloat(float adc, float offset = 0)
     //return static_cast<int16_t>(adc);
 } 
 
-float adcToMillibarDPFloat(float adc, float offset = 0)
+float adcToMillibarDPFloat(float adc, float offset = 1500)
 {
     // The calibration for the DP sensor is provided by the manufacturer
     // https://docs.rs-online.com/7d77/0900766b81568899.pdf
@@ -188,5 +189,7 @@ void logMsg(String s)
         comms->writePayload(pl_send);
 }
 
-CommsControl* getGlobalComms() { return globalComms; }
-void setGlobalComms(CommsControl *comms){ globalComms = comms; }
+CommsControl* getGlobalComms() { return global_comms; }
+void setGlobalComms(CommsControl *comms){ global_comms = comms; }
+SystemUtils* getSystemUtils(){ return global_sys_utils; }
+void setSystemUtils(SystemUtils *sys_utils){ global_sys_utils = sys_utils; }
