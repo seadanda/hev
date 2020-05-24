@@ -11,6 +11,7 @@ import threading
 import argparse
 import svpi
 import hevfromtxt
+from pathlib import Path
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
 from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_DURATION, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
@@ -238,6 +239,7 @@ def getArduinoPort():
 
 async def arduinoConnected():
     # TODO make this smarter and only run when no data has been seen for a while
+    # TODO make a version to check the arduino emulator - low priority
     while True:
         await asyncio.sleep(1)
         getArduinoPort()
@@ -252,6 +254,7 @@ if __name__ == "__main__":
         parser.add_argument('-i', '--inputFile', type=str, default = '', help='Load data from file')
         parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
         parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
+        parser.add_argument('--use-dump-data', action='store_true', help='Use dump data source')
         args = parser.parse_args()
         if args.debug == 0:
             logging.getLogger().setLevel(logging.WARNING)
@@ -272,13 +275,16 @@ if __name__ == "__main__":
         else:
             # initialise low level interface
             try:
-                port_device = getArduinoPort()
-                connected = arduinoConnected()
+                if args.use_dump_data:
+                    port_device = str(Path.home())+'/hev-sw/ttyEMU0'
+                else:
+                    port_device = getArduinoPort()
+                    connected = arduinoConnected()
+                    tasks.append(connected)
                 # setup serial device and init server
                 lli = CommsLLI(loop)
                 comms = lli.main(port_device, 115200)
                 tasks.append(comms)
-                tasks.append(connected)
                 logging.info(f"Serving data from device {port_device}")
             except NameError:
                 logging.critical("Arduino not connected")
