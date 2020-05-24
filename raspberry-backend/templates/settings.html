@@ -42,19 +42,54 @@
       </div>
       </td></tr>
 
-      <tr><td></td><td><label class="small">Respiratory Rate</label></td><td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_respiratory_rate" type="number" value="" disabled/></td></tr>
       <tr>
-        <td><input type="radio" name="time_or_ie" id = "radio_inhale_time" onclick = "edit_inhale_time()" checked></td><td><label class="small" for="radio_inhale_time">Inhale Time</label></td>
-        <td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_time" name="inhale_time" type="text" value="" disabled name='inhale_time' /></td></tr>
-      <tr>
-        <td><input type="radio" name="time_or_ie" id = "radio_ie_ratio" onclick="edit_ie_ratio()"></td><td><label class="small" for="radio_ie_ratio">I:E Ratio</label></td>
-        <td><input class="form-control py-1 lockOnly" id="mode_ie_ratio" type="text" value="" disabled name='i_e_ratio' /></td>
+        <td></td>
+        <td><label class="small">Respiratory Rate</label></td>
+        <td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_respiratory_rate" type="number" value="" disabled/></td>
+        <td><span></span></td>
       </tr>
-      <tr><td></td><td><label class="small">Inhale Trigger Sensitivity</label></td><td><input name="inhale_trigger" class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_trg_sensitivity" type="number" value="" disabled /></td></tr>
-      <tr><td></td><td><label class="small">Exhale Trigger Sensitivity</label></td><td><input name="exhale_trigger" class="form-control py-1 psv-edit lockOnly" id="mode_exhale_trg_sensitivity" type="number" value="" disabled /></td></tr>
-      <tr><td></td><td><label class="small">Inhale Pressure</label></td><td><input name="inhale_pressure" class="form-control py-1 psv-edit pcac-edit lockOnly" id="mode_inhale_trigger" type="number" value="" disabled /></td></tr>
-      <tr><td></td><td><label class="small">Inhale Volume</label></td><td><input name="inhale_volume" class="form-control py-1 prvc-edit lockOnly" id="mode_inhale_volume" type="number" value="" disabled /></td></tr>
-      <tr><td></td><td><label class="small">PEEP</label></td><td><input name="peep" class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_peep" type="number" value="" disabled /></td></tr>
+      <tr>
+        <td><input type="radio" name="time_or_ie" id = "radio_inhale_time" onclick = "edit_inhale_time()" checked></td>
+        <td><label class="small" for="radio_inhale_time">Inhale Time</label></td>
+        <td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_time" name="inhale_time" type="text" value="" disabled name='inhale_time' /></td>
+        <td><span></span></td>
+      </tr>
+        <tr>
+        <td><input type="radio" name="time_or_ie" id = "radio_ie_ratio" onclick="edit_ie_ratio()"></td>
+        <td><label class="small" for="radio_ie_ratio">I:E Ratio</label></td>
+        <td><input class="form-control py-1 lockOnly" id="mode_ie_ratio" type="text" value="" disabled name='i_e_ratio' /></td>
+        <td><span></span></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">Inhale Trigger Sensitivity</label></td>
+        <td><input name="inhale_trigger" class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_trg_sensitivity" type="number" value="" disabled /></td>
+        <td><span></span></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">Exhale Trigger Sensitivity</label></td>
+        <td><input name="exhale_trigger" class="form-control py-1 psv-edit lockOnly" id="mode_exhale_trg_sensitivity" type="number" value="" disabled /></td>
+        <td><span id="pressure_buffer"></span></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">Inhale Pressure</label></td>
+        <td><input name="inhale_pressure" class="form-control py-1 psv-edit pcac-edit lockOnly" id="mode_inhale_trigger" type="number" value="" disabled /></td>
+        <td><span></span></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">Inhale Volume</label></td>
+        <td><input name="inhale_volume" class="form-control py-1 prvc-edit lockOnly" id="mode_inhale_volume" type="number" value="" disabled /></td>
+        <td><span></span></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">PEEP</label></td>
+        <td><input name="peep" class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_peep" type="number" value="" disabled /></td>
+        <td><span></span></td>
+      </tr>
     </table>
       <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
 </form>
@@ -133,7 +168,7 @@
       <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_exhale_controller);lock();"  readOnly disabled/></td>
 
     <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Purge)</label></td>
-      <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_purge_controller);lock();"  readOnly disabled/></td>
+      <td><input class="form-control py-1" id="valve_purge" type="number" value="1"   onclick="show_easy_numpad(this, valve_purge_controller);lock();"  readOnly disabled/></td>
 
     <tr><td><span class="form-group"><label class="small" for="inputVar13">PEEP [cmH2O]</label></td>
       <td><input class="form-control py-1" id="peep" type="number" value="1"   onclick="show_easy_numpad(this, purge_controller);lock();"  readOnly disabled/></td>
@@ -158,6 +193,10 @@
 {% endblock %}
 
 {% block body_scripts %}
+
+
+<script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
+
 <script type=text/javascript>
 // get all of the elements and decide which are to be unlocked
 function unlock_mode_elements(mode){
