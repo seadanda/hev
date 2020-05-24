@@ -19,15 +19,16 @@ void SystemUtils::setupTempSensor(Adafruit_MCP9808 *tempsens, TwoWire *i2c)
         _found_MCP9808 = true;
     if (_found_MCP9808){
         _temp_sensor->setResolution(3);
+		_temp_sensor->wake();  //sensor on
     }
 }
 
 float SystemUtils::getSystemTemperature()
 {
 	if(_found_MCP9808 == true){
-		_temp_sensor->wake();  //sensor on
+		//_temp_sensor->wake();  //sensor on
 		float c = _temp_sensor->readTempC();
-		_temp_sensor->shutdown_wake(1); //sensor off
+		//_temp_sensor->shutdown_wake(1); //sensor off
 		return c;
 	}
 	return -273.15;

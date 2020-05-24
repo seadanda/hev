@@ -190,7 +190,7 @@ void UILoop::reportIVTReadings()
 
         _ivt_data.timestamp =  tnow;
         IV_readings<float>* iv = _breathing_loop->getValvesController()->getIVReadings(); 
-	float sys_temp = -273.15; //getSystemUtils()->getSystemTemperature();
+	float sys_temp = getSystemUtils()->getSystemTemperature();
         _ivt_data.air_in_voltage = iv->air_in_voltage;
         _ivt_data.o2_in_voltage = iv->o2_in_voltage;
         _ivt_data.purge_voltage = iv->purge_voltage;

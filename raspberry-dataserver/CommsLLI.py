@@ -5,7 +5,10 @@ import serial_asyncio
 import logging
 import binascii
 import time
+import argparse
 from collections import deque
+from enum import Enum, IntEnum
+from dataclasses import asdict
 from struct import error as StructError
 from CommsCommon import PayloadFormat, PAYLOAD_TYPE
 from CommsFormat import CommsPacket, CommsACK, CommsNACK, CommsChecksumError, generateAlarm, generateCmd, generateData
@@ -15,13 +18,21 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
 
 class CommsLLI:
-    def __init__(self, loop, throttle=1):
+    def __init__(self, loop, throttle=1, file='', number=10000):
         super().__init__()
         # IO
         self._loop = loop
         self._reader = None
         self._writer = None
         self._connected = False
+
+        # dump
+        self._dumpfile = file
+        self._dumpcount = number
+        if self._dumpfile != '':
+            with open(self._dumpfile,'w'):
+                # create file
+                pass
 
         # send
         self._queue_size = 16
@@ -50,14 +61,17 @@ class CommsLLI:
         self._sequence_receive = 0
 
     async def main(self, device, baudrate):
-        self._reader, self._writer = await serial_asyncio.open_serial_connection(url=device, baudrate=baudrate, timeout = 2, dsrdtr = True)
-        self._connected = True
-        while self._connected:
-            #sendAlarm = self.send(0xC0)
-            sendCmd = self.send(0x80)
-            #sendData = self.send(0x40)
-            receiver = self.recv()
-            await asyncio.gather(*[receiver, sendCmd], return_exceptions=True)
+        try:
+            self._reader, self._writer = await serial_asyncio.open_serial_connection(url=device, baudrate=baudrate, timeout = 2, dsrdtr = True)
+            self._connected = True
+            while self._connected:
+                #sendAlarm = self.send(0xC0)
+                sendCmd = self.send(0x80)
+                #sendData = self.send(0x40)
+                receiver = self.recv()
+                await asyncio.gather(*[receiver, sendCmd], return_exceptions=True)
+        except Exception:
+            raise
 
     async def send(self, address):
         queue = self._queues[address]
@@ -180,10 +194,20 @@ class CommsLLI:
     def payloadrecv(self, payload):
         for callback in self._observers:
             callback(payload)
+
         if self._throttle > 0:
             if self._packet_count % self._throttle == 0:
                 self._payloadrecv.put_nowait(payload)
-            self._packet_count += 1
+
+        self._packet_count += 1
+        
+        if self._dumpfile != '':
+            with open(self._dumpfile,'a') as f:
+                # dump the payload in a dict which can be unpacked directly into a payloadFormat object
+                f.write(f"{payload.byteArray}\n")
+            if self._packet_count >= self._dumpcount:
+                logging.critical("Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
+                exit(0)
     
     def bind_to(self, callback):
         self._observers.append(callback)
@@ -193,9 +217,21 @@ if __name__ == "__main__":
     try:
         # schedule async tasks
         loop = asyncio.get_event_loop()
+        parser = argparse.ArgumentParser(description='Arguments to run CommsLLI')
+        parser.add_argument('--dump', action='store_true', help='Dump raw data to file')
+        parser.add_argument('-f', '--file', type=str, default = '', help='File to dump to')
+        parser.add_argument('-n', '--number', type=int, default = 10000, help='Number of packets to dump')
+        args = parser.parse_args()
 
         # setup serial devices
-        comms = CommsLLI(loop)
+        if args.dump:
+            if args.file == '':
+                logging.critical("No dump file specified")
+                raise KeyboardInterrupt # fake ctrl+c
+            logging.warning(f"Dumping {args.number} packets to {args.file}")
+            comms = CommsLLI(loop, file=args.file, number=args.number)
+        else:
+            comms = CommsLLI(loop)
 
         asyncio.gather(comms.main("/dev/ttyUSB0", 115200), return_exceptions=True)
         loop.run_forever()
