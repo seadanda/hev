@@ -11,7 +11,11 @@ function requestChartVar() {
     $.ajax({
         url: '/live-data',
         success: function(point) {
-	    if( chart_PV.data.datasets[1].data.length > 100 ){
+	    if( point["fsm_state"] == 14 ) { // start of loop (?)
+		chart_PV.data.datasets[1].data.length = 0;
+		chart_VF.data.datasets[1].data.length = 0;
+		chart_PF.data.datasets[1].data.length = 0;
+	    }else if( chart_PV.data.datasets[1].data.length > 100 ){
 		chart_PV.data.datasets[1].data.shift();
 		chart_VF.data.datasets[1].data.shift();
 		chart_PF.data.datasets[1].data.shift();
@@ -78,8 +82,8 @@ $(document).ready(function() {
 				     ticks: {min: 0, max: 25, 
 					     stepSize: 5, fontSize: 25 }}],
 			    yAxes: [{display: true,
-				     ticks: {min: -1000, max: 1500, 
-					     stepSize: 500, fontSize:25 }}]}}
+				     ticks: {min: 0, max: 500, 
+					     stepSize: 100, fontSize:25 }}]}}
     });
 
     var ctx_VF = document.getElementById('flow_volume_chart');
@@ -97,11 +101,11 @@ $(document).ready(function() {
 			   fill: false }]}
 	,options: {elements: { point: { radius: 5}},
 		scales: {xAxes: [{display: true,
-				  ticks: {min: -1000, max: 1500, 
-					  stepSize: 500, fontSize: 25 }}],
+				  ticks: {min: 0, max: 500, 
+					  stepSize: 100, fontSize: 25 }}],
 			    yAxes: [{display: true,
-				     ticks: {min: 0, max: 300, 
-					     stepSize: 100, fontSize: 25 }}]}}
+				     ticks: {min: -1000, max: 1500, 
+					     stepSize: 500, fontSize: 25 }}]}}
     });
 	
     var ctx_PF = document.getElementById('pressure_flow_chart');
@@ -122,8 +126,8 @@ $(document).ready(function() {
 				     ticks: {min: 0, max: 25 , 
 					     stepSize: 5  , fontSize: 25 }}],
 			    yAxes: [{display: true,
-				     ticks: {min: 0, max: 300, 
-					     stepSize: 100, fontSize: 25 }}]}}
+				     ticks: {min: -1000, max: 1500, 
+					     stepSize: 500, fontSize: 25 }}]}}
     });
 });
 
