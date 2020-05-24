@@ -62,6 +62,7 @@ data_format = getList(DataFormat().getDict())
 class ArduinoClient(HEVClient):
     def __init__(self):
         super().__init__(polling=True)
+        self.last_row_accessed = 0
 
     def start_client(self):
         """runs in other thread - works as long as super goes last and nothing
@@ -214,15 +215,15 @@ N = 300 # number of entries to request for alarms and data (300 = 60 s of data d
 
 @WEBAPP.route('/', methods=['GET', 'POST'])
 def hello_world():
-   return render_template('index.html', result=last_data())
+   return render_template('index.html')
 
 @WEBAPP.route('/testing', methods=['GET', 'POST'])
 def prototype():
-   return render_template('index_prototype.html', result=last_data())
+   return render_template('index_prototype.html')
 
 @WEBAPP.route('/settings')
 def settings():
-    return render_template('settings.html', result=last_data())
+    return render_template('settings.html')
 
 @WEBAPP.route('/charts')
 def charts():
@@ -337,16 +338,15 @@ def live_battery():
     response = make_response(json.dumps(battery).encode('utf-8') )
     response.content_type = 'application/json'
     return response
-
-
-@WEBAPP.route('/last-data', methods=['GET'])
-def last_data():
+@WEBAPP.route('/last-data/<rowid>', methods=['GET'])
+def last_data(rowid):
     """
     Query the sqlite3 table for variables
     Output in json format
     """
 
     list_variables = []
+    list_variables.append("ROWID")
     list_variables.append("created_at")
     list_variables.append("alarms")
     list_variables.extend(getList(DataFormat().getDict()))
@@ -359,6 +359,51 @@ def last_data():
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
         cursor.execute(" SELECT {var} "
+        " FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=1000,rowid=rowid))
+
+        fetched = cursor.fetchall()
+        conn.close()
+        for ir,el in enumerate(fetched):
+            data = {key: None for key in list_variables}
+
+            for index, item in enumerate(list_variables):
+                data[item] = el[index]
+                if ir == 0 and item == "ROWID" : client.last_row_accessed = el[index]
+
+            fetched_all.append(data)
+
+    else:
+        for _ in range(1):
+            data = {key: None for key in list_variables}
+            for index, item in enumerate(list_variables):
+                data[item] = ""
+
+            fetched_all.append(data)
+
+    response = make_response(json.dumps(fetched_all).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
+
+@WEBAPP.route('/last-data', methods=['GET'])
+def last_datum():
+    """
+    Query the sqlite3 table for variables
+    Output in json format
+    """
+
+    list_variables = []
+    list_variables.append("created_at")
+    list_variables.extend(getList(DataFormat().getDict()))
+
+    united_var = ','.join(list_variables)
+
+    fetched_all = []
+
+    if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > 1:
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
+        cursor.execute(" SELECT {var} "
         " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=1))
 
         fetched = cursor.fetchall()
@@ -366,12 +411,12 @@ def last_data():
         for el in fetched:
             data = {key: None for key in list_variables}
 
-        for index, item in enumerate(list_variables):
-            data[item] = el[index]
+            for index, item in enumerate(list_variables):
+                data[item] = el[index]
 
-        fetched_all.append(data)
+            fetched_all.append(data)
     else:
-        for _ in range(1):
+        for _ in range(N):
             data = {key: None for key in list_variables}
             for index, item in enumerate(list_variables):
                 data[item] = ""
