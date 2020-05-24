@@ -101,7 +101,8 @@ pip3 install mod-wsgi
 Note I am using python3.8 which I complied myself (the default python3 
 is 3.4 which is too early a version) so if the line above fails 
 recompile python with 
-```./configure --enable-shared --prefix=/usr/local 
+
+``` ./configure --enable-shared --prefix=/usr/local 
 LDFLAGS=-Wl,-rpath=/usr/local/lib && make altinstall``` 
 then install mod-wsgi 
 ```sudo /usr/local/pip3.8 install mod-wsgi``` 
