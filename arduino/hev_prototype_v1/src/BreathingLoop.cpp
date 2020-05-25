@@ -112,6 +112,7 @@ void BreathingLoop::updateReadings()
         _readings_sums.temperature_buffer       += static_cast<float>(analogRead(pin_temperature_buffer)     );
         _readings_sums.pressure_o2_regulated    += static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
         _readings_sums.pressure_diff_patient    += static_cast<float>(analogRead(pin_pressure_diff_patient)  );
+        _readings_sums.o2_percent               += static_cast<float>(analogRead(pin_o2_sensor)              );
  
 
     }
@@ -130,7 +131,8 @@ void BreathingLoop::updateReadings()
 #ifdef HEV_FULL_SYSTEM                                         
         _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
-        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
+        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient  / _readings_N),_calib_avgs.pressure_diff_patient) ;
+        _readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
 #endif
 
 
@@ -176,6 +178,7 @@ void BreathingLoop::updateRawReadings()
         _readings_raw.temperature_buffer       =analogRead(pin_temperature_buffer)     ;
         _readings_raw.pressure_o2_regulated    =analogRead(pin_pressure_o2_regulated)  ;
         _readings_raw.pressure_diff_patient    =analogRead(pin_pressure_diff_patient)  ;
+        _readings_raw.o2_percent               =analogRead(pin_o2_sensor            )  ;
     }
 
 }
@@ -190,7 +193,7 @@ void BreathingLoop::updateCycleReadings()
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
 
             _cycle_readings.timestamp = tnow;
-            _cycle_readings.fiO2_percent = 21;
+            _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// 21;
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
 	    //logMsg(" I, E "+String(_volume_inhale)+ " "+String(_volume_exhale));

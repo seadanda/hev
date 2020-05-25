@@ -21,10 +21,11 @@ const int pin_temperature_buffer        = A5; // IO33
 const int pin_pressure_o2_supply        = A17; // IO27
 const int pin_pressure_o2_regulated     = A16; // IO14 
 const int pin_pressure_diff_patient     = A10; // IO4
+const int pin_o2_sensor                 = A19; // 26 // DAC2
 
     // leds
-const int pin_led_green        = 17;
-const int pin_led_yellow       = 16;
+const int pin_led_green        = 17; // TX2
+const int pin_led_yellow       = 16; // RX2
 const int pin_led_red          = 12; // A15// STRAPPING PIN (prefer as output / high-Z)
 
     // buzzer
@@ -32,9 +33,11 @@ const int pin_buzzer         =  2;   // STRAPPING PIN (prefer as output / High-Z
 
 
     // SPARES - this and i2c and dac are spare
-const int pin_spare_1        = 26; // A19 // DAC2
-const int pin_spare_2        = 13; // A14;
-const int pin_spare_3        = 15; // A13; // STRAPPING PIN (prefer as output / high-Z)
+
+// if we need UART for the CO2 sensor, we should swap these two pins with pins 16 and 17
+const int pin_spare_1        = 13; // A14;
+const int pin_spare_2        = 15; // A13; // STRAPPING PIN (prefer as output / high-Z)
+
     // i2c
 const int pin_scl = 23;
 const int pin_sda = 22;

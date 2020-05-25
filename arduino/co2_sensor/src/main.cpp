@@ -1,6 +1,6 @@
 #include <Arduino.h>
 #include <HardwareSerial.h>
-HardwareSerial co2_serial(2); // RX, TX
+HardwareSerial co2_serial(2); // RX2 = pin IO16, TX2 = pin IO17
 
 unsigned char hexdata[9] = {0xFF, 0x01, 0x86, 0x00, 0x00, 0x00, 0x00, 0x00, 0x79}; //Read the gas density command /Don't change the order
 void setup()
