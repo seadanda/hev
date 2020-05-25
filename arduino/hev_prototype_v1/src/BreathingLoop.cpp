@@ -117,6 +117,18 @@ void BreathingLoop::updateReadings()
         if (++_readings_N > RUNNING_AVG_READINGS - 1) {
             _readings_N = RUNNING_AVG_READINGS - 1;
             _readings_avgs.timestamp = tnow;
+            _readings_avgs.pressure_air_supply      =0;
+            _readings_avgs.pressure_air_regulated   =0;
+            _readings_avgs.pressure_buffer          =0;
+            _readings_avgs.pressure_inhale          =0;
+            _readings_avgs.pressure_patient         =0;
+            _readings_avgs.temperature_buffer       =0;
+#ifdef HEV_FULL_SYSTEM
+            _readings_avgs.pressure_o2_supply       =0;
+            _readings_avgs.pressure_o2_regulated    =0;
+            _readings_avgs.pressure_diff_patient    =0;
+            _readings_avgs.o2_percent               =0;
+#endif
             for (uint32_t i = 0; i < RUNNING_AVG_READINGS; i++) {
                 _readings_avgs.pressure_air_supply      += adcToMillibarFloat  ((_readings_running[i].pressure_air_supply    / RUNNING_AVG_READINGS));
                 _readings_avgs.pressure_air_regulated   += adcToMillibarFloat  ((_readings_running[i].pressure_air_regulated / RUNNING_AVG_READINGS));
