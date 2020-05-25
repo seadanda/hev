@@ -111,11 +111,9 @@ private:
     float _target_IE_ratio;
     
     // readings
-    void resetReadingSums();
-    readings<float> _readings_sums; // 32 bit due to possible analog read overflow
     readings<float> _readings_avgs;
+    readings<float> _readings_running[RUNNING_AVG_FLOW];
     readings<float> _readings_raw;
-    bool     _readings_reset;
     uint32_t _readings_N;
     uint32_t _readings_time;
     uint32_t _readings_timeout;
@@ -161,9 +159,10 @@ private:
     void inhaleTrigger();
     void exhaleTrigger();
     bool _apnea_event;
-    float _running_flows[RUNNING_AVG_READINGS];
+    float _running_flows[RUNNING_AVG_FLOW];
     float _running_avg_flow;
-    uint8_t _running_index;
+    uint8_t _readings_index;
+    uint8_t _flow_index;
     uint8_t _cycle_index;
     // float _running_minute_volume[CYCLE_AVG_READINGS];
     float _running_inhale_minute_volume[CYCLE_AVG_READINGS];
