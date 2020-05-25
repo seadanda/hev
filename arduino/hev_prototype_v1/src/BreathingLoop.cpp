@@ -20,7 +20,7 @@ BreathingLoop::BreathingLoop()
     _peep = 5.0;
 
     initCalib();
-    _readings_N = 0;
+    resetReadingSums();
 
     _flow = 0;
     _volume = 0;
@@ -40,7 +40,7 @@ BreathingLoop::BreathingLoop()
     _pid.target_final_pressure = 10.; // Final pressure after the inhale pressure ramp up
     _pid.nsteps = 3; // Final pressure after the inhale pressure ramp up
 
-    for(int i=0; i<RUNNING_AVG_FLOW; i++){
+    for(int i=0; i<RUNNING_AVG_READINGS; i++){
         _running_flows[i] = 0.0;
     }
 
@@ -67,8 +67,7 @@ BreathingLoop::BreathingLoop()
     _sum_airway_pressure = 0;
     _ap_readings_N = 0;
 
-    _readings_index = 0;
-    _flow_index = 0;
+    _running_index = 0;
     _cycle_index = 0;
 
     _inhale_trigger_threshold = 0.005;  // abs flow ?unit
@@ -98,66 +97,64 @@ void BreathingLoop::updateReadings()
     // create averages every 10ms
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _readings_time >= _readings_timeout) {
-        _readings_index = (_readings_index == RUNNING_AVG_READINGS-1 ) ? 0 : _readings_index+1;
+        _readings_time = tnow;
+        _readings_N++;
 
-        _readings_running[_readings_index].timestamp                = tnow;
-        _readings_running[_readings_index].pressure_air_supply      = static_cast<float>(analogRead(pin_pressure_air_supply)    );
-        _readings_running[_readings_index].pressure_air_regulated   = static_cast<float>(analogRead(pin_pressure_air_regulated) );
-        _readings_running[_readings_index].pressure_buffer          = static_cast<float>(analogRead(pin_pressure_buffer)        );
-        _readings_running[_readings_index].pressure_inhale          = static_cast<float>(analogRead(pin_pressure_inhale)        );
-        _readings_running[_readings_index].pressure_patient         = static_cast<float>(analogRead(pin_pressure_patient)       );
-        _readings_running[_readings_index].temperature_buffer       = static_cast<float>(analogRead(pin_temperature_buffer)     );
-#ifdef HEV_FULL_SYSTEM
-        _readings_running[_readings_index].pressure_o2_supply       = static_cast<float>(analogRead(pin_pressure_o2_supply)     );
-        _readings_running[_readings_index].pressure_o2_regulated    = static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
-        _readings_running[_readings_index].pressure_diff_patient    = static_cast<float>(analogRead(pin_pressure_diff_patient)  );
-        _readings_running[_readings_index].o2_percent               = static_cast<float>(analogRead(pin_o2_sensor)              );
+        _readings_sums.timestamp                = tnow;
+#ifdef CHIP_ESP32
+        _readings_sums.pressure_air_supply      += static_cast<float>(analogRead(pin_pressure_air_supply)    );
+        _readings_sums.pressure_o2_supply       += static_cast<float>(analogRead(pin_pressure_o2_supply)     );
 #endif
-        // make sure the data are from the latest loop only
-        if (++_readings_N > RUNNING_AVG_READINGS - 1) {
-            _readings_N = RUNNING_AVG_READINGS - 1;
-            _readings_avgs.timestamp = tnow;
-            _readings_avgs.pressure_air_supply      =0;
-            _readings_avgs.pressure_air_regulated   =0;
-            _readings_avgs.pressure_buffer          =0;
-            _readings_avgs.pressure_inhale          =0;
-            _readings_avgs.pressure_patient         =0;
-            _readings_avgs.temperature_buffer       =0;
-#ifdef HEV_FULL_SYSTEM
-            _readings_avgs.pressure_o2_supply       =0;
-            _readings_avgs.pressure_o2_regulated    =0;
-            _readings_avgs.pressure_diff_patient    =0;
-            _readings_avgs.o2_percent               =0;
+        _readings_sums.pressure_air_regulated   += static_cast<float>(analogRead(pin_pressure_air_regulated) );
+        _readings_sums.pressure_buffer          += static_cast<float>(analogRead(pin_pressure_buffer)        );
+        _readings_sums.pressure_inhale          += static_cast<float>(analogRead(pin_pressure_inhale)        );
+        _readings_sums.pressure_patient         += static_cast<float>(analogRead(pin_pressure_patient)       );
+        _readings_sums.temperature_buffer       += static_cast<float>(analogRead(pin_temperature_buffer)     );
+        _readings_sums.pressure_o2_regulated    += static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
+        _readings_sums.pressure_diff_patient    += static_cast<float>(analogRead(pin_pressure_diff_patient)  );
+        _readings_sums.o2_percent               += static_cast<float>(analogRead(pin_o2_sensor)              );
+ 
+
+    }
+
+    // to make sure the readings correspond only to the same fsm mode
+    if (_readings_reset) {
+        resetReadingSums();
+    } else if (tnow - _readings_avgs_time >= _readings_avgs_timeout) {
+        _readings_avgs.timestamp                = static_cast<uint32_t>(_readings_sums.timestamp);
+        _readings_avgs.pressure_air_supply      = adcToMillibarFloat((_readings_sums.pressure_air_supply      / _readings_N));
+        _readings_avgs.pressure_air_regulated   = adcToMillibarFloat((_readings_sums.pressure_air_regulated   / _readings_N));
+        _readings_avgs.pressure_buffer          = adcToMillibarFloat((_readings_sums.pressure_buffer          / _readings_N), _calib_avgs.pressure_buffer       );
+        _readings_avgs.pressure_inhale          = adcToMillibarFloat((_readings_sums.pressure_inhale          / _readings_N), _calib_avgs.pressure_inhale       );
+        _readings_avgs.pressure_patient         = adcToMillibarFloat((_readings_sums.pressure_patient         / _readings_N), _calib_avgs.pressure_patient      );
+        _readings_avgs.temperature_buffer       = adcToMillibarFloat((_readings_sums.temperature_buffer       / _readings_N), _calib_avgs.temperature_buffer    );
+#ifdef HEV_FULL_SYSTEM                                         
+        _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
+        _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
+        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient  / _readings_N),_calib_avgs.pressure_diff_patient) ;
+        _readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
 #endif
-            for (uint32_t i = 0; i < RUNNING_AVG_READINGS; i++) {
-                _readings_avgs.pressure_air_supply      += adcToMillibarFloat  ((_readings_running[i].pressure_air_supply    / RUNNING_AVG_READINGS));
-                _readings_avgs.pressure_air_regulated   += adcToMillibarFloat  ((_readings_running[i].pressure_air_regulated / RUNNING_AVG_READINGS));
-                _readings_avgs.pressure_buffer          += adcToMillibarFloat  ((_readings_running[i].pressure_buffer        / RUNNING_AVG_READINGS), _calib_avgs.pressure_buffer       );
-                _readings_avgs.pressure_inhale          += adcToMillibarFloat  ((_readings_running[i].pressure_inhale        / RUNNING_AVG_READINGS), _calib_avgs.pressure_inhale       );
-                _readings_avgs.pressure_patient         += adcToMillibarFloat  ((_readings_running[i].pressure_patient       / RUNNING_AVG_READINGS), _calib_avgs.pressure_patient      );
-                _readings_avgs.temperature_buffer       += adcToMillibarFloat  ((_readings_running[i].temperature_buffer     / RUNNING_AVG_READINGS), _calib_avgs.temperature_buffer    );
-#ifdef HEV_FULL_SYSTEM
-                _readings_avgs.pressure_o2_supply       += adcToMillibarFloat  ((_readings_running[i].pressure_o2_supply     / RUNNING_AVG_READINGS));
-                _readings_avgs.pressure_o2_regulated    += adcToMillibarFloat  ((_readings_running[i].pressure_o2_regulated  / RUNNING_AVG_READINGS));
-                _readings_avgs.pressure_diff_patient    += adcToMillibarDPFloat((_readings_running[i].pressure_diff_patient  / RUNNING_AVG_READINGS),_calib_avgs.pressure_diff_patient) ;
-                _readings_avgs.o2_percent               += adcToO2PercentFloat ((_readings_running[i].o2_percent             / RUNNING_AVG_READINGS));
-#endif
-            }
-            // add Oscar code here:
-            if (getFsmState() == BL_STATES::INHALE){
 
-                    //TODO
-                    doPID();
 
-                    _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
-                    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+        // add Oscar code here:
+        if (getFsmState() == BL_STATES::INHALE){
 
-            }
-            runningAvgs();
-            //_flow = _readings_avgs.pressure_diff_patient;
+                //TODO
 
-            _pid.previous_process_pressure = _readings_avgs.pressure_inhale;
+                doPID();
+
+                _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+
         }
+        runningAvgs();
+
+        //_flow = _readings_avgs.pressure_diff_patient;
+
+        _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
+
+        resetReadingSums();
+
     }
 }
 
@@ -311,6 +308,29 @@ float BreathingLoop::getMinuteVolume(){
     return 0;
 }
 
+void BreathingLoop::resetReadingSums()
+{
+    _readings_reset = false;
+
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    _readings_time = tnow;
+    _readings_avgs_time = tnow;
+    _readings_timeout = 1; //ms
+    _readings_avgs_timeout = 10; //ms
+    _readings_N = 0;
+    
+    _readings_sums.timestamp                = 0;
+    _readings_sums.pressure_air_supply      = 0;
+    _readings_sums.pressure_air_regulated   = 0;
+    _readings_sums.pressure_buffer          = 0;
+    _readings_sums.pressure_inhale          = 0;
+    _readings_sums.pressure_patient         = 0;
+    _readings_sums.temperature_buffer       = 0;
+    _readings_sums.pressure_o2_supply       = 0;
+    _readings_sums.pressure_o2_regulated    = 0;
+    _readings_sums.pressure_diff_patient    = 0;
+}
+
 //This is used to assign the transitions of the fsm
 void BreathingLoop::FSM_assignment( ) {
     uint32_t tnow = static_cast<uint32_t>(millis());
@@ -395,7 +415,7 @@ void BreathingLoop::FSM_assignment( ) {
         _bl_state = next_state;
         _fsm_time = tnow;
         // set flag to discard readings due to the mode change
-        _readings_N = 0;
+        _readings_reset = true;
     }
     // safety check
     if (tnow - _fsm_time >= 10) {
@@ -961,18 +981,19 @@ void BreathingLoop::exhaleTrigger()
 
 void BreathingLoop::runningAvgs()
 {
+
     // take the average of the last N flows 
     float sum_flow = 0;
-    _running_flows[_flow_index] = getFlow(); //_flow;
+    _running_flows[_running_index] = getFlow(); //_flow;
 
 
-    for(int i=0; i<RUNNING_AVG_FLOW-1; i++){
+    for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
         // use absolute value to avoid averaging out negative vals
         sum_flow += static_cast<float>(fabs(_running_flows[i]));
     }
-    _running_avg_flow = sum_flow/RUNNING_AVG_FLOW;
+    _running_avg_flow = sum_flow/RUNNING_AVG_READINGS;
 
-    _flow_index = (_flow_index == RUNNING_AVG_FLOW-1 ) ? 0 : _flow_index+1;
+    _running_index = (_running_index == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index+1;
 
     if ((_flow > _peak_flow) && (_bl_state == BL_STATES::INHALE)){
         uint32_t tnow = static_cast<uint32_t>(millis());
