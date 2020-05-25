@@ -1,6 +1,7 @@
 #include "common.h"
 
-CommsControl* globalComms;
+CommsControl* global_comms;
+SystemUtils* global_sys_utils;
 
 void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value) {
     switch (cmd) {
@@ -128,7 +129,7 @@ int16_t adcToMillibar(int16_t adc, int16_t offset)
     //return static_cast<int16_t>(adc);
 } 
 
-float adcToMillibarFloat(float adc, float offset = 0)
+float adcToMillibarFloat(float adc, float offset)
 {
     // TODO -  a proper calibration
     // rough guess - ADP51A11 spec sheet -Panasonic ADP5 pressure sensor
@@ -153,7 +154,7 @@ float adcToMillibarFloat(float adc, float offset = 0)
     //return static_cast<int16_t>(adc);
 } 
 
-float adcToMillibarDPFloat(float adc, float offset = 0)
+float adcToMillibarDPFloat(float adc, float offset)
 {
     // The calibration for the DP sensor is provided by the manufacturer
     // https://docs.rs-online.com/7d77/0900766b81568899.pdf
@@ -176,6 +177,20 @@ float adcToMillibarDPFloat(float adc, float offset = 0)
     return static_cast<float>(dp_mbar);
 } 
 
+
+float adcToO2PercentFloat(float adc, float offset)
+{
+    // calibration should flush air only (21% o2) or o2 only (100%) for N secs 
+
+    float PCB_Gain		= 4.		; // real voltage is 4 times higher thant the measured in the PCB (there is a voltage divider)
+    float Sensor_Gain		= 100./10000.	; // the sensor gain is 100 % / 10000 mVolts
+    float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
+    
+    float o2pc = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); 
+
+    return o2pc;
+}
+
 void logMsg(String s)
 {
         CommsControl *comms = getGlobalComms();
@@ -188,5 +203,7 @@ void logMsg(String s)
         comms->writePayload(pl_send);
 }
 
-CommsControl* getGlobalComms() { return globalComms; }
-void setGlobalComms(CommsControl *comms){ globalComms = comms; }
+CommsControl* getGlobalComms() { return global_comms; }
+void setGlobalComms(CommsControl *comms){ global_comms = comms; }
+SystemUtils* getSystemUtils(){ return global_sys_utils; }
+void setSystemUtils(SystemUtils *sys_utils){ global_sys_utils = sys_utils; }

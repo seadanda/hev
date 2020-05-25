@@ -190,6 +190,7 @@ void UILoop::reportIVTReadings()
 
         _ivt_data.timestamp =  tnow;
         IV_readings<float>* iv = _breathing_loop->getValvesController()->getIVReadings(); 
+	float sys_temp = getSystemUtils()->getSystemTemperature();
         _ivt_data.air_in_voltage = iv->air_in_voltage;
         _ivt_data.o2_in_voltage = iv->o2_in_voltage;
         _ivt_data.purge_voltage = iv->purge_voltage;
@@ -205,6 +206,7 @@ void UILoop::reportIVTReadings()
         _ivt_data.purge_i2caddr = iv->purge_i2caddr;
         _ivt_data.inhale_i2caddr = iv->inhale_i2caddr;
         _ivt_data.exhale_i2caddr = iv->exhale_i2caddr;
+        _ivt_data.system_temp = sys_temp;
         _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_ivt_data), sizeof(_ivt_data));
         _comms->writePayload(_plSend);
         _ivt_report_time = tnow;

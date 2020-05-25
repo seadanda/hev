@@ -32,7 +32,7 @@
 			</div>
 			<div class="row">
 	    	          <!--<div class="card-chart-header small ">Variable number 1</div>-->
-					  <div class="proto-chart-container"><canvas id="pressure_air_supply"></canvas></div>
+					  <div class="proto-chart-container"><canvas id="pressure_air_supply_chart"></canvas></div>
 			</div>
 			<div class = "row">
 				<div class = "range-button-container ml-auto mr-auto">
@@ -151,7 +151,7 @@
 {% endblock %}
 
 {% block scripts %}
-        <script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart-plot.js') }}"></script>
 <script type=text/javascript>
   function toggle_lock_settings() {
   setTimeout(function(){
@@ -193,6 +193,7 @@
 </script>
 
 <script type=text/javascript>
+/*
 	function update_variables() {
 	$.getJSON("live-data",
 		function (data) {
@@ -217,10 +218,9 @@
 	);
 	}
 	setInterval('update_variables()', 1000);
-
+*/
   </script>
   
-
 
 	{% endblock %}
 	{% block body_scripts %}

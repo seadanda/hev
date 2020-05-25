@@ -40,21 +40,24 @@ class Dependant(object):
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            #logging.info(f"payload received: {payload}")
+            # logging.info(f"payload received: {payload}")
             #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-            logging.info(f"Fsm state: {payload.fsm_state}")
+        #    logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
         #if payload.getType() == PAYLOAD_TYPE.IVT.value:
-        #    logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
+        #    logging.info(f"payload received:  {payload} ")
+            #logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
         #logging.info(f"payload received: {payload}")
         #if hasattr(payload, 'inhale_exhale_ratio'):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
         if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
-            logging.info(f"payload received:  {payload} {fsm}")
+           logging.info(f"payload received:  {payload} ")
+        #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
+        #    logging.info(f"payload received:  {payload} ")
         #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
         #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-        #    logging.info(f"LOGMSG {payload.message} ") 
+        #    logging.info(f"LOGMSG {payload.message} {fsm}") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -73,7 +76,6 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
-
     await asyncio.sleep(5)
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.8*0.001)#0.0108/5) # 108/4) # to set Kp=0.0002, param=200 i.e., micro_Kp
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.8*0.0003)#0.00162*0.4)#0.0054/2) # 0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
@@ -85,7 +87,7 @@ async def commsDebug():
     # Change TIMEOUT of breathing cycle (INHALE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1200.) #
     # Change TIMEOUT of breathing cycle (PAUSE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=0.) #
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
     # Change TIMEOUT of breathing cycle (EXHALE-FILL)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=1600.) #
     # Change TIMEOUT of breathing cycle (EXHALE)
@@ -95,13 +97,15 @@ async def commsDebug():
     # Enable exhale trigger threshold
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.1) # to set Kp=0.0002, param=200 i.e., micro_Kp
     # Start the cycles
-    cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="HEV_MODE_PC_PSV", param=0)
+    #cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="HEV_MODE_PC_PSV", param=0)
+
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
     cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0)
     #comms.writePayload(cmd)
     print('sent cmd start')
     await asyncio.sleep(1)
-    #cmd = send_cmd(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.INHALE_TRIGGER_ENABLE.value, param=1) 
-    #cmd = send_cmd(cmd_type=CMD_TYPE.SET_VALVE.value, cmd_code=CMD_SET_VALVE.EXHALE_TRIGGER_ENABLE.value, param=1) 
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
     #print('sent inhale + exhale trigger -> 1')
     toggle = "STOP"
     while True:
@@ -137,5 +141,6 @@ except asyncio.CancelledError:
     pass
 except KeyboardInterrupt:
     logging.info("Closing LLI")
+
 finally:
     loop.close()

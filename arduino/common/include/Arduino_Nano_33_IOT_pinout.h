@@ -5,7 +5,7 @@
 const int pin_valve_air_in     = 4;
 const int pin_valve_o2_in      = 5;
 const int pin_valve_purge      = 6;
-const int pin_spare_1 = 7;
+const int pin_o2_sensor = 7;
 
     // pwm pins
 const int pin_valve_inhale     = 2;  // formerly pin_valve_out
@@ -31,6 +31,6 @@ const int pin_led_red          = 10;
 const int pin_buzzer         = 11;
 
     // buttons
-const int pin_spare_2       = 12;
+const int pin_spare_1       = 12;
 
 const int pwm_resolution = 8; // 8 bit resolution; up to 12 possible

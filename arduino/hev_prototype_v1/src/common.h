@@ -4,6 +4,7 @@
 #include <limits>
 #include "localconf.h"
 #include "CommsControl.h"
+#include "SystemUtils.h"
 
 
 #if defined(ARDUINO_FEATHER_ESP32)
@@ -20,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xA9
+#define HEV_FORMAT_VERSION 0xAA
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -521,6 +522,7 @@ template <typename T> struct readings{
     T pressure_o2_supply     = 0;
     T pressure_o2_regulated  = 0;
     T pressure_diff_patient  = 0;
+    T o2_percent             = 0;
 };
 
 template <typename T> struct IV_readings{
@@ -577,7 +579,7 @@ struct cycle_readings{
     float plateau_pressure           = 0;  
     float mean_airway_pressure       = 0;
 
-    uint8_t  fiO2_percent               = 0;  
+    float fiO2_percent               = 0;  
 
     uint16_t apnea_index                = 0;
     uint16_t apnea_time                 = 0;
@@ -592,9 +594,12 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
 void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
-float adcToMillibarDPFloat(float adc, float offset = 0);
+float adcToO2PercentFloat(float adc, float offset = 0);
+float adcToMillibarDPFloat(float adc, float offset = 1500);
 void logMsg(String s);
 CommsControl* getGlobalComms();
 void setGlobalComms(CommsControl *comms);
+SystemUtils* getSystemUtils();
+void setSystemUtils(SystemUtils *sys_utils);
 
 #endif

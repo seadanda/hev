@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if [ ! -f ${HOME}/.config/systemd/user/hevserver.service ]; then
+    # not installed
+    echo "hevserver.service is not installed. Initialise by running hevserver-daemon" >&2
+    exit 1
+fi
+
+if $(systemctl --user is-active --quiet hevserver); then
+    # loaded and running
+    echo "hevserver.service started and running after $(systemctl --user show hevserver.service -p NRestarts) failed attempts"
+    exit 0
+elif [ "$(systemctl --user is-active hevserver)" = "activating" ]; then
+    # loaded but dead, check systemctl status to see why
+    echo "hevserver.service started but hevserver has died $(systemctl --user show hevserver.service -p NRestarts) times"
+    systemctl --user status hevserver.service
+    exit 2
+else
+    # not loaded
+    echo "hevserver.service is not started. Start by running 'systemctl --user start hevserver'" >&2
+    exit 1
+fi

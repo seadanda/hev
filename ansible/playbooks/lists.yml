@@ -19,6 +19,7 @@ rpi_swlist:
   - libssl-dev 
   - libjpeg-dev 
   - libglib2.0-dev
+  - socat
 
 
 pip_list: 

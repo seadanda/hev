@@ -112,6 +112,7 @@ void BreathingLoop::updateReadings()
         _readings_sums.temperature_buffer       += static_cast<float>(analogRead(pin_temperature_buffer)     );
         _readings_sums.pressure_o2_regulated    += static_cast<float>(analogRead(pin_pressure_o2_regulated)  );
         _readings_sums.pressure_diff_patient    += static_cast<float>(analogRead(pin_pressure_diff_patient)  );
+        _readings_sums.o2_percent               += static_cast<float>(analogRead(pin_o2_sensor)              );
  
 
     }
@@ -130,7 +131,8 @@ void BreathingLoop::updateReadings()
 #ifdef HEV_FULL_SYSTEM                                         
         _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
-        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
+        _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient  / _readings_N),_calib_avgs.pressure_diff_patient) ;
+        _readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
 #endif
 
 
@@ -147,7 +149,7 @@ void BreathingLoop::updateReadings()
         }
         runningAvgs();
 
-        _flow = _readings_avgs.pressure_diff_patient;
+        //_flow = _readings_avgs.pressure_diff_patient;
 
         _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
@@ -176,6 +178,7 @@ void BreathingLoop::updateRawReadings()
         _readings_raw.temperature_buffer       =analogRead(pin_temperature_buffer)     ;
         _readings_raw.pressure_o2_regulated    =analogRead(pin_pressure_o2_regulated)  ;
         _readings_raw.pressure_diff_patient    =analogRead(pin_pressure_diff_patient)  ;
+        _readings_raw.o2_percent               =analogRead(pin_o2_sensor            )  ;
     }
 
 }
@@ -190,10 +193,10 @@ void BreathingLoop::updateCycleReadings()
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
 
             _cycle_readings.timestamp = tnow;
-            _cycle_readings.fiO2_percent = 21;
-            _cycle_done = true;
+            _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// 21;
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
+	    //logMsg(" I, E "+String(_volume_inhale)+ " "+String(_volume_exhale));
             _total_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
                        +_measured_durations.buff_pre_inhale
                        +_measured_durations.inhale
@@ -219,12 +222,12 @@ void BreathingLoop::updateCycleReadings()
                 // inh_sum += _inhale_cycle_duration[i];
                 // exh_sum += _exhale_cycle_duration[i];
             }
-            _airway_pressure =  _sum_airway_pressure / _ap_readings_N;
+            _airway_pressure =  _ap_readings_N == 0 ? 0 : _sum_airway_pressure / _ap_readings_N;
 
             _cycle_readings.respiratory_rate = 60000.0/(tot_sum/CYCLE_AVG_READINGS);
-            _cycle_readings.minute_volume = 60000*mv_sum/tot_sum;
-            _cycle_readings.inhaled_minute_volume = 60000*mvi_sum/tot_sum;
-            _cycle_readings.exhaled_minute_volume = 60000*mve_sum/tot_sum;
+            _cycle_readings.minute_volume = 60*mv_sum/tot_sum;
+            _cycle_readings.inhaled_minute_volume = 60*mvi_sum/tot_sum;  //(60 = 60000/1000 L/min rather than mL/min)
+            _cycle_readings.exhaled_minute_volume = 60*mve_sum/tot_sum;
             _cycle_readings.tidal_volume = mv_sum/CYCLE_AVG_READINGS;
             _cycle_readings.inhaled_tidal_volume = mvi_sum/CYCLE_AVG_READINGS;
             _cycle_readings.exhaled_tidal_volume = mve_sum/CYCLE_AVG_READINGS;
@@ -240,12 +243,21 @@ void BreathingLoop::updateCycleReadings()
                        +_max_exhale_time;  // apnea time = time from breath start to maximum time allow for breath
             _cycle_readings.mandatory_breath = _mandatory_inhale & _mandatory_exhale;
 
-            //reset
             _sum_airway_pressure = 0;
             _ap_readings_N = 0;
             _volume_inhale = 0;
             _volume_exhale = 0;
+            _volume = 0;
+
+            //reset
+            _cycle_done = true;
         }
+/*    } else if ((_bl_state == BL_STATES::IDLE ) || (_bl_state == BL_STATES::CALIBRATION ) || (_bl_state == BL_STATES::STOP) ){
+            _sum_airway_pressure = 0;
+            _ap_readings_N = 0;
+            _volume_inhale = 0;
+            _volume_exhale = 0;
+            _volume = 0;*/
     } else {
         _cycle_done = false;  // restart cycle
     }
@@ -284,37 +296,6 @@ VENTILATION_MODE BreathingLoop::getVentilationMode() { return _ventilation_mode;
 readings<float> BreathingLoop::getReadingAverages() { return _readings_avgs; }
 readings<float> BreathingLoop::getRawReadings() { return _readings_raw; }
 
-/*
-float BreathingLoop::getFlow(){
-    float normal_volume = 1;
-    float si_volume = (_readings_avgs.temperature_buffer / _readings_avgs.pressure_patient ) * (1013.25/273.15) * normal_volume;
-    // conversion from V to dp from dp-sensor manual: https://docs.rs-online.com/7d77/0900766b81568899.pdf (500 Pa range?) [Pa -> mbar => 525 -> 5.25]
-    float dp_raw = _readings_avgs.pressure_diff_patient / 4096.0 ; // assuming 12bit ADC
-    int sign = (dp_raw -0.5) < 0 ? -1 : 1;
-    if ((dp_raw -0.5) == 0.000) 
-        sign = 0.0;
-    float dp = sign*pow(((dp_raw/0.4)-1.25),2) * 5.25; 
-    // 
-    float flow = dp;
-
-
-    // NLPM - normal litres per minute = 1 Si Litre per minute * (293.15/T)*(P/1013.25)
-    float T = 25+273.15; //_readings_avgs.temperature_buffer;
-    float P = _readings_avgs.pressure_patient;
-    float nlpm_factor = (293.15/T)*(P/1013.25); 
-    return flow;
-    // float R = 0.08206 * 1/0.98692 *1000; // mbar *l * mol-1 *K-1
-    // float T = 25+273.15; //_readings_avgs.temperature_buffer;
-    // float V_buffer = 10.0 ; //l 
-    // float V_tube = 1.4 ; //l
-    // float P_tube = _readings_avgs.pressure_inhale;
-    // 
-    // float n1 = _readings_avgs.pressure_buffer * V_buffer/(R*T);
-    // float n2 = _readings_avgs.pressure_inhale * V_tube/(R*T);
-    // float M = 15.99; // molar mass O2 g.mol-1
-    // float rho = 1.42 * 1000; // density  1.2kg/m3 @ 25 deg
-}
-*/
 
 
 float BreathingLoop::getPEEP()
@@ -683,6 +664,7 @@ void BreathingLoop::initCalib()
     _calib_sums.pressure_buffer = 0;
     _calib_sums.pressure_inhale = 0;
     _calib_sums.pressure_patient = 0;
+    _calib_sums.pressure_diff_patient = 0;
     _calib_avgs.pressure_air_regulated = 0;
     _calib_avgs.pressure_o2_regulated  = 0;
     _calib_avgs.pressure_buffer = 0;
@@ -782,16 +764,67 @@ float BreathingLoop::getFlow(){
     const float pressure = 1030.0;
     const float scale = 10.0;
     float dp_raw = scale*_readings_avgs.pressure_diff_patient;
+    //float dp_raw = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
     float dp;
-    if (dp_raw < 0)
-    {
+    /*
+    if (dp_raw > 0) {
+
+        dp = 43.046 * dp_raw;
+    } else {
+        dp = 39.047 * dp_raw;
+    }
+    */
+
+    if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero - line to zero
+	    if (dp_raw > 0) {
+		dp = (43.046+71.576) * dp_raw;
+	    } else {
+		dp = (39.047+60.471) * dp_raw;
+	    }
+    } else if (dp_raw > 0) {
+
         dp = 43.046 * dp_raw + 71.576;
     } else {
         dp = 39.047 * dp_raw - 60.471;
     }
-    float flow = dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
-    return flow;  // NL/h
+    float flow =  dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
+    //return flow;  // NL/h
+    if (_calibrated == true){
+        return flow;
+    }
+    return 0.0;
 }
+/*
+float BreathingLoop::getFlow(){
+    float normal_volume = 1;
+    float si_volume = (_readings_avgs.temperature_buffer / _readings_avgs.pressure_patient ) * (1013.25/273.15) * normal_volume;
+    // conversion from V to dp from dp-sensor manual: https://docs.rs-online.com/7d77/0900766b81568899.pdf (500 Pa range?) [Pa -> mbar => 525 -> 5.25]
+    float dp_raw = _readings_avgs.pressure_diff_patient / 4096.0 ; // assuming 12bit ADC
+    int sign = (dp_raw -0.5) < 0 ? -1 : 1;
+    if ((dp_raw -0.5) == 0.000) 
+        sign = 0.0;
+    float dp = sign*pow(((dp_raw/0.4)-1.25),2) * 5.25; 
+    // 
+    float flow = dp;
+
+
+    // NLPM - normal litres per minute = 1 Si Litre per minute * (293.15/T)*(P/1013.25)
+    float T = 25+273.15; //_readings_avgs.temperature_buffer;
+    float P = _readings_avgs.pressure_patient;
+    float nlpm_factor = (293.15/T)*(P/1013.25); 
+    return flow;
+    // float R = 0.08206 * 1/0.98692 *1000; // mbar *l * mol-1 *K-1
+    // float T = 25+273.15; //_readings_avgs.temperature_buffer;
+    // float V_buffer = 10.0 ; //l 
+    // float V_tube = 1.4 ; //l
+    // float P_tube = _readings_avgs.pressure_inhale;
+    // 
+    // float n1 = _readings_avgs.pressure_buffer * V_buffer/(R*T);
+    // float n2 = _readings_avgs.pressure_inhale * V_tube/(R*T);
+    // float M = 15.99; // molar mass O2 g.mol-1
+    // float rho = 1.42 * 1000; // density  1.2kg/m3 @ 25 deg
+}
+*/
 
 float BreathingLoop::getVolume()
 {
@@ -803,12 +836,22 @@ float BreathingLoop::getVolume()
     //  need to get dt - assume dt = 10ms
     float nl2l = (pressure * 273.15 * 3600)/(temperature *1013.25 * 1000) ; //ml/s
 
-    _volume = getFlow() * nl2l /100;
-    return _volume;
+    float flow = getFlow();
+    if (flow < 0)
+	    flow = flow *1.2;// stupid scale factor
+    _volume += flow * nl2l /100;
+
+    if (_calibrated == true){
+        return _volume;
+    }
+    return 0.0;
 }
 
 float BreathingLoop::getAirwayPressure(){
-    return _airway_pressure;
+    if (_calibrated == true){
+        return _airway_pressure;
+    }
+    return 0.0;
 }
 
 void BreathingLoop::doPID(){
@@ -871,7 +914,7 @@ void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
 
-    //logMsg("inhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+    logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6));
 
     if(en == true){
         if (_inhale_triggered)
@@ -881,24 +924,23 @@ void BreathingLoop::inhaleTrigger()
         }
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_flow > _valves_controller.getValveParams().inhale_trigger_threshold) 
-            && (tnow - _valley_flow_time >= 10)){  // wait 10ms after the valley
+        if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold) 
+            && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                //logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+                logMsg("   -- INHALE TRIGGER"  +String(millis()));
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
                 _mandatory_inhale = false;
                 _inhale_triggered = true;
             }
         } else if (tnow - _fsm_time >= _max_exhale_time){
-            // TRIGGER
-            _apnea_event = true;
-            //logMsg("inhale trigger - max exhale time exceeded");
-            _fsm_timeout = 0; // go to next state immediately
-            _mandatory_inhale = true;
-            _apnea_event = true;
-            _inhale_triggered = true;
+                // TRIGGER
+                _apnea_event = true;
+                logMsg("   -- inhale trigger - max exhale time exceeded");
+                _fsm_timeout = 0; // go to next state immediately
+                _mandatory_inhale = true;
+                _apnea_event = true;
         }
     }  else {
         _mandatory_inhale = true;
@@ -918,7 +960,7 @@ void BreathingLoop::exhaleTrigger()
         if((_running_avg_flow < (vp.exhale_trigger_threshold * _peak_flow)) 
             && (tnow - _peak_flow_time >= 100)){ // wait 10ms after peak
             //TODO - check we're past 'peak'
-            //logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
+            //logMsg("  EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
@@ -936,13 +978,14 @@ void BreathingLoop::runningAvgs()
 
     // take the average of the last N flows 
     float sum_flow = 0;
-    _running_flows[_running_index] = _flow;
+    _running_flows[_running_index] = getFlow(); //_flow;
 
 
     for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
         // use absolute value to avoid averaging out negative vals
         sum_flow += static_cast<float>(fabs(_running_flows[i]));
     }
+    _running_avg_flow = sum_flow/RUNNING_AVG_READINGS;
 
     _running_index = (_running_index == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index+1;
 
@@ -967,18 +1010,13 @@ void BreathingLoop::runningAvgs()
         _cycle_readings.peak_inspiratory_pressure = _readings_avgs.pressure_patient;
     }
 
-    if((_bl_state == BL_STATES::INHALE) || (_bl_state == BL_STATES::BUFF_PRE_INHALE)){
-        _volume_inhale += getVolume();
+    
+    if((_bl_state == BL_STATES::INHALE) || (_bl_state == BL_STATES::BUFF_PRE_INHALE) || (_bl_state == BL_STATES::PAUSE)){
+        _volume_inhale = getVolume();
+	//logMsg("INHALE "+String(_volume_inhale));
     } else if ((_bl_state == BL_STATES::EXHALE) || (_bl_state == BL_STATES::EXHALE_FILL)){
-        _volume_exhale += getVolume();
-    // } else if (_bl_state == BL_STATES::BUFF_LOADED) {
-
-    //     _cycle_readings.inhaled_tidal_volume = _volume_inhale;
-    //     _cycle_readings.exhaled_tidal_volume = _volume_exhale;
-    //     _cycle_readings.tidal_volume = _volume_inhale + _volume_exhale;
-    //     // reset vals
-    //     _volume_inhale = 0;
-    //     _volume_exhale = 0;
+        _volume_exhale = _volume_inhale - getVolume();
+	//logMsg(" EXHALE "+String(_volume_exhale));
     }
 
     _sum_airway_pressure += _readings_avgs.pressure_patient;
