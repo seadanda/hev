@@ -113,6 +113,7 @@ void loop()
 
     alarm_loop.fireAlarms();
 
+    
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
     ui_loop.reportCycleReadings();

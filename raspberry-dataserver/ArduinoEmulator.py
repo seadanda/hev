@@ -46,7 +46,7 @@ if __name__ == "__main__":
     try:
         # set up and link interfaces
         logging.debug("Setting up devices")
-        socat = Popen(f"/bin/socat -d -d pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU0 pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU1".split())
+        socat = Popen(f"socat -d -d pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU0 pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU1".split())
         time.sleep(2)
         logging.info("Setting up devices [DONE]")
 

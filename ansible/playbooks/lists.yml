@@ -20,6 +20,7 @@ rpi_swlist:
   - libjpeg-dev 
   - libglib2.0-dev
   - socat
+  - emacs
 
 
 pip_list: 
