@@ -5,7 +5,7 @@ import logging
 try:
     import RPi.GPIO as gpio
 except ModuleNotFoundError:
-    logging.error("RPi gpio backend not found")
+    logging.error("RPi gpio backend not found, will use dummy")
     import hevgpio as gpio
 import copy
 from CommsCommon import BatteryFormat
