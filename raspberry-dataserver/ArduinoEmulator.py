@@ -6,13 +6,10 @@ import time
 import argparse
 import os
 import binascii
-from serial import Serial
 from pathlib import Path
 from subprocess import Popen
-from struct import error as StructError
 from CommsLLI import CommsLLI
-from CommsCommon import PayloadFormat, PAYLOAD_TYPE
-from CommsFormat import CommsPacket, CommsACK, CommsNACK, CommsChecksumError, generateAlarm, generateCmd, generateData
+from CommsCommon import PayloadFormat
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
@@ -46,7 +43,7 @@ if __name__ == "__main__":
     try:
         # set up and link interfaces
         logging.debug("Setting up devices")
-        socat = Popen(f"/bin/socat -d -d pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU0 pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU1".split())
+        socat = Popen(f"/usr/bin/env socat -d -d pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU0 pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU1".split())
         time.sleep(2)
         logging.info("Setting up devices [DONE]")
 
