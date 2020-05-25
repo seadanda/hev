@@ -211,6 +211,7 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
             digitalWrite(_exhale.pin, VALVE_STATE::OPEN); //inverted logic; normally open;
     }
 
+    logMsg(" setValve "+String(vinhale) +" " +String(_PID_output)+" "+String(millis()));
     // save the state 
     _air_in.state = vin_air;
     _o2_in.state  = vin_o2;

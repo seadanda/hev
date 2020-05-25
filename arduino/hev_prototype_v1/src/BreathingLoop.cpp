@@ -509,6 +509,7 @@ void BreathingLoop::FSM_breathCycle()
             //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);//Comment this line for the PID control during inhale
             _fsm_timeout = _states_durations.inhale;
 
+            _inhale_triggered = false; // reset inhale trigger
             _valley_flow = 100000;  // reset valley after exhale
             
             exhaleTrigger();
@@ -913,24 +914,30 @@ void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
 
-    //logMsg("inhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+    logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6));
 
     if(en == true){
+        if (_inhale_triggered)
+        {
+            _fsm_timeout = 0; // go to next state immediately
+            return;
+        }
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
         if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold) 
-            && (tnow - _valley_flow_time >= 10)){  // wait 10ms after the valley
+            && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                //logMsg("inhale trig- " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().inhale_trigger_threshold));
+                logMsg("   -- INHALE TRIGGER"  +String(millis()));
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
                 _mandatory_inhale = false;
+                _inhale_triggered = true;
             }
         } else if (tnow - _fsm_time >= _max_exhale_time){
                 // TRIGGER
                 _apnea_event = true;
-                //logMsg("inhale trigger - max exhale time exceeded");
+                logMsg("   -- inhale trigger - max exhale time exceeded");
                 _fsm_timeout = 0; // go to next state immediately
                 _mandatory_inhale = true;
                 _apnea_event = true;
@@ -953,7 +960,7 @@ void BreathingLoop::exhaleTrigger()
         if((_running_avg_flow < (vp.exhale_trigger_threshold * _peak_flow)) 
             && (tnow - _peak_flow_time >= 100)){ // wait 10ms after peak
             //TODO - check we're past 'peak'
-            //logMsg("EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
+            //logMsg("  EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
