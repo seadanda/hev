@@ -8,39 +8,42 @@ except ModuleNotFoundError:
     logging.error("RPi gpio backend not found")
     import hevgpio as gpio
 import copy
+from CommsCommon import BatteryFormat
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
-logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().setLevel(logging.DEBUG)
 
 class BatteryLLI:
     def __init__(self, timeout=1):
         super().__init__()
         self._timeout = timeout
-        self._pins = {"bat"     :  5,
-                      "ok"      :  6,
-                      "alarm"   : 12,
-                      "rdy2buf" : 13,
-                      "bat85"   : 19}
-        self._res = copy.deepcopy(self._pins)
+        self._pins = {"bat"      :  5,
+                      "ok"       :  6,
+                      "alarm"    : 12,
+                      "rdy2buf"  : 13,
+                      "bat85"    : 19,
+                      "prob_elec":  7}
+        self._payload = BatteryFormat()
         try:
             if gpio.DUMMY:
-                self._res["dummy"] = True
+                self._payload.dummy = True
         except:
-            self._res["dummy"] = False
+            self._payload.dummy = False
 
         gpio.setmode(gpio.BCM)
         for pin in self._pins:
-            gpio.setup(self._pins[pin], gpio.IN)
-            self._res[pin] = 0
+            gpio.setup(self._pins[pin], gpio.IN, pull_up_down=gpio.PUD_DOWN)
             
     async def main(self) -> None:
         while True:
             await asyncio.sleep(self._timeout)
-            for pin in self._pins:
-                self._res[pin] = gpio.input(self._pins[pin])
-            logging.info(f"Battery: {self._res}")
-
+            try:
+                for pin in self._pins:
+                    setattr(self._payload, pin, gpio.input(self._pins[pin]))
+                logging.debug(self._payload)
+            except:
+                logging.error("Failed gpio data save")
 
 if __name__ == "__main__":
     try:
