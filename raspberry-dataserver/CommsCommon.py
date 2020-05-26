@@ -153,6 +153,9 @@ class PAYLOAD_TYPE(IntEnum):
     IVT        = 8
     LOGMSG     = 9
 
+class HEVVersionError(Exception):
+    pass
+
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
@@ -203,7 +206,7 @@ class PayloadFormat():
     # check for mismatch between pi and microcontroller version
     def checkVersion(self):
         if self._RPI_VERSION != self.version : 
-            raise Exception('Version Mismatch', "PI:", self._RPI_VERSION, "uC:", self.version)
+            raise HEVVersionError('Version Mismatch', "PI:", self._RPI_VERSION, "uC:", self.version)
 
     def getSize(self) -> int:
         return len(self.byteArray)

@@ -9,7 +9,7 @@ import binascii
 from pathlib import Path
 from subprocess import Popen
 from CommsLLI import CommsLLI
-from CommsCommon import PayloadFormat
+from CommsCommon import PayloadFormat, HEVVersionError
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
@@ -32,7 +32,11 @@ class ArduinoEmulator:
                         await asyncio.sleep(0.02)
         except FileNotFoundError:
             logging.critical("File not found")
-            exit(0)
+            exit(1)
+        except HEVVersionError as e:
+            logging.critical(f"HEVVersionError: {e}")
+            exit(1)
+
 
     async def receiver(self):
         payload = await self._lli._payloadrecv.get()

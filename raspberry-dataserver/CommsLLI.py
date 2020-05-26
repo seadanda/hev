@@ -10,7 +10,7 @@ from collections import deque
 from enum import Enum, IntEnum
 from dataclasses import asdict
 from struct import error as StructError
-from CommsCommon import PayloadFormat, PAYLOAD_TYPE
+from CommsCommon import PayloadFormat, PAYLOAD_TYPE, HEVVersionError
 from CommsFormat import CommsPacket, CommsACK, CommsNACK, CommsChecksumError, generateAlarm, generateCmd, generateData
 
 # Set up logging
@@ -198,6 +198,9 @@ class CommsLLI:
                     logging.error(f"Invalid payload: {payload}")
                     # restart/reflash/swap to redundant microcontroller?
                     comms_response = CommsNACK(packet.address)
+                except HEVVersionError as e:
+                    logging.critical(f"HEVVersionError: {e}")
+                    exit(1)
                 finally:
                     comms_response.setSequenceReceive(packet.sequence_receive)
                     await self.sendPacket(comms_response)
