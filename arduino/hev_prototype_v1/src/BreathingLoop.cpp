@@ -522,6 +522,7 @@ void BreathingLoop::FSM_breathCycle()
             _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _peak_flow = -100000;  // reset peak after inhale
             _fsm_timeout = _states_durations.exhale_fill;
+		digitalWrite(pin_led_red, LOW);
             inhaleTrigger();
             break;
         case BL_STATES::EXHALE:
@@ -914,7 +915,8 @@ void BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
 
-    logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6));
+    //logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6));
+    String result = "";
 
     if(en == true){
         if (_inhale_triggered)
@@ -928,16 +930,19 @@ void BreathingLoop::inhaleTrigger()
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                logMsg("   -- INHALE TRIGGER"  +String(millis()));
+                //logMsg("   -- INHALE TRIGGER"  +String(millis()));
+                result = "   -- INHALE TRIGGER" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
                 _mandatory_inhale = false;
                 _inhale_triggered = true;
+		digitalWrite(pin_led_red, HIGH);
             }
         } else if (tnow - _fsm_time >= _max_exhale_time){
                 // TRIGGER
                 _apnea_event = true;
-                logMsg("   -- inhale trigger - max exhale time exceeded");
+                //logMsg("   -- inhale trigger - max exhale time exceeded");
+                result = "   -- TIME EXCEEDED" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _mandatory_inhale = true;
                 _apnea_event = true;
@@ -945,6 +950,7 @@ void BreathingLoop::inhaleTrigger()
     }  else {
         _mandatory_inhale = true;
     }
+    logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6) + " " +result +" "+String(millis()));
 }
 
 void BreathingLoop::exhaleTrigger()
