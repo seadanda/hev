@@ -40,6 +40,9 @@ class HEVClient(object):
             self._mmFile = open(mmFileName, "x+b")
             self._mmFile.write(b'0' * 10000) # ~10kb is enough I hope for one event
         self._mmMap = mmap.mmap(self._mmFile.fileno(), 0) # Map to in memory object
+        self._mmMap.seek(0)
+        self._mmMap.write(pickle.dumps('Data not yet set')) # ensure no old or unset data in file
+        self._mmMap.flush()
         
         # start polling in another thread unless told otherwise
         if self._polling:
@@ -168,11 +171,15 @@ class HEVClient(object):
     def get_values(self) -> Dict:
         # get sensor values from db
         self._mmFile.seek(0)
-        fastdata = pickle.load(self._mmFile)
+        try:
+            fastdata = pickle.load(self._mmFile)
+        except pickle.UnpicklingError as e:
+            logging.warning(f"Unpicking error {e}")
+            return None
         if(type(fastdata) is dict):
             return fastdata
         else:
-            logging.warning("Missing/wrong data in mmMap")
+            logging.warning("Missing fastdata")
             return None
 
     def get_readback(self) -> Dict:
