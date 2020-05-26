@@ -10,6 +10,9 @@ BreathingLoop::BreathingLoop()
     _calib_time = tnow;
     _fsm_time = tnow;
     _fsm_timeout = 1000;
+    _tsig_time = tnow;
+    _tsig_timeout = 100;
+
     _ventilation_mode = VENTILATION_MODE::LAB_MODE_BREATHE;
     _bl_state = BL_STATES::IDLE;
     _bl_laststate = BL_STATES::IDLE;
@@ -788,10 +791,10 @@ float BreathingLoop::getFlow(){
     } else {
         dp = 39.047 * dp_raw - 60.471;
     }
-    float flow =  dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
+    _flow =  dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
     //return flow;  // NL/h
     if (_calibrated == true){
-        return flow;
+        return _flow;
     }
     return 0.0;
 }
@@ -971,6 +974,7 @@ void BreathingLoop::exhaleTrigger()
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
                 _mandatory_exhale = false;
+		digitalWrite(pin_led_red , HIGH);
             }
         }
     } else {
@@ -1028,3 +1032,13 @@ void BreathingLoop::runningAvgs()
     _sum_airway_pressure += _readings_avgs.pressure_patient;
     _ap_readings_N++;
 }
+
+void BreathingLoop::tsigReset()
+{
+	uint32_t tnow = static_cast<uint32_t>(millis());
+	if (tnow - _tsig_time >= _tsig_timeout ) {
+		_tsig_time = tnow;
+		digitalWrite(pin_led_red , LOW);
+	}
+}
+
