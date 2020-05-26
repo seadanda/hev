@@ -57,6 +57,9 @@ class HEVServer(object):
         elif payload_type == PAYLOAD_TYPE.UNSET:
             # ignore for the minute
             pass
+        elif payload_type == PAYLOAD_TYPE.LOGMSG:
+            # ignore for the minute
+            pass
         else:
             # invalid packet, don't throw exception just log and pop
             logging.error("Received invalid packet, ignoring")
