@@ -157,6 +157,7 @@ void BreathingLoop::updateReadings()
         _pid.previous_process_pressure = adcToMillibarFloat((_readings_sums.pressure_inhale / _readings_N), _calib_avgs.pressure_inhale);
 
         resetReadingSums();
+        updateFromTargets();
 
     }
 }
@@ -704,11 +705,11 @@ float BreathingLoop::getRespiratoryRate(){
     return 60000.0/avg;
 }
 
-void BreathingLoop::setTargetRespiratoryRate(float rate){
-    //rate is per min (60*1000ms)
-    _target_RR = rate;
-    updateIE();
-}
+// void BreathingLoop::setTargetRespiratoryRate(float rate){
+//     //rate is per min (60*1000ms)
+//     _targets.respiratory_rate = rate;
+//     updateIE();
+// }
 
 // KH 20200518 - TODO; 
 //   - need an update CycleReadings function called from exhale_fill
@@ -717,7 +718,7 @@ void BreathingLoop::setTargetRespiratoryRate(float rate){
 void BreathingLoop::updateIE()
 {
 
-    uint32_t total_cycle = static_cast<uint32_t>(60*1000/_target_RR);
+    uint32_t total_cycle = static_cast<uint32_t>(60*1000/_targets.respiratory_rate);
     int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
     int32_t exhale_duration = exhale_plus_fill_duration - _states_durations.exhale_fill;
 
@@ -733,9 +734,19 @@ void BreathingLoop::updateIE()
     // TODO - what if exhale time is less than min; raise error?
 }
 
-void BreathingLoop::setIERatio(float ratio)
+void BreathingLoop::updateFromTargets()
 {
-    int32_t exhale_duration = static_cast<uint32_t>(_states_durations.inhale * ratio)  - _states_durations.exhale_fill ;
+    
+    _pid.target_final_pressure = _targets.pressure;  //TODO -  should fix this to one variable
+    if (_targets.ie_selected == true)
+        setIERatio();
+    updateIE();
+
+}
+
+void BreathingLoop::setIERatio()
+{
+    int32_t exhale_duration = static_cast<uint32_t>(_states_durations.inhale * _targets.ie_ratio)  - _states_durations.exhale_fill ;
     if (exhale_duration < _min_exhale_time )
         _states_durations.exhale = _min_exhale_time;
     else if (exhale_duration > _max_exhale_time )
@@ -745,7 +756,7 @@ void BreathingLoop::setIERatio(float ratio)
 }
 
 float BreathingLoop::getTargetRespiratoryRate(){
-    return _target_RR;
+    return _targets.respiratory_rate;
 }
 
 ValvesController* BreathingLoop::getValvesController()
@@ -913,6 +924,10 @@ pid_variables& BreathingLoop::getPIDVariables()
     return _pid;
 }
 
+target_variables& BreathingLoop::getTargetVariables()
+{
+    return _targets;
+}
 
 void BreathingLoop::inhaleTrigger()
 {

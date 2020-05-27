@@ -180,7 +180,7 @@ To run this kill any hevserver instances which are running and run
 Dumps exist containing real data and alarms from the `hevpi1` prototype at CERN
 then in another terminal, run a hevserver with the argument `--use-dump-data`:
 ```bash
-./hevserver.py --use-dump-file
+./hevserver.py --use-dump-data
 ```
 
 Note that the version of the dumpfile must match the protocol version used by

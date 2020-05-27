@@ -51,7 +51,8 @@ enum CMD_TYPE  : uint8_t {
     SET_THRESHOLD_MIN =  4,
     SET_THRESHOLD_MAX =  5,
     SET_VALVE         =  6,
-    SET_PID           =  7
+    SET_PID           =  7,
+    SET_TARGET        =  8
 };
 
 enum CMD_GENERAL : uint8_t {
@@ -108,6 +109,13 @@ enum CMD_SET_PID : uint8_t {
     NSTEPS = 5
 };
 
+enum CMD_SET_TARGET : uint8_t {
+    PRESSURE         = 1,
+    RESPIRATORY_RATE = 2, 
+    IE_RATIO         = 3,
+    VOLUME           = 4,
+    PEEP             = 5
+};
 #pragma pack(1)
 struct cmd_format {
     uint8_t  version      = HEV_FORMAT_VERSION;
@@ -504,6 +512,14 @@ struct pid_variables {
     int istep		   ;
 };
 
+struct target_variables {
+    float pressure;
+    float ie_ratio;
+    float volume;
+    float respiratory_rate;
+    float peep;
+    bool  ie_selected;
+};
 
 template <typename T>
 void setAlarm(ALARM_CODES alarm_code, T *alarms, T value) { alarms[alarm_code] = value; }
@@ -592,6 +608,7 @@ struct cycle_readings{
 void setDuration(CMD_SET_DURATION cmd, states_durations &timeouts, float value);
 void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value);
 void setPID(CMD_SET_PID cmd, pid_variables &pid, float value);
+void setTarget(CMD_SET_TARGET cmd, target_variables &targets,  float value);
 int16_t adcToMillibar(int16_t adc, int16_t offset = 0);
 float adcToMillibarFloat(float adc, float offset = 0);
 float adcToO2PercentFloat(float adc, float offset = 0);

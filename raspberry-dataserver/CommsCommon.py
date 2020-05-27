@@ -24,6 +24,7 @@ class CMD_TYPE(Enum):
     SET_THRESHOLD_MAX =  5
     SET_VALVE         =  6
     SET_PID           =  7
+    SET_TARGET        =  8
 
 @unique
 class CMD_GENERAL(Enum):
@@ -80,6 +81,14 @@ class CMD_SET_PID(Enum):
     NSTEPS = 5
 
 @unique
+class CMD_SET_TARGET(Enum):
+    PRESSURE         = 1
+    RESPIRATORY_RATE = 2 
+    IE_RATIO         = 3
+    VOLUME           = 4
+    PEEP             = 5
+
+@unique
 class ALARM_TYPE(Enum):
     PRIORITY_LOW    = 1
     PRIORITY_MEDIUM = 2
@@ -120,6 +129,7 @@ class CMD_MAP(Enum):
     SET_MODE          =  VENTILATION_MODE
     SET_VALVE         =  CMD_SET_VALVE
     SET_PID           =  CMD_SET_PID
+    SET_TARGET        =  CMD_SET_TARGET
     SET_THRESHOLD_MIN =  ALARM_CODES
     SET_THRESHOLD_MAX =  ALARM_CODES
 

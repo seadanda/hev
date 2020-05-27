@@ -29,10 +29,10 @@ public:
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     float getRespiratoryRate();
-    void  setTargetRespiratoryRate(float rate);
     float getTargetRespiratoryRate();
     float getIERatio();
-    void setIERatio(float ratio); 
+    void setIERatio();
+    void updateFromTargets();
     void updateIE();
     float getPEEP();
     float getMinuteVolume();
@@ -51,6 +51,7 @@ public:
     float getVolume(); 
     float getAirwayPressure();
     pid_variables& getPIDVariables();
+    target_variables &BreathingLoop::getTargetVariables();
     states_durations &getDurations();
     cycle_readings &getCycleReadings();
 
@@ -107,8 +108,7 @@ private:
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
     void measure_durations();
     // targets
-    float _target_RR;
-    float _target_IE_ratio;
+    target_variables _targets;
     
     // readings
     void resetReadingSums();
