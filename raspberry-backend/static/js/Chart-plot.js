@@ -69,7 +69,7 @@ document.getElementById("version").innerHTML = data.version;
 */
 function requestDataVar1(var1, var2) {
   $.ajax({
-      url: '/live-data',
+      url: '/last-data',
       success: function(point) {
         var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
         "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state", "volume", "flow", "airway_pressure","fsm_state",
@@ -79,7 +79,8 @@ function requestDataVar1(var1, var2) {
           var val = point[readings[i]];
           if (el && val){
             if(readings[i] == "timestamp") el.innerHTML = (val/1000).toFixed(2);
-            else if (readings[i] == "version") el.innerHTML = val;
+            else if (readings[i] == "version" ) el.innerHTML = val;
+            else if (readings[i] == "fsm_state") el.innerHTML = "<small>" + val + "</small>";
             else el.innerHTML = val.toFixed(2);
               }
           }

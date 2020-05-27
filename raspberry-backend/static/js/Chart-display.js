@@ -48,20 +48,29 @@ function requestData() {
                 //first point is last time in terms of time
                 var point = data[0];
                 rowid = point["ROWID"];
-                var fio_reading = (point["airway_pressure"]).toFixed(0) ;
-                var p_plateau_reading = (point["volume"]).toFixed(0) ;
-                if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
-                if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
+                //var fio_reading = (point["airway_pressure"]).toFixed(0) ;
+                //var p_plateau_reading = (point["volume"]).toFixed(0) ;
+                //if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
+                //if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
                 // if any of these elements exist in html file, we update continuously with data
                 var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
-                            "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state"];
+                            "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
+                            "fio2_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
+                            "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
+                            "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume"];
                 for (let i = 0 ; i < readings.length; i++){
+                    var gauge = document.getElementById("gauge_"+readings[i]);
                     var el = document.getElementById(readings[i]);
-                    var val = point[readings[i]];
-                        //console.log(el," ",val);
-                        if (el && val){
+                    var val = -1.0;
+                    if (readings[i] in point) {
+                        val = point[readings[i]];
+                        if ( gauge && val != -1 && ("gauge_"+readings[i]) in obj ) {
+                            obj["gauge_" + readings[i]] = val.toFixed(0);
+                        }
+                        if (el && val != -1){
                             el.innerHTML = val.toPrecision(5);
                         }
+                    }
                 }
                 
                 // get our current time stamp
@@ -99,7 +108,7 @@ function requestData() {
                 	    if (running_timestamp == -1 || seconds > running_timestamp  )
                 	    {
                     		// get difference between last time stamp and this and apply to existing points
-                    		chart_pressure.data.datasets[0].data.push({x : seconds - last_timestamp, y : point["airway_pressure"]});
+                    		chart_pressure.data.datasets[0].data.push({x : seconds - last_timestamp, y : point["pressure_patient"]});
                     		chart_flow.data.datasets[0].data.push({ x : seconds - last_timestamp, y : point["flow"]});
                     		chart_volume.data.datasets[0].data.push({ x : seconds - last_timestamp, y : point["volume"]});
                             running_timestamp = seconds;
@@ -389,4 +398,4 @@ function create_gauge_chart(var_name) {
 }
 
 
-["fio", "p_plateau"].forEach(create_gauge_chart);
+["fi02_percent", "plateau_pressure"].forEach(create_gauge_chart);
