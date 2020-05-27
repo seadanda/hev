@@ -12,7 +12,7 @@ import argparse
 from flask import json
 import chardet
 from hevclient import HEVClient
-from CommsCommon import DataFormat, CycleFormat, ReadbackFormat
+from CommsCommon import DataFormat, CycleFormat, ReadbackFormat, AlarmFormat
 from datetime import datetime
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -55,6 +55,8 @@ MASTER_TABLE_NAME = 'hev_monitor' # this table keeps track of the data we get th
 DATA_TABLE_NAME = 'hev_monitor_data'  # name of the table to be created for payload type data
 CYCLE_TABLE_NAME = 'hev_monitor_cycle'  # name of the table to be created for payload type cycle
 READBACK_TABLE_NAME = 'hev_monitor_readback'  # name of the table to be created for payload type readback
+ALARM_TABLE_NAME = 'hev_monitor_alarm'  # name of the table to be created for payload type readback
+
 
 def getList(dict):
     return [*dict]
@@ -63,7 +65,8 @@ def getList(dict):
 payload_types = {
     'DATA' : {'table_name' : DATA_TABLE_NAME, 'format' : DataFormat().getDict()},
     'CYCLE' : {'table_name' : CYCLE_TABLE_NAME, 'format' : CycleFormat().getDict()},
-    'READBACK' : { 'table_name' : READBACK_TABLE_NAME, 'format' : ReadbackFormat().getDict() }
+    'READBACK' : { 'table_name' : READBACK_TABLE_NAME, 'format' : ReadbackFormat().getDict()},
+    'ALARM'    : { 'table_name' : ALARM_TABLE_NAME, 'format' : AlarmFormat().getDict() }
 }
 
 
@@ -137,9 +140,12 @@ class ArduinoClient(HEVClient):
             exec_string = "DataID INTEGER, "
             exec_string += "CycleID INTEGER, "
             exec_string += "ReadBackID INTEGER, "
+            exec_string += "AlarmID INTEGER, "
             exec_string += "FOREIGN KEY(DataID) REFERENCES {tn}(ROWID), ".format(tn = DATA_TABLE_NAME)
             exec_string += "FOREIGN KEY(CycleID) REFERENCES {tn}(ROWID)".format(tn = CYCLE_TABLE_NAME)
             exec_string += "FOREIGN KEY(ReadBackID) REFERENCES {tn}(ROWID)".format(tn = READBACK_TABLE_NAME)
+            exec_string += "FOREIGN KEY(AlarmID) REFERENCES {tn}(ROWID)".format(tn = ALARM_TABLE_NAME)
+
             # Setting the maximum size of the DB to 100 MB
             conn.execute("PRAGMA max_page_count = 204800")
             conn.execute("PRAGMA page_size = 512")
@@ -198,6 +204,33 @@ class ArduinoClient(HEVClient):
             finally:
                 sys.stdout.flush()
 
+        if data_alarms != None and len(data_alarms) > 0:
+            for data_alarm in data_alarms:
+                data_packet = { el : data_alarm[el] for el in payload_types['ALARM']['format']}
+                data_packet.update({"DB_time" : timestamp})
+
+                logging.debug("Writing to data database ...")
+                try:
+                    exec_string = "( :DB_time"
+                    for el in payload_types['ALARM']['format']:
+                        exec_string += ", :" + el
+                    exec_string += ") "
+                    cursor.execute(
+                            'INSERT INTO {tn} VALUES {ex_str} '
+                            .format(tn=payload_types['ALARM']['table_name'], ex_str=exec_string), data_packet
+                    )
+                    conn.commit()
+                    payload_id = cursor.lastrowid
+                    columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
+                    cursor.execute(
+                        'INSERT INTO {tn} (AlarmID) VALUES ( {pl} )'.format(tn = MASTER_TABLE_NAME, pl = payload_id )
+                    )
+                    conn.commit()
+                except sqlite3.Error as err:
+                    conn.close()
+                    raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
+                finally:
+                    sys.stdout.flush()
         if data_cycle != None and len(data_cycle) > 0:
             data_packet = { el : data_cycle[el] for el in payload_types['CYCLE']['format']}
             data_packet.update({"DB_time" : timestamp})
@@ -451,6 +484,12 @@ def last_data(rowid):
     #data_variables.append("alarms")
     data_variables.extend(getList(DataFormat().getDict()))
 
+    alarm_variables = []
+    alarm_variables.append("ROWID")
+    alarm_variables.append("created_at")
+    #data_variables.append("alarms")
+    alarm_variables.extend(getList(AlarmFormat().getDict()))
+
     cycle_variables = []
     cycle_variables.append("ROWID")
     cycle_variables.append("created_at")
@@ -466,6 +505,7 @@ def last_data(rowid):
     data_united_var = ','.join(data_variables)
     cycle_united_var = ','.join(cycle_variables)
     readback_united_var = ','.join(readback_variables)
+    alarm_united_var = ','.join(alarm_variables)
 
     fetched_all = []
 
@@ -626,21 +666,21 @@ def last_N_alarms():
     Query the sqlite3 table for the last N alarms
     Output in json format
     """
-    data = {'version': None, 'timestamp': None, 'payload_type': None, 'alarm_type': None, 'alarm_code': None, 'param': None}
 
-    if client.check_table(DATA_TABLE_NAME):
+    alarm_variables = []
+    alarm_variables.append("ROWID")
+    alarm_variables.append("created_at")
+    alarm_variables.extend(getList(AlarmFormat().getDict()))
+
+    alarm_united_var = ','.join(alarm_variables)
+    fetched = []
+    if client.check_table(ALARM_TABLE_NAME):
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
-        cursor.execute("SELECT timestamp, alarms "
-        "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=DATA_TABLE_NAME, size=N))
+        cursor.execute("SELECT {var} "
+        "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=ALARM_TABLE_NAME, size=N, var =alarm_united_var))
         fetched = cursor.fetchall()
         conn.close()
-    else:
-        fetched = []
-        for _ in range(N):
-              data['timestamp'] = "none"
-              data['alarms'] = "none"
-              fetched.append(data)
 
 
     response = make_response(json.dumps(fetched).encode('utf-8') )
