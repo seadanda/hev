@@ -68,6 +68,10 @@ class ArduinoEmulator:
 
 if __name__ == "__main__":
     try:
+        parser = argparse.ArgumentParser(description='Arguments to run hevserver')
+        parser.add_argument('-f', '--file', type=str, default = os.path.dirname(__file__)+'/share/dump.dump', help='File to load from')
+        args = parser.parse_args()
+
         # set up and link interfaces
         logging.debug("Setting up devices")
         socat = Popen(f"/usr/bin/env socat -d -d pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU0 pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU1".split())
@@ -76,10 +80,6 @@ if __name__ == "__main__":
 
         # schedule async tasks
         loop = asyncio.get_event_loop()
-
-        parser = argparse.ArgumentParser(description='Arguments to run hevserver')
-        parser.add_argument('-f', '--file', type=str, default = os.path.dirname(__file__)+'/share/dump.dump', help='File to load from')
-        args = parser.parse_args()
 
         # setup serial devices
         logging.info(f"Using file {args.file}")
