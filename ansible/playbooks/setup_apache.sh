@@ -1,6 +1,6 @@
 #!/bin/bash
-a2dismode wsgi
-a2enmode wsgi
+a2dismod wsgi
+a2enmod wsgi
 #update the locations in hev.conf if needed
 #disable default location
 a2dissite 000-default.conf
