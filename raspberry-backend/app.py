@@ -328,13 +328,27 @@ def mode_handler():
     """
     Set mode for the ventilator
     """
+    data = request.form
     data = request.get_json(force=True)
-    #modeSwitchter(data['name'])
+
     print(client.send_cmd("SET_MODE", modeSwitchter(data['name'])))
     print(data)
     return ('', 204)
 
-
+@WEBAPP.route('/send_ack', methods=['POST'])
+def send_ack():
+    """
+    Send acknowledgement 
+    """
+    web_form = request.form
+    if web_form.get('start') == "START":
+        print(client.send_cmd("GENERAL", "START"))
+    elif web_form.get('stop') == "STOP":
+        print(client.send_cmd("GENERAL", "STOP"))
+    elif web_form.get('reset') == "RESET":
+        print(client.send_cmd("GENERAL", "RESET"))
+    #return render_template('index.html', result=live_data())
+    return ('', 204)
 
 
 
@@ -367,6 +381,7 @@ def live_battery():
     response = make_response(json.dumps(battery).encode('utf-8') )
     response.content_type = 'application/json'
     return response
+
 @WEBAPP.route('/last-data/<rowid>', methods=['GET'])
 def last_data(rowid):
     """
@@ -411,8 +426,8 @@ def last_data(rowid):
 
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
-
     return response
+
 
 @WEBAPP.route('/last-data', methods=['GET'])
 def last_datum():
@@ -507,25 +522,23 @@ def live_alarms():
     Get live alarms from the hevserver
     Output in json format
     """
-    data = {'timestamp' : None, 'alarms' : None}
+    data = {'version': None, 'timestamp': None, 'payload_type': None, 'alarm_type': None, 'alarm_code': None, 'param': None}
+
     data_alarms = client.get_alarms()
-    data_receiver = client.get_values()
+    print(f"Alarms: {data_alarms[0]['alarm_code']}")
 
+#    # acknowledge the oldest alarm
+    #try:
+    #    hevclient.ack_alarm(alarms[0]) # blindly assume we have one after 40s
+    #except:
+        #logging.info("No alarms received")
 
-    if data_alarms != None:
-        data_alarms = ','.join(data_alarms)
+    if data_alarms[0]['alarm_type'] == "PRIORITY_HIGH":
+       response = make_response(json.dumps(data_alarms).encode('utf-8') )
     else:
-        data_alarms = "none"
-
-    data["alarms"] = data_alarms
-
-    if data_receiver is not None:
-        data["timestamp"] = data_receiver['timestamp']/1000
-    else:
-        data["timestamp"] = "none"
-
-    response = make_response(json.dumps(data).encode('utf-8') )
-
+       response = make_response(json.dumps(data).encode('utf-8') )
+    response.content_type = 'application/json'
+    return response
 
 @WEBAPP.route('/last_N_alarms', methods=['GET'])
 def last_N_alarms():
@@ -533,7 +546,7 @@ def last_N_alarms():
     Query the sqlite3 table for the last N alarms
     Output in json format
     """
-    data = {'timestamp' : None, 'alarms' : None}
+    data = {'version': None, 'timestamp': None, 'payload_type': None, 'alarm_type': None, 'alarm_code': None, 'param': None}
 
     if client.check_table(DATA_TABLE_NAME):
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
@@ -553,6 +566,14 @@ def last_N_alarms():
     response = make_response(json.dumps(fetched).encode('utf-8') )
     response.content_type = 'application/json'
     return response
+
+
+
+
+
+
+
+
 
 
 def parse_args():
