@@ -59,7 +59,7 @@ use the following instructions. Apache2 should already be installed on raspian
 
 First install the mod wsgi apache component for python 3 and enable
 ```sh
-sudo apt-get install libapache2-mod-wsgi-py3
+sudo apt-get install libapache2-mod-wsgi-py3 apache2
 #disable first in case we have a python2 version enabled
 sudo a2dismode wsgi
 sudo a2enmode wsgi
@@ -74,7 +74,7 @@ sudo usermod –a -G "www-data" pi
 Now copy our site config to the apache location for available sites and enable it
 ```sh
 #update the locations in hev.conf if needed
-sudo cp share/hev.conf /etc/apache2/sites-available/
+sudo cp hev-sw/raspberry-backend/share/hev.conf /etc/apache2/sites-available/
 #disable default location
 sudo a2dissite 000-default.conf
 #enable our hev site

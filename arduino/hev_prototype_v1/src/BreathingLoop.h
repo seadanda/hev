@@ -123,6 +123,10 @@ private:
     uint32_t _readings_avgs_timeout;
     uint32_t _readings_cycle_time;
     uint32_t _readings_cycle_timeout;
+    uint32_t _tsig_time;
+    uint32_t _tsig_timeout;
+    void tsigReset();
+
  
     float _peep;
 
