@@ -488,7 +488,6 @@ def last_data(rowid):
         #" FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size} ".format(tn=DATA_TABLE_NAME, var=united_var, size=1000,rowid=rowid))
 
         fetched = cursor.fetchall()
-        print(len(fetched))
         if len(fetched) == 0 : print("WHY WON't THIS WORK")
         #conn.close()
         for el in fetched:
@@ -628,18 +627,18 @@ def live_alarms():
     Output in json format
     """
     data = {'version': None, 'timestamp': None, 'payload_type': None, 'alarm_type': None, 'alarm_code': None, 'param': None}
-
     data_alarms = client.get_alarms()
-    print(f"Alarms: {data_alarms[0]['alarm_code']}")
+    if (len(data_alarms) > 0 ):
+        print(f"Alarms: {data_alarms[0]['alarm_code']}")
 
-#    # acknowledge the oldest alarm
-    #try:
-    #    hevclient.ack_alarm(alarms[0]) # blindly assume we have one after 40s
-    #except:
-        #logging.info("No alarms received")
+    #    # acknowledge the oldest alarm
+        #try:
+        #    hevclient.ack_alarm(alarms[0]) # blindly assume we have one after 40s
+        #except:
+            #logging.info("No alarms received")
 
-    if data_alarms[0]['alarm_type'] == "PRIORITY_HIGH":
-       response = make_response(json.dumps(data_alarms).encode('utf-8') )
+    if len(data_alarms) > 0 and data_alarms[0]['alarm_type'] == "PRIORITY_HIGH":
+        response = make_response(json.dumps(data_alarms).encode('utf-8') )
     else:
        response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'
