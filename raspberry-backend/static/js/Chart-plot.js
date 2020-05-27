@@ -151,7 +151,7 @@ $(document).ready(function() {
         yAxisID: 'B',
         data: initial_yaxis_var2,
         label: "Volume",
-        borderColor: "#000000",
+        borderColor: "#ba0202",
         fill: false,
         showLine: true,
       }]
@@ -331,7 +331,7 @@ function updateChartType() {
   updateRequestDataVar(selection_results[0], selection_results[1]);
 
   $(document).ready(function() {
-    var ctx = document.getElementById('pressure_air_supply');
+    var ctx = document.getElementById('pressure_air_supply_chart');
     chart = new Chart(ctx, {
       type: 'scatter',
       data: {

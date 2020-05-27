@@ -47,45 +47,60 @@ function requestData() {
 
                 //first point is last time in terms of time
                 var point = data[0];
+                var data_point_idx = -1;
+                var cycle_point_idx = -1;
+                var readback_point_idx = -1;
                 rowid = point["ROWID"];
-                //var fio_reading = (point["airway_pressure"]).toFixed(0) ;
-                //var p_plateau_reading = (point["volume"]).toFixed(0) ;
-                //if ("fio_gauge" in obj) obj["fio_gauge"].data.datasets[0].gaugeData['value'] = fio_reading;
-                //if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].data.datasets[0].gaugeData['value'] = p_plateau_reading; 
-                // if any of these elements exist in html file, we update continuously with data
+
+                for (let j = data.length -1 ; j >=0; j-- ){
+                    if ( data[j]["payload_type"] == "DATA" ) data_point_idx = j;
+                    if ( data[j]["payload_type"] == "CYCLE" ) cycle_point_idx = j;
+                    if ( data[j]["payload_type"] == "READBACK" ) readback_point_idx = j;
+
+                }
+                var data_point = data_point_idx >= 0 ? data[data_point_idx] : null;
+                var cycle_point = cycle_point_idx >= 0 ? data[cycle_point_idx] : null;
+                var readback_point = readback_point_idx >= 0 ? data[readback_point_idx] : null;
                 var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
                             "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
-                            "fio2_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
+                            "fi02_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
                             "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
                             "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume"];
                 for (let i = 0 ; i < readings.length; i++){
                     var gauge = document.getElementById("gauge_"+readings[i]);
                     var el = document.getElementById(readings[i]);
-                    var val = -1.0;
-                    if (readings[i] in point) {
-                        val = point[readings[i]];
-                        if ( gauge && val != -1 && ("gauge_"+readings[i]) in obj ) {
-                            obj["gauge_" + readings[i]] = val.toFixed(0);
-                        }
-                        if (el && val != -1){
-                            el.innerHTML = val.toPrecision(5);
-                        }
+                    var val = null;
+                    if ( data_point != null && readings[i] in data_point ) { val = data_point[readings[i]];}
+                    else if ( cycle_point != null && readings[i] in cycle_point ) { val = cycle_point[readings[i]];}
+                    else if ( readback_point != null && readings[i] in readback_point ) { val = readback_point[readings[i]];}
+                    else continue;
+                    if ( gauge && ((readings[i]+"_gauge") in obj) ) {
+                        obj[readings[i]+"_gauge"].data.datasets[0].gaugeData['value'] = val.toPrecision(4);
+                    }
+                    if (el ){
+                        el.innerHTML = val.toPrecision(4);
                     }
                 }
                 
                 // get our current time stamp
                 // get difference between it and last received to update plots
-                var last_timestamp = point["timestamp"]/1000.0;
-                var diff = last_timestamp;
-                // this is just for cycling test data
-                if ( last_timestamp < current_timestamp ) current_timestamp = last_timestamp - 1.00;
+                var last_timestamp = data_point["timestamp"]/1000.0;
+                var diff = 0;
                 
-                if (current_timestamp != -1) diff = last_timestamp - current_timestamp;
+                if (current_timestamp != -1) {
+                    diff = last_timestamp - current_timestamp;
+                }
+                else{
+                    diff = - last_timestamp;
+                }
+                // this is just for cycling test data
+                // if ( last_timestamp < current_timestamp ) current_timestamp = last_timestamp - 1.00;
+                
 
                 /*
                 // if charts exist we now update with all points received
                 */
-
+                
                 if (chart_pressure && chart_flow && chart_volume){
                     //update current plots with difference
                     for ( let i = 0 ; i < chart_pressure.data.datasets[0].data.length; i++){
@@ -100,7 +115,11 @@ function requestData() {
                     var running_rowid = 0;
                     for (let ip = data.length-1 ; ip >= 0; ip--){
                         var point = data[ip];
+                        if (point["payload_type"] != "DATA") {
+                            continue;
+                        }
                         var seconds = point["timestamp"]/1000;
+                        //must be greater than our last stopped point
                         if (seconds < current_timestamp) continue;
                 	    // this is a hack for the test data so that we can cycle data
                         //if ( seconds - current_timestamp > 1.0) { console.log("Current Timestamp: ",current_timestamp, " against ",seconds);}
@@ -112,12 +131,11 @@ function requestData() {
                     		chart_flow.data.datasets[0].data.push({ x : seconds - last_timestamp, y : point["flow"]});
                     		chart_volume.data.datasets[0].data.push({ x : seconds - last_timestamp, y : point["volume"]});
                             running_timestamp = seconds;
-                            running_rowid = point['ROWID'];
                         }
                     }
-                  	while(chart_pressure.data.datasets[0].data.length > 1000) chart_pressure.data.datasets[0].data.shift();
-                   	while(chart_flow.data.datasets[0].data.length > 1000) chart_flow.data.datasets[0].data.shift();
-                    while(chart_volume.data.datasets[0].data.length > 1000) chart_volume.data.datasets[0].data.shift();
+                  	//while(chart_pressure.data.datasets[0].data.length > 1000) chart_pressure.data.datasets[0].data.shift();
+                   	//while(chart_flow.data.datasets[0].data.length > 1000) chart_flow.data.datasets[0].data.shift();
+                    //while(chart_volume.data.datasets[0].data.length > 1000) chart_volume.data.datasets[0].data.shift();
 
                     current_timestamp = last_timestamp;
 
@@ -125,7 +143,8 @@ function requestData() {
             		chart_flow.update(0);
             		chart_volume.update(0);
                 }
-                if ("fio_gauge" in obj) obj["fio_gauge"].update();
+                
+                if ("fi02_percent_gauge" in obj) obj["fi02_percent_gauge"].update();
                 if ("p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
             }
         },
@@ -159,12 +178,15 @@ $(document).ready(function() {
                 elements: {
                     point: { 
                         radius: 0
-                    }
+                    },
+                    line: {
+                        tension: 0
+                    },
                 },            
                 responsive: true,
         	    maintainAspectRatio: false,
+                bezierCurve : false,
                 stroke: {
-                    curve: 'smooth'
                 },
                 tooltips: {
                     enabled: false
@@ -238,12 +260,15 @@ $(document).ready(function() {
                 elements: {
                     point: { 
                         radius: 0
-                    }
+                    },
+                    line: {
+                        tension: 0
+                    },
                 },            
                 responsive: true,
     	        maintainAspectRatio: false,
+                bezierCurve : false,
                 stroke: {
-                    curve: 'smooth'
                 },
                 tooltips: {
                     enabled: false
@@ -314,13 +339,16 @@ $(document).ready(function() {
                 elements: {
                     point: { 
                         radius: 0
-                    }
+                    },
+                    line: {
+                        tension: 0
+                    },
                 },     
                 animation: false,       
                 responsive: true,
+                bezierCurve : false,
         	    maintainAspectRatio: false,
                 stroke: {
-                    curve: 'smooth'
                 },
                 tooltips: {
                     enabled: false
@@ -370,7 +398,7 @@ $(document).ready(function() {
 });
 
 var obj = {};
-function create_gauge_chart(var_name) {
+function create_gauge_chart(var_name, setvalue, limits) {
     if (document.getElementById("gauge_"+var_name)){
 	var ctx = document.getElementById("gauge_"+var_name).getContext("2d");
 	obj[var_name + "_gauge"] = new Chart(ctx, {
@@ -382,10 +410,10 @@ function create_gauge_chart(var_name) {
                     borderWidth: 0,
                     gaugeData: {
             value: 0,
-            setvalue: 75,
+            setvalue: setvalue,
 			valueColor: "black"
                     },
-                    gaugeLimits: [0, 10, 90, 100]
+                    gaugeLimits: limits
 		}]
             },
             options: {
@@ -397,5 +425,5 @@ function create_gauge_chart(var_name) {
     }
 }
 
-
-["fi02_percent", "plateau_pressure"].forEach(create_gauge_chart);
+create_gauge_chart("fi02_percent", 15, [0, 10, 90,100]);
+create_gauge_chart("plateau_pressure",10,[0,4,16,20]);
