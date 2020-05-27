@@ -122,35 +122,41 @@ $(document).ready(function() {
     chart_PV = new Chart(ctx_PV, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Pressure (x) [mbar]: Volume (y) [ml]",
+			   label: "Pressure - Volume",
 			   borderColor: "rgb(51,99,255)",
 			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false,
-			showLine: true },
+			   showLine: true },
 			  ]},
 	options: {elements: { point: { radius: 5}},
+		  legend: { display: true, labels: {fontSize: 24 } },
 		  scales: {xAxes: [{display: true,
-				     ticks: {min: 0, max: 35,
+				    scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24},
+				    ticks: {min: 0, max: 35,
 					     stepSize: 5, fontSize: 25 }}],
-			    yAxes: [{display: true,
-				     ticks: {min: 0, max: 800,
-					     stepSize: 100, fontSize:25 }}]}}
+			   yAxes: [{display: true,
+				    scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24},
+				    ticks: {min: 0, max: 800,
+					    stepSize: 100, fontSize:25 }}]}}
     });
 
     var ctx_VF = document.getElementById('flow_volume_chart');
     chart_VF = new Chart(ctx_VF, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Volume (x) [ml]: Flow (y) [ml/min]",
+			   label: "Volume - Flow",
 			   borderColor: "rgb(51,99,255)",
 			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false,
-			showLine: true }]}
+			   showLine: true }]}
 	,options: {elements: { point: { radius: 5}},
+		  legend: { display: true, labels: {fontSize: 24 } },
 		scales: {xAxes: [{display: true,
+				  scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24},
 				  ticks: {min: 0, max: 800,
 					  stepSize: 100, fontSize: 25 }}],
 			    yAxes: [{display: true,
+				     scaleLabel: { display: true, labelString: 'Flow [ml/min]', fontSize: 24},
 				     ticks: {min: -300, max: 300,
 					     stepSize: 100, fontSize: 25 }}]}}
     });
@@ -159,16 +165,19 @@ $(document).ready(function() {
     chart_PF = new Chart(ctx_PF, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Pressure (x) [mbar]: Flow (y) [ml/min]",
+			   label: "Pressure - Flow",
 			   borderColor: "rgb(51,99,255)",
 			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false,
-				showLine: true }]}
+			   showLine: true }]}
 	,options: {elements: { point: { radius: 5, fill: true}},
+		  legend: { display: true, labels: {fontSize: 24 } },
 		   scales: {xAxes: [{display: true,
+				     scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24},
 				     ticks: {min: 0, max: 35 ,
 					     stepSize: 5  , fontSize: 25 }}],
 			    yAxes: [{display: true,
+				     scaleLabel: { display: true, labelString: 'Flow [ml/min]', fontSize: 24},
 				     ticks: {min: -300, max: 300,
 					     stepSize: 100, fontSize: 25 }}]}}
     });

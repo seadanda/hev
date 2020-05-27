@@ -36,7 +36,7 @@
                 <th>Date and time</th>
                 <th>Alarm type</th>
                 <th>Alarm code</th>
-                <th>Acknowledgement</th>
+                <!-- <th>Acknowledgement</th> -->
 
 
             </tr>
@@ -81,7 +81,7 @@ function requestAlarms() {
             var cell1 = row.insertCell(0);
             var cell2 = row.insertCell(1);
             var cell3 = row.insertCell(2);
-            var cell4 = row.insertCell(3);
+            //var cell4 = row.insertCell(3);
 
 
             //cell1.innerHTML = convertTimestamp(data.created_at)
@@ -89,7 +89,7 @@ function requestAlarms() {
             console.log(data[0].timestamp);
             cell2.innerHTML = data[0].alarm_type;            
             cell3.innerHTML = data[0].alarm_code;
-            cell4.innerHTML =  '<button type="button" class="form-control py-2" id="ack"   style="background-color:#1f4793; border-color:blue; color:white">Ack</button>';
+            //cell4.innerHTML =  '<button type="button" class="form-control py-2" id="ack"   style="background-color:#1f4793; border-color:blue; color:white">Ack</button>';
 
          }
          
@@ -131,6 +131,7 @@ document.getElementById('update_button').onclick = function(){
 
 {% block body_scripts %}
 <script>
+  /*
   $( document ).ready($.getJSON({
   url: '/last_N_alarms',
   success: function(data) {
@@ -146,6 +147,7 @@ document.getElementById('update_button').onclick = function(){
     }
   }
   }));
+  */
 </script>
 
 {% endblock %}

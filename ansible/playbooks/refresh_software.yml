@@ -1,5 +1,5 @@
 ---
-- hosts: hevpi1
+- hosts: nuliv 
   remote_user: pi
   vars:
         download_dir: /home/pi/Downloads
@@ -47,9 +47,23 @@
               replace: 'url =  https://gitlab.cern.ch/hev-sw/{{ item }}.git'
           loop: "{{ repos }}"
 
-        - name: upgrade hev-display via apt
+        - name: check pi version
+          shell: "pinout | grep 'BCM2711'"
+          register: pi4
+          ignore_errors: True
+
+        - name: install hev-display-pi4 via apt
           apt: 
-              name: hev-display
-              state: latest
+              name: hev-display-pi4
+              state: present
               update_cache: yes
+          when: pi4 is succeeded
+          become: yes
+
+        - name: install hev-display-pi1 via apt
+          apt: 
+              name: hev-display-pi1
+              state: present
+              update_cache: yes
+          when: pi4 is failed
           become: yes
