@@ -725,8 +725,28 @@ void BreathingLoop::updateIE()
 {
 
     uint32_t total_cycle = static_cast<uint32_t>(60*1000/_targets.respiratory_rate);
-    int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
-    int32_t exhale_duration = exhale_plus_fill_duration - _states_durations.exhale_fill;
+    int32_t exhale_duration;
+    int32_t inhale_duration = _states_durations.inhale;
+    if (_targets.ie_selected == true){
+	
+	    uint32_t tot_inh = total_cycle / (1.0 + (1.0/_targets.ie_ratio)); 
+	    uint32_t tot_exh = total_cycle / (1.0 + (_targets.ie_ratio)); 
+
+	    exhale_duration = tot_exh - _states_durations.exhale_fill;
+	    inhale_duration = tot_inh - _states_durations.pause;
+    _targets.ie_selected =false;
+	    
+    } else {
+
+	    int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
+	    exhale_duration = exhale_plus_fill_duration - _states_durations.exhale_fill;
+    }
+
+    int32_t min_inhale = (static_cast<int32_t>(_min_inhale_time - _states_durations.pause) < 0) ? 0 : _min_inhale_time - _states_durations.pause;
+    if (inhale_duration < min_inhale)
+        _states_durations.inhale = min_inhale;
+    else 
+        _states_durations.inhale = inhale_duration; 
 
     int32_t min_exhale = (static_cast<int32_t>(_min_exhale_time - _states_durations.exhale_fill) < 0) ? 0 : _min_exhale_time - _states_durations.exhale_fill;
     int32_t max_exhale = (static_cast<int32_t>(_max_exhale_time - _states_durations.exhale_fill) < 0) ? 0 : _max_exhale_time - _states_durations.exhale_fill;
@@ -744,15 +764,16 @@ void BreathingLoop::updateFromTargets()
 {
     
     _pid.target_final_pressure = _targets.pressure;  //TODO -  should fix this to one variable
-    logMsg("targets "+String(_targets.ie_ratio) +" "+String(_targets.ie_selected));
-    if (_targets.ie_selected == true)
-        setIERatio();
     updateIE();
+    //if (_targets.ie_selected == true){
+        //setIERatio();
+   // }
 
 }
 
 void BreathingLoop::setIERatio()
 {
+    //logMsg("targets "+String(_targets.ie_ratio) +" "+String(_targets.ie_selected));
     int32_t exhale_duration = static_cast<uint32_t>(_states_durations.inhale * _targets.ie_ratio)  - _states_durations.exhale_fill ;
     if (exhale_duration < _min_exhale_time )
         _states_durations.exhale = _min_exhale_time;
