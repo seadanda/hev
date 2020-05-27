@@ -191,14 +191,16 @@
 	  h + ":" + m + ":" + s;
 	  var t = setTimeout(startTime, 500);
 	  }
+
 	  function checkTime(i) {
 	  if (i < 10) {i = "0" + i};  // add zero in front of numbers < 10
 									return i;
 									}
 
 									
-									var alarmLogs;
-		  clearInterval(alarmLogs);
+									
+	var alarmLogs;
+	clearInterval(alarmLogs);
 		  
 
 			       
@@ -216,27 +218,29 @@
 		});
 		}
 		}
-	//
-	//  function update_alarms() {
-    //    $.getJSON("live-alarms", function (data) {
-	//       if (data != null && data.alarms !== '') {
-	//          document.getElementById("alarms").innerHTML = data.alarms;
-	//          var el = document.getElementById("alarm_ul");
-	//          el.classList.add("alarm-red");
-	//          var el2 = document.getElementById("path-alarm");
-	//          el2.classList.add("path-icon-alarm");
-    //        } else {  
-	//           document.getElementById("alarms").innerHTML = ''
-	//           var el = document.getElementById("alarm_ul");
-	//           el.classList.remove("alarm-red");
-	//           var el2 = document.getElementById("path-alarm");
-	//           el2.classList.remove("path-icon-alarm");
-	//        }    
-	//    });
-	//  }
-	//  var alarmInterval = setInterval('update_alarms()', 1000);
-	//
-	  function unlock(){
+	
+	
+	function update_alarms() {
+      $.getJSON("live-alarms", function (data) {
+	     if (data != null && data[0].alarm_type == 'PRIORITY_HIGH') {
+	        document.getElementById("alarms").innerHTML = data[0].alarm_code;
+	        var el = document.getElementById("alarm_ul");
+	        el.classList.add("alarm-red");
+	        var el2 = document.getElementById("path-alarm");
+	        el2.classList.add("path-icon-alarm");
+          } else {  
+	         document.getElementById("alarms").innerHTML = 'No alarms'
+	         var el = document.getElementById("alarm_ul");
+	         el.classList.remove("alarm-red");
+	         var el2 = document.getElementById("path-alarm");
+	         el2.classList.remove("path-icon-alarm");
+	      }    
+	  });
+	}
+	var alarmInterval = setInterval('update_alarms()', 1000);
+	
+
+	function unlock(){
 
 	  //remove disabled on any field we specified
 	  var select_fields = document.getElementsByClassName("lockable");			
