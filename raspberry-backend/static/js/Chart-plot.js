@@ -31,7 +31,7 @@ function init_results(){
           var seconds = data[i]["timestamp"]/1000;
           if (i==data.length-1) timestamp = seconds;
           if ( seconds == "" ) continue;
-          initial_yaxis_var1.push({x : seconds, y : data[i]["airway_pressure"]});
+          initial_yaxis_var1.push({x : seconds, y : data[i]["pressure_patient"]});
           initial_yaxis_var2.push({x : seconds, y : data[i]["volume"]});
         }
         //reverse because data is read from the other way
@@ -217,7 +217,7 @@ $(document).ready(function() {
       } 
     }
   });
-  requestDataVar1("airway_pressure", "volume");
+  requestDataVar1("pressure_patient", "volume");
 });
 
 
