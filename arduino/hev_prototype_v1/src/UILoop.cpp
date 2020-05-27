@@ -266,6 +266,9 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::SET_PID: 
             cmdSetPID(cf);
             break;
+        case CMD_TYPE::SET_TARGET: 
+            cmdSetTarget(cf);
+            break;
         default:
             break;
     }

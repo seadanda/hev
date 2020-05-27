@@ -82,6 +82,12 @@ BreathingLoop::BreathingLoop()
     _min_inhale_time = 150;
     _min_exhale_time = 300;
     _max_exhale_time = 30000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
+
+    _targets.respiratory_rate = 20.0;
+    _targets.ie_ratio = 0.5;
+    _targets.ie_selected = false;
+    _targets.pressure = 15;
+    _targets.volume = 400;
 }
 
 BreathingLoop::~BreathingLoop()
@@ -738,6 +744,7 @@ void BreathingLoop::updateFromTargets()
 {
     
     _pid.target_final_pressure = _targets.pressure;  //TODO -  should fix this to one variable
+    logMsg("targets "+String(_targets.ie_ratio) +" "+String(_targets.ie_selected));
     if (_targets.ie_selected == true)
         setIERatio();
     updateIE();
@@ -905,7 +912,7 @@ void BreathingLoop::doPID(){
 
     //Checking minium and maximum duty cycle
     
-    float minimum_open_frac = 0.52; //Minimum opening to avoid vibrations on the valve control
+    float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
     _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;

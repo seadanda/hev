@@ -51,7 +51,7 @@ public:
     float getVolume(); 
     float getAirwayPressure();
     pid_variables& getPIDVariables();
-    target_variables &BreathingLoop::getTargetVariables();
+    target_variables &getTargetVariables();
     states_durations &getDurations();
     cycle_readings &getCycleReadings();
 
