@@ -78,7 +78,26 @@ function requestData() {
                         obj[readings[i]+"_gauge"].data.datasets[0].gaugeData['value'] = val.toPrecision(4);
                     }
                     if (el ){
-                        el.innerHTML = val.toPrecision(4);
+                        if (readings[i] == "inhale_exhale_ratio") {
+                        	//var posColon = val.search(":");
+                            var posColon = -1;
+                        	if( posColon != -1 ) {
+                    	        // already have colon...
+                        	    el.innerHTML = val.toPrecision(4);
+                        	}else{
+                        	    var ratio = val;
+                        	    if( ratio < 1 ){
+                            		var invRatio = (1/ratio);
+                            		invRatio.toFixed(1); // in case of 0.75 -> 1.3333333333333333333:1 formating problems
+                            		el.innerHTML = invRatio.toPrecision(3).toString() + ":1";
+                	            }else{
+                            		el.innerHTML = "1:"+val.toPrecision(2);
+                        	    }
+                            }
+                        }
+                        else{           
+                            el.innerHTML = val.toPrecision(4);
+                        }
                     }
                 }
                 

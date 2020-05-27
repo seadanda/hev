@@ -222,7 +222,7 @@
 	
 	function update_alarms() {
       $.getJSON("live-alarms", function (data) {
-	     if (data != null && data[0].alarm_type == 'PRIORITY_HIGH') {
+	     if (data != null && data.length > 0 && data[0].alarm_type == 'PRIORITY_HIGH') {
 	        document.getElementById("alarms").innerHTML = data[0].alarm_code;
 	        var el = document.getElementById("alarm_ul");
 	        el.classList.add("alarm-red");
@@ -237,7 +237,7 @@
 	      }    
 	  });
 	}
-	var alarmInterval = setInterval('update_alarms()', 1000);
+	//var alarmInterval = setInterval('update_alarms()', 1000);
 	
 
 	function unlock(){

@@ -142,7 +142,7 @@
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 		<a class="small text-dark col-center" href="#">I:E</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><span class = "reading-main lockable" id = "inhale_exhale_ratio" onclick="format_ie(this,ie_ratio_controller)"></span></div> 
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhale_exhale_ratio"></span></div> 
 	    </div>
 	</div>
 	<!-- end row 4 -->
@@ -251,7 +251,7 @@ class input_controller{
   }
 }
 
-
+/*
 
 fio_controller       = new gauge_controller("fio_gauge");
 p_plateau_controller = new gauge_controller("p_plateau_gauge");
@@ -259,6 +259,8 @@ p_plateau_controller = new gauge_controller("p_plateau_gauge");
 var peep_input = document.getElementById("peep");
 peep_controller = new input_controller("peep", peep_input);
 var ie_ratio_input = document.getElementById("inhale_exhale_ratio");
+
+*/
 
 /*
 var gauge_fio_container = document.getElementById("gauge-fio-container");
@@ -324,7 +326,7 @@ class input_controller_ie extends input_controller{
     }
 }
 
-var ie_ratio_controller = new input_controller_ie("ie_ratio", ie_ratio_input);
+//var ie_ratio_controller = new input_controller_ie("ie_ratio", ie_ratio_input);
 
 </script>
 

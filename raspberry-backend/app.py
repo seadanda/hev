@@ -113,10 +113,10 @@ class ArduinoClient(HEVClient):
                 # Connecting to the database file
                 conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
 
-                exec_string = "created_at  INTEGER  NOT NULL, "
+                exec_string = "created_at  INTEGER  NOT NULL"
                 for var in payload['format']:
-                   exec_string += var + "  FLOAT  NOT NULL, "
-                exec_string += "alarms  STRING  NOT NULL "
+                   exec_string += ", " + var + "  FLOAT  NOT NULL"
+                #exec_string += "alarms  STRING  NOT NULL "
 
                 conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
                 .format(tn=payload['table_name'], ex_str=exec_string))
@@ -171,23 +171,16 @@ class ArduinoClient(HEVClient):
         data_alarms   = self._alarms
         data_readback = self._readback
         if data_receiver != None and len(data_receiver) > 0:
-            # data alarms can have length of 6, joining all the strings
-            if data_alarms != None:
-                data_alarms = ','.join(data_alarms)
-            else:
-                data_alarms = "none"
-
             data_packet = { el : data_receiver[el] for el in payload_types['DATA']['format']}
             data_packet.update({"DB_time" : timestamp})
-            data_packet.update({"alarms" : data_alarms})
+            #data_packet.update({"alarms" : data_alarms})
 
             logging.debug("Writing to data database ...")
             try:
-                exec_string = "( :DB_time, "
+                exec_string = "( :DB_time"
                 for el in payload_types['DATA']['format']:
-                    exec_string += ":" + el + ", "
-                exec_string += ":alarms) "
-
+                    exec_string += ", :" + el
+                exec_string += ") "
                 cursor.execute(
                         'INSERT INTO {tn} VALUES {ex_str} '
                         .format(tn=payload_types['DATA']['table_name'], ex_str=exec_string), data_packet
@@ -208,14 +201,12 @@ class ArduinoClient(HEVClient):
         if data_cycle != None and len(data_cycle) > 0:
             data_packet = { el : data_cycle[el] for el in payload_types['CYCLE']['format']}
             data_packet.update({"DB_time" : timestamp})
-            data_packet.update({"alarms" : data_alarms})
             logging.debug("Writing to cycle table ...")
             try:
-                exec_string = "( :DB_time, "
+                exec_string = "( :DB_time"
                 for el in payload_types['CYCLE']['format']:
-                    exec_string += ":" + el + ", "
-                exec_string += ":alarms) "
-
+                    exec_string += ", :" + el
+                exec_string += ")"
                 cursor.execute(
                         'INSERT INTO {tn} VALUES {ex_str} '
                         .format(tn=payload_types['CYCLE']['table_name'], ex_str=exec_string), data_packet
@@ -236,14 +227,12 @@ class ArduinoClient(HEVClient):
         if data_readback != None and len(data_readback) > 0:
             data_packet = { el : data_readback[el] for el in payload_types['READBACK']['format']}
             data_packet.update({"DB_time" : timestamp})
-            data_packet.update({"alarms" : data_alarms})
             logging.debug("Writing to readback table ...")
             try:
-                exec_string = "( :DB_time, "
+                exec_string = "( :DB_time"
                 for el in payload_types['READBACK']['format']:
-                    exec_string += ":" + el + ", "
-                exec_string += ":alarms) "
-
+                    exec_string += ", :" + el
+                exec_string += ")"
                 cursor.execute(
                         'INSERT INTO {tn} VALUES {ex_str} '
                         .format(tn=payload_types['READBACK']['table_name'], ex_str=exec_string), data_packet
@@ -459,19 +448,19 @@ def last_data(rowid):
     data_variables = []
     data_variables.append("ROWID")
     data_variables.append("created_at")
-    data_variables.append("alarms")
+    #data_variables.append("alarms")
     data_variables.extend(getList(DataFormat().getDict()))
 
     cycle_variables = []
     cycle_variables.append("ROWID")
     cycle_variables.append("created_at")
-    cycle_variables.append("alarms")
+    #cycle_variables.append("alarms")
     cycle_variables.extend(getList(CycleFormat().getDict()))
 
     readback_variables = []
     readback_variables.append("ROWID")
     readback_variables.append("created_at")
-    readback_variables.append("alarms")
+    #readback_variables.append("alarms")
     readback_variables.extend(getList(ReadbackFormat().getDict()))
 
     data_united_var = ','.join(data_variables)
@@ -484,12 +473,8 @@ def last_data(rowid):
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
         cursor.execute(" SELECT ROWID,DataID,CycleID,ReadBackID FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size}".format(tn=MASTER_TABLE_NAME, size=100,rowid=rowid))
-        #cursor.execute(" SELECT {var} "
-        #" FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size} ".format(tn=DATA_TABLE_NAME, var=united_var, size=1000,rowid=rowid))
 
         fetched = cursor.fetchall()
-        if len(fetched) == 0 : print("WHY WON't THIS WORK")
-        #conn.close()
         for el in fetched:
             rowid = el[0]
             dataid = el[1]
@@ -520,14 +505,6 @@ def last_data(rowid):
                 for index, item in enumerate(readback_variables):
                     data[item] = el[index]
                 fetched_all.append(data)
-    else:
-        for _ in range(1):
-            data = {key: None for key in list_variables}
-            for index, item in enumerate(list_variables):
-                data[item] = ""
-
-            fetched_all.append(data)
-
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
     return response
@@ -628,17 +605,16 @@ def live_alarms():
     """
     data = {'version': None, 'timestamp': None, 'payload_type': None, 'alarm_type': None, 'alarm_code': None, 'param': None}
     data_alarms = client.get_alarms()
-    if (len(data_alarms) > 0 ):
-        print(f"Alarms: {data_alarms[0]['alarm_code']}")
+    #if (len(data_alarms) > 0 ):
+        #print(f"Alarms: {data_alarms[0]['alarm_code']}")
 
     #    # acknowledge the oldest alarm
         #try:
         #    hevclient.ack_alarm(alarms[0]) # blindly assume we have one after 40s
         #except:
             #logging.info("No alarms received")
-
     if len(data_alarms) > 0 and data_alarms[0]['alarm_type'] == "PRIORITY_HIGH":
-        response = make_response(json.dumps(data_alarms).encode('utf-8') )
+        response = make_response(json.dumps(data_alarms[0]).encode('utf-8') )
     else:
        response = make_response(json.dumps(data).encode('utf-8') )
     response.content_type = 'application/json'
