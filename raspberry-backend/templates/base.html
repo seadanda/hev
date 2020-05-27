@@ -223,14 +223,29 @@
 	function update_alarms() {
       $.getJSON("live-alarms", function (data) {
 	     if (data != null && data.length > 0 && data[0].alarm_type == 'PRIORITY_HIGH') {
-	        document.getElementById("alarms").innerHTML = data[0].alarm_code;
+	        document.getElementById("alarms").innerHTML = "High priority: " + data[0].alarm_code;
+	        var el = document.getElementById("alarm_ul");
+	        el.classList.add("alarm-red");
+	        var el2 = document.getElementById("path-alarm");
+	        el2.classList.add("path-icon-alarm");
+		  } 
+		  if (data != null && data.length > 0 && data[0].alarm_type == 'PRIORITY_MEDIUM') {
+	        document.getElementById("alarms").innerHTML = "Medium priority: " + data[0].alarm_code;
+	        var el = document.getElementById("alarm_ul");
+	        el.classList.add("alarm-red");
+	        var el2 = document.getElementById("path-alarm");
+	        el2.classList.add("path-icon-alarm");
+          }		  
+		  if (data != null && data.length > 0 && data[0].alarm_type == 'PRIORITY_LOW') {
+	        document.getElementById("alarms").innerHTML = "Low priority: " + data[0].alarm_code;
 	        var el = document.getElementById("alarm_ul");
 	        el.classList.add("alarm-red");
 	        var el2 = document.getElementById("path-alarm");
 	        el2.classList.add("path-icon-alarm");
           } else {  
 	         document.getElementById("alarms").innerHTML = 'No alarms'
-	         var el = document.getElementById("alarm_ul");
+			 var el = document.getElementById("alarms");
+			 el.style.color = "#1e479d";
 	         el.classList.remove("alarm-red");
 	         var el2 = document.getElementById("path-alarm");
 	         el2.classList.remove("path-icon-alarm");
