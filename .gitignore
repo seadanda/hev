@@ -9,5 +9,3 @@ __pycache__
 *.hex
 *.code-workspace
 *.sqlite
-ttyEMU0
-ttyEMU1

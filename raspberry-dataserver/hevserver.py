@@ -279,7 +279,7 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 if args.use_dump_data:
-                    port_device = str(Path.home())+'/hev-sw/ttyEMU0'
+                    port_device = '/tmp/ttyEMU0'
                 else:
                     port_device = getArduinoPort()
                     connected = arduinoConnected()

@@ -74,7 +74,7 @@ if __name__ == "__main__":
 
         # set up and link interfaces
         logging.debug("Setting up devices")
-        socat = Popen(f"/usr/bin/env socat -d -d pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU0 pty,rawer,echo=0,link={str(Path.home())}/hev-sw/ttyEMU1".split())
+        socat = Popen(f"/usr/bin/env socat -d -d pty,rawer,echo=0,link=/tmp/ttyEMU0 pty,rawer,echo=0,link=/tmp/ttyEMU1".split())
         time.sleep(2)
         logging.info("Setting up devices [DONE]")
 
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         emulator = ArduinoEmulator(lli=comms, dumpfile=args.file)
 
         # queue tasks
-        lli = comms.main(str(Path.home())+'/hev-sw/ttyEMU1', 115200)
+        lli = comms.main('/tmp/ttyEMU1', 115200)
         gen = emulator.generator()
         recv = emulator.receiver()
         tasks = [lli, gen, recv]
