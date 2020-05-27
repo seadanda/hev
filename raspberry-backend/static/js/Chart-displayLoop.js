@@ -76,7 +76,8 @@ function requestChartVar() {
 			chart_PF.data.datasets[0].data.shift();
 		    }
 		    if( ! stopLoop ){ // skip updates if loop is stopped
-			var pressure =  point["airway_pressure"];
+			//var pressure =  point["airway_pressure"];
+			var pressure =  point["pressure_patient"];
 			var volume = point["volume"];
 			var flow = point["flow"];
 
@@ -129,10 +130,10 @@ $(document).ready(function() {
 			  ]},
 	options: {elements: { point: { radius: 5}},
 		  scales: {xAxes: [{display: true,
-				     ticks: {min: 0, max: 25,
+				     ticks: {min: 0, max: 35,
 					     stepSize: 5, fontSize: 25 }}],
 			    yAxes: [{display: true,
-				     ticks: {min: 0, max: 500,
+				     ticks: {min: 0, max: 800,
 					     stepSize: 100, fontSize:25 }}]}}
     });
 
@@ -147,11 +148,11 @@ $(document).ready(function() {
 			showLine: true }]}
 	,options: {elements: { point: { radius: 5}},
 		scales: {xAxes: [{display: true,
-				  ticks: {min: 0, max: 500,
+				  ticks: {min: 0, max: 800,
 					  stepSize: 100, fontSize: 25 }}],
 			    yAxes: [{display: true,
-				     ticks: {min: -1000, max: 1500,
-					     stepSize: 500, fontSize: 25 }}]}}
+				     ticks: {min: -300, max: 300,
+					     stepSize: 100, fontSize: 25 }}]}}
     });
 
     var ctx_PF = document.getElementById('pressure_flow_chart');
@@ -165,11 +166,11 @@ $(document).ready(function() {
 				showLine: true }]}
 	,options: {elements: { point: { radius: 5, fill: true}},
 		   scales: {xAxes: [{display: true,
-				     ticks: {min: 0, max: 25 ,
+				     ticks: {min: 0, max: 35 ,
 					     stepSize: 5  , fontSize: 25 }}],
 			    yAxes: [{display: true,
-				     ticks: {min: -1000, max: 1500,
-					     stepSize: 500, fontSize: 25 }}]}}
+				     ticks: {min: -300, max: 300,
+					     stepSize: 100, fontSize: 25 }}]}}
     });
 });
 
