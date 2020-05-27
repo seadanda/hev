@@ -721,8 +721,8 @@ void BreathingLoop::updateIE()
     int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
     int32_t exhale_duration = exhale_plus_fill_duration - _states_durations.exhale_fill;
 
-    int32_t min_exhale = (_min_exhale_time - _states_durations.exhale_fill < 0) ? 0 : _min_exhale_time - _states_durations.exhale_fill;
-    int32_t max_exhale = (_max_exhale_time - _states_durations.exhale_fill < 0) ? 0 : _max_exhale_time - _states_durations.exhale_fill;
+    int32_t min_exhale = (static_cast<int32_t>(_min_exhale_time - _states_durations.exhale_fill) < 0) ? 0 : _min_exhale_time - _states_durations.exhale_fill;
+    int32_t max_exhale = (static_cast<int32_t>(_max_exhale_time - _states_durations.exhale_fill) < 0) ? 0 : _max_exhale_time - _states_durations.exhale_fill;
 
     if (exhale_duration < min_exhale)
         _states_durations.exhale = min_exhale;
@@ -953,7 +953,7 @@ void BreathingLoop::inhaleTrigger()
     }  else {
         _mandatory_inhale = true;
     }
-    logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6) + " " +result +" "+String(millis()));
+    //logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6) + " " +result +" "+String(millis()));
 }
 
 void BreathingLoop::exhaleTrigger()
