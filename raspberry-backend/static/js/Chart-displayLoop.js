@@ -126,9 +126,10 @@ $(document).ready(function() {
 			   borderColor: "rgb(51,99,255)",
 			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false,
-			showLine: true },
+			   showLine: true },
 			  ]},
 	options: {elements: { point: { radius: 5}},
+		  legend: { display: true, labels: {fontSize: 24 } },
 		  scales: {xAxes: [{display: true,
 				     ticks: {min: 0, max: 35,
 					     stepSize: 5, fontSize: 25 }}],
@@ -145,8 +146,9 @@ $(document).ready(function() {
 			   borderColor: "rgb(51,99,255)",
 			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false,
-			showLine: true }]}
+			   showLine: true }]}
 	,options: {elements: { point: { radius: 5}},
+		  legend: { display: true, labels: {fontSize: 24 } },
 		scales: {xAxes: [{display: true,
 				  ticks: {min: 0, max: 800,
 					  stepSize: 100, fontSize: 25 }}],
@@ -163,8 +165,9 @@ $(document).ready(function() {
 			   borderColor: "rgb(51,99,255)",
 			   pointBackgroundColor : "rgb(51,99,255)",
 			   fill: false,
-				showLine: true }]}
+			   showLine: true }]}
 	,options: {elements: { point: { radius: 5, fill: true}},
+		  legend: { display: true, labels: {fontSize: 24 } },
 		   scales: {xAxes: [{display: true,
 				     ticks: {min: 0, max: 35 ,
 					     stepSize: 5  , fontSize: 25 }}],
