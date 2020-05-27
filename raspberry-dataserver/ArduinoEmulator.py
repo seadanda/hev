@@ -22,14 +22,37 @@ class ArduinoEmulator:
 
     async def generator(self):
         try:
+            epochtime = 0 # make timestamps sequential through looped files
             while True:
                 with open(self._dumpfile,'r') as f:
+                    delay = 10 # ms
+                    line = f.readline() # peek at first entry to get timestamp
+                    prevpayload = PayloadFormat.fromByteArray(binascii.unhexlify(line[2:-2]))
+                    prevpayload.timestamp += epochtime
+                    i = 0
                     for line in f:
-                        # snip off the b''\n surrounding the hexstring
+                        await asyncio.sleep(delay / 1000)
+                        if not self._lli.writePayload(prevpayload):
+                            logging.error(f"Failed to send payload: {prevpayload}")
+
+                        if i == 0:
+                            # first line in file is already processed. dump it
+                            _ = f.readline()
+                            starttime = prevpayload.timestamp # for epochtime calculation
+
                         payload = PayloadFormat.fromByteArray(binascii.unhexlify(line[2:-2]))
-                        if not self._lli.writePayload(payload):
-                            logging.error(f"Failed to send payload: {payload}")
-                        await asyncio.sleep(0.02)
+                        payload.timestamp += epochtime
+                        delay = payload.timestamp - prevpayload.timestamp
+                        if delay < 0:
+                            # because of different priorities, some arrive out of time
+                            delay = 0 # so we don't fall behind
+                        i += 1
+                        prevpayload = payload
+                    # send out last packet
+                    await asyncio.sleep(delay / 1000)
+                    if not self._lli.writePayload(prevpayload):
+                        logging.error(f"Failed to send payload: {prevpayload}")
+                    epochtime += prevpayload.timestamp - starttime + 10 # add 10ms on for next loop
         except FileNotFoundError:
             logging.critical("File not found")
             exit(1)

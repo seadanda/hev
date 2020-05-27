@@ -12,7 +12,7 @@ import argparse
 from flask import json
 import chardet
 from hevclient import HEVClient
-from CommsCommon import DataFormat
+from CommsCommon import DataFormat, CycleFormat
 from datetime import datetime
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -51,13 +51,16 @@ except ImportError:
 #SQLITE_FILE = 'hev::memory:?cache=shared'
 #SQLITE_FILE = 'file:hev?mode=memory&cache=shared'
 SQLITE_FILE = '/dev/shm/HEV_monitoringDB.sqlite'  # use the linux shared memory pool as a file system
-TABLE_NAME = 'hev_monitor'  # name of the table to be created
+DATA_TABLE_NAME = 'hev_monitor_data'  # name of the table to be created
+CYCLE_TABLE_NAME = 'hev_monitor_cycle'  # name of the table to be created
+
 
 def getList(dict):
     return [*dict]
 
 # List of data variables in the data packet from the Arduino
-data_format = getList(DataFormat().getDict())
+data_format = DataFormat().getDict()
+cycle_format = CycleFormat().getDict()
 
 class ArduinoClient(HEVClient):
     def __init__(self):
@@ -97,31 +100,31 @@ class ArduinoClient(HEVClient):
         This function creates the sqlite3 table with the timestamp column
         and the columns for the arduino packet data
         '''
-        logging.debug('Creating ' + TABLE_NAME + ' table..' )
+        for TABLE_NAME in [ DATA_TABLE_NAME, CYCLE_TABLE_NAME ]:
+            logging.debug('Creating ' + TABLE_NAME + ' table..' )
+            # Create the table if it does not exist
+            try:
+                # Connecting to the database file
+                conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
 
-        # Create the table if it does not exist
-        try:
-            # Connecting to the database file
-            conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+                exec_string = "created_at  INTEGER  NOT NULL, "
+                for var in data_format:
+                   exec_string += var + "  FLOAT  NOT NULL, "
+                exec_string += "alarms  STRING  NOT NULL "
 
-            exec_string = "created_at  INTEGER  NOT NULL, "
-            for var in data_format:
-               exec_string += var + "  FLOAT  NOT NULL, "
-            exec_string += "alarms  STRING  NOT NULL "
+                # Setting the maximum size of the DB to 100 MB
+                conn.execute("PRAGMA max_page_count = 204800")
+                conn.execute("PRAGMA page_size = 512")
 
-            # Setting the maximum size of the DB to 100 MB
-            conn.execute("PRAGMA max_page_count = 204800")
-            conn.execute("PRAGMA page_size = 512")
-
-            conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
-            .format(tn=TABLE_NAME, ex_str=exec_string))
-            conn.commit()
-        except sqlite3.Error as err:
-            conn.close()
-            raise Exception("sqlite3 Error. Create failed: {}".format(str(err)))
-        finally:
-            conn.close()
-            logging.info('Table ' + TABLE_NAME + ' created successfully!')
+                conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
+                .format(tn=TABLE_NAME, ex_str=exec_string))
+                conn.commit()
+            except sqlite3.Error as err:
+                conn.close()
+                raise Exception("sqlite3 Error. Create failed: {}".format(str(err)))
+            finally:
+                conn.close()
+                logging.info('Table ' + TABLE_NAME + ' created successfully!')
 
     def monitoring(self):
         '''
@@ -139,34 +142,60 @@ class ArduinoClient(HEVClient):
         data_receiver = self._fastdata
         data_alarms = self._alarms
         if data_receiver != None and len(data_receiver) > 0:
-
             # data alarms can have length of 6, joining all the strings
             if data_alarms != None:
                 data_alarms = ','.join(data_alarms)
             else:
                 data_alarms = "none"
-            data_packet = { el : data_receiver[el] for el in data_format}
-            data_packet.update({"DB_time" : timestamp})
-            data_packet.update({"alarms" : data_alarms})
 
-            logging.debug("Writing to database ...")
-            try:
-                exec_string = "( :DB_time, "
-                for el in data_format:
-                    exec_string += ":" + el + ", "
-                exec_string += ":alarms) "
+            if data_receiver['payload_type'] == "DATA" :
+                data_packet = { el : data_receiver[el] for el in data_format}
+                data_packet.update({"DB_time" : timestamp})
+                data_packet.update({"alarms" : data_alarms})
 
-                cursor.execute(
-                        'INSERT INTO {tn} VALUES {ex_str} '
-                        .format(tn=TABLE_NAME, ex_str=exec_string), data_packet
-                )
-                conn.commit()
-            except sqlite3.Error as err:
-                conn.close()
-                raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
-            finally:
-                conn.close()
-                sys.stdout.flush()
+                logging.debug("Writing to data database ...")
+                try:
+                    exec_string = "( :DB_time, "
+                    for el in data_format:
+                        exec_string += ":" + el + ", "
+                    exec_string += ":alarms) "
+
+                    cursor.execute(
+                            'INSERT INTO {tn} VALUES {ex_str} '
+                            .format(tn=DATA_TABLE_NAME, ex_str=exec_string), data_packet
+                    )
+                    conn.commit()
+                except sqlite3.Error as err:
+                    conn.close()
+                    raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
+                finally:
+                    conn.close()
+                    sys.stdout.flush()
+            elif data_receiver['payload_type'] == "CYCLE" :
+                data_packet = { el : data_receiver[el] for el in cycle_format }
+                data_packet.update({"DB_time" : timestamp})
+                data_packet.update({"alarms" : data_alarms})
+
+                logging.debug("Writing to cycle table ...")
+                try:
+                    exec_string = "( :DB_time, "
+                    for el in data_format:
+                        exec_string += ":" + el + ", "
+                    exec_string += ":alarms) "
+
+                    cursor.execute(
+                            'INSERT INTO {tn} VALUES {ex_str} '
+                            .format(tn=CYCLE_TABLE_NAME, ex_str=exec_string), data_packet
+                    )
+                    conn.commit()
+                except sqlite3.Error as err:
+                    conn.close()
+                    raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
+                finally:
+                    conn.close()
+                    sys.stdout.flush()
+
+
 
     def db_backup(self,backup_time):
         threading.Timer(backup_time, self.db_backup, [backup_time]).start()
@@ -355,11 +384,11 @@ def last_data(rowid):
 
     fetched_all = []
 
-    if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > 0:
+    if client.check_table(DATA_TABLE_NAME) and client.number_rows(DATA_TABLE_NAME) > 0:
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
         cursor.execute(" SELECT {var} "
-        " FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=1000,rowid=rowid))
+        " FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size} ".format(tn=DATA_TABLE_NAME, var=united_var, size=1000,rowid=rowid))
 
         fetched = cursor.fetchall()
         conn.close()
@@ -400,11 +429,11 @@ def last_datum():
 
     fetched_all = []
 
-    if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > 1:
+    if client.check_table(DATA_TABLE_NAME) and client.number_rows(DATA_TABLE_NAME) > 1:
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
         cursor.execute(" SELECT {var} "
-        " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=1))
+        " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=DATA_TABLE_NAME, var=united_var, size=1))
 
         fetched = cursor.fetchall()
         conn.close()
@@ -443,11 +472,11 @@ def last_N_data():
 
     fetched_all = []
 
-    if client.check_table(TABLE_NAME) and client.number_rows(TABLE_NAME) > N:
+    if client.check_table(DATA_TABLE_NAME) and client.number_rows(DATA_TABLE_NAME) > N:
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
         cursor.execute(" SELECT {var} "
-        " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=TABLE_NAME, var=united_var, size=N))
+        " FROM {tn} ORDER BY ROWID DESC LIMIT {size} ".format(tn=DATA_TABLE_NAME, var=united_var, size=N))
 
         fetched = cursor.fetchall()
         conn.close()
@@ -506,11 +535,11 @@ def last_N_alarms():
     """
     data = {'timestamp' : None, 'alarms' : None}
 
-    if client.check_table(TABLE_NAME):
+    if client.check_table(DATA_TABLE_NAME):
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
         cursor.execute("SELECT timestamp, alarms "
-        "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=TABLE_NAME, size=N))
+        "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=DATA_TABLE_NAME, size=N))
         fetched = cursor.fetchall()
         conn.close()
     else:
