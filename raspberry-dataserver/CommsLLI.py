@@ -105,6 +105,8 @@ class CommsLLI:
                 6: generateAlarm,
                 7: generateData,
                 8: generateData,
+                9: generateData,
+                10:generateData
             }
             generatePacket = PAYLOAD_TYPE_TO_GEN[payload.getType()]
             tmp_comms = generatePacket(payload)
@@ -119,6 +121,8 @@ class CommsLLI:
                 6: qlist[0],
                 7: qlist[2],
                 8: qlist[2],
+                9: qlist[2],
+                10:qlist[2]
             }
             queue = PAYLOAD_TYPE_TO_QUEUE[payload.getType()]
             queue.put_nowait(tmp_comms)
