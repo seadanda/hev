@@ -85,15 +85,18 @@
 		      <a href="settings" class = "nav-link-href nav-link-disabled"> <div class = "sb-nav-link-icon d-flex justify-content-center border-invisible {{'active' if settings_active}}">
               <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="sliders-h" class="fa-sliders-h fa-w-15" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path class="path-icon" d="M496 384H160v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h80v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h336c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160h-80v-16c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h336v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h80c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-160H288V48c0-8.8-7.2-16-16-16h-32c-8.8 0-16 7.2-16 16v16H16C7.2 64 0 71.2 0 80v32c0 8.8 7.2 16 16 16h208v16c0 8.8 7.2 16 16 16h32c8.8 0 16-7.2 16-16v-16h208c8.8 0 16-7.2 16-16V80c0-8.8-7.2-16-16-16z"></path></svg>
 			  </div></a>
+			  <a href="downloadCSV" class = "nav-link-href nav-link-disabled"> <div class = "sb-nav-link-icon d-flex justify-content-center border-invisible {{'active' if downloadCSV_active}}">
+				<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="file-export" class="fa-file-export fa-w-15" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path fill="gray" d="M384 121.9c0-6.3-2.5-12.4-7-16.9L279.1 7c-4.5-4.5-10.6-7-17-7H256v128h128zM571 308l-95.7-96.4c-10.1-10.1-27.4-3-27.4 11.3V288h-64v64h64v65.2c0 14.3 17.3 21.4 27.4 11.3L571 332c6.6-6.6 6.6-17.4 0-24zm-379 28v-32c0-8.8 7.2-16 16-16h176V160H248c-13.2 0-24-10.8-24-24V0H24C10.7 0 0 10.7 0 24v464c0 13.3 10.7 24 24 24h336c13.3 0 24-10.7 24-24V352H208c-8.8 0-16-7.2-16-16z"></path></svg>
+			  </div></a>
   
 			  
 			</div>
 
             <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
-		    <input type="submit" name="start" value="START" onclick="cmdNotification(this.value)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
-			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this.value)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
-		    <input type="submit" name="export" value="EXPORT" onclick="cmdNotification(this.value)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+		    <input type="submit" name="start" value="START" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+		    <input type="submit" name="export" value="EXPORT" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
 			</div>
 			</form>
 
