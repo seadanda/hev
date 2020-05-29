@@ -582,6 +582,8 @@ def last_data(rowid):
                 for index, item in enumerate(readback_variables):
                     data[item] = el[index]
                 fetched_all.append(data)
+
+    fetched_all.sort(key=lambda x : x["ROWID"]) # force rows into acending order
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
     return response
