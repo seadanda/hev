@@ -7,7 +7,14 @@ var size_data;
 var fio_reading;
 var p_plateau_reading;
 
+var pause_charts = false;
+
 var current_timestamp = -1;
+
+function togglePause(){
+    if (pause_charts) pause_charts = false;
+    else pause_charts = true;
+}
 
 function setChartXaxisRange(min,max){
     chart_volume.options.scales.xAxes[0].ticks.min = min;
@@ -157,10 +164,11 @@ function requestData() {
                     while(chart_volume.data.datasets[0].data.length > 10000) chart_volume.data.datasets[0].data.shift();
 
                     current_timestamp = last_timestamp;
-
-    		        chart_pressure.update(0);
-            		chart_flow.update(0);
-            		chart_volume.update(0);
+                    if (!pause_charts){
+        		        chart_pressure.update(0);
+                		chart_flow.update(0);
+                		chart_volume.update(0);
+                    }
                 }
                 
                 if ("fi02_percent_gauge" in obj) obj["fi02_percent_gauge"].update();
@@ -220,6 +228,7 @@ $(document).ready(function() {
                         gridLines : {
                             display: true,
                             color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
                         ticks: {
             		        maxTicksLimit: 13,
@@ -231,6 +240,7 @@ $(document).ready(function() {
                         gridLines : {
                             display: true,
                             color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
                         ticks: {
                             beginAtZero: true,
@@ -310,6 +320,7 @@ $(document).ready(function() {
                         gridLines : {
                             display: true,
                             color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
                         ticks: {
             		        maxTicksLimit: 13,
@@ -322,6 +333,7 @@ $(document).ready(function() {
                         gridLines : {
                             display: true,
                             color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
                         ticks: {
                             beginAtZero: true,
@@ -398,6 +410,7 @@ $(document).ready(function() {
                         gridLines : {
                             display: true,
                             color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
                         ticks: {
                 		    maxTicksLimit: 13,
@@ -412,6 +425,7 @@ $(document).ready(function() {
                         gridLines : {
                             display: true,
                             color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
                         ticks: {
                             beginAtZero: true,
@@ -460,7 +474,7 @@ function create_gauge_chart(var_name, setvalue, limits) {
 		}]
             },
             options: {
-
+                arrowColor: "white",
 	    maintainAspectRatio: true,
 		events: []
             }

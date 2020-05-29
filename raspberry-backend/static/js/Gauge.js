@@ -195,6 +195,7 @@
 
 		var ctx = this.ctx;
 		ctx.fillStyle = arrowColor;
+		ctx.strokeStyle = arrowColor;
 		ctx.beginPath();
 		coord = this.getCoordOnCircle(arrowLength, angle);
 		ctx.moveTo(arrowBegin.x, arrowBegin.y);

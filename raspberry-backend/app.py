@@ -324,6 +324,39 @@ class ArduinoClient(HEVClient):
 def progress(status, remaining, total):
     logging.debug(f'Copied {total-remaining} of {total} pages...')
 
+def downloadCSV():
+   sqlSelect =  "SELECT * FROM hev_monitor_data; "
+   timestr = time.strftime("%Y%m%d-%H%M%S")
+   fileName= 'export_'+timestr+'.csv'
+   try:
+      conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+      cursor = conn.cursor()
+      si = io.StringIO()
+      cw = csv.writer(si, dialect='excel',  delimiter=',')      
+      for row in cursor.execute(sqlSelect):
+        cw.writerow(row)
+      #results = cursor.fetchall()  
+      #print(results)   
+      
+      # Extract the table headers.
+      #headers = [i[0] for i in cursor.description]
+
+      #cw.writerows(headers)
+      
+      #csv.writer.writerow   (results)
+      output = make_response(si.getvalue())
+      output.headers["Content-Disposition"] = "attachment; filename="+fileName
+      output.headers["Content-type"] = "text/csv"
+      output.headers["charset"]='utf-8-sig'
+      print("Data export successful.")
+      
+   except sqlite3.Error as err:
+     conn.close()
+     raise Exception("sqlite3 error. CSV export failed: {}".format(str(err)))      
+   finally:
+     conn.close()   
+   return output
+
 
 WEBAPP = Flask(__name__)
 
@@ -381,6 +414,8 @@ def send_cmd():
         print(client.send_cmd("GENERAL", "STOP"))
     elif web_form.get('reset') == "RESET":
         print(client.send_cmd("GENERAL", "RESET"))
+    elif web_form.get('export') == "EXPORT":
+        downloadCSV()
     #return render_template('index.html', result=live_data())
     return ('', 204)
 
@@ -440,41 +475,6 @@ def send_ack():
         print(client.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
-
-
-@WEBAPP.route("/downloadCSV", methods=['POST'])
-def downloadCSV():
-   sqlSelect =  "SELECT * FROM hev_monitor_data; "
-   timestr = time.strftime("%Y%m%d-%H%M%S")
-   fileName= 'export_'+timestr+'.csv'
-   try:
-      conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
-      cursor = conn.cursor()
-      si = io.StringIO()
-      cw = csv.writer(si, dialect='excel',  delimiter=',')      
-      for row in cursor.execute(sqlSelect):
-        cw.writerow(row)
-      #results = cursor.fetchall()  
-      #print(results)   
-      
-      # Extract the table headers.
-      #headers = [i[0] for i in cursor.description]
-
-      #cw.writerows(headers)
-      
-      #csv.writer.writerow   (results)
-      output = make_response(si.getvalue())
-      output.headers["Content-Disposition"] = "attachment; filename="+fileName
-      output.headers["Content-type"] = "text/csv"
-      output.headers["charset"]='utf-8-sig'
-      print("Data export successful.")
-      
-   except sqlite3.Error as err:
-     conn.close()
-     raise Exception("sqlite3 error. CSV export failed: {}".format(str(err)))      
-   finally:
-     conn.close()   
-   return output
 
 
 
@@ -545,7 +545,6 @@ def last_data(rowid):
     alarm_united_var = ','.join(alarm_variables)
 
     fetched_all = []
-
     if client.check_table(MASTER_TABLE_NAME) and client.number_rows(MASTER_TABLE_NAME) > 0:
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
@@ -564,6 +563,9 @@ def last_data(rowid):
                 el = cursor.fetchone()
                 for index, item in enumerate(data_variables):
                     data[item] = el[index]
+                # switch so rowid refers to master, and payload id is table rowid
+                data["PAYLOADID"] = dataid
+                data["ROWID"] = rowid
                 fetched_all.append(data)
             if cycleid != None :
                 data= {}
@@ -572,6 +574,8 @@ def last_data(rowid):
                 el = cursor.fetchone()
                 for index, item in enumerate(cycle_variables):
                     data[item] = el[index]
+                data["PAYLOADID"] = cycleid
+                data["ROWID"] = rowid
                 fetched_all.append(data)
 
             if readbackid != None :
@@ -581,9 +585,9 @@ def last_data(rowid):
                 el = cursor.fetchone()
                 for index, item in enumerate(readback_variables):
                     data[item] = el[index]
+                data["PAYLOADID"] = readbackid
+                data["ROWID"] = rowid
                 fetched_all.append(data)
-
-    fetched_all.sort(key=lambda x : x["ROWID"]) # force rows into acending order
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
     return response

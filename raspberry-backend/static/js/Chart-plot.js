@@ -188,7 +188,12 @@ $(document).ready(function() {
             fontSize: 25,
             maxTicksLimit: 5,
 			      maxRotation: 0
-		      }
+		      },
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 		    }],
         yAxes: [{
           id: 'A',
@@ -198,6 +203,11 @@ $(document).ready(function() {
              fontColor: "#0000FF", // this here
              fontSize: 25,
            },
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
           }, 
         {
           id: 'B',
