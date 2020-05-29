@@ -39,8 +39,8 @@ private:
     AlarmLoop     *_alarm_loop    ;
     CommsControl  *_comms         ;
 
-    Payload _plReceive;
-    Payload _plSend;
+    Payload _pl_receive;
+    Payload _pl_send;
     uint32_t _fast_report_time;
     uint32_t _readback_report_time;
     uint32_t _cycle_report_time;
