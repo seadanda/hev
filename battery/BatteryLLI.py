@@ -17,6 +17,7 @@ logging.getLogger().setLevel(logging.DEBUG)
 class BatteryLLI:
     def __init__(self, timeout=1):
         super().__init__()
+        self._observers = []
         self._timeout = timeout
         self._pins = {"bat"      :  5,
                       "ok"       :  6,
@@ -24,12 +25,12 @@ class BatteryLLI:
                       "rdy2buf"  : 13,
                       "bat85"    : 19,
                       "prob_elec":  7}
-        self._payload = BatteryFormat()
+        self._payloadrecv = BatteryFormat()
         try:
             if gpio.DUMMY:
-                self._payload.dummy = True
+                self._payloadrecv.dummy = True
         except:
-            self._payload.dummy = False
+            self._payloadrecv.dummy = False
 
         gpio.setmode(gpio.BCM)
         for pin in self._pins:
@@ -40,10 +41,21 @@ class BatteryLLI:
             await asyncio.sleep(self._timeout)
             try:
                 for pin in self._pins:
-                    setattr(self._payload, pin, gpio.input(self._pins[pin]))
-                logging.debug(self._payload)
+                    setattr(self._payloadrecv, pin, gpio.input(self._pins[pin]))
+                for callback in self._observers:
+                    callback(self._payloadrecv)
+                logging.debug(self._payloadrecv)
+
             except:
                 logging.error("Failed gpio data save")
+    
+    # callback to dependants to read the received payload
+    @property
+    def payloadrecv(self):
+        return self._payloadrecv
+        
+    def bind_to(self, callback):
+        self._observers.append(callback)
 
 if __name__ == "__main__":
     try:
