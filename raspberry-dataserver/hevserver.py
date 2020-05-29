@@ -45,7 +45,17 @@ class HEVServer(object):
         logging.debug(f"Payload received: {payload}")
         # check if it is data or alarm
         payload_type = payload.getType()
-        if payload_type in [1,2,3,4,6,7,8,10] :
+        whitelist = [
+            PAYLOAD_TYPE.DATA,
+            PAYLOAD_TYPE.READBACK,
+            PAYLOAD_TYPE.CYCLE,
+            PAYLOAD_TYPE.THRESHOLDS,
+            PAYLOAD_TYPE.ALARM,
+            PAYLOAD_TYPE.DEBUG,
+            PAYLOAD_TYPE.IVT,
+            PAYLOAD_TYPE.BATTERY,
+        ]
+        if payload_type in whitelist:
             # pass data to db
             with self._dblock:
                 self._values = payload
@@ -54,14 +64,8 @@ class HEVServer(object):
             # NOTE: if BATTERY received, pass it back to controller, is this the best way?
             if payload_type == PAYLOAD_TYPE.BATTERY:
                 self._comms_lli.writePayload(payload)
-        elif payload_type == PAYLOAD_TYPE.CMD:
-            # ignore for the minute
-            pass
-        elif payload_type == PAYLOAD_TYPE.DEBUG:
-            # ignore for the minute
-            pass
-        elif payload_type == PAYLOAD_TYPE.UNSET:
-            # ignore for the minute
+        elif payload_type in PAYLOAD_TYPE:
+            # valid payload but ignored
             pass
         else:
             # invalid packet, don't throw exception just log and pop

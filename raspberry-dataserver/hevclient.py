@@ -94,6 +94,8 @@ class HEVClient(object):
                             pass
                         elif payload["type"] == "DEBUG":
                             pass
+                        elif payload["type"] == "BATTERY":
+                            pass
                         else:
                             raise HEVPacketError("Invalid broadcast type")
 
