@@ -152,9 +152,9 @@ function requestData() {
                             running_timestamp = seconds;
                         }
                     }
-                  	//while(chart_pressure.data.datasets[0].data.length > 1000) chart_pressure.data.datasets[0].data.shift();
-                   	//while(chart_flow.data.datasets[0].data.length > 1000) chart_flow.data.datasets[0].data.shift();
-                    //while(chart_volume.data.datasets[0].data.length > 1000) chart_volume.data.datasets[0].data.shift();
+                  	while(chart_pressure.data.datasets[0].data.length > 10000) chart_pressure.data.datasets[0].data.shift();
+                   	while(chart_flow.data.datasets[0].data.length > 10000) chart_flow.data.datasets[0].data.shift();
+                    while(chart_volume.data.datasets[0].data.length > 10000) chart_volume.data.datasets[0].data.shift();
 
                     current_timestamp = last_timestamp;
 
@@ -217,6 +217,10 @@ $(document).ready(function() {
                 },            
                 scales: {
                     xAxes: [{
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                        },
                         ticks: {
             		        maxTicksLimit: 13,
                 		    maxRotation: 0,
@@ -224,6 +228,10 @@ $(document).ready(function() {
                             max: 0,
             	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
             		yAxes: [{
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                        },
                         ticks: {
                             beginAtZero: true,
                             suggestedMax: 25,
@@ -269,7 +277,7 @@ $(document).ready(function() {
                     data: [],
                     label: "Var1",
                     //borderColor: "#3e95cd",
-                    borderColor: "#000000",
+                    borderColor: "green",
                     borderWidth: 4,
                     fill: false,
             		showLine: true,
@@ -299,6 +307,10 @@ $(document).ready(function() {
                 },
                 scales: {
                     xAxes: [{
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                        },
                         ticks: {
             		        maxTicksLimit: 13,
                 		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
@@ -307,6 +319,10 @@ $(document).ready(function() {
                             max: 0,
                     		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
         			yAxes: [{
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                        },
                         ticks: {
                             beginAtZero: true,
                             maxTicksLimit: 8,
@@ -379,6 +395,10 @@ $(document).ready(function() {
                 },
                 scales: {
                     xAxes: [{
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                        },
                         ticks: {
                 		    maxTicksLimit: 13,
                 		    maxRotation: 0,
@@ -389,6 +409,10 @@ $(document).ready(function() {
                     }],
                             
             		yAxes: [{
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                        },
                         ticks: {
                             beginAtZero: true,
             	    		suggestedMax: 25,
@@ -425,12 +449,12 @@ function create_gauge_chart(var_name, setvalue, limits) {
             type: "tsgauge",
             data: {
 		datasets: [{
-                    backgroundColor: ["red", "rgba(20,20,20,0.2)", "red"],
+                    backgroundColor: ["red", "rgba(255,255,255,0.2)", "red"],
                     borderWidth: 0,
                     gaugeData: {
             value: 0,
             setvalue: setvalue,
-			valueColor: "black"
+			valueColor: "white"
                     },
                     gaugeLimits: limits
 		}]

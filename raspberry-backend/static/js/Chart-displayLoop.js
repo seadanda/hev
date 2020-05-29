@@ -132,10 +132,20 @@ $(document).ready(function() {
 		  legend: { display: true, labels: {fontSize: 24 } },
 		  scales: {xAxes: [{display: true,
 				    scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24},
+                    gridLines : {
+                        display: true,
+                        color: "rgba(255,255,255,0.2)",
+                        zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 				    ticks: {min: 0, max: 35,
 					     stepSize: 5, fontSize: 25 }}],
 			   yAxes: [{display: true,
 				    scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24},
+                    gridLines : {
+                        display: true,
+                        color: "rgba(255,255,255,0.2)",
+                        zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 				    ticks: {min: 0, max: 800,
 					    stepSize: 100, fontSize:25 }}]}}
     });
@@ -153,10 +163,20 @@ $(document).ready(function() {
 		  legend: { display: true, labels: {fontSize: 24 } },
 		scales: {xAxes: [{display: true,
 				  scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24},
+                    gridLines : {
+                        display: true,
+                        color: "rgba(255,255,255,0.2)",
+                        zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 				  ticks: {min: 0, max: 800,
 					  stepSize: 100, fontSize: 25 }}],
 			    yAxes: [{display: true,
 				     scaleLabel: { display: true, labelString: 'Flow [ml/min]', fontSize: 24},
+                    gridLines : {
+                        display: true,
+                        color: "rgba(255,255,255,0.2)",
+                        zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 				     ticks: {min: -300, max: 300,
 					     stepSize: 100, fontSize: 25 }}]}}
     });
@@ -174,10 +194,20 @@ $(document).ready(function() {
 		  legend: { display: true, labels: {fontSize: 24 } },
 		   scales: {xAxes: [{display: true,
 				     scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24},
+                    gridLines : {
+                        display: true,
+                        color: "rgba(255,255,255,0.2)",
+                        zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 				     ticks: {min: 0, max: 35 ,
 					     stepSize: 5  , fontSize: 25 }}],
 			    yAxes: [{display: true,
 				     scaleLabel: { display: true, labelString: 'Flow [ml/min]', fontSize: 24},
+                    gridLines : {
+                        display: true,
+                        color: "rgba(255,255,255,0.2)",
+                        zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 				     ticks: {min: -300, max: 300,
 					     stepSize: 100, fontSize: 25 }}]}}
     });
