@@ -49,6 +49,9 @@ function RunLoop() {
     chart_PV.data.datasets[0].data.length = 0;
     chart_VF.data.datasets[0].data.length = 0;
     chart_PF.data.datasets[0].data.length = 0;
+    chart_PV.data.datasets[1].data.length = 0;
+    chart_VF.data.datasets[1].data.length = 0;
+    chart_PF.data.datasets[1].data.length = 0;
     // now run chart updates
     chart_PV.update();
     chart_VF.update();
@@ -157,16 +160,16 @@ $(document).ready(function() {
         type: 'scatter',
         data: {datasets: [{data: [],
 			   label: "Inhale",
-			   borderColor: "rgb(51,99,255)",
-			   pointBackgroundColor : "rgb(51,99,255)",
+			   borderColor: "rgb(100,150,255)",
+			   pointBackgroundColor : "rgb(100,150,255)",
 			   fill: false,
-			   showLine: false },
+			   showLine: true },
 			  {data: [],
 			   label: "Exhale : Pressure - Volume",
-			   borderColor: "rgb(255,99,51)",
-			   pointBackgroundColor : "rgb(255,99,51)",
+			   borderColor: "rgb(255,150,100)",
+			   pointBackgroundColor : "rgb(255,150,100)",
 			   fill: false,
-			   showLine: false }
+			   showLine: true }
 			  ]},
 	options: {elements: { point: { radius: 5}},
 		  legend: { display: true, labels: {fontSize: 24 } },
@@ -195,16 +198,16 @@ $(document).ready(function() {
         type: 'scatter',
         data: {datasets: [{data: [],
 			   label: "Inhale",
-			   borderColor: "rgb(51,99,255)",
-			   pointBackgroundColor : "rgb(51,99,255)",
+			   borderColor: "rgb(100,150,255)",
+			   pointBackgroundColor : "rgb(100,150,255)",
 			   fill: false,
-			   showLine: false },
+			   showLine: true },
 			  {data: [],
 			   label: "Exhale : Volume - Flow",
-			   borderColor: "rgb(255,99,51)",
-			   pointBackgroundColor : "rgb(255,99,51)",
+			   borderColor: "rgb(255,150,100)",
+			   pointBackgroundColor : "rgb(255,150,100)",
 			   fill: false,
-			   showLine: false }]}
+			   showLine: true }]}
 	,options: {elements: { point: { radius: 5}},
 		  legend: { display: true, labels: {fontSize: 24 } },
 		scales: {xAxes: [{display: true,
@@ -232,16 +235,16 @@ $(document).ready(function() {
         type: 'scatter',
         data: {datasets: [{data: [],
 			   label: "Inhale",
-			   borderColor: "rgb(51,99,255)",
-			   pointBackgroundColor : "rgb(51,99,255)",
+			   borderColor: "rgb(100,150,255)",
+			   pointBackgroundColor : "rgb(100,150,255)",
 			   fill: false,
-			   showLine: false },
+			   showLine: true },
 			  {data: [],
 			   label: "Exhale : Pressure - Flow",
-			   borderColor: "rgb(255,99,51)",
-			   pointBackgroundColor : "rgb(255,99,51)",
+			   borderColor: "rgb(255,150,100)",
+			   pointBackgroundColor : "rgb(255,150,100)",
 			   fill: false,
-			   showLine: false }]}
+			   showLine: true }]}
 	,options: {elements: { point: { radius: 5, fill: true}},
 		  legend: { display: true, labels: {fontSize: 24 } },
 		   scales: {xAxes: [{display: true,
