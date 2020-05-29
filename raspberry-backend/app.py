@@ -17,6 +17,8 @@ from datetime import datetime
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
 
+import io
+import csv
 import sys
 import argparse
 import sqlite3
@@ -438,6 +440,41 @@ def send_ack():
         print(client.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())
     return ('', 204)
+
+
+@WEBAPP.route("/downloadCSV", methods=['POST'])
+def downloadCSV():
+   sqlSelect =  "SELECT * FROM hev_monitor_data; "
+   timestr = time.strftime("%Y%m%d-%H%M%S")
+   fileName= 'export_'+timestr+'.csv'
+   try:
+      conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+      cursor = conn.cursor()
+      si = io.StringIO()
+      cw = csv.writer(si, dialect='excel',  delimiter=',')      
+      for row in cursor.execute(sqlSelect):
+        cw.writerow(row)
+      #results = cursor.fetchall()  
+      #print(results)   
+      
+      # Extract the table headers.
+      #headers = [i[0] for i in cursor.description]
+
+      #cw.writerows(headers)
+      
+      #csv.writer.writerow   (results)
+      output = make_response(si.getvalue())
+      output.headers["Content-Disposition"] = "attachment; filename="+fileName
+      output.headers["Content-type"] = "text/csv"
+      output.headers["charset"]='utf-8-sig'
+      print("Data export successful.")
+      
+   except sqlite3.Error as err:
+     conn.close()
+     raise Exception("sqlite3 error. CSV export failed: {}".format(str(err)))      
+   finally:
+     conn.close()   
+   return output
 
 
 
