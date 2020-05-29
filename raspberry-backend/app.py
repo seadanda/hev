@@ -324,38 +324,6 @@ class ArduinoClient(HEVClient):
 def progress(status, remaining, total):
     logging.debug(f'Copied {total-remaining} of {total} pages...')
 
-def downloadCSV():
-   sqlSelect =  "SELECT * FROM hev_monitor_data; "
-   timestr = time.strftime("%Y%m%d-%H%M%S")
-   fileName= 'export_'+timestr+'.csv'
-   try:
-      conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
-      cursor = conn.cursor()
-      si = io.StringIO()
-      cw = csv.writer(si, dialect='excel',  delimiter=',')      
-      for row in cursor.execute(sqlSelect):
-        cw.writerow(row)
-      #results = cursor.fetchall()  
-      #print(results)   
-      
-      # Extract the table headers.
-      #headers = [i[0] for i in cursor.description]
-
-      #cw.writerows(headers)
-      
-      #csv.writer.writerow   (results)
-      output = make_response(si.getvalue())
-      output.headers["Content-Disposition"] = "attachment; filename="+fileName
-      output.headers["Content-type"] = "text/csv"
-      output.headers["charset"]='utf-8-sig'
-      print("Data export successful.")
-      
-   except sqlite3.Error as err:
-     conn.close()
-     raise Exception("sqlite3 error. CSV export failed: {}".format(str(err)))      
-   finally:
-     conn.close()   
-   return output
 
 
 WEBAPP = Flask(__name__)
@@ -402,6 +370,38 @@ def fan():
 def multiple_appends(listname, *element):
     listname.extend(element)
 
+@WEBAPP.route('/downloadCSV', methods=['get'])
+def downloadCSV():
+    sqlSelect =  "SELECT * FROM hev_monitor_data; "
+    timestr = time.strftime("%Y%m%d-%H%M%S")
+    fileName= 'export_'+timestr+'.csv'
+    try:
+       conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+       cursor = conn.cursor()
+       si = io.StringIO()
+       cw = csv.writer(si, dialect='excel',  delimiter=',')      
+       for row in cursor.execute(sqlSelect):
+         cw.writerow(row)
+       #results = cursor.fetchall()        
+       # Extract the table headers.
+       #headers = [i[0] for i in cursor.description]
+       #cw.writerows(headers)       
+       #csv.writer.writerow   (results)
+       output = make_response(si.getvalue())
+       print("benzinaaaa\n\n")          
+       output.headers["Content-Disposition"] = "attachment; filename="+fileName
+       output.headers["Content-type"] = "text/csv"
+       output.headers["charset"]='utf-8-sig'
+       print("Data export successful.")      
+    except sqlite3.Error as err:
+      conn.close()
+      raise Exception("sqlite3 error. CSV export failed: {}".format(str(err)))      
+    finally:
+      conn.close()   
+      return output
+
+
+
 @WEBAPP.route('/send_cmd', methods=['POST'])
 def send_cmd():
     """
@@ -412,8 +412,8 @@ def send_cmd():
         print(client.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
         print(client.send_cmd("GENERAL", "STOP"))
-    elif web_form.get('reset') == "RESET":
-        print(client.send_cmd("GENERAL", "RESET"))
+    #elif web_form.get('reset') == "RESET":
+    #    print(client.send_cmd("GENERAL", "RESET"))
     elif web_form.get('export') == "EXPORT":
         downloadCSV()
     #return render_template('index.html', result=live_data())
