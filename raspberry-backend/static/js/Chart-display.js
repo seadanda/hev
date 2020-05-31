@@ -37,7 +37,7 @@ function getGaugeMinValue(name){
 function getGaugeMaxValue(name){
     return obj[name].data.datasets[0].gaugeLimits[obj[name].data.datasets[0].gaugeLimits.length-1];
 }
-
+/*
 var rowid = 0;
 function requestData() {
     $.ajax({
@@ -48,9 +48,8 @@ function requestData() {
                 console.log("Got no new data");
             } else
             {
-                /*
-                // we have some data, let's fill first our readings with last point
-                */
+                //                // we have some data, let's fill first our readings with last point
+            //
 
                 //first point is last time in terms of time
                 var point = data[0];
@@ -123,9 +122,9 @@ function requestData() {
                 // if ( last_timestamp < current_timestamp ) current_timestamp = last_timestamp - 1.00;
                 
 
-                /*
+                //
                 // if charts exist we now update with all points received
-                */
+                //
                 
                 if (chart_pressure && chart_flow && chart_volume){
                     //update current plots with difference
@@ -182,7 +181,7 @@ function requestData() {
 }
 
 requestData();
-
+*/
 
 
 $(document).ready(function() {
@@ -197,6 +196,10 @@ $(document).ready(function() {
                     borderColor: "#0049b8",
                     borderWidth: 4,
                     fill: false,
+                    pointColor: "rgba(220,220,220,1)",
+                    pointStrokeColor: "#fff",
+                    pointHighlightFill: "#fff",
+                    pointHighlightStroke: "rgba(220,220,220,1)",
     		showLine: true,
                   }
                 ]
@@ -216,7 +219,7 @@ $(document).ready(function() {
                 stroke: {
                 },
                 tooltips: {
-                    enabled: false
+                    enabled: true
                 },
                 title: {
                     display: true,

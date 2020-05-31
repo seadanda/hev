@@ -17,56 +17,6 @@ function setChartProtXaxisRange(min,max){
     chart.options.scales.xAxes[0].ticks.max = max;   
 }
 
-
-
-/**
- * Request last N data from the server, add it to the graph
- */
-function init_results(){
-  $.getJSON({
-    url: '/last_N_data',
-    success: function(data) {
-      var timestamp = 0;
-        for (i=0; i<data.length; i++) {
-          var seconds = data[i]["timestamp"]/1000;
-          if (i==data.length-1) timestamp = seconds;
-          if ( seconds == "" ) continue;
-          initial_yaxis_var1.push({x : seconds, y : data[i]["pressure_patient"]});
-          initial_yaxis_var2.push({x : seconds, y : data[i]["volume"]});
-        }
-        //reverse because data is read from the other way
-        initial_yaxis_var1.reverse();
-        initial_yaxis_var2.reverse();
-        console.log('init results, timestamp: ',timestamp);
-        for ( let i = 0 ; i < initial_yaxis_var1.length; i++){
-          console.log('filling up with ',initial_yaxis_var1[i]['x'], ' - ',timestamp);
-          initial_yaxis_var1[i]['x'] = initial_yaxis_var1[i]['x'] - timestamp;
-          initial_yaxis_var2[i]['x']   = initial_yaxis_var2[i]['x']   - timestamp;
-        }        
-    },
-    cache: false
-  });
-}
-
-/*
-document.getElementById("pressure_buffer").innerHTML = (data.pressure_buffer).toFixed(2);
-document.getElementById("pressure_inhale").innerHTML = (data.pressure_inhale).toFixed(2);
-//document.getElementById("temperature_buffer").innerHTML = (data.temperature_buffer).toFixed(2);
-document.getElementById("pressure_air_supply").innerHTML = (data.pressure_air_supply).toFixed(2);
-document.getElementById("pressure_air_regulated").innerHTML = (data.pressure_air_regulated).toFixed(2);
-document.getElementById("pressure_o2_supply").innerHTML = (data.pressure_o2_supply).toFixed(2);
-document.getElementById("pressure_o2_regulated").innerHTML = (data.pressure_o2_regulated).toFixed(2);
-document.getElementById("pressure_patient").innerHTML = (data.pressure_patient).toFixed(2);
-document.getElementById("pressure_diff_patient").innerHTML = (data.pressure_diff_patient).toFixed(2);	
-document.getElementById("fsm_state").innerHTML = data.fsm_state;
-document.getElementById("airway_pressure").innerHTML = (data.airway_pressure).toFixed(2);	
-document.getElementById("volume").innerHTML = (data.volume).toFixed(2);	
-document.getElementById("flow").innerHTML = (data.flow).toFixed(2);	
-document.getElementById("data_type").innerHTML = data.data_type;
-document.getElementById("timestamp").innerHTML = (data.timestamp/1000).toFixed(2);
-document.getElementById("version").innerHTML = data.version; 
-//document.getElementById("version").innerHTML = (data.version).toFixed(2); //Commented because not included in the html part
-*/
 function requestDataVar1(var1, var2) {
   $.ajax({
       url: '/last-data',
