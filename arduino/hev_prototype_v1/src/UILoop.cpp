@@ -283,6 +283,8 @@ void UILoop::cmdGeneral(cmd_format &cf) {
             break;
         case CMD_GENERAL::RESET : _breathing_loop->doReset();
             break;
+        case CMD_GENERAL::STANDBY : _breathing_loop->doStandby();
+            break;
         default:
             break;
     }

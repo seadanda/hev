@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAA
+#define HEV_FORMAT_VERSION 0xAB
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -58,7 +58,8 @@ enum CMD_TYPE  : uint8_t {
 enum CMD_GENERAL : uint8_t {
     START =  1,
     STOP  =  2,
-    RESET =  3
+    RESET =  3,
+    STANDBY = 4
 };
 
 // Taken from the FSM doc. Correct as of 1400 on 20200417
