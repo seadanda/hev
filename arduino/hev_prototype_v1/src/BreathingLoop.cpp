@@ -403,7 +403,9 @@ void BreathingLoop::FSM_assignment() {
             break;
 
         case BL_STATES::STANDBY:
-            if (_standby == true) {
+            if (_running == false) {
+                next_state = BL_STATES::STOP;
+            } else if (_standby == true) {
                 next_state = BL_STATES::STANDBY;
             } else {
                 next_state = BL_STATES::BUFF_LOADED;
