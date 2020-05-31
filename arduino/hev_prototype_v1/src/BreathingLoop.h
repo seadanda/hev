@@ -22,6 +22,7 @@ public:
     void doStart();
     void doStop();
     void doReset();
+    void doStandby();
     bool getRunning();
     void updateReadings();
     void updateRawReadings();
@@ -72,7 +73,8 @@ public:
             EXHALE          = 10,
             STOP            = 11,
             BUFF_PURGE      = 12,
-            BUFF_FLUSH      = 13
+            BUFF_FLUSH      = 13,
+            STANDBY         = 14
     };
 
 
@@ -88,6 +90,7 @@ private:
     uint32_t            _lasttime;
     bool                _running;
     bool                _reset;
+    bool                _standby;
 
     ValvesController _valves_controller;
 
