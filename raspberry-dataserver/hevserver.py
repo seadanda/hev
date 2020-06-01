@@ -35,7 +35,6 @@ class HEVServer(object):
         self._comms_lli = comms_lli
         self._comms_lli.bind_to(self.polling)
         self._battery_lli = battery_lli
-        self._battery_lli.bind_to(self.polling)
 
         self._broadcasting = True
         self._datavalid = None           # something has been received from arduino. placeholder for asyncio.Event()
