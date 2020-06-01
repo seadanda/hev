@@ -14,7 +14,7 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
 
     _fast_report_timeout = 10;  //ms
     _readback_report_timeout = 300; 
-    _cycle_report_timeout = 500;  // this should probably be based on fsm state
+    _cycle_report_timeout = 1000;  // this should probably be based on fsm state
 
     _alarm_report_timeout = 1000; // max timeout to report, actual sending timeout is timeout/priority
     _ivt_report_timeout = 510;  // this should probably be based on fsm state
@@ -118,7 +118,8 @@ void UILoop::reportReadbackValues()
         _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
-        _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
+        //_plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
+        _plSend.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
         _comms->writePayload(_plSend);
         _readback_report_time = tnow;
     }
@@ -254,7 +255,8 @@ void UILoop::reportTargets(target_variables targets)
     _target_data.peep = targets.peep;
     _target_data.fiO2 = targets.fiO2;
     _target_data.inhale_time = targets.inhale_time;
-    _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
+    //_plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
+    _plSend.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
     _comms->writePayload(_plSend);
 
 }
