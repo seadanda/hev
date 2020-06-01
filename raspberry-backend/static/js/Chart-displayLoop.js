@@ -62,6 +62,7 @@ function RunLoop() {
  * Request new data from the server, add it to the graph and set a timeout
  * to request again
  */
+/*
 function requestChartVar() {
     $.ajax({
         url: '/last-data/'+last_row_accessed,
@@ -153,7 +154,7 @@ function requestChartVar() {
 }
 
 requestChartVar()
-
+*/
 $(document).ready(function() {
     var ctx_PV = document.getElementById('pressure_volume_chart');
     chart_PV = new Chart(ctx_PV, {

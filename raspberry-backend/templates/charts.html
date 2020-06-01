@@ -9,28 +9,59 @@
 {% block content %}
 <main>
   <div class="container-fluid">
-    <!--<h1 class="mt-4">Info</h1> !-->
+    <div class="tab">
+      <button class="tablinks" onclick="openChart(this, 'Trends')">Trends</button>
+      <button class="tablinks" onclick="openChart(this, 'Loops')">Loops</button>
+    </div>
+  
+    <!-- Tab content -->
+    <div id="Trends" class="tabcontent">
+      <div class = "row">
+  
+  
+        <div class = "col-md-11 mr-2">
+    <div class="row">
+                <!-- <div class="card-chart-header small ">Pressure [mbar]</div> -->
+                <div class="main-chart-container"><canvas id="pressure_chart"></canvas></div>
+    </div>
     <div class = "row">
-
-
-      <div class = "col-md-11 mr-2">
-	<div class="row">
-              <!-- <div class="card-chart-header small ">Pressure [mbar]</div> -->
-              <div class="main-chart-container"><canvas id="pressure_chart"></canvas></div>
-	</div>
-	<div class = "row">
-              <!-- <div class="card-chart-header small">Flow [mL/min]</div> -->
-	      <div class="main-chart-container"><canvas id="flow_chart"></canvas></div>
-	</div>
-	<div class = "row">
-	      <!-- <div class="card-chart-header small ">Volume [mL]</div> -->
-	      <div class="main-chart-container"><canvas id="volume_chart"></canvas></div>
-	</div>
-      </div>
-    
+                <!-- <div class="card-chart-header small">Flow [mL/min]</div> -->
+          <div class="main-chart-container"><canvas id="flow_chart"></canvas></div>
+    </div>
+    <div class = "row">
+          <!-- <div class="card-chart-header small ">Volume [mL]</div> -->
+          <div class="main-chart-container"><canvas id="volume_chart"></canvas></div>
+    </div>
+        </div>
       
+        
+        </div>
+      </div>
+  
+    </div>
+    <div id="Loops" class="tabcontent">
+    <div class = "row">
+      <div class = "col py-0 px-3">
+        <canvas id="pressure_volume_chart" width="45%" height="22"></canvas>
+      </div>
+      <div class = "col py-0 px-3">
+        <canvas id="flow_volume_chart" width="45%" height="22"></canvas>
+        <!-- <div class="card-chart-header small ">Pressure [mbar]</div> -->
       </div>
     </div>
+    <div class = "row">
+      <div class = "col py-0 px-3">
+	<canvas id="pressure_flow_chart" width="45%" height="22"></canvas>
+      </div>
+      <div class = "col py-0 px-3">	
+  	<button id="LoopHoldButton" type="button" onclick="HoldLoop()"> <h1>Hold after Loop</h1> </button>
+  	<br>
+  	<button id="LoopStartButton" type="button" onclick="RunLoop()" disabled> <h1>Restart Loop</h1> </button>
+      </div>
+    </div>
+    </div>
+
+
   </div>
 </main>
 {% endblock %}
@@ -40,16 +71,44 @@
 <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
-<script src="{{ url_for('static', filename='js/Chart.js') }}"></script>
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
+<script src="{{ url_for('static', filename='js/Chart-displayLoop.js') }}"></script>
+<script src="{{ url_for('static', filename='js/HevUpdater.js') }}"></script>
 <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
 <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
 
 
 <script>
-function setActiveClass() {
-  var element = document.getElementById("fan-icon");
-  element.classList.add("active");
+
+function openChart(el, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  el.className += " active";
 }
-</script>
+
+$(document).ready ( function(){
+  var tablinks = document.getElementsByClassName("tablinks");
+  if (tablinks.length > 0){
+    openChart(tablinks[0],"Trends");
+  }
+  // decide what to unlock based on mode
+  //var object = document.getElementById("Trends");
+  //var opt = object.options[object.selectedIndex];
+});
+  </script>
 {% endblock %}

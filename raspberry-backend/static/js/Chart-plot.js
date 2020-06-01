@@ -15,7 +15,6 @@ function setChartProtXaxisRange(min,max){
 }
 
 
-
 /**
  * Request last N data from the server, add it to the graph
  */

@@ -31,6 +31,7 @@ class CMD_GENERAL(Enum):
     START =  1
     STOP  =  2
     RESET =  3
+    STANDBY = 4
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
@@ -149,6 +150,7 @@ class BL_STATES(Enum):
     STOP            = 11
     BUFF_PURGE      = 12
     BUFF_FLUSH      = 13
+    STANDBY         = 14
 
 @unique
 class PAYLOAD_TYPE(IntEnum):
@@ -169,7 +171,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAA, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAB, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 

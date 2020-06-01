@@ -18,6 +18,7 @@ BreathingLoop::BreathingLoop()
     _bl_laststate = BL_STATES::IDLE;
     _running = false;
     _reset = false;
+    _standby = false;
     _safe  = true;
 
     _peep = 5.0;
@@ -342,7 +343,7 @@ void BreathingLoop::resetReadingSums()
 }
 
 //This is used to assign the transitions of the fsm
-void BreathingLoop::FSM_assignment( ) {
+void BreathingLoop::FSM_assignment() {
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _fsm_time >= _fsm_timeout) {
         BL_STATES next_state;
@@ -394,10 +395,23 @@ void BreathingLoop::FSM_assignment( ) {
         case BL_STATES::EXHALE:
             if (_running == false) {
                 next_state = BL_STATES::STOP;
+            } else if (_standby == true) {
+                next_state = BL_STATES::STANDBY;
             } else {
                 next_state = BL_STATES::BUFF_LOADED;
             }
             break;
+
+        case BL_STATES::STANDBY:
+            if (_running == false) {
+                next_state = BL_STATES::STOP;
+            } else if (_standby == true) {
+                next_state = BL_STATES::STANDBY;
+            } else {
+                next_state = BL_STATES::BUFF_LOADED;
+            }
+            break;
+
         case BL_STATES::BUFF_PURGE:
             if (_reset == true ){
                 next_state = BL_STATES::IDLE;
@@ -540,7 +554,12 @@ void BreathingLoop::FSM_breathCycle()
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
             inhaleTrigger();
+            //logMsg("standby = "+String(_standby));
+            break;
             
+        case BL_STATES::STANDBY:
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _fsm_timeout = 1000;
             break;
         case BL_STATES::BUFF_PURGE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
@@ -621,16 +640,24 @@ void BreathingLoop::safetyCheck()
 void BreathingLoop::doStart()
 {
     _running = true;
+    _standby = false;
 }
 
 void BreathingLoop::doStop()
 {
     _running = false;
+    _standby = false;
 }
 
 void BreathingLoop::doReset()
 {
     _reset = true;
+    _standby = false;
+}
+
+void BreathingLoop::doStandby()
+{
+    _standby = true;
 }
 
 bool BreathingLoop::getRunning()
