@@ -13,7 +13,7 @@
     	<div class = "col-charts-main">
 		<div class="col-md-12">
 			<div class="row col-center pb-1">
-				<select id='chart_variables' multiple="multiple" class="form-select">
+				<select id='chart_variables'  class="form-select" onchange="updateChartType()">
 					<option value='pressure_air_supply' selected>Air (supply)</option>
 					<option value='pressure_air_regulated' selected>Air (regulated)</option>
 					<option value='pressure_o2_supply' selected>O2 (supply)</option>
@@ -28,7 +28,6 @@
 					<option value='volume' selected>volume</option>
 					<option value='flow' selected>flow</option>
 				</select>
-	        	<input class="" type="button" value="Submit" onclick="updateChartType()">
 			</div>
 			<div class="row">
 	    	          <!--<div class="card-chart-header small ">Variable number 1</div>-->
