@@ -53,7 +53,6 @@ class HEVServer(object):
             PAYLOAD_TYPE.ALARM,
             PAYLOAD_TYPE.DEBUG,
             PAYLOAD_TYPE.IVT,
-            PAYLOAD_TYPE.BATTERY,
         ]
         if payload_type in whitelist:
             # pass data to db
@@ -61,15 +60,33 @@ class HEVServer(object):
                 self._values = payload
             # let broadcast thread know there is data to send
             self._datavalid.set()
-            # NOTE: if BATTERY received, pass it back to controller, is this the best way?
-            if payload_type == PAYLOAD_TYPE.BATTERY:
-                self._comms_lli.writePayload(payload)
         elif payload_type in PAYLOAD_TYPE:
             # valid payload but ignored
             pass
         else:
             # invalid packet, don't throw exception just log and pop
             logging.error(f"Received invalid packet, ignoring: {payload}")
+    
+    async def handle_battery(self) -> None:
+        while True:
+            try:
+                # wait for a new battery state from the batterylli
+                payload = await self._battery_lli._payloadrecv
+                logging.debug(f"Payload received: {payload}")
+                if payload.getType != PAYLOAD_TYPE.BATTERY:
+                    raise HEVPacketError("Battery state invalid")
+
+                # pass data to db
+                with self._dblock:
+                    self._values = payload
+                # let broadcast thread know there is data to send
+                self._datavalid.set()
+
+                # send to uC
+                self._comms_lli.writePayload(payload)
+            except HEVPacketError as e:
+                logging.error(e)
+            
 
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # listen for queries on the request socket
@@ -226,7 +243,8 @@ class HEVServer(object):
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
         r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
         b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
-        tasks = [b1, r1, b2]
+        battery = self.handle_battery()              # Battery status
+        tasks = [b1, r1, b2, battery]
         await asyncio.gather(*tasks, return_exceptions=True)
 
 def getArduinoPort():

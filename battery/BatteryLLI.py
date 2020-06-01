@@ -17,7 +17,6 @@ logging.getLogger().setLevel(logging.DEBUG)
 class BatteryLLI:
     def __init__(self, timeout=1):
         super().__init__()
-        self._observers = []
         self._timeout = timeout
         self._pins = {"bat"      :  5,
                       "ok"       :  6,
@@ -25,12 +24,14 @@ class BatteryLLI:
                       "rdy2buf"  : 13,
                       "bat85"    : 19,
                       "prob_elec":  7}
-        self._payloadrecv = BatteryFormat()
+        self._dummy = False
+        self.queue = asyncio.Queue()
+
         try:
             if gpio.DUMMY:
-                self._payloadrecv.dummy = True
+                self._dummy = True
         except:
-            self._payloadrecv.dummy = False
+            pass
 
         gpio.setmode(gpio.BCM)
         for pin in self._pins:
@@ -39,24 +40,24 @@ class BatteryLLI:
     async def main(self) -> None:
         while True:
             await asyncio.sleep(self._timeout)
+            payload = BatteryFormat(dummy=self._dummy)
             try:
                 for pin in self._pins:
-                    setattr(self._payloadrecv, pin, gpio.input(self._pins[pin]))
-                for callback in self._observers:
-                    callback(self._payloadrecv)
-                logging.debug(self._payloadrecv)
-
-            except:
+                    setattr(payload, pin, gpio.input(self._pins[pin]))
+                self.queue.put_nowait(payload)
+            except asyncio.queues.QueueFull:
+                try:
+                    self.queue.get_nowait()
+                    self.queue.task_done()
+                    self.queue.put_nowait(payload)
+                except Exception as e:
+                    # Queue is being written from somewhere else. won't get here
+                    logging.error(e)
+            except Exception:
                 logging.error("Failed gpio data save")
+            else:
+                logging.debug(payload)
     
-    # callback to dependants to read the received payload
-    @property
-    def payloadrecv(self):
-        return self._payloadrecv
-        
-    def bind_to(self, callback):
-        self._observers.append(callback)
-
 if __name__ == "__main__":
     try:
         # schedule async tasks
