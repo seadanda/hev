@@ -114,7 +114,8 @@ private:
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
     states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1200, 10, 1600, 200};
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
-    void measure_durations();
+    void measureDurations();
+    // void measurePEEP();
     // targets
     void initTargets();
     target_variables _targets_pcac; 
@@ -186,6 +187,10 @@ private:
     float _running_inhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_minute_volume[CYCLE_AVG_READINGS];
+
+    // float _running_peep[RUNNING_AVG_READINGS];
+    // float _running_avg_peep;
+    // uint8_t _running_index_peep;
 
     bool  _inhale_triggered;
     float _inhale_trigger_threshold;

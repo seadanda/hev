@@ -52,8 +52,8 @@ class Dependant(object):
         #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
         #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
         #   logging.info(f"payload received:  {payload} ")
-        if payload.getType() == PAYLOAD_TYPE.READBACK.value:
-            logging.info(f"payload received:  {payload} ")
+        #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
+        #    logging.info(f"payload received:  {payload} ")
         #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
         #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
