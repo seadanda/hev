@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAB
+#define HEV_FORMAT_VERSION 0xAC
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -41,18 +41,25 @@ enum PAYLOAD_TYPE : uint8_t {
     ALARM        = 6,
     DEBUG        = 7,
     IVT          = 8,
-    LOGMSG       = 9
+    LOGMSG       = 9,
+    TARGET       = 10
 };
 
 enum CMD_TYPE  : uint8_t {
-    GENERAL           =  1,
-    SET_DURATION      =  2,
-    SET_MODE          =  3,
-    SET_THRESHOLD_MIN =  4,
-    SET_THRESHOLD_MAX =  5,
-    SET_VALVE         =  6,
-    SET_PID           =  7,
-    SET_TARGET        =  8
+    GENERAL                =  1,
+    SET_DURATION           =  2,
+    SET_MODE               =  3,
+    SET_THRESHOLD_MIN      =  4,
+    SET_THRESHOLD_MAX      =  5,
+    SET_VALVE              =  6,
+    SET_PID                =  7,
+    SET_TARGET_PC_AC       =  8,
+    SET_TARGET_PC_AC_PRVC  =  9,
+    SET_TARGET_PC_PSV      =  10,
+    SET_TARGET_CPAP        =  11,
+    SET_TARGET_TEST        =  12,
+    SET_TARGET_CURRENT     =  13,
+    GET_TARGETS            =  14
 };
 
 enum CMD_GENERAL : uint8_t {
@@ -78,15 +85,15 @@ enum CMD_SET_DURATION : uint8_t {
 };
 
 enum VENTILATION_MODE : uint8_t {
-    UNKNOWN             = 0,
-    HEV_MODE_PC_AC      = 1,
-    HEV_MODE_PC_AC_PRVC = 2,
-    HEV_MODE_PC_PSV     = 3,
-    HEV_MODE_CPAP       = 4,
-    HEV_MODE_TEST       = 5,
-    LAB_MODE_BREATHE    = 6,
-    LAB_MODE_PURGE      = 7,
-    LAB_MODE_FLUSH      = 8
+    UNKNOWN    = 0,
+    PC_AC      = 1,
+    PC_AC_PRVC = 2,
+    PC_PSV     = 3,
+    CPAP       = 4,
+    TEST       = 5,
+    PURGE      = 6,
+    FLUSH      = 7,
+    CURRENT    = 100  // not settable
 };
 
 enum CMD_SET_VALVE: uint8_t {
@@ -111,12 +118,15 @@ enum CMD_SET_PID : uint8_t {
 };
 
 enum CMD_SET_TARGET : uint8_t {
-    PRESSURE         = 1,
-    RESPIRATORY_RATE = 2, 
-    IE_RATIO         = 3,
-    VOLUME           = 4,
-    PEEP             = 5
+    INSPIRATORY_PRESSURE = 1,
+    RESPIRATORY_RATE     = 2, 
+    IE_RATIO             = 3,
+    VOLUME               = 4,
+    PEEP                 = 5,
+    FIO2                 = 6,
+    INHALE_TIME          = 7
 };
+
 #pragma pack(1)
 struct cmd_format {
     uint8_t  version      = HEV_FORMAT_VERSION;
@@ -226,7 +236,7 @@ struct readback_data_format {
     uint8_t  valve_inhale             = 0;
     uint8_t  valve_exhale             = 0;
     uint8_t  valve_purge              = 0;
-    uint8_t  ventilation_mode         = VENTILATION_MODE::HEV_MODE_PC_AC;//
+    uint8_t  ventilation_mode         = VENTILATION_MODE::PC_AC;//
 
     uint8_t valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     uint8_t valve_exhale_percent      = 0;
@@ -321,6 +331,22 @@ struct debug_data_format {
 };
 #pragma pack()
 
+#pragma pack(1)
+struct target_data_format{
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::TARGET;
+
+    uint8_t mode                = 0 ;
+    float inspiratory_pressure  = 0.0; // this is also known as driving pressure.  This is pressure above PEEP.  
+    float ie_ratio              = 0.0;
+    float volume                = 0.0;
+    float respiratory_rate      = 0.0;
+    float peep                  = 0.0;
+    float fiO2                  = 0.0; 
+    uint16_t inhale_time        = 0 ; 
+};
+#pragma pack()
 
 #pragma pack(1)
 struct logmsg_data_format {
@@ -514,11 +540,14 @@ struct pid_variables {
 };
 
 struct target_variables {
-    float pressure;
+    uint8_t mode;
+    float inspiratory_pressure; // this is also known as driving pressure.  This is pressure above PEEP.  
     float ie_ratio;
     float volume;
     float respiratory_rate;
     float peep;
+    float fiO2; 
+    uint16_t inhale_time; 
     bool  ie_selected;
 };
 

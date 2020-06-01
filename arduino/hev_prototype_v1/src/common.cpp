@@ -104,12 +104,12 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
     }
 }
 
-void setTarget(CMD_SET_TARGET cmd, target_variables &targets,  float value)
+void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
 {
 
     switch(cmd){
-        case CMD_SET_TARGET::PRESSURE : 
-            targets.pressure = value;
+        case CMD_SET_TARGET::INSPIRATORY_PRESSURE : 
+            targets.inspiratory_pressure = value;
             break;
         case CMD_SET_TARGET::RESPIRATORY_RATE: 
             targets.respiratory_rate = value;
@@ -123,6 +123,13 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets,  float value)
             break;
         case CMD_SET_TARGET::PEEP: 
             targets.peep = value;
+            break;
+        case CMD_SET_TARGET::FIO2: 
+            targets.fiO2 = value;
+            break;
+        case CMD_SET_TARGET::INHALE_TIME: 
+            targets.inhale_time = value;
+            targets.ie_selected = false;
             break;
     }
 }
