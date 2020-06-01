@@ -8,54 +8,61 @@
 <main>
 
   <div class="container-fluid">
+
+
+    <div class="tab">
+      <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
+      <button class="tablinks" onclick="openTab(this, 'Advanced')">Advanced</button>
+    </div>
+
+    <div id="Main" class="tabcontent">
     <!--<h1 class="mt-4">Info</h1> !-->
-    <div class = "row">
-    	<div class = "col-charts-main">
-		<div class="col-md-12">
-			<div class="row col-center pb-1">
-				<select id='chart_variables'  class="form-select" onchange="updateChartType()">
-					<option value='pressure_air_supply' selected>Air (supply)</option>
-					<option value='pressure_air_regulated' selected>Air (regulated)</option>
-					<option value='pressure_o2_supply' selected>O2 (supply)</option>
-					<option value='pressure_o2_regulated' selected>O2 (regulated)</option>
-        			<option value='pressure_buffer' selected>Buffer</option>
-			        <option value='pressure_inhale' selected>Inhale</option>
-					<option value='temperature_buffer' selected>temperature_buffer</option> 
-					<option value='pressure_patient' selected>Patient</option>
-					<option value='pressure_diff_patient' selected>Patient (diff)</option>
-					<!-- VICTOR test -->
-					<option value='airway_pressure' selected>airway_pressure</option>
-					<option value='volume' selected>volume</option>
-					<option value='flow' selected>flow</option>
-				</select>
-			</div>
-			<div class="row">
-	    	          <!--<div class="card-chart-header small ">Variable number 1</div>-->
-					  <div class="proto-chart-container"><canvas id="pressure_air_supply_chart"></canvas></div>
-			</div>
-			<div class = "row">
-				<div class = "range-button-container ml-auto mr-auto">
-					<input type="button" class="lockable sb-nav-button" name="fivesecs"   value="5s"  onclick="setChartProtXaxisRange_wrapper(this,-5,0)"  disabled>
-					<input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartProtXaxisRange_wrapper(this,-30,0)" disabled>
-					<input type="button" class="lockable sb-nav-button" name="sixtysecs"  value="60s" onclick="setChartProtXaxisRange_wrapper(this,-60,0)" disabled>
-					<input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartProtXaxisRange_wrapper(this,-90,0)" disabled>
+	    <div class = "row">
+	    	<div class = "col-charts-main">
+				<div class="col-md-12">
+					<div class="row col-center pb-1">
+						<select id='chart_variables'  class="form-select" onchange="updateChartType()">
+							<option value='pressure_air_supply' selected>Air (supply)</option>
+							<option value='pressure_air_regulated' selected>Air (regulated)</option>
+							<option value='pressure_o2_supply' selected>O2 (supply)</option>
+							<option value='pressure_o2_regulated' selected>O2 (regulated)</option>
+		        			<option value='pressure_buffer' selected>Buffer</option>
+					        <option value='pressure_inhale' selected>Inhale</option>
+							<option value='temperature_buffer' selected>temperature_buffer</option> 
+							<option value='pressure_patient' selected>Patient</option>
+							<option value='pressure_diff_patient' selected>Patient (diff)</option>
+							<!-- VICTOR test -->
+							<option value='airway_pressure' selected>airway_pressure</option>
+							<option value='volume' selected>volume</option>
+							<option value='flow' selected>flow</option>
+						</select>
+					</div>
+					<div class="row">
+						<div class="proto-chart-container"><canvas id="pressure_air_supply_chart"></canvas></div>
+					</div>
+					<div class = "row">
+						<div class = "range-button-container ml-auto mr-auto">
+							<input type="button" class="lockable sb-nav-button" name="fivesecs"   value="5s"  onclick="setChartProtXaxisRange_wrapper(this,-5,0)"  disabled>
+							<input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartProtXaxisRange_wrapper(this,-30,0)" disabled>
+							<input type="button" class="lockable sb-nav-button" name="sixtysecs"  value="60s" onclick="setChartProtXaxisRange_wrapper(this,-60,0)" disabled>
+							<input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartProtXaxisRange_wrapper(this,-90,0)" disabled>
+						</div>
+					</div>	
 				</div>
-			</div>	
-		</div>
-	</div>
+			</div>
 		<div class = "col-cards-main">
 			<div class = "row">
-		  	  <div class="card-reading-proto">
-	        	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-				    	  <a class="small text-white stretched-link col-center" href="#">State</a>
-	        	      </div>
-	            	  <div class="card-body px-1 py-1"><span class = "reading-main" id="fsm_state">IDLE</span></div>
+		  	    <div class="card-reading-proto">
+	        	    <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+				    	<a class="small text-white stretched-link col-center" href="#">State</a>
+	        	    </div>
+	            	<div class="card-body px-1 py-1"><span class = "reading-main" id="fsm_state">IDLE</span></div>
 				</div>
 			    <div class="card-reading-proto">
       		  	    <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 						<a class="tiny text-white stretched-link col-center" href="#">Air (suppply) [cmH2O]</a>
-	       		     </div>
-            	  <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_air_supply">000.00</span></div>
+	       		    </div>
+            	  	<div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_air_supply">000.00</span></div>
 		    	</div>
 
 				<div class="card-reading-proto">
@@ -231,6 +238,36 @@
       if (!element.disabled){ setChartProtXaxisRange(min,max);  }
       }
     
+function openTab(el, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  el.className += " active";
+}
+
+$(document).ready ( function(){
+  var tablinks = document.getElementsByClassName("tablinks");
+  if (tablinks.length > 0){
+    openTab(tablinks[0],"Main");
+  }
+  // decide what to unlock based on mode
+  //var object = document.getElementById("Trends");
+  //var opt = object.options[object.selectedIndex];
+});
       
     
     </script>		

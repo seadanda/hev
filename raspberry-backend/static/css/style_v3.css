@@ -6108,7 +6108,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
   color:white;
 }
 .card-reading, .card-input-reading{
-    height:calc((100vh - var(--top-height) - 0.5rem)/4.0 - 0.5rem);
+    height:calc((100vh - var(--top-height) - 0.5rem-1.5rem)/4.0 - 0.5rem);
 }
 .card-reading-proto, .card-input-reading-proto{
     height:calc((100vh - var(--top-height) - 0.5rem)/5.0 - 0.5rem);
@@ -6123,7 +6123,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 .main-chart-container {
     position:relative;
     width:100%;
-    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem)/3.0); // 2.0rem if for the range-button container
+    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem)/3.0); // 2.0rem if for the range-button container, 1.5rem for the tab header
 }
 .main-gauge-container {
     display:flex;
@@ -6162,6 +6162,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
   overflow: hidden;
   border: 1px solid #ccc;
   background-color: #f1f1f1;
+  height:1.5rem;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -6188,8 +6189,8 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 .tabcontent {
   display: none;
   padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-top: none;
+  /*border: 1px solid #ccc;
+  border-top: none;*/
   position:relative;
 }
 

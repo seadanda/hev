@@ -26,6 +26,14 @@
   <div class="container-fluid">
     <!--<h1 class="mt-4">Info</h1> !-->
 
+
+    <div class="tab">
+      <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
+      <button class="tablinks" onclick="openTab(this, 'Thresholds')">Thresholds</button>
+    </div>
+
+    <div id="Main" class="tabcontent">
+
     <input type="button" class="form-control py-2" value="Update alarms" id="update_button"></input>
     <button type="button" class="form-control py-2" id="ack_alarms">Acknowledge all alarms</button>
 
@@ -52,12 +60,17 @@
             </tr>
         </tfoot>
     </table>
+  </div>
 
+  <div id="Thresholds" class="tabcontent">
+
+  </div>
   </div>
 </main>
 
 <script>
 var logging;
+
 
 function convertTimestamp(timestamp) {
   date = new Date(timestamp);
@@ -131,6 +144,37 @@ document.getElementById('update_button').onclick = function(){
 
 {% block body_scripts %}
 <script>
+
+function openTab(el, cityName) {
+  // Declare all variables
+  var i, tabcontent, tablinks;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
+
+  // Show the current tab, and add an "active" class to the button that opened the tab
+  document.getElementById(cityName).style.display = "block";
+  el.className += " active";
+}
+
+$(document).ready ( function(){
+  var tablinks = document.getElementsByClassName("tablinks");
+  if (tablinks.length > 0){
+    openTab(tablinks[0],"Main");
+  }
+  // decide what to unlock based on mode
+  //var object = document.getElementById("Trends");
+  //var opt = object.options[object.selectedIndex];
+});
   /*
   $( document ).ready($.getJSON({
   url: '/last_N_alarms',
