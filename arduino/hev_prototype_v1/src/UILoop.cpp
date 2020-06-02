@@ -41,6 +41,7 @@ void UILoop::receiveCommands()
             case PAYLOAD_TYPE::BATTERY: {
                 battery_data_format bat;
                 _pl_receive.getPayload(reinterpret_cast<void*>(&bat));
+                setBatteryAlarms(bat);
                 // do what needs to be done with the battery information
                 //logMsg("received battery dummy " + String(bat.dummy));
                 break;
@@ -415,4 +416,20 @@ void UILoop::cmdSetThresholdMax(cmd_format &cf) {
 
 void UILoop::cmdSetValve(cmd_format &cf) {
     setValveParam(static_cast<CMD_SET_VALVE>(cf.cmd_code), _breathing_loop->getValvesController()->getValveParams(), cf.param);
+}
+
+void UILoop::setBatteryAlarms(battery_data_format &bat)
+{
+
+    float *vals = _alarm_loop->getValues();
+
+    bool ac_power_disconnection = (bat.ok == 0);
+    bool battery_charge         = (bat.rdy2buf == 0);
+    bool low_battery            = (bat.process_bat85 == 0);
+    bool battery_fault_svc      = ((bat.prob_elec == 1) || (bat.alarm == 1));
+
+    setAlarm<float>(ALARM_CODES::AC_POWER_DISCONNECTION, vals, ac_power_disconnection);
+    setAlarm<float>(ALARM_CODES::BATTERY_CHARGE,         vals, battery_charge);
+    setAlarm<float>(ALARM_CODES::BATTERY_FAULT_SRVC,     vals, battery_fault_svc);
+    setAlarm<float>(ALARM_CODES::LOW_BATTERY,            vals, low_battery);
 }

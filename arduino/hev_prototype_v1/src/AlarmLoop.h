@@ -26,7 +26,8 @@ public:
     bool       *getActives()     { return _alarms.actives; }
 
 private:
-    ALARM_TYPE checkTresholds();
+    ALARM_TYPE checkThresholds();
+    void setBatteryThresholds();
 
 private:
     AudioVisualController _av_controller;

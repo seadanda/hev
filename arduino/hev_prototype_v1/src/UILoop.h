@@ -37,6 +37,7 @@ private:
     void cmdSetThresholdMax(cmd_format &cf);
     void cmdSetValve(cmd_format &cf);
 
+    void setBatteryAlarms(battery_data_format &bat);
 
     BreathingLoop *_breathing_loop;
     AlarmLoop     *_alarm_loop    ;
