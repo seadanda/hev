@@ -21,6 +21,7 @@ public:
     void reportDebugValues();
     void reportCycleReadings();
     void reportAlarms();
+    void reportTargets(target_variables targets);
 
     void reportIVTReadings();
     void receiveCommands();
@@ -29,7 +30,8 @@ private:
     void cmdGeneral(cmd_format &cf);
     void cmdSetDuration(cmd_format &cf);
     void cmdSetPID(cmd_format &cf);
-    void cmdSetTarget(cmd_format &cf);
+    void cmdSetTarget(cmd_format &cf, int8_t mode);
+    void cmdGetTarget(cmd_format &cf);
     void cmdSetMode(cmd_format &cf);
     void cmdSetThresholdMin(cmd_format &cf);
     void cmdSetThresholdMax(cmd_format &cf);
@@ -57,6 +59,7 @@ private:
     cycle_data_format _cycle_data;
     ivt_data_format _ivt_data;
     debug_data_format _debug_data;
+    target_data_format _target_data;
 
     uint32_t _alarm_report_timeout;
     alarm_format _alarm;

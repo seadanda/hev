@@ -41,6 +41,7 @@ class BatteryLLI:
         while True:
             await asyncio.sleep(self._timeout)
             payload = BatteryFormat(dummy=self._dummy)
+            print(payload)
             try:
                 for pin in self._pins:
                     setattr(payload, pin, gpio.input(self._pins[pin]))

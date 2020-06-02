@@ -4,8 +4,8 @@
 #include <Arduino.h>
 
 #define CONST_TIMEOUT_ALARM 5
-#define CONST_TIMEOUT_DATA  10
-#define CONST_TIMEOUT_CMD   50
+#define CONST_TIMEOUT_DATA  10 
+#define CONST_TIMEOUT_CMD   10
 
 #define PAYLOAD_MAX_SIZE_BUFFER 128
 
@@ -15,7 +15,7 @@
 #define COMMS_MAX_SIZE_RB_SENDING    1
 #else
 #define COMMS_MAX_SIZE_RB_RECEIVING 10
-#define COMMS_MAX_SIZE_RB_SENDING    5
+#define COMMS_MAX_SIZE_RB_SENDING   15
 #endif
 
 #define COMMS_MAX_SIZE_PACKET 128

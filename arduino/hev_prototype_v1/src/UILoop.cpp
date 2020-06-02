@@ -14,7 +14,7 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
 
     _fast_report_timeout = 10;  //ms
     _readback_report_timeout = 300; 
-    _cycle_report_timeout = 500;  // this should probably be based on fsm state
+    _cycle_report_timeout = 1000;  // this should probably be based on fsm state
 
     _alarm_report_timeout = 1000; // max timeout to report, actual sending timeout is timeout/priority
     _ivt_report_timeout = 510;  // this should probably be based on fsm state
@@ -130,7 +130,7 @@ void UILoop::reportReadbackValues()
         _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
-        _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
+        _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
         _comms->writePayload(_pl_send);
         _readback_report_time = tnow;
     }
@@ -252,7 +252,24 @@ void UILoop::reportDebugValues()
     }
 }
 
+void UILoop::reportTargets(target_variables targets)
+{
 
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    
+    _target_data.timestamp = tnow;
+    _target_data.mode = targets.mode;
+    _target_data.inspiratory_pressure = targets.inspiratory_pressure;
+    _target_data.ie_ratio = targets.ie_ratio;
+    _target_data.volume = targets.volume;
+    _target_data.respiratory_rate = targets.respiratory_rate;
+    _target_data.peep = targets.peep;
+    _target_data.fiO2 = targets.fiO2;
+    _target_data.inhale_time = targets.inhale_time;
+    _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
+    _comms->writePayload(_pl_send);
+
+}
 
 int UILoop::doCommand(cmd_format &cf)
 {
@@ -278,8 +295,26 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::SET_PID: 
             cmdSetPID(cf);
             break;
-        case CMD_TYPE::SET_TARGET: 
-            cmdSetTarget(cf);
+        case CMD_TYPE::SET_TARGET_PC_AC: 
+            cmdSetTarget(cf, VENTILATION_MODE::PC_AC);
+            break;
+        case CMD_TYPE::SET_TARGET_PC_AC_PRVC: 
+            cmdSetTarget(cf, VENTILATION_MODE::PC_AC_PRVC);
+            break;
+        case CMD_TYPE::SET_TARGET_PC_PSV: 
+            cmdSetTarget(cf, VENTILATION_MODE::PC_PSV);
+            break;
+        case CMD_TYPE::SET_TARGET_CPAP:
+            cmdSetTarget(cf, VENTILATION_MODE::CPAP);
+            break;
+        case CMD_TYPE::SET_TARGET_TEST: 
+            cmdSetTarget(cf, VENTILATION_MODE::TEST);
+            break;
+        case CMD_TYPE::SET_TARGET_CURRENT:
+            cmdSetTarget(cf, VENTILATION_MODE::CURRENT);
+            break;
+        case CMD_TYPE::GET_TARGETS:
+            cmdGetTarget(cf);
             break;
         default:
             break;
@@ -314,8 +349,60 @@ void UILoop::cmdSetPID(cmd_format &cf){
     setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
 }
 
-void UILoop::cmdSetTarget(cmd_format &cf){
-    setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariables(), cf.param);
+void UILoop::cmdSetTarget(cmd_format &cf, int8_t mode){
+    //logMsg("cmdSetTarget "+String(mode));
+    switch(mode){
+
+        case VENTILATION_MODE::PC_AC : 
+            setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC(), cf.param);
+            break;
+        case VENTILATION_MODE::PC_AC_PRVC: 
+            setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC_PRVC(), cf.param);
+            break;
+        case VENTILATION_MODE::PC_PSV : 
+            setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_PSV(), cf.param);
+            break;
+        case VENTILATION_MODE::CPAP : 
+            setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesCPAP(), cf.param);
+            break;
+        case VENTILATION_MODE::TEST : 
+            setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesTest(), cf.param);
+            break;
+        case VENTILATION_MODE::CURRENT: 
+            setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesCurrent(), cf.param);
+            break;
+        default: 
+            break;
+    }
+}
+
+void UILoop::cmdGetTarget(cmd_format &cf){
+
+    VENTILATION_MODE mode = static_cast<VENTILATION_MODE>(cf.cmd_code);
+    //logMsg(" **cmdGetTarget "+String(mode));
+    switch(mode){
+
+        case VENTILATION_MODE::PC_AC : 
+            reportTargets(_breathing_loop->getTargetVariablesPC_AC());
+            break;
+        case VENTILATION_MODE::PC_AC_PRVC: 
+            reportTargets(_breathing_loop->getTargetVariablesPC_AC_PRVC());
+            break;
+        case VENTILATION_MODE::PC_PSV : 
+            reportTargets(_breathing_loop->getTargetVariablesPC_PSV());
+            break;
+        case VENTILATION_MODE::CPAP : 
+            reportTargets(_breathing_loop->getTargetVariablesCPAP());
+            break;
+        case VENTILATION_MODE::TEST : 
+            reportTargets(_breathing_loop->getTargetVariablesTest());
+            break;
+        case VENTILATION_MODE::CURRENT: 
+            reportTargets(_breathing_loop->getTargetVariablesCurrent());
+            break;
+        default: 
+            break;
+    }
 }
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {

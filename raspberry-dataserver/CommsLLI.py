@@ -106,7 +106,8 @@ class CommsLLI:
                 7: generateData,
                 8: generateData,
                 9: generateData,
-                10:generateData
+                10:generateData,
+                11:generateData
             }
             generatePacket = PAYLOAD_TYPE_TO_GEN[payload.getType()]
             tmp_comms = generatePacket(payload)
@@ -122,7 +123,8 @@ class CommsLLI:
                 7: qlist[2],
                 8: qlist[2],
                 9: qlist[2],
-                10:qlist[2]
+                10:qlist[2],
+                11:qlist[2]
             }
             queue = PAYLOAD_TYPE_TO_QUEUE[payload.getType()]
             queue.put_nowait(tmp_comms)
@@ -196,6 +198,8 @@ class CommsLLI:
                     payload = PayloadFormat.fromByteArray(packet.byteArray)
                     self.payloadrecv = payload
                     logging.debug(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
+                    if payload.getType() == PAYLOAD_TYPE.BATTERY:
+                        logging.critical(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
                     comms_response = CommsACK(packet.address)
                 except (StructError, ValueError):
                     # invalid payload, but valid checksum - this is bad!

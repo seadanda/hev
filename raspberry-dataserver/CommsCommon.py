@@ -17,14 +17,21 @@ logging.basicConfig(level=logging.INFO,
 # =======================================
 @unique
 class CMD_TYPE(Enum):
-    GENERAL           =  1
-    SET_DURATION      =  2
-    SET_MODE          =  3
-    SET_THRESHOLD_MIN =  4
-    SET_THRESHOLD_MAX =  5
-    SET_VALVE         =  6
-    SET_PID           =  7
-    SET_TARGET        =  8
+    GENERAL                =  1
+    SET_DURATION           =  2
+    SET_MODE               =  3
+    SET_THRESHOLD_MIN      =  4
+    SET_THRESHOLD_MAX      =  5
+    SET_VALVE              =  6
+    SET_PID                =  7
+    SET_TARGET_PC_AC       =  8
+    SET_TARGET_PC_AC_PRVC  =  9
+    SET_TARGET_PC_PSV      =  10
+    SET_TARGET_CPAP        =  11
+    SET_TARGET_TEST        =  12
+    SET_TARGET_CURRENT     =  13
+    GET_TARGETS            =  14
+
 
 @unique
 class CMD_GENERAL(Enum):
@@ -50,15 +57,15 @@ class CMD_SET_DURATION(Enum):
 
 @unique
 class VENTILATION_MODE(Enum):
-    UNKNOWN             = 0
-    HEV_MODE_PC_AC      = 1
-    HEV_MODE_PC_AC_PRVC = 2
-    HEV_MODE_PC_PSV     = 3
-    HEV_MODE_CPAP       = 4
-    HEV_MODE_TEST       = 5
-    LAB_MODE_BREATHE    = 6
-    LAB_MODE_PURGE      = 7
-    LAB_MODE_FLUSH      = 8
+    UNKNOWN    = 0
+    PC_AC      = 1
+    PC_AC_PRVC = 2
+    PC_PSV     = 3
+    CPAP       = 4
+    TEST       = 5
+    PURGE      = 6
+    FLUSH      = 7
+    CURRENT    = 100   # not settable
 
 @unique
 class CMD_SET_VALVE(Enum):
@@ -83,11 +90,13 @@ class CMD_SET_PID(Enum):
 
 @unique
 class CMD_SET_TARGET(Enum):
-    PRESSURE         = 1
-    RESPIRATORY_RATE = 2 
-    IE_RATIO         = 3
-    VOLUME           = 4
-    PEEP             = 5
+    INSPIRATORY_PRESSURE = 1
+    RESPIRATORY_RATE     = 2 
+    IE_RATIO             = 3
+    VOLUME               = 4
+    PEEP                 = 5
+    FIO2                 = 6
+    INHALE_TIME          = 7
 
 @unique
 class ALARM_TYPE(Enum):
@@ -125,14 +134,20 @@ class ALARM_CODES(Enum):
     ARDUINO_FAIL                   = 25  # HP
 
 class CMD_MAP(Enum):
-    GENERAL           =  CMD_GENERAL
-    SET_DURATION      =  CMD_SET_DURATION
-    SET_MODE          =  VENTILATION_MODE
-    SET_VALVE         =  CMD_SET_VALVE
-    SET_PID           =  CMD_SET_PID
-    SET_TARGET        =  CMD_SET_TARGET
-    SET_THRESHOLD_MIN =  ALARM_CODES
-    SET_THRESHOLD_MAX =  ALARM_CODES
+    GENERAL                =  CMD_GENERAL
+    SET_DURATION           =  CMD_SET_DURATION
+    SET_MODE               =  VENTILATION_MODE
+    SET_VALVE              =  CMD_SET_VALVE
+    SET_PID                =  CMD_SET_PID
+    SET_TARGET_PC_AC       =  CMD_SET_TARGET
+    SET_TARGET_PC_AC_PRVC  =  CMD_SET_TARGET
+    SET_TARGET_PC_PSV      =  CMD_SET_TARGET
+    SET_TARGET_CPAP        =  CMD_SET_TARGET
+    SET_TARGET_TEST        =  CMD_SET_TARGET
+    SET_TARGET_CURRENT     =  CMD_SET_TARGET
+    SET_THRESHOLD_MIN      =  ALARM_CODES
+    SET_THRESHOLD_MAX      =  ALARM_CODES
+    GET_TARGETS            =  VENTILATION_MODE
 
 @unique
 class BL_STATES(Enum):
@@ -164,7 +179,8 @@ class PAYLOAD_TYPE(IntEnum):
     DEBUG      = 7
     IVT        = 8
     LOGMSG     = 9
-    BATTERY    = 10
+    TARGET     = 10
+    BATTERY    = 11
 
 class HEVVersionError(Exception):
     pass
@@ -172,7 +188,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAB, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAC, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -194,7 +210,8 @@ class PayloadFormat():
             7: DebugFormat,
             8: IVTFormat,
             9: LogMsgFormat,
-            10: BatteryFormat
+            10: TargetFormat,
+            11: BatteryFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -315,7 +332,7 @@ class ReadbackFormat(PayloadFormat):
     valve_inhale: int             = 0
     valve_exhale: int             = 0
     valve_purge: int              = 0
-    ventilation_mode: int         = VENTILATION_MODE.HEV_MODE_PC_AC
+    ventilation_mode: int         = VENTILATION_MODE.PC_AC
 
     valve_inhale_percent: int     = 0
     valve_exhale_percent: int     = 0
@@ -529,6 +546,46 @@ class IVTFormat(PayloadFormat):
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
+# =======================================
+# Target data payload
+# =======================================
+@dataclass
+class TargetFormat(PayloadFormat):
+    _dataStruct = Struct("<BIBBffffffH")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
+
+    mode                  : int   = 0
+    inspiratory_pressure  : float = 0.0
+    ie_ratio              : float = 0.0
+    volume                : float = 0.0
+    respiratory_rate      : float = 0.0
+    peep                  : float = 0.0
+    fiO2                  : float = 0.0
+    inhale_time           : int   = 0 
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        tmp_mode = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        tmp_mode                 , 
+        self.inspiratory_pressure, 
+        self.ie_ratio            , 
+        self.volume              , 
+        self.respiratory_rate    , 
+        self.peep                , 
+        self.fiO2                , 
+        self.inhale_time         ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self.mode         = VENTILATION_MODE(tmp_mode)
+        self._byteArray = byteArray
 # =======================================
 # Log msg payload
 # =======================================
