@@ -5,43 +5,60 @@ import logging
 try:
     import RPi.GPIO as gpio
 except ModuleNotFoundError:
-    logging.error("RPi gpio backend not found")
+    logging.warning("RPi gpio backend not found, will use dummy")
     import hevgpio as gpio
 import copy
+from CommsCommon import BatteryFormat
 
 # Set up logging
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
-logging.getLogger().setLevel(logging.INFO)
+logging.getLogger().setLevel(logging.DEBUG)
 
 class BatteryLLI:
     def __init__(self, timeout=1):
         super().__init__()
         self._timeout = timeout
-        self._pins = {"bat"     :  5,
-                      "ok"      :  6,
-                      "alarm"   : 12,
-                      "rdy2buf" : 13,
-                      "bat85"   : 19}
-        self._res = copy.deepcopy(self._pins)
+        self._pins = {"bat"      :  5,
+                      "ok"       :  6,
+                      "alarm"    : 12,
+                      "rdy2buf"  : 13,
+                      "bat85"    : 19,
+                      "prob_elec":  7}
+        self._dummy = False
+        self.queue = asyncio.Queue()
+
         try:
             if gpio.DUMMY:
-                self._res["dummy"] = True
+                self._dummy = True
         except:
-            self._res["dummy"] = False
+            pass
 
         gpio.setmode(gpio.BCM)
         for pin in self._pins:
-            gpio.setup(self._pins[pin], gpio.IN)
-            self._res[pin] = 0
+            gpio.setup(self._pins[pin], gpio.IN, pull_up_down=gpio.PUD_DOWN)
             
     async def main(self) -> None:
         while True:
             await asyncio.sleep(self._timeout)
-            for pin in self._pins:
-                self._res[pin] = gpio.input(self._pins[pin])
-            logging.info(f"Battery: {self._res}")
-
-
+            payload = BatteryFormat(dummy=self._dummy)
+            print(payload)
+            try:
+                for pin in self._pins:
+                    setattr(payload, pin, gpio.input(self._pins[pin]))
+                self.queue.put_nowait(payload)
+            except asyncio.queues.QueueFull:
+                try:
+                    self.queue.get_nowait()
+                    self.queue.task_done()
+                    self.queue.put_nowait(payload)
+                except Exception as e:
+                    # Queue is being written from somewhere else. won't get here
+                    logging.error(e)
+            except Exception:
+                logging.error("Failed gpio data save")
+            else:
+                logging.debug(payload)
+    
 if __name__ == "__main__":
     try:
         # schedule async tasks

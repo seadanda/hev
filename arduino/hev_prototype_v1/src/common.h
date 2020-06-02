@@ -42,7 +42,8 @@ enum PAYLOAD_TYPE : uint8_t {
     DEBUG        = 7,
     IVT          = 8,
     LOGMSG       = 9,
-    TARGET       = 10
+    TARGET       = 10,
+    BATTERY      = 11
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -356,6 +357,23 @@ struct logmsg_data_format {
     uint8_t  payload_type               = PAYLOAD_TYPE::LOGMSG;
 
     char message[50];
+};
+#pragma pack()
+
+#pragma pack(1)
+struct battery_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::BATTERY;
+
+    uint8_t bat           = 0.0;
+    uint8_t ok            = 0.0;
+    uint8_t alarm         = 0.0;
+    uint8_t rdy2buf       = 0.0;
+    uint8_t process_bat85 = 0.0;
+    uint8_t prob_elec     = 0.0;
+    uint8_t dummy         = 0.0;
 };
 #pragma pack()
 //enum VALVE_STATES : bool {

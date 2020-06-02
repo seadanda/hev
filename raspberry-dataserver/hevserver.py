@@ -14,6 +14,7 @@ import hevfromtxt
 from pathlib import Path
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
+from BatteryLLI import BatteryLLI
 from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_DURATION, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
 from collections import deque
 from serial.tools import list_ports
@@ -27,12 +28,13 @@ class HEVPacketError(Exception):
     pass
 
 class HEVServer(object):
-    def __init__(self, lli):
+    def __init__(self, comms_lli, battery_lli):
         self._alarms = []
         self._values = None
         self._dblock = threading.Lock()  # make db threadsafe
-        self._lli = lli
-        self._lli.bind_to(self.polling)
+        self._comms_lli = comms_lli
+        self._comms_lli.bind_to(self.polling)
+        self._battery_lli = battery_lli
 
         self._broadcasting = True
         self._datavalid = None           # something has been received from arduino. placeholder for asyncio.Event()
@@ -42,27 +44,54 @@ class HEVServer(object):
         logging.debug(f"Payload received: {payload}")
         # check if it is data or alarm
         payload_type = payload.getType()
-        if payload_type in [1,2,3,4,6,7,8] :
+        whitelist = [
+            PAYLOAD_TYPE.DATA,
+            PAYLOAD_TYPE.READBACK,
+            PAYLOAD_TYPE.CYCLE,
+            PAYLOAD_TYPE.THRESHOLDS,
+            PAYLOAD_TYPE.ALARM,
+            PAYLOAD_TYPE.DEBUG,
+            PAYLOAD_TYPE.IVT,
+        ]
+        if payload_type in whitelist:
             # pass data to db
             with self._dblock:
                 self._values = payload
             # let broadcast thread know there is data to send
             self._datavalid.set()
-        elif payload_type == PAYLOAD_TYPE.CMD:
-            # ignore for the minute
-            pass
-        elif payload_type == PAYLOAD_TYPE.DEBUG:
-            # ignore for the minute
-            pass
-        elif payload_type == PAYLOAD_TYPE.UNSET:
-            # ignore for the minute
+        elif payload_type in PAYLOAD_TYPE:
+            # valid payload but ignored
             pass
         elif payload_type == PAYLOAD_TYPE.LOGMSG:
             # ignore for the minute
             pass
         else:
             # invalid packet, don't throw exception just log and pop
-            logging.error("Received invalid packet, ignoring")
+            logging.error(f"Received invalid packet, ignoring: {payload}")
+    
+    async def handle_battery(self) -> None:
+        while True:
+            try:
+                # wait for a new battery state from the batterylli
+                payload = await self._battery_lli.queue.get()
+                logging.debug(f"Payload received: {payload}")
+                self._battery_lli.queue.task_done() # consume entry
+                if payload.getType() != PAYLOAD_TYPE.BATTERY:
+                    raise HEVPacketError("Battery state invalid")
+
+                # pass data to db
+                with self._dblock:
+                    self._values = payload
+                # let broadcast thread know there is data to send
+                self._datavalid.set()
+
+                # send to uC
+                self._comms_lli.writePayload(payload)
+            except HEVPacketError as e:
+                logging.error(e)
+            except Exception as e:
+                print(e)
+            
 
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
         # listen for queries on the request socket
@@ -85,7 +114,7 @@ class HEVServer(object):
                                         cmd_code=CMD_MAP[reqcmdtype].value[reqcmd].value,
                                         param=reqparam)
 
-                self._lli.writePayload(command)
+                self._comms_lli.writePayload(command)
 
                 # processed and sent to controller, send ack to GUI since it's in enum
                 payload = {"type": "ack"}
@@ -219,7 +248,8 @@ class HEVServer(object):
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
         r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
         b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
-        tasks = [b1, r1, b2]
+        battery = self.handle_battery()              # Battery status
+        tasks = [b1, r1, b2, battery]
         await asyncio.gather(*tasks, return_exceptions=True)
 
 def getArduinoPort():
@@ -267,14 +297,14 @@ if __name__ == "__main__":
             logging.getLogger().setLevel(logging.DEBUG)
         
         if args.use_test_data:
-            lli = HEVTestData()
+            comms_lli = HEVTestData()
             logging.info(f"Using test data source")
         elif args.inputFile != '':
             if args.inputFile[-1-3:] == '.txt':
                 # just ignore actual filename and read from both valid inputfiles
-                lli = hevfromtxt.hevfromtxt()
+                comms_lli = hevfromtxt.hevfromtxt()
             else:
-                lli = svpi.svpi(args.inputFile)
+                comms_lli = svpi.svpi(args.inputFile)
         else:
             # initialise low level interface
             try:
@@ -285,16 +315,20 @@ if __name__ == "__main__":
                     connected = arduinoConnected()
                     tasks.append(connected)
                 # setup serial device and init server
-                lli = CommsLLI(loop)
-                comms = lli.main(port_device, 115200)
+                comms_lli = CommsLLI(loop)
+                comms = comms_lli.main(port_device, 115200)
                 tasks.append(comms)
                 logging.info(f"Serving data from device {port_device}")
             except NameError:
                 logging.critical("Arduino not connected")
                 exit(1)
+                
+        battery_lli = BatteryLLI()
+        battery = battery_lli.main()
+        tasks.append(battery)
 
         # create tasks
-        hevsrv = HEVServer(lli)
+        hevsrv = HEVServer(comms_lli, battery_lli)
         server = hevsrv.main()
         tasks.append(server)
 

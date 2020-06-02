@@ -180,6 +180,7 @@ class PAYLOAD_TYPE(IntEnum):
     IVT        = 8
     LOGMSG     = 9
     TARGET     = 10
+    BATTERY    = 11
 
 class HEVVersionError(Exception):
     pass
@@ -209,7 +210,8 @@ class PayloadFormat():
             7: DebugFormat,
             8: IVTFormat,
             9: LogMsgFormat,
-            10: TargetFormat
+            10: TargetFormat,
+            11: BatteryFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -610,6 +612,41 @@ class LogMsgFormat(PayloadFormat):
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
+# =======================================
+# BATTERY data payload
+# =======================================
+@dataclass
+class BatteryFormat(PayloadFormat):
+    _dataStruct = Struct("<BIBbbbbbbb")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.BATTERY
+
+    bat       : int = 0
+    ok        : int = 0
+    alarm     : int = 0
+    rdy2buf   : int = 0
+    bat85     : int = 0
+    prob_elec : int = 0
+    dummy     : int = 0
+
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        tmp_payload_type = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.bat       ,
+        self.ok        ,
+        self.alarm     ,
+        self.rdy2buf   ,
+        self.bat85     ,
+        self.prob_elec ,
+        self.dummy     ,
+        ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
+        
 # =======================================
 # cmd type payload
 # =======================================
