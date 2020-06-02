@@ -115,7 +115,7 @@ private:
     states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1200, 10, 1600, 200};
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
     void measureDurations();
-    // void measurePEEP();
+    void measurePEEP();
     // targets
     void initTargets();
     target_variables _targets_pcac; 
@@ -188,9 +188,9 @@ private:
     float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_minute_volume[CYCLE_AVG_READINGS];
 
-    // float _running_peep[RUNNING_AVG_READINGS];
-    // float _running_avg_peep;
-    // uint8_t _running_index_peep;
+    float _running_peep[RUNNING_AVG_READINGS];
+    float _running_avg_peep;
+    uint8_t _running_index_peep;
 
     bool  _inhale_triggered;
     float _inhale_trigger_threshold;

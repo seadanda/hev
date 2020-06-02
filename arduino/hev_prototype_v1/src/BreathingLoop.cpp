@@ -46,6 +46,7 @@ BreathingLoop::BreathingLoop()
 
     for(int i=0; i<RUNNING_AVG_READINGS; i++){
         _running_flows[i] = 0.0;
+        _running_peep[i] = 0.0;
     }
 
     _total_cycle_duration[0] = _states_durations.buff_loaded
@@ -72,6 +73,8 @@ BreathingLoop::BreathingLoop()
     _ap_readings_N = 0;
 
     _running_index = 0;
+    _running_index_peep = 0;
+
     _cycle_index = 0;
 
     _inhale_trigger_threshold = 0.005;  // abs flow ?unit
@@ -575,14 +578,14 @@ void BreathingLoop::FSM_breathCycle()
             _peak_flow = -100000;  // reset peak after inhale
             _fsm_timeout = _states_durations.exhale_fill;
 		digitalWrite(pin_led_red, LOW);
-            //measurePEEP();
+            measurePEEP();
             inhaleTrigger();
             break;
         case BL_STATES::EXHALE:
             _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
-            //measurePEEP();
+            measurePEEP();
             inhaleTrigger();
             break;
             
@@ -653,9 +656,24 @@ void BreathingLoop::measureDurations( ) {
     }
 }
 
-// void BreathingLoop::measurePEEP()
-// {
-// }
+void BreathingLoop::measurePEEP()
+{
+    if(fabs(_flow) < 0.1){
+        //    _peep = _readings_avgs.pressure_patient;
+        float sum_peep = 0;
+        _running_peep[_running_index_peep] = _readings_avgs.pressure_patient;
+
+        for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
+            sum_peep += static_cast<float>(fabs(_running_peep[i]));
+        }
+        _running_avg_peep = sum_peep/RUNNING_AVG_READINGS;
+
+        _running_index_peep = (_running_index_peep == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index_peep+1;
+
+        _peep = _running_avg_peep;
+    }
+	
+}
 
 void BreathingLoop::safetyCheck()
 {
@@ -1138,9 +1156,9 @@ void BreathingLoop::runningAvgs()
 	//logMsg("INHALE "+String(_volume_inhale));
     } else if ((_bl_state == BL_STATES::EXHALE) || (_bl_state == BL_STATES::EXHALE_FILL)){
         _volume_exhale = _volume_inhale - getVolume();
-        if(fabs(_flow) < 0.01){
-            _peep = _readings_avgs.pressure_patient;
-        }
+        //if(fabs(_flow) < 0.02){
+        //    _peep = _readings_avgs.pressure_patient;
+        //}
 	//logMsg(" EXHALE "+String(_volume_exhale));
     }
 
