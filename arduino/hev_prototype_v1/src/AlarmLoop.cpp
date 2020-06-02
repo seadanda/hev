@@ -68,3 +68,16 @@ void AlarmLoop::setBatteryThresholds()
     setAlarm<float>(ALARM_CODES::BATTERY_FAULT_SRVC,     _alarms.thresholds_max, 0.5);
     setAlarm<float>(ALARM_CODES::LOW_BATTERY,            _alarms.thresholds_max, 0.5);
 }
+
+void AlarmLoop::setBatteryAlarms(battery_data_format &bat)
+{
+    bool ac_power_disconnection = (bat.ok == 0);
+    bool battery_charge         = (bat.rdy2buf == 0);
+    bool low_battery            = (bat.process_bat85 == 0);
+    bool battery_fault_svc      = ((bat.prob_elec == 1) || (bat.alarm == 1));
+
+    setAlarm<float>(ALARM_CODES::AC_POWER_DISCONNECTION, _alarms.values, ac_power_disconnection);
+    setAlarm<float>(ALARM_CODES::BATTERY_CHARGE,         _alarms.values, battery_charge);
+    setAlarm<float>(ALARM_CODES::BATTERY_FAULT_SRVC,     _alarms.values, battery_fault_svc);
+    setAlarm<float>(ALARM_CODES::LOW_BATTERY,            _alarms.values, low_battery);
+}

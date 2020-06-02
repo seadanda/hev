@@ -24,10 +24,12 @@ public:
     ALARM_TYPE  getHighestType() { return _type; }
     ALARM_TYPE *getTypes()       { return _alarms.priorities; }
     bool       *getActives()     { return _alarms.actives; }
+    void setBatteryAlarms(battery_data_format &bat);
 
 private:
     ALARM_TYPE checkThresholds();
     void setBatteryThresholds();
+
 
 private:
     AudioVisualController _av_controller;
