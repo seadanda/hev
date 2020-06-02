@@ -33,6 +33,7 @@
 		    <input type="button" class="lockable sb-nav-button" name="thirtysecs" value="30s" onclick="setChartXaxisRange_wrapper(this,-30,0)" disabled>
 		    <input type="button" class="lockable sb-nav-button" name="sixtysecs" value="60s" onclick="setChartXaxisRange_wrapper(this,-60,0)" disabled>
 		    <input type="button" class="lockable sb-nav-button" name="ninetysecs" value="90s" onclick="setChartXaxisRange_wrapper(this,-90,0)" disabled>
+		    <input type="button" class="lockable sb-nav-button" name="pause" value="Pause" onclick="togglePause()" disabled>
 		  </div>
 	      </div>
       </div>
@@ -41,7 +42,7 @@
 	<!---- row 1 -->
 	    <div class="card-input-reading">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		      <span class="small text-dark col-center" href="#">Mode</span>
+		      <span class="small text-white col-center" href="#">Mode</span>
               </div>
 	      <!--<div class="small ml-auto mr-auto">PC-A/C</div>-->
               <div class="card-body px-1 py-1">
@@ -63,26 +64,26 @@
 
 	    <div class="card-input-reading">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">FIO<sub>2</sub> <small>[cmH2O]</small> </a>
+		<a class="small text-white col-center" href="#">FIO<sub>2</sub> <small>[cmH2O]</small> </a>
               </div>
 			  <!-- <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading py-0" id = "fio2" value="62" type="number" readOnly disabled>%</div> -->
-			  <div class = "main-gauge-container lockable" id = "gauge-fio-container" onclick="show_easy_numpad(this, fio_controller);lock();"><canvas id="gauge_fio" class=""></canvas></div>
+			  <div class = "main-gauge-container lockable" id = "gauge-fio-container" onclick="show_easy_numpad(this, fio_controller);lock();"><canvas id="gauge_fi02_percent" class=""></canvas></div>
 	  </div>
 
 	
 	  <div class="card-input-reading">
 		<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-	  <a class="small text-dark col-center" href="#">P<sub>Plateau</sub> <small>[cmH2O]</small> </a>
+	  <a class="small text-white col-center" href="#">P<sub>Plateau</sub> <small>[cmH2O]</small> </a>
 		</div>
 		<!-- <div class="card-body px-1 py-1 tiny ml-auto mr-auto"><input class = "input-reading" id = "p_plateau" value=4.0 readOnly disabled>cmH2O</div> -->
-		<div class = "main-gauge-container lockable" id = "gauge-pplateau-container" onclick = "show_easy_numpad(this, p_plateau_controller);lock();"><canvas id="gauge_p_plateau"></canvas></div>
+		<div class = "main-gauge-container lockable" id = "gauge-pplateau-container" onclick = "show_easy_numpad(this, p_plateau_controller);lock();"><canvas id="gauge_plateau_pressure"></canvas></div>
 	</div>
 
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">P<sub>Peak</sub> <small>[cmH20]</small></a>
+		<a class="small text-white col-center" href="#">P<sub>Peak</sub> <small>[cmH20]</small></a>
 	      </div>
-		  <div class="card-body px-1 py-1 tiny"><input class = "input-reading" id="p_peak" readOnly disabled value=20.0></div> 
+		  <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id="peak_inspiratory_pressure"></span></div> 
 	    </div>
 	
 	<!--- end row 1 -->
@@ -90,42 +91,40 @@
 	<!-- row 2 -->
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">P<sub>Mean</sub> <small>[cmH2O]</small></a>
+		<a class="small text-white col-center" href="#">P<sub>Mean</sub> <small>[cmH2O]</small></a>
 	      </div>
-	      <div class="card-body px-1 py-1 tiny"><div class = "vertical-align"><input class = "input-reading" id = "p_mean" value=13.0 readOnly disabled></div></div>
+	      <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "mean_airway_pressure"></span></div>
 	  </div>
 
 	    <div class="card-reading">
 	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">PEEP<small>[cmH20]</small></a>
+		<a class="small text-white col-center" href="#">PEEP<small>[cmH20]</small></a>
 	      </div>
-	      <div class="card-body px-1 py-1 tiny"><input class = "input-reading lockable" name = "PEEP" id = "PEEP_input" value=5 readOnly disabled onclick="show_easy_numpad(this,peep_controller)"></div>
+	      <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "peep"></span></div>
 	    </div>
 
 
 	<!-- end row 2 -->
 
 	<!-- row 3 -->
-
-
 	    <div class="card-reading">
               <div class="card-header d-flex align-items-center justify-content-between small py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">VTI <small>[mL]</small></a>
+		<a class="small text-white col-center" href="#">VTI <small>[mL]</small></a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading" id = "vti" value=285 readOnly disabled></span></div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhaled_tidal_volume"></span></div>
 	  </div>
 	    <div class="card-reading">
               <div class="card-header d-flex align-items-center justify-content-between small py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">VTE <small>[mL]</small></a>
+		<a class="small text-white col-center" href="#">VTE <small>[mL]</small></a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading" id = "vte" value=273 readOnly disabled></div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_tidal_volume"></span></div>
 	    </div>
 	    
 	    <div class="card-reading">
               <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-		<a class="small text-dark col-center" href="#">MVI <small>[L/min]</small></a>
+		<a class="small text-white col-center" href="#">MVI <small>[L/min]</small></a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading" id = "mvi" value=6.5 readOnly disabled></div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhaled_minute_volume"></span></div>
 	    </div>
 	    
 
@@ -135,16 +134,16 @@
 
 	    <div class="card-reading">
               <div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-		<a class="small text-dark col-center" href="#">MVE <small>[L/min]</small></a>
+		<a class="small text-white col-center" href="#">MVE <small>[L/min]</small></a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading" id = "mve" value=6.0 readOnly disabled></div>
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_minute_volume"></span></div>
 	    </div>
 	    
 	    <div class="card-reading">
               <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-		<a class="small text-dark col-center" href="#">I:E</a>
+		<a class="small text-white col-center" href="#">I:E</a>
               </div>
-              <div class="card-body px-1 py-1 tiny"><input class = "input-reading lockable" id = "ie_ratio_input" value=1:1.3 readOnly disabled onclick="format_ie(this,ie_ratio_controller)"> </div> 
+              <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhale_exhale_ratio"></span></div> 
 	    </div>
 	</div>
 	<!-- end row 4 -->
@@ -199,6 +198,7 @@
 	{% block body_scripts %}
 
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
+<script src="{{ url_for('static', filename='js/HevUpdater.js') }}"></script>
 
 <script>
   function setChartXaxisRange_wrapper(element,min,max){
@@ -253,14 +253,16 @@ class input_controller{
   }
 }
 
-
+/*
 
 fio_controller       = new gauge_controller("fio_gauge");
 p_plateau_controller = new gauge_controller("p_plateau_gauge");
 
-var peep_input = document.getElementById("PEEP_input");
+var peep_input = document.getElementById("peep");
 peep_controller = new input_controller("peep", peep_input);
-var ie_ratio_input = document.getElementById("ie_ratio_input");
+var ie_ratio_input = document.getElementById("inhale_exhale_ratio");
+
+*/
 
 /*
 var gauge_fio_container = document.getElementById("gauge-fio-container");
@@ -326,7 +328,7 @@ class input_controller_ie extends input_controller{
     }
 }
 
-var ie_ratio_controller = new input_controller_ie("ie_ratio", ie_ratio_input);
+//var ie_ratio_controller = new input_controller_ie("ie_ratio", ie_ratio_input);
 
 </script>
 

@@ -165,3 +165,23 @@ for i in range(10):
 
 print(hevclient.send_cmd("GENERAL", "STOP"))
 ```
+
+## Arduino emulator
+
+`ArduinoEmulator.py` is a front end emulator which creates a serial port and
+serves data from a dumpfile which can then be read by the hevserver as if it
+were an Arduino.
+
+
+To run this kill any hevserver instances which are running and run
+```bash
+./ArduinoEmulator.py -f <filename>
+```
+Dumps exist containing real data and alarms from the `hevpi1` prototype at CERN
+then in another terminal, run a hevserver with the argument `--use-dump-data`:
+```bash
+./hevserver.py --use-dump-data
+```
+
+Note that the version of the dumpfile must match the protocol version used by
+the hevserver.

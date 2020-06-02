@@ -17,59 +17,9 @@ function setChartProtXaxisRange(min,max){
     chart.options.scales.xAxes[0].ticks.max = max;   
 }
 
-
-
-/**
- * Request last N data from the server, add it to the graph
- */
-function init_results(){
-  $.getJSON({
-    url: '/last_N_data',
-    success: function(data) {
-      var timestamp = 0;
-        for (i=0; i<data.length; i++) {
-          var seconds = data[i]["timestamp"]/1000;
-          if (i==data.length-1) timestamp = seconds;
-          if ( seconds == "" ) continue;
-          initial_yaxis_var1.push({x : seconds, y : data[i]["airway_pressure"]});
-          initial_yaxis_var2.push({x : seconds, y : data[i]["volume"]});
-        }
-        //reverse because data is read from the other way
-        initial_yaxis_var1.reverse();
-        initial_yaxis_var2.reverse();
-        console.log('init results, timestamp: ',timestamp);
-        for ( let i = 0 ; i < initial_yaxis_var1.length; i++){
-          console.log('filling up with ',initial_yaxis_var1[i]['x'], ' - ',timestamp);
-          initial_yaxis_var1[i]['x'] = initial_yaxis_var1[i]['x'] - timestamp;
-          initial_yaxis_var2[i]['x']   = initial_yaxis_var2[i]['x']   - timestamp;
-        }        
-    },
-    cache: false
-  });
-}
-
-/*
-document.getElementById("pressure_buffer").innerHTML = (data.pressure_buffer).toFixed(2);
-document.getElementById("pressure_inhale").innerHTML = (data.pressure_inhale).toFixed(2);
-//document.getElementById("temperature_buffer").innerHTML = (data.temperature_buffer).toFixed(2);
-document.getElementById("pressure_air_supply").innerHTML = (data.pressure_air_supply).toFixed(2);
-document.getElementById("pressure_air_regulated").innerHTML = (data.pressure_air_regulated).toFixed(2);
-document.getElementById("pressure_o2_supply").innerHTML = (data.pressure_o2_supply).toFixed(2);
-document.getElementById("pressure_o2_regulated").innerHTML = (data.pressure_o2_regulated).toFixed(2);
-document.getElementById("pressure_patient").innerHTML = (data.pressure_patient).toFixed(2);
-document.getElementById("pressure_diff_patient").innerHTML = (data.pressure_diff_patient).toFixed(2);	
-document.getElementById("fsm_state").innerHTML = data.fsm_state;
-document.getElementById("airway_pressure").innerHTML = (data.airway_pressure).toFixed(2);	
-document.getElementById("volume").innerHTML = (data.volume).toFixed(2);	
-document.getElementById("flow").innerHTML = (data.flow).toFixed(2);	
-document.getElementById("data_type").innerHTML = data.data_type;
-document.getElementById("timestamp").innerHTML = (data.timestamp/1000).toFixed(2);
-document.getElementById("version").innerHTML = data.version; 
-//document.getElementById("version").innerHTML = (data.version).toFixed(2); //Commented because not included in the html part
-*/
 function requestDataVar1(var1, var2) {
   $.ajax({
-      url: '/live-data',
+      url: '/last-data',
       success: function(point) {
         var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
         "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state", "volume", "flow", "airway_pressure","fsm_state",
@@ -79,7 +29,8 @@ function requestDataVar1(var1, var2) {
           var val = point[readings[i]];
           if (el && val){
             if(readings[i] == "timestamp") el.innerHTML = (val/1000).toFixed(2);
-            else if (readings[i] == "version") el.innerHTML = val;
+            else if (readings[i] == "version" ) el.innerHTML = val;
+            else if (readings[i] == "fsm_state") el.innerHTML = "<small>" + val + "</small>";
             else el.innerHTML = val.toFixed(2);
               }
           }
@@ -150,7 +101,7 @@ $(document).ready(function() {
         yAxisID: 'B',
         data: initial_yaxis_var2,
         label: "Volume",
-        borderColor: "#000000",
+        borderColor: "#ba0202",
         fill: false,
         showLine: true,
       }]
@@ -187,7 +138,12 @@ $(document).ready(function() {
             fontSize: 25,
             maxTicksLimit: 5,
 			      maxRotation: 0
-		      }
+		      },
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
 		    }],
         yAxes: [{
           id: 'A',
@@ -197,6 +153,11 @@ $(document).ready(function() {
              fontColor: "#0000FF", // this here
              fontSize: 25,
            },
+                        gridLines : {
+                            display: true,
+                            color: "rgba(255,255,255,0.2)",
+                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                        },
           }, 
         {
           id: 'B',
@@ -216,7 +177,7 @@ $(document).ready(function() {
       } 
     }
   });
-  requestDataVar1("airway_pressure", "volume");
+  requestDataVar1("pressure_patient", "volume");
 });
 
 
@@ -330,7 +291,7 @@ function updateChartType() {
   updateRequestDataVar(selection_results[0], selection_results[1]);
 
   $(document).ready(function() {
-    var ctx = document.getElementById('pressure_air_supply');
+    var ctx = document.getElementById('pressure_air_supply_chart');
     chart = new Chart(ctx, {
       type: 'scatter',
       data: {

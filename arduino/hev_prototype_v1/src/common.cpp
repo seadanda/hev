@@ -104,6 +104,29 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
     }
 }
 
+void setTarget(CMD_SET_TARGET cmd, target_variables &targets,  float value)
+{
+
+    switch(cmd){
+        case CMD_SET_TARGET::PRESSURE : 
+            targets.pressure = value;
+            break;
+        case CMD_SET_TARGET::RESPIRATORY_RATE: 
+            targets.respiratory_rate = value;
+            break;
+        case CMD_SET_TARGET::IE_RATIO: 
+            targets.ie_ratio = value;
+            targets.ie_selected = true;
+            break;
+        case CMD_SET_TARGET::VOLUME: 
+            targets.volume = value;
+            break;
+        case CMD_SET_TARGET::PEEP: 
+            targets.peep = value;
+            break;
+    }
+}
+
 int16_t adcToMillibar(int16_t adc, int16_t offset)
 {
     // TODO -  a proper calibration

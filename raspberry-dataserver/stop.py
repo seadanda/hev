@@ -78,5 +78,5 @@ except asyncio.CancelledError:
 except KeyboardInterrupt:
     logging.info("Closing LLI")
    
-finally:
-    loop.close()
+#finally:
+#    loop.close()

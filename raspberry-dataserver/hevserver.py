@@ -62,6 +62,9 @@ class HEVServer(object):
         elif payload_type in PAYLOAD_TYPE:
             # valid payload but ignored
             pass
+        elif payload_type == PAYLOAD_TYPE.LOGMSG:
+            # ignore for the minute
+            pass
         else:
             # invalid packet, don't throw exception just log and pop
             logging.error(f"Received invalid packet, ignoring: {payload}")
@@ -306,7 +309,7 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 if args.use_dump_data:
-                    port_device = str(Path.home())+'/hev-sw/ttyEMU0'
+                    port_device = '/tmp/ttyEMU0'
                 else:
                     port_device = getArduinoPort()
                     connected = arduinoConnected()

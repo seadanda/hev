@@ -22,6 +22,7 @@ public:
     void doStart();
     void doStop();
     void doReset();
+    void doStandby();
     bool getRunning();
     void updateReadings();
     void updateRawReadings();
@@ -29,10 +30,10 @@ public:
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     float getRespiratoryRate();
-    void  setTargetRespiratoryRate(float rate);
     float getTargetRespiratoryRate();
     float getIERatio();
-    void setIERatio(float ratio); 
+    void setIERatio();
+    void updateFromTargets();
     void updateIE();
     float getPEEP();
     float getMinuteVolume();
@@ -51,6 +52,7 @@ public:
     float getVolume(); 
     float getAirwayPressure();
     pid_variables& getPIDVariables();
+    target_variables &getTargetVariables();
     states_durations &getDurations();
     cycle_readings &getCycleReadings();
 
@@ -71,7 +73,8 @@ public:
             EXHALE          = 10,
             STOP            = 11,
             BUFF_PURGE      = 12,
-            BUFF_FLUSH      = 13
+            BUFF_FLUSH      = 13,
+            STANDBY         = 14
     };
 
 
@@ -87,6 +90,7 @@ private:
     uint32_t            _lasttime;
     bool                _running;
     bool                _reset;
+    bool                _standby;
 
     ValvesController _valves_controller;
 
@@ -107,8 +111,7 @@ private:
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
     void measure_durations();
     // targets
-    float _target_RR;
-    float _target_IE_ratio;
+    target_variables _targets;
     
     // readings
     void resetReadingSums();
@@ -123,6 +126,10 @@ private:
     uint32_t _readings_avgs_timeout;
     uint32_t _readings_cycle_time;
     uint32_t _readings_cycle_timeout;
+    uint32_t _tsig_time;
+    uint32_t _tsig_timeout;
+    void tsigReset();
+
  
     float _peep;
 
@@ -170,6 +177,7 @@ private:
     float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_minute_volume[CYCLE_AVG_READINGS];
 
+    bool  _inhale_triggered;
     float _inhale_trigger_threshold;
     float _exhale_trigger_threshold;
     float _peak_flow;

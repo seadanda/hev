@@ -24,12 +24,14 @@ class CMD_TYPE(Enum):
     SET_THRESHOLD_MAX =  5
     SET_VALVE         =  6
     SET_PID           =  7
+    SET_TARGET        =  8
 
 @unique
 class CMD_GENERAL(Enum):
     START =  1
     STOP  =  2
     RESET =  3
+    STANDBY = 4
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
@@ -80,6 +82,14 @@ class CMD_SET_PID(Enum):
     NSTEPS = 5
 
 @unique
+class CMD_SET_TARGET(Enum):
+    PRESSURE         = 1
+    RESPIRATORY_RATE = 2 
+    IE_RATIO         = 3
+    VOLUME           = 4
+    PEEP             = 5
+
+@unique
 class ALARM_TYPE(Enum):
     PRIORITY_LOW    = 1
     PRIORITY_MEDIUM = 2
@@ -120,6 +130,7 @@ class CMD_MAP(Enum):
     SET_MODE          =  VENTILATION_MODE
     SET_VALVE         =  CMD_SET_VALVE
     SET_PID           =  CMD_SET_PID
+    SET_TARGET        =  CMD_SET_TARGET
     SET_THRESHOLD_MIN =  ALARM_CODES
     SET_THRESHOLD_MAX =  ALARM_CODES
 
@@ -139,6 +150,7 @@ class BL_STATES(Enum):
     STOP            = 11
     BUFF_PURGE      = 12
     BUFF_FLUSH      = 13
+    STANDBY         = 14
 
 @unique
 class PAYLOAD_TYPE(IntEnum):
@@ -153,6 +165,9 @@ class PAYLOAD_TYPE(IntEnum):
     IVT        = 8
     LOGMSG     = 9
     BATTERY    = 10
+
+class HEVVersionError(Exception):
+    pass
 
 @dataclass
 class PayloadFormat():
@@ -205,7 +220,7 @@ class PayloadFormat():
     # check for mismatch between pi and microcontroller version
     def checkVersion(self):
         if self._RPI_VERSION != self.version : 
-            raise Exception('Version Mismatch', "PI:", self._RPI_VERSION, "uC:", self.version)
+            raise HEVVersionError('Version Mismatch', "PI:", self._RPI_VERSION, "uC:", self.version)
 
     def getSize(self) -> int:
         return len(self.byteArray)

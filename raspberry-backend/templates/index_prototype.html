@@ -28,7 +28,7 @@
 					<option value='volume' selected>volume</option>
 					<option value='flow' selected>flow</option>
 				</select>
-	        	<input class="form-button" type="button" value="Submit" onclick="updateChartType()">
+	        	<input class="" type="button" value="Submit" onclick="updateChartType()">
 			</div>
 			<div class="row">
 	    	          <!--<div class="card-chart-header small ">Variable number 1</div>-->
@@ -48,99 +48,99 @@
 			<div class = "row">
 		  	  <div class="card-reading-proto">
 	        	      <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-				    	  <a class="small text-dark stretched-link col-center" href="#">State</a>
+				    	  <a class="small text-white stretched-link col-center" href="#">State</a>
 	        	      </div>
 	            	  <div class="card-body px-1 py-1"><span class = "reading-main" id="fsm_state">IDLE</span></div>
 				</div>
 			    <div class="card-reading-proto">
       		  	    <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-						<a class="tiny text-dark stretched-link col-center" href="#">Air (suppply) [cmH2O]</a>
+						<a class="tiny text-white stretched-link col-center" href="#">Air (suppply) [cmH2O]</a>
 	       		     </div>
             	  <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_air_supply">000.00</span></div>
 		    	</div>
 
 				<div class="card-reading-proto">
 					  <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="tiny text-dark stretched-link col-center" href="#">Air (regulated) [cmH2O]</a>
+							<a class="tiny text-white stretched-link col-center" href="#">Air (regulated) [cmH2O]</a>
 					  </div>
 					  <div class="card-body px-1 py-1"><span class = "reading-main" id="pressure_air_regulated">000.00</span></div>
 				</div>
 		  
 				<div class="card-reading-proto">
 					  <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="tiny text-dark stretched-link col-center" href="#">O2 (suppply) [cmH2O]</a>
+							<a class="tiny text-white stretched-link col-center" href="#">O2 (suppply) [cmH2O]</a>
 					  </div>
 					  <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_o2_supply">000.00</span></div>
 				</div>	  
 				<div class="card-reading-proto">
 					  <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="tiny text-dark stretched-link col-center" href="#">O2 (regulated) [cmH2O]</a>
+							<a class="tiny text-white stretched-link col-center" href="#">O2 (regulated) [cmH2O]</a>
 					  </div>
 					  <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_o2_regulated">000.00</span></div>
 				</div>
 	  
 			    <div class="card-reading-proto">
 	    	        <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-						<a class="small text-dark stretched-link col-center" href="#">Buffer [cmH2O]</a>
+						<a class="small text-white stretched-link col-center" href="#">Buffer [cmH2O]</a>
 		            </div>
 		            <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_buffer">000.00</span></div>
 			    </div>
 	  
 				<div class="card-reading-proto">
 	        		<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-			      		<a class="small text-dark stretched-link col-center" href="#">Inhale [mbar]</a>
+			      		<a class="small text-white stretched-link col-center" href="#">Inhale [mbar]</a>
 		            </div>
 		            <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_inhale">000.00</span></div>
 			  	</div>
 				<div class="card-reading-proto">
     	    		<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-				    	<a class="small text-dark stretched-link col-center" href="#">Patient [cmH2O]</a>
+				    	<a class="tiny text-white stretched-link col-center" href="#">Airway Pressure [mbar]</a>
 		            </div>
-    	 			<div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_patient">000.00</span></div>
+    	 			<div class="card-body px-1 py-1"><span class = "reading-main" id = "airway_pressure">000.00</span></div>
 			  	</div>
 			  	<div class="card-reading-proto">
 	    	       	<div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-		      			<a class="small text-dark stretched-link col-center" href="#">Patient (diff) [cmH2O]</a>
+		      			<a class="small text-white stretched-link col-center" href="#">Patient (diff) [cmH2O]</a>
 	        		</div>
 	        	    <div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_diff_patient">000.00</span> </div>
 			  	</div>
 
 				<div class="card-reading-proto">
 					<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-					  <a class="small text-dark stretched-link col-center" href="#">Pressure [mbar]</a>
+					  <a class="small text-white stretched-link col-center" href="#">Pressure [mbar]</a>
 					</div>
-					<div class="card-body px-1 py-1"><span class = "reading-main" id = "airway_pressure">000.00</span></div>
+					<div class="card-body px-1 py-1"><span class = "reading-main" id = "pressure_patient">000.00</span></div>
 				</div>
 				<div class="card-reading-proto">
 					<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-					  <a class="small text-dark stretched-link col-center" href="#">Flow [mL/min]</a>
+					  <a class="small text-white stretched-link col-center" href="#">Flow [mL/min]</a>
 					</div>
 					<div class="card-body px-1 py-1"><span class = "reading-main" id = "flow">000.00</span></div>
 				</div>
 			
 				<div class="card-reading-proto">
 					<div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-						<a class="small text-dark stretched-link col-center" href="#">Volume [mL]</a>
+						<a class="small text-white stretched-link col-center" href="#">Volume [mL]</a>
 					</div>
 					<div class="card-body px-1 py-1"><span class = "reading-main" id = "volume">000.00</span></div>
 				</div>
 
 				<div class="card-reading-proto">
 					<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-					<a class="small text-dark col-center" href="#">Data type</a>
+					<a class="small text-white col-center" href="#">Data type</a>
 					</div>
 					<div class="card-body px-1 py-1"><span class = "reading-main" id = "data_type">000.00</span></div>
 				</div>
 				<div class="card-reading-proto">
 					<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-					<a class="small text-dark col-center" href="#">Timestamp [s]</a>
+					<a class="small text-white col-center" href="#">Timestamp [s]</a>
 					</div>
 					<div class="card-body px-1 py-1"><span class = "reading-main" id = "timestamp">000.00</span></div>
 				</div>
 			
-				<div class="card-reading-proto">
+				<div class="card-reading-proto d-none">
 					<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-						<a class="small text-dark col-center" href="#">Version</a>
+						<a class="small text-white col-center" href="#">Version</a>
 					</div>
 					<div class="card-body px-1 py-1"><span class = "reading-main" id = "version">000.00</span></div>
 				</div>	

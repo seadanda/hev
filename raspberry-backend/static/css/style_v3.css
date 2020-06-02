@@ -112,7 +112,8 @@ body {
   line-height: 1.5;
   color: #212529;
   text-align: left;
-  background-color: #fff;
+  background-color: black;
+  background-color:#1e1e1e;
 }
 
 ol,
@@ -1353,7 +1354,7 @@ small,
 }
 .form-button{
     //height: calc(1.1em + 0.75rem + 2px);
-  background-color: #1f4793 ; color: white
+  background-color: white ; color: black;
 }
 @media (prefers-reduced-motion: reduce) {
   .form-control {
@@ -1877,15 +1878,15 @@ small,
 
 .card-header {
   margin-bottom: 0;
-  background-color: rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  background-color: rgba(255, 255, 255, 0.13);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.125);
 }
 
 .card-chart-header {
   padding: 0.1rem 0.2rem;
   margin-bottom: 0;
-  background-color: rgba(0, 0, 0, 0.03);
-  border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+  background-color: rgba(255, 255, 255, 0.13);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.125);
 }
 
 
@@ -5736,9 +5737,6 @@ html, body {
 #layoutSidenav {
   display: flex;
 }
-#layoutSidenav_nav{
-  background:white;
-}
 #layoutSidenav #layoutSidenav_nav {
   flex-basis: 100px;
   flex-shrink: 0;
@@ -5836,10 +5834,8 @@ sb-topnav {
   width:100px;
 }
 .sb-topnav.navbar-dark #sidebarToggle {
-    color: rgba(255, 255, 255, 0.5);
 }
 .sb-topnav.navbar-light #sidebarToggle {
-  color: #212529;
 }
 
 .sb-sidenav {
@@ -5967,26 +5963,28 @@ sb-topnav {
 @media (min-height: 750px) {
   .fa-w-15{ width:85px;height:85px;}
 }
-.path-icon{ fill:rgb(31,71,147); }
+.path-icon{ fill:white; }
 .path-icon-alarm{ fill:red; }
 .transparent{ fill:none;fill-opacity:1.0; }
 .w-100{width:100%;}
 .w-95{width:95%;}
 .w-99{width:99%;}
 
-.alarm-ok{border: 2px solid var(--cern); width:20rem;}
+.alarm-ok{border: 2px solid white; width:20rem;}
 .alarm-red{border-color:#ff0000;color:#ff0000}
 .text-align-right{text-align:right;}
 .text-align-center{text-align:center;}
 
-#alarms{color:red;vertical-align:middle;text-align:center;line-height:calc(var(--top-height) - 0.5rem);}
+#alarms{color:white;vertical-align:middle;text-align:center;line-height:calc(var(--top-height) - 0.5rem);}
 .border-invisible{
-    border: 1px solid rgb(255,255,255);
+    border: 1px solid rgba(0,0,0,0.0);
 }
-div.active{
-    background-color: rgb(240,240,240);
-    border: 1px solid var(--cern);
-    border-radius: 0.25rem;
+div.sb-nav-link-icon .path-icon{
+  /*fill: rgba(255, 255, 255, 0.13);*/
+  fill: rgba(255, 255, 255, 0.25);
+}
+div.active .path-icon{
+  fill:rgba(255,255,255);
 }
 .patient{ min-width:12rem;}
 .sb-control-button{
@@ -6005,11 +6003,12 @@ div.active{
 
 }
 
-.sb-nav-button{ border: 2px solid var(--cern); width:95px;
-		background-color:var(--cern);
-		color:white;
+.sb-nav-button{ width:95px;
+		background-color:white;
+		color:black;
 		display: inline-block;
 		border-radius: 8px;
+    border-color:white;
 		
 	      }
 .sb-control-button:before {
@@ -6065,7 +6064,7 @@ border-top-left-radius: 1.0rem !important;
 border-top-right-radius: 1.0rem !important;
 padding-top:0.35rem;
 padding-bottom:0.3rem;
-background-color: rgb(211,211,211);
+background-color: rgba(255, 255, 255, 0.13);
 border: 1px solid rgba(0, 0, 0, 0.125);
 }
 .fa-lock{
@@ -6090,9 +6089,8 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     position: relative;
     min-width: 0;
     word-wrap: break-word;
-    background-color: #fff;
     background-clip: border-box;
-    border: 1px solid rgba(0, 0, 0, 0.125);
+    border: 1px solid rgba(0, 0, 0, 0.0);
     border-radius: 0.25rem;
     display:flex;
     flex-direction:column;
@@ -6102,8 +6100,12 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     padding-left: 0.0rem !important;
     margin-right: 0.05rem !important;
     margin-left: 0.05rem !important;
-    color: #343a40 !important;
+    /*color: #343a40 !important;*/
+    color:white;
     margin-bottom: 0.5rem !important;
+}
+.card-header {
+  color:white;
 }
 .card-reading, .card-input-reading{
     height:calc((100vh - var(--top-height) - 0.5rem)/4.0 - 0.5rem);
@@ -6111,14 +6113,6 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 .card-reading-proto, .card-input-reading-proto{
     height:calc((100vh - var(--top-height) - 0.5rem)/5.0 - 0.5rem);
 }
-
-.card-reading {
-  background-color: white;
-}
-.card-input-reading {
-  background-color: white;
-}
-
 
 .range-button-container{
     height:2.0rem;

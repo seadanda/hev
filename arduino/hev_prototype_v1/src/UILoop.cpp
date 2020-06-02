@@ -278,6 +278,9 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::SET_PID: 
             cmdSetPID(cf);
             break;
+        case CMD_TYPE::SET_TARGET: 
+            cmdSetTarget(cf);
+            break;
         default:
             break;
     }
@@ -291,6 +294,8 @@ void UILoop::cmdGeneral(cmd_format &cf) {
         case CMD_GENERAL::STOP  : _breathing_loop->doStop();
             break;
         case CMD_GENERAL::RESET : _breathing_loop->doReset();
+            break;
+        case CMD_GENERAL::STANDBY : _breathing_loop->doStandby();
             break;
         default:
             break;
@@ -309,6 +314,9 @@ void UILoop::cmdSetPID(cmd_format &cf){
     setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
 }
 
+void UILoop::cmdSetTarget(cmd_format &cf){
+    setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariables(), cf.param);
+}
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
     setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
