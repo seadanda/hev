@@ -77,11 +77,9 @@ enum CMD_SET_DURATION : uint8_t {
     BUFF_FLUSH      =  3,
     BUFF_PREFILL    =  4,
     BUFF_FILL       =  5,
-    BUFF_LOADED     =  6,
     BUFF_PRE_INHALE =  7,
     INHALE          =  8,
     PAUSE           =  9,
-    EXHALE_FILL     = 10,
     EXHALE          = 11
 };
 
@@ -387,12 +385,10 @@ struct states_durations {
     uint32_t buff_flush;
     uint32_t buff_prefill;
     uint32_t buff_fill;
-    uint32_t buff_loaded;
     uint32_t buff_pre_inhale;
     uint32_t inhale;
     uint32_t pause;
     uint32_t exhale_fill;
-    uint32_t exhale; // has to be calculated using function getTimeoutExhale()
 };
 
 struct alarms {

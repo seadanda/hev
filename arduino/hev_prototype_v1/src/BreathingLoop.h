@@ -70,12 +70,10 @@ public:
             CALIBRATION     =  2,
             BUFF_PREFILL    =  3,
             BUFF_FILL       =  4,
-            BUFF_LOADED     =  5,
             BUFF_PRE_INHALE =  6,
             INHALE          =  7,
             PAUSE           =  8,
             EXHALE_FILL     =  9,
-            EXHALE          = 10,
             STOP            = 11,
             BUFF_PURGE      = 12,
             BUFF_FLUSH      = 13,
@@ -111,9 +109,9 @@ private:
 
     // timeouts
     uint32_t calculateDurationExhale();
-    //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
-    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1200, 10, 1600, 200};
-    states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
+    //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_pre_inhale, inhale, pause, exhale_fill }
+    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 1200, 10, 1800 };
+    states_durations _measured_durations = {0,0,0,0,0,0,0,0,0};
     void measureDurations();
     void measurePEEP();
     // targets
