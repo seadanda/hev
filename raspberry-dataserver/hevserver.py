@@ -70,9 +70,10 @@ class HEVServer(object):
         while True:
             try:
                 # wait for a new battery state from the batterylli
-                payload = await self._battery_lli._payloadrecv
+                payload = await self._battery_lli.queue.get()
                 logging.debug(f"Payload received: {payload}")
-                if payload.getType != PAYLOAD_TYPE.BATTERY:
+                self._battery_lli.queue.task_done() # consume entry
+                if payload.getType() != PAYLOAD_TYPE.BATTERY:
                     raise HEVPacketError("Battery state invalid")
 
                 # pass data to db
@@ -85,6 +86,8 @@ class HEVServer(object):
                 self._comms_lli.writePayload(payload)
             except HEVPacketError as e:
                 logging.error(e)
+            except Exception as e:
+                print(e)
             
 
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
