@@ -52,7 +52,12 @@ public:
     float getVolume(); 
     float getAirwayPressure();
     pid_variables& getPIDVariables();
-    target_variables &getTargetVariables();
+    target_variables &getTargetVariablesPC_AC();
+    target_variables &getTargetVariablesPC_AC_PRVC();
+    target_variables &getTargetVariablesPC_PSV();
+    target_variables &getTargetVariablesCPAP();
+    target_variables &getTargetVariablesTest();
+    target_variables &getTargetVariablesCurrent();
     states_durations &getDurations();
     cycle_readings &getCycleReadings();
 
@@ -109,10 +114,16 @@ private:
     //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_loaded, buff_pre_inhale, inhale, pause, exhale_fill, exhale }
     states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 0, 1200, 10, 1600, 200};
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0,0,0};
-    void measure_durations();
+    void measureDurations();
+    void measurePEEP();
     // targets
-    target_variables _targets;
-    
+    void initTargets();
+    target_variables _targets_pcac; 
+    target_variables _targets_pc_psv; 
+    target_variables _targets_pcac_prvc; 
+    target_variables _targets_cpap; 
+    target_variables _targets_test; 
+    target_variables* _targets_current; //note pointer
     // readings
     void resetReadingSums();
     readings<float> _readings_sums; // 32 bit due to possible analog read overflow
@@ -176,6 +187,10 @@ private:
     float _running_inhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_exhale_minute_volume[CYCLE_AVG_READINGS];
     float _running_minute_volume[CYCLE_AVG_READINGS];
+
+    float _running_peep[RUNNING_AVG_READINGS];
+    float _running_avg_peep;
+    uint8_t _running_index_peep;
 
     bool  _inhale_triggered;
     float _inhale_trigger_threshold;

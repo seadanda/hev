@@ -121,10 +121,10 @@ void loop()
     ui_loop.reportIVTReadings();
     ui_loop.reportDebugValues();
 
-    // per cycle sender
-    comms.sender();
     // per cycle receiver
     comms.receiver();
+    // per cycle sender
+    comms.sender();
 
     // // check any received payload
     ui_loop.receiveCommands();
