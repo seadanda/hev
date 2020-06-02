@@ -89,8 +89,6 @@ class HEVServer(object):
                 self._comms_lli.writePayload(payload)
             except HEVPacketError as e:
                 logging.error(e)
-            except Exception as e:
-                print(e)
             
 
     async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
@@ -177,8 +175,9 @@ class HEVServer(object):
             # wait for data from serial port
             if not self._datavalid.is_set():
                 # make sure client is still connected
-                await asyncio.sleep(0.05)
+                await asyncio.sleep(0.025)
                 broadcast_packet = {"type": "keepalive"}
+                await asyncio.sleep(0.025)
             else:
                 # take lock of db and prepare packet
                 with self._dblock:

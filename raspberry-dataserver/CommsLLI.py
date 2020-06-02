@@ -198,8 +198,6 @@ class CommsLLI:
                     payload = PayloadFormat.fromByteArray(packet.byteArray)
                     self.payloadrecv = payload
                     logging.debug(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
-                    if payload.getType() == PAYLOAD_TYPE.BATTERY:
-                        logging.critical(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
                     comms_response = CommsACK(packet.address)
                 except (StructError, ValueError):
                     # invalid payload, but valid checksum - this is bad!
