@@ -49,18 +49,15 @@ BreathingLoop::BreathingLoop()
         _running_peep[i] = 0.0;
     }
 
-    _total_cycle_duration[0] = _states_durations.buff_loaded
-                       +_states_durations.buff_pre_inhale
+    _total_cycle_duration[0] = 
+                       _states_durations.buff_pre_inhale
                        +_states_durations.inhale
                        +_states_durations.pause
-                       +_states_durations.exhale_fill
-                       +_states_durations.exhale;
-    _inhale_cycle_duration[0] =_states_durations.buff_loaded
-                       +_states_durations.buff_pre_inhale
+                       +_states_durations.exhale_fill;
+    _inhale_cycle_duration[0] = _states_durations.buff_pre_inhale
                        +_states_durations.inhale
                        +_states_durations.pause;
-    _exhale_cycle_duration[0] = _states_durations.exhale_fill
-                       +_states_durations.exhale;
+    _exhale_cycle_duration[0] = _states_durations.exhale_fill;
 
     for (int i = 1; i < CYCLE_AVG_READINGS; i++)
     {
@@ -227,7 +224,7 @@ void BreathingLoop::updateRawReadings()
 void BreathingLoop::updateCycleReadings()
 {
 
-    if (_bl_state == BL_STATES::BUFF_LOADED){
+    if (_bl_state == BL_STATES::BUFF_PRE_INHALE){
         if(_cycle_done == false){
             uint32_t tnow = static_cast<uint32_t>(millis());
 
@@ -238,19 +235,11 @@ void BreathingLoop::updateCycleReadings()
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
 	    //logMsg(" I, E "+String(_volume_inhale)+ " "+String(_volume_exhale));
-            _total_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
-                       +_measured_durations.buff_pre_inhale
+            _total_cycle_duration[_cycle_index] = (
+                       _measured_durations.buff_pre_inhale
                        +_measured_durations.inhale
                        +_measured_durations.pause
-                       +_measured_durations.exhale_fill
-                       +_measured_durations.exhale);
-            // _inhale_cycle_duration[_cycle_index] = (_measured_durations.buff_loaded
-            //            +_measured_durations.buff_pre_inhale
-            //            +_measured_durations.inhale
-            //            +_measured_durations.pause);
-            // _exhale_cycle_duration[_cycle_index] = (
-            //            _measured_durations.exhale_fill
-            //            +_measured_durations.exhale);
+                       +_measured_durations.exhale_fill );
 
             float mv_sum = 0, mvi_sum = 0, mve_sum = 0;
             uint16_t tot_sum = 0;
@@ -277,8 +266,8 @@ void BreathingLoop::updateCycleReadings()
             _cycle_readings.mean_airway_pressure =  _airway_pressure;
             _cycle_readings.inhalation_pressure  =  _airway_pressure;
             _cycle_readings.apnea_index += (_apnea_event == true) ? 1 : 0;
-            _cycle_readings.apnea_time = _measured_durations.buff_loaded
-                       +_measured_durations.buff_pre_inhale
+            _cycle_readings.apnea_time = 
+                       _measured_durations.buff_pre_inhale
                        +_measured_durations.inhale
                        +_measured_durations.pause
                        +_max_exhale_time;  // apnea time = time from breath start to maximum time allow for breath
@@ -404,20 +393,7 @@ void BreathingLoop::FSM_assignment() {
             next_state = BL_STATES::BUFF_FILL;
             break;
         case BL_STATES::BUFF_FILL:
-            next_state = BL_STATES::BUFF_LOADED;
-            break;
-        case BL_STATES::BUFF_LOADED:
-            switch (_ventilation_mode)
-            {
-            case VENTILATION_MODE::FLUSH:
-                next_state = BL_STATES::BUFF_FLUSH;
-                break;
-            case VENTILATION_MODE::PURGE:
-                next_state = BL_STATES::BUFF_PURGE;
-                break;
-            default:
-                next_state = BL_STATES::BUFF_PRE_INHALE;
-            }
+            next_state = BL_STATES::EXHALE_FILL;  // start with exhale
             break;
         case BL_STATES::BUFF_PRE_INHALE:
             next_state = BL_STATES::INHALE;
@@ -429,25 +405,24 @@ void BreathingLoop::FSM_assignment() {
             next_state = BL_STATES::EXHALE_FILL;
             break;
         case BL_STATES::EXHALE_FILL:
-            next_state = BL_STATES::EXHALE;
-            break;
-        case BL_STATES::EXHALE:
             if (_running == false) {
                 next_state = BL_STATES::STOP;
             } else if (_standby == true) {
                 next_state = BL_STATES::STANDBY;
+            } else if (_ventilation_mode == VENTILATION_MODE::FLUSH){
+                next_state = BL_STATES::BUFF_FLUSH;
+            } else if (_ventilation_mode == VENTILATION_MODE::PURGE){
+                next_state = BL_STATES::BUFF_PURGE;
             } else {
-                next_state = BL_STATES::BUFF_LOADED;
+                next_state = BL_STATES::BUFF_PRE_INHALE;
             }
-            break;
-
         case BL_STATES::STANDBY:
             if (_running == false) {
                 next_state = BL_STATES::STOP;
             } else if (_standby == true) {
                 next_state = BL_STATES::STANDBY;
             } else {
-                next_state = BL_STATES::BUFF_LOADED;
+                next_state = BL_STATES::BUFF_PRE_INHALE;
             }
             break;
 
@@ -526,13 +501,6 @@ void BreathingLoop::FSM_breathCycle()
             _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.buff_fill;
             break;
-        case BL_STATES::BUFF_LOADED:
-            // TODO - exhale settable
-            // Calc pressure and stay in loaded if not ok
-            // pressure settable by expert
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-            _fsm_timeout = _states_durations.buff_loaded;
-            break;
         case BL_STATES::BUFF_PRE_INHALE:
             // TODO spontaneous trigger can be enabled
             // - can be triggered by : 
@@ -583,7 +551,7 @@ void BreathingLoop::FSM_breathCycle()
             measurePEEP();
             inhaleTrigger();
             break;
-        case BL_STATES::EXHALE:
+        case BL_STATES::EXHALE:  #FIXME KAROL
             _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
@@ -626,9 +594,6 @@ void BreathingLoop::measureDurations( ) {
         case BL_STATES::CALIBRATION:
             _measured_durations.calibration = tdiff;
             break;
-        case BL_STATES::BUFF_LOADED:
-            _measured_durations.buff_loaded = tdiff;
-            break;
         case BL_STATES::BUFF_PRE_INHALE:
             _measured_durations.buff_pre_inhale = tdiff;
             break;
@@ -640,9 +605,6 @@ void BreathingLoop::measureDurations( ) {
             break;
         case BL_STATES::EXHALE_FILL:
             _measured_durations.exhale_fill = tdiff;
-            break;
-        case BL_STATES::EXHALE:
-            _measured_durations.exhale = tdiff;
             break;
         case BL_STATES::BUFF_PURGE:
             _measured_durations.buff_purge = tdiff;
@@ -776,8 +738,7 @@ uint32_t BreathingLoop::calculateDurationExhale() {
 //     return static_cast<uint32_t>(exhale_duration);
     float total_dur = 60000.0/_targets_current->respiratory_rate;
     float new_exhale = total_dur 
-                - ( _measured_durations.buff_loaded 
-                  + _measured_durations.buff_pre_inhale
+                - ( _measured_durations.buff_pre_inhale
                   + _measured_durations.inhale
                   + _measured_durations.pause
                   + _measured_durations.exhale_fill);
@@ -789,7 +750,7 @@ uint32_t BreathingLoop::calculateDurationExhale() {
 float    BreathingLoop::getIERatio(){
     // TODO : check with Oscar/Xavier
     float total_inhale_time = _states_durations.inhale + _states_durations.pause;
-    float total_exhale_time = _states_durations.exhale_fill + _states_durations.exhale;
+    float total_exhale_time = _states_durations.exhale_fill;
     return total_inhale_time/total_exhale_time;
 }
 
@@ -840,11 +801,11 @@ void BreathingLoop::updateIE()
     int32_t max_exhale = (static_cast<int32_t>(_max_exhale_time - _states_durations.exhale_fill) < 0) ? 0 : _max_exhale_time - _states_durations.exhale_fill;
 
     if (exhale_duration < min_exhale)
-        _states_durations.exhale = min_exhale;
+        _states_durations.exhale_fill = min_exhale;
     else if (exhale_duration > max_exhale)
-        _states_durations.exhale = max_exhale;
+        _states_durations.exhale_fill = max_exhale;
     else 
-        _states_durations.exhale = exhale_duration; 
+        _states_durations.exhale_fill = exhale_duration; 
     // TODO - what if exhale time is less than min; raise error?
 }
 
@@ -863,11 +824,11 @@ void BreathingLoop::setIERatio()
     //logMsg("targets "+String(_targets.ie_ratio) +" "+String(_targets.ie_selected));
     int32_t exhale_duration = static_cast<uint32_t>(_states_durations.inhale * _targets_current->ie_ratio)  - _states_durations.exhale_fill ;
     if (exhale_duration < _min_exhale_time )
-        _states_durations.exhale = _min_exhale_time;
+        _states_durations.exhale_fill = _min_exhale_time;
     else if (exhale_duration > _max_exhale_time )
-        _states_durations.exhale = _max_exhale_time;
+        _states_durations.exhale_fill = _max_exhale_time;
     else 
-        _states_durations.exhale = exhale_duration; 
+        _states_durations.exhale_fill = exhale_duration; 
 }
 
 float BreathingLoop::getTargetRespiratoryRate(){
@@ -1137,7 +1098,7 @@ void BreathingLoop::runningAvgs()
         _peak_flow = _flow;
     }
     
-    if ((_flow < _valley_flow) && ((_bl_state == BL_STATES::EXHALE_FILL ) || (_bl_state == BL_STATES::EXHALE) )){
+    if ((_flow < _valley_flow) && (_bl_state == BL_STATES::EXHALE_FILL )){
         uint32_t tnow = static_cast<uint32_t>(millis());
         _valley_flow_time = tnow;
         _valley_flow = _flow;
@@ -1156,7 +1117,7 @@ void BreathingLoop::runningAvgs()
     if((_bl_state == BL_STATES::INHALE) || (_bl_state == BL_STATES::BUFF_PRE_INHALE) || (_bl_state == BL_STATES::PAUSE)){
         _volume_inhale = getVolume();
 	//logMsg("INHALE "+String(_volume_inhale));
-    } else if ((_bl_state == BL_STATES::EXHALE) || (_bl_state == BL_STATES::EXHALE_FILL)){
+    } else if (_bl_state == BL_STATES::EXHALE_FILL){
         _volume_exhale = _volume_inhale - getVolume();
         //if(fabs(_flow) < 0.02){
         //    _peep = _readings_avgs.pressure_patient;
