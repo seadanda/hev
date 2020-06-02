@@ -71,8 +71,12 @@ $(document).ready(function() {
 		    mode: 'nearest',
 		    callbacks: {
 			label: function(tooltipItem) {
-			    var label = 'Pressure ' + Math.round(tooltipItem.yLabel*10)/10 + ' mbar'
-			    label += '\nat time ' + Math.round(tooltipItem.xLabel*10)/10 + ' s'
+			    var pointPressure = chart_pressure.data.datasets[0].data[tooltipItem.index]['y'];
+			    var pointFlow = chart_flow.data.datasets[0].data[tooltipItem.index]['y'];
+			    var pointVolume = chart_volume.data.datasets[0].data[tooltipItem.index]['y'];
+			    var label = 'Pres ' + Math.round(pointPressure*10)/10 + ' mbar, '
+			    label += 'Flow ' + Math.round(pointFlow) + ' ml/min, ';
+			    label += 'Vol ' + Math.round(pointVolume) + ' ml';
 			    return label;
 			}
 		    },
@@ -173,8 +177,12 @@ $(document).ready(function() {
 		    mode: 'nearest',
 		    callbacks: {
 			label: function(tooltipItem) {
-			    var label = 'Flow ' + Math.round(tooltipItem.yLabel) + ' ml/min'
-			    label += '\nat time ' + Math.round(tooltipItem.xLabel*10)/10 + ' s'
+			    var pointPressure = chart_pressure.data.datasets[0].data[tooltipItem.index]['y'];
+			    var pointFlow = chart_flow.data.datasets[0].data[tooltipItem.index]['y'];
+			    var pointVolume = chart_volume.data.datasets[0].data[tooltipItem.index]['y'];
+			    var label = 'Pres ' + Math.round(pointPressure*10)/10 + ' mbar, '
+			    label += 'Flow ' + Math.round(pointFlow) + ' ml/min, ';
+			    label += 'Vol ' + Math.round(pointVolume) + ' ml';
 			    return label;
 			}
 		    },
@@ -273,8 +281,12 @@ $(document).ready(function() {
 		    mode: 'nearest',
 		    callbacks: {
 			label: function(tooltipItem) {
-			    var label = 'Volume ' + Math.round(tooltipItem.yLabel) + ' ml'
-			    label += '\nat time ' + Math.round(tooltipItem.xLabel*10)/10 + ' s'
+			    var pointPressure = chart_pressure.data.datasets[0].data[tooltipItem.index]['y'];
+			    var pointFlow = chart_flow.data.datasets[0].data[tooltipItem.index]['y'];
+			    var pointVolume = chart_volume.data.datasets[0].data[tooltipItem.index]['y'];
+			    var label = 'Pres ' + Math.round(pointPressure*10)/10 + ' mbar, '
+			    label += 'Flow ' + Math.round(pointFlow) + ' ml/min, ';
+			    label += 'Vol ' + Math.round(pointVolume) + ' ml';
 			    return label;
 			}
 		    },
