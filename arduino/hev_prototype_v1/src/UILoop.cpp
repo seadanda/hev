@@ -41,6 +41,7 @@ void UILoop::receiveCommands()
             case PAYLOAD_TYPE::BATTERY: {
                 battery_data_format bat;
                 _pl_receive.getPayload(reinterpret_cast<void*>(&bat));
+                _alarm_loop->setBatteryAlarms(bat);
                 // do what needs to be done with the battery information
                 //logMsg("received battery dummy " + String(bat.dummy));
                 break;
