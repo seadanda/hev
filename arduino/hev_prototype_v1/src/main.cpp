@@ -31,6 +31,12 @@ UILoop        ui_loop(&breathing_loop, &alarm_loop, &comms);
 
 SystemUtils   sys_utils;
 
+#define STATUS_CHECK_COUNTS 10000
+uint16_t loop_count = 0;
+uint32_t loop_start = 0;
+uint32_t loop_start_sum = 0;
+status_format status;
+
 void setup()
 {
 #ifdef CHIP_ESP32
@@ -103,17 +109,16 @@ void setup()
         INA.AlertOnBusOverVoltage(true, 5000); // Trigger alert if over 5V on bus
         breathing_loop.getValvesController()->setupINA(&INA, devicesFound);
     }
+    loop_start = loop_start_sum = micros();
 }
 
 void loop()
 {
-
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
 
     alarm_loop.fireAlarms();
 
-    
     ui_loop.reportFastReadings();
     ui_loop.reportReadbackValues();
     ui_loop.reportCycleReadings();
@@ -135,4 +140,26 @@ void loop()
     // update alarm values
     // TODO assign more values
     alarm_loop.updateValues(breathing_loop.getReadingAverages());
+
+    // check uC performance of past N cycles
+    uint32_t duration = micros() - loop_start;
+    status.loop_duration_max = duration > status.loop_duration_max ? duration : status.loop_duration_max;
+    if (loop_count++ >= STATUS_CHECK_COUNTS) {
+        Payload pl;
+        status.timestamp = millis();
+        status.loop_duration   = static_cast<float>(micros() - loop_start_sum) / (1000 * STATUS_CHECK_COUNTS); // send in ms
+        status.loop_duration_max /= 1000; // in ms
+        status.dropped_send    = comms.countDroppedSend();
+        status.dropped_receive = comms.countDroppedReceive();
+        status.buffer_alarm    = comms.countBufferSize(PRIORITY::ALARM_ADDR);
+        status.buffer_cmd      = comms.countBufferSize(PRIORITY::CMD_ADDR);
+        status.buffer_data     = comms.countBufferSize(PRIORITY::DATA_ADDR);
+        pl.setPayload(PRIORITY::ALARM_ADDR, reinterpret_cast<void *>(&status), sizeof (status));
+        comms.writePayload(pl);
+
+        loop_start_sum = micros();
+        loop_count = 0;
+        status.loop_duration_max = 0;
+    }
+    loop_start = micros();
 }
