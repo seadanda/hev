@@ -29,10 +29,13 @@ private:
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *getQueue(PRIORITY &type);
     PRIORITY getInfoType(uint8_t &address);
 
-    void sendQueue    (RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);
-    void resendPacket (RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);
+    bool sendQueue(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue);
+    void resendPacket ();
+    void resetPacket  ();
+    void trackMismatch(uint8_t sequence_receive);
+    void resetReceiver(uint8_t sequence_receive = 0xFF);
     bool receivePacket(PRIORITY &type);
-    void finishPacket (PRIORITY &type);
+    void finishPacket (uint8_t &sequence_received);
 
     bool encoder(uint8_t* payload, uint8_t data_size);
     bool decoder(uint8_t* payload, uint8_t dataStart, uint8_t data_stop);
@@ -46,6 +49,10 @@ private:
     CommsFormat _comms_ack;
     CommsFormat _comms_nck;
 
+    uint8_t     _mismatch_counter = 0;
+    CommsFormat _packet;
+    uint8_t     _packet_retries = 0;
+    bool        _packet_set = false;
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_alarm;
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_data;
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_cmd;

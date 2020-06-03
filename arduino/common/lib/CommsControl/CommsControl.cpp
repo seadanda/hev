@@ -15,14 +15,6 @@ CommsControl::CommsControl(uint32_t baudrate) {
     memset(_comms_received, 0, sizeof(_comms_received));
     memset(_comms_send    , 0, sizeof(_comms_send    ));
 
-//    _ring_buff_alarm = RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING>();
-//    _ring_buff_data  = RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING>();
-//    _ring_buff_cmd   = RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING>();
-
-//    _ring_buff_received = RingBuf<Payload, COMMS_MAX_SIZE_RB_RECEIVING>();
-
-//    _comms_tmp   = CommsFormat(COMMS_MAX_SIZE_PACKET - COMMS_MIN_SIZE_PACKET );
-
     CommsFormat::generateACK(_comms_ack);
     CommsFormat::generateNACK(_comms_nck);
 
@@ -41,16 +33,14 @@ void CommsControl::beginSerial() {
 // main function to always call and try and send data
 // _last_trans_time is changed when transmission occurs in sendQueue
 void CommsControl::sender() {
-    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_ALARM) {
-        sendQueue(&_ring_buff_alarm);
-    }
-
-    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_CMD) {
-        sendQueue(&_ring_buff_cmd);
-    }
-
-    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_DATA) {
-        sendQueue(&_ring_buff_data);
+    if (static_cast<uint32_t>(millis()) - _last_trans_time > COSNT_TIMEOUT_TRANSFER) {
+        if (_packet_set) {
+            resendPacket();
+        } else {
+            if      (sendQueue(&_ring_buff_alarm)) { ; }
+            else if (sendQueue(&_ring_buff_cmd  )) { ; }
+            else if (sendQueue(&_ring_buff_data )) { ; }
+        }
     }
 }
 
@@ -69,7 +59,7 @@ void CommsControl::receiver() {
             _last_trans_index += Serial.readBytes(_last_trans + _last_trans_index, 1);
 
             // if managed to read at least 1 byte
-            if (_last_trans_index > 0 && _last_trans_index < COMMS_MAX_SIZE_BUFFER) {
+            if (_last_trans_index > 0 && _last_trans_index < COMMS_MAX_SIZE_BUFFER - 1) {
                 current_trans_index = _last_trans_index - 1;
 
                 // find the boundary of frames
@@ -82,7 +72,7 @@ void CommsControl::receiver() {
                         // if managed to decode and compare CRC
                         if (decoder(_last_trans, _start_trans_index, _last_trans_index)) {
 
-                            _sequence_receive = (*(_comms_tmp.getControl()) >> 1 ) & 0x7F;
+                            uint8_t sequence_received = _comms_tmp.getSequenceReceive();
                             // to decide ACK/NACK/other; for other gain sequenceReceive
                             uint8_t control = *(_comms_tmp.getControl() + 1);
                             uint8_t address = *_comms_tmp.getAddress();
@@ -94,27 +84,31 @@ void CommsControl::receiver() {
                             switch(control & COMMS_CONTROL_TYPES) {
                                 case COMMS_CONTROL_NACK:
                                     // received NACK
-                                    // TODO: modify timeout for next sent frame?
-                                    // resendPacket(&address);
                                     break;
                                 case COMMS_CONTROL_ACK:
                                     // received ACK
-                                    finishPacket(type);
+                                    finishPacket(sequence_received);
                                     break;
                                 default:
-                                    uint8_t sequence_receive = (control >> 1 ) & 0x7F;
-                                    sequence_receive += 1;
                                     // received INFORMATION
-                                    if (receivePacket(type)) {
-                                        _comms_ack.setAddress(&address);
-                                        _comms_ack.setSequenceReceive(sequence_receive);
-                                        sendPacket(_comms_ack);
+                                    uint8_t sequence = _comms_tmp.getSequenceSend();
+                                    CommsFormat * response = &_comms_ack;
+
+                                    // check counters
+                                    if (_sequence_receive != sequence) {
+                                        trackMismatch(sequence);
+                                        response = &_comms_nck;
                                     } else {
-                                        _comms_nck.setAddress(&address);
-                                        _comms_nck.setSequenceReceive(sequence_receive);
-                                        sendPacket(_comms_nck);
+                                        resetReceiver(sequence + 1);
                                     }
 
+                                    // check proper unpacking
+                                    if(!receivePacket(type)) {
+                                        response = &_comms_nck;
+                                    }
+                                    response->setAddress(&address);
+                                    response->setSequenceReceive(_sequence_receive);
+                                    sendPacket(*response);
                                     break;
                             }
                         }
@@ -128,7 +122,7 @@ void CommsControl::receiver() {
                         break;
                     }
                 }
-            } else if (_last_trans_index >= COMMS_MAX_SIZE_BUFFER) {
+            } else if (_last_trans_index >= COMMS_MAX_SIZE_BUFFER - 1) {
                 _last_trans_index = 0;
             }
         }
@@ -215,32 +209,55 @@ bool CommsControl::decoder(uint8_t* data, uint8_t data_start, uint8_t data_stop)
 }
 
 // sending anything of commsDATA format
-void CommsControl::sendQueue(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue) {
+bool CommsControl::sendQueue(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue) {
     // if have data to send
     if (!queue->isEmpty()) {
-        queue->operator [](0).setSequenceSend(_sequence_send);
-        sendPacket(queue->operator [](0));
-
-        // reset sending counter
-        _last_trans_time = static_cast<uint32_t>(millis());
+        _packet_set = queue->pop(_packet);
+        if (_packet_set) {
+            _packet.setSequenceSend(_sequence_send);
+            sendPacket(_packet);
+        }
     }
+    return _packet_set;
 }
 
 void CommsControl::sendPacket(CommsFormat &packet) {
+    // reset sending counter
+    _last_trans_time = static_cast<uint32_t>(millis());
+
     // if encoded and able to write data
     if (encoder(packet.getData(), packet.getSize()) ) {
         if (Serial.availableForWrite() >= _comms_send_size) {
             Serial.write(_comms_send, _comms_send_size);
-        } 
+        }
     }
 }
 
-// resending the packet, can lower the timeout since either NACK or wrong FCS already checked
-//WIP
-void CommsControl::resendPacket(RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue) {
-    ;
+void CommsControl::resendPacket() {
+    if ((++_packet_retries) < CONST_PACKET_RETRIES) {
+        sendPacket(_packet);
+    } else {
+        resetPacket();
+    }
 }
 
+void CommsControl::trackMismatch(uint8_t sequence_receive) {
+    if (_mismatch_counter++ > CONST_MISMATCH_COUNTER) {
+        resetReceiver(sequence_receive);
+    }
+}
+
+void CommsControl::resetReceiver(uint8_t sequence_receive) {
+    _mismatch_counter = 0;
+    if (sequence_receive != 0xFF) {
+        _sequence_receive = (sequence_receive & 0x7F);
+    }
+}
+
+void CommsControl::resetPacket() {
+    _packet_set = false;
+    _packet_retries = 0;
+}
 
 // receiving anything of commsFormat
 bool CommsControl::receivePacket(PRIORITY &type) {
@@ -258,25 +275,19 @@ bool CommsControl::receivePacket(PRIORITY &type) {
 }
 
 // if FCS is ok, remove from queue
-void CommsControl::finishPacket(PRIORITY &type) {
-    RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> *queue = getQueue(type);
-
-    if (queue != nullptr && !queue->isEmpty()) {
-        // get the sequence send from first entry in the queue, add one as that should be return
-        // 0x7F to deal with possible overflows (0 should follow after 127)
-        if (((queue->operator [](0).getSequenceSend() + 1) & 0x7F) ==  _sequence_receive) {
-            _sequence_send = (_sequence_send + 1) % 128;
-            CommsFormat comms_rm;
-            if (queue->pop(comms_rm)) {
-                ;
-            }
-        }
+void CommsControl::finishPacket(uint8_t &sequence_received) {
+    // get the sequence send from first entry in the queue, add one as that should be return
+    // 0x7F to deal with possible overflows (0 should follow after 127)
+    uint8_t sequence = ((_sequence_send + 1) & 0x7F);
+    if (sequence == sequence_received) {
+        _sequence_send = sequence;
+        resetPacket();
     }
 }
 
 PRIORITY CommsControl::getInfoType(uint8_t &address) {
     // return enum element corresponding to the address
-    return (PRIORITY)(address & PACKET_TYPE);
+    return static_cast<PRIORITY>(address & PACKET_TYPE);
 }
 
 // get link to queue according to packet format
