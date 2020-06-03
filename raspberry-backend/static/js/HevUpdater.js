@@ -89,22 +89,64 @@ function requestData() {
                 var data_point_idx = -1;
                 var cycle_point_idx = -1;
                 var readback_point_idx = -1;
+                var battery_point_idx = -1;
+                var target_point_idx = -1;
                 rowid = point["ROWID"];
 
                 for (let j = data.length -1 ; j >=0; j-- ){
                     if ( data[j]["payload_type"] == "DATA" ) data_point_idx = j;
                     if ( data[j]["payload_type"] == "CYCLE" ) cycle_point_idx = j;
                     if ( data[j]["payload_type"] == "READBACK" ) readback_point_idx = j;
+                    if ( data[j]["payload_type"] == "BATTERY" ) battery_point_idx = j;
+                    if ( data[j]["payload_type"] == "TARGET" ) target_point_idx = j;
 
                 }
                 var data_point = data_point_idx >= 0 ? data[data_point_idx] : null;
                 var cycle_point = cycle_point_idx >= 0 ? data[cycle_point_idx] : null;
                 var readback_point = readback_point_idx >= 0 ? data[readback_point_idx] : null;
-                var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
+                var battery_point = battery_point_idx >= 0 ? data[battery_point_idx] : null;
+                var target_point = target_point_idx >= 0 ? data[target_point_idx] : null;
+
+                if (battery_point != null) {
+                    //get our elements
+                    var powered = document.getElementById("powered");
+                    powered.classList.add("transparent");
+                      var full = document.getElementById("battery-full");
+                    full.classList.add("transparent");
+                      three_qtr = document.getElementById("battery-three-quarter");
+                    three_qtr.classList.add("transparent");
+                      var half = document.getElementById("battery-half");
+                    half.classList.add("transparent");
+                    var one_qtr = document.getElementById("battery-one-quarter");
+                    one_qtr.classList.add("transparent");
+                      var empty = document.getElementById("battery-empty");
+                    empty.classList.add("transparent");
+                    console.log(battery_point);
+                    // find the one to show
+                    if (battery_point['ok']) { powered.classList.remove("transparent"); }
+                    else if ( battery_point["bat"] && battery_point["bat85"] ) {full.classList.remove("transparent");}
+                    else  if ( battery_point["bat"] ) { three_qtr.classList.remove("transparent"); }
+                    //else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
+                    //else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
+                    else  { empty.classList.remove("transparent"); }
+                }
+
+                var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply",                "pressure_air_regulated",
                             "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
                             "fi02_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
                             "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
                             "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
+                var targets = [ "PEEP", "fi02_percent"];
+                for (let i = 0 ; i < targets.length; i++){
+                    var el = document.getElementById("setting_"+readings[i]);
+                    var val = null;
+                    if ( target_point != null && targets[i] in target_point){
+                        val = target_point[readings[i]];
+                    }
+                    if (el && val) el.value = val;
+                }
+
+                
                 for (let i = 0 ; i < readings.length; i++){
                     var gauge = document.getElementById("gauge_"+readings[i]);
                     var el = document.getElementById(readings[i]);
@@ -142,7 +184,7 @@ function requestData() {
                 
                 // get our current time stamp
                 // get difference between it and last received to update plots
-                var last_timestamp = data_point["timestamp"]/1000.0;
+                var last_timestamp = point["timestamp"]/1000.0;
                 var diff = 0;
                 
                 if (current_timestamp != -1) {

@@ -44,9 +44,13 @@
 			    </div>
 	      	</div>
 	     	<div class = "col-cards-main">
+				 <div class = "row">
+					<div class = "main-header">
+						Measurement
+					</div>
+				 </div>
 				<div class = "row">
-					<!---- row 1 -->
-				    <div class="card-input-reading">
+				    <div class="card-reading">
 		            	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 					      <span class="small text-white col-center" href="#">Mode</span>
 			            </div>
@@ -67,36 +71,12 @@
 					      </div>
 						</div>
 
-				    <div class="card-input-reading">
-		            	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="small text-white col-center" href="#">FIO<sub>2</sub> <small>[cmH2O]</small> </a>
-			            </div>
-						  <div class = "main-gauge-container lockable" id = "gauge-fio-container" onclick="show_easy_numpad(this, fio_controller);lock();"><canvas id="gauge_fi02_percent" class=""></canvas></div>
-					</div>
-
-					<div class="card-input-reading">
-						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="small text-white col-center" href="#">P<sub>Plateau</sub> <small>[cmH2O]</small> </a>
-						</div>
-						<div class = "main-gauge-container lockable" id = "gauge-pplateau-container" onclick = "show_easy_numpad(this, p_plateau_controller);lock();"><canvas id="gauge_plateau_pressure"></canvas></div>
-					</div>
-
 				    <div class="card-reading">
 				    	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="small text-white col-center" href="#">P<sub>Peak</sub> <small>[cmH20]</small></a>
+							<a class="small text-white col-center" href="#">RR</small></a>
 					    </div>
-						<div class="card-body px-1 py-1 tiny"><span class = "reading-main" id="peak_inspiratory_pressure"></span></div> 
+						<div class="card-body px-1 py-1 tiny"><span class = "reading-main" id="respiratory_rate"></span></div> 
 				    </div>
-	
-	<!--- end row 1 -->
-
-					<!-- row 2 -->
-				    <div class="card-reading">
-				    	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="small text-white col-center" href="#">P<sub>Mean</sub> <small>[cmH2O]</small></a>
-					    </div>
-				      	<div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "mean_airway_pressure"></span></div>
-					</div>
 
 				    <div class="card-reading">
 				    	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
@@ -105,16 +85,6 @@
 					    <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "peep"></span></div>
 					</div>
 
-
-	<!-- end row 2 -->
-
-	<!-- row 3 -->
-				    <div class="card-reading">
-		            	<div class="card-header d-flex align-items-center justify-content-between small py-1 min-height-1b">
-							<a class="small text-white col-center" href="#">VTI <small>[mL]</small></a>
-			            </div>
-			            <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhaled_tidal_volume"></span></div>
-					</div>
 				    <div class="card-reading">
 		            	<div class="card-header d-flex align-items-center justify-content-between small py-1 min-height-1b">
 							<a class="small text-white col-center" href="#">VTE <small>[mL]</small></a>
@@ -122,32 +92,56 @@
 			            <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_tidal_volume"></span></div>
 				    </div>
 	    
-				    <div class="card-reading">
-		            	<div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
-						<a class="small text-white col-center" href="#">MVI <small>[L/min]</small></a>
-	              		</div>
-			            <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhaled_minute_volume"></span></div>
-				    </div>
-	    
-	<!-- row 4 -->
-
-
 					<div class="card-reading">
 		            	<div class="card-header d-flex align-items-center justify-content-between py-1 small min-height-1b">
 							<a class="small text-white col-center" href="#">MVE <small>[L/min]</small></a>
 			            </div>
-		            <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_minute_volume"></span></div>
-				    </div>
-	    
-				    <div class="card-reading">
-		            	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-							<a class="small text-white col-center" href="#">I:E</a>
-			            </div>
-			            <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "inhale_exhale_ratio"></span></div> 
-				    </div>
+		            	<div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_minute_volume"></span></div>
+					</div>
 				</div>
-	<!-- end row 4 -->
-		    </div>
+			</div>
+			
+			<div class = "col-settings-main">
+				<div class = "row">
+					<div class = "main-header text-dark">
+						Target
+					</div>
+				</div>
+				<div class = "row">
+					<div class="card-setting">
+						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+							<a class="small text-dark col-center" href="#">Inhale Time</a>
+						</div>
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inhale_time" value = 0.0 onclick = "show_easy_numpad(this, new input_controller('inhale_time',this))"></div> 
+					</div>
+					<div class="card-setting">
+						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+							<a class="small text-dark col-center" href="#">RR</a>
+						</div>
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_respiratory_rate" value=0.0 onclick="show_easy_numpad(this, new input_controller('RR',this));"></input></div> 
+					</div>
+					<div class="card-setting">
+						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+							<a class="small text-dark col-center" href="#">PEEP</a>
+						</div>
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_PEEP" value=0.0 onclick="show_easy_numpad(this,new input_controller('peep',this))"></div> 
+					</div>
+					<div class="card-setting">
+						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+							<a class="small text-dark col-center" href="#">P<sub>Peak</sub> <small>[cmH20]</small></a>
+						</div>
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inspiratory_pressure" value=0.0 onclick="show_easy_numpad(this,new input_controller('inspiratory_pressure',this))"></div> 
+					</div>
+					<div class="card-setting">
+						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+							<a class="small text-dark col-center" href="#">FIO<sub>2</sub> <small>[%]</small></a>
+						</div>
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_fi02_percent" value=0.0 onclick="show_easy_numpad(this,new input_controller('fi02_percent',this))"></div> 
+					</div>
+
+
+				</div>
+			</div>
 		</div>
 	</div>
 
@@ -175,48 +169,7 @@
 </main>
 {% endblock %}
 
-{% block scripts %}
-
-<script type=text/javascript>
-/*
-	function update_variables() {
-	$.getJSON("live-data",
-		function (data) {
-		document.getElementById("pressure_buffer").innerHTML = data.pressure_buffer.toPrecision(5);
-		document.getElementById("pressure_inhale").innerHTML = data.pressure_inhale.toPrecision(5);
-	//document.getElementById("temperature_buffer").innerHTML = data.temperature_buffer.toPrecision(5);
-		document.getElementById("pressure_air_supply").innerHTML = data.pressure_air_supply.toPrecision(5);
-		document.getElementById("pressure_air_regulated").innerHTML = data.pressure_air_regulated.toPrecision(5);
-		document.getElementById("pressure_o2_supply").innerHTML = data.pressure_o2_supply.toPrecision(5);
-		document.getElementById("pressure_o2_regulated").innerHTML = data.pressure_o2_regulated.toPrecision(5);
-		document.getElementById("pressure_patient").innerHTML = data.pressure_patient.toPrecision(5);
-		document.getElementById("pressure_diff_patient").innerHTML = data.pressure_diff_patient.toPrecision(5);
-		document.getElementById("fsm_state").innerHTML = data.fsm_state.toPrecision(1);
-		//document.getElementById("version").innerHTML = data.version.toPrecision(1); //Commented because not included in the html part
-
-	//document.getElementById("pressure_buffer").innerHTML = (data.pressure_buffer).toFixed(2);
-		//document.getElementById("pressure_inhale").innerHTML = (data.pressure_inhale).toFixed(2);
-//document.getElementById("temperature_buffer").innerHTML = (data.temperature_buffer).toFixed(2);
-		//document.getElementById("pressure_air_supply").innerHTML = (data.pressure_air_supply).toFixed(2);
-		//document.getElementById("pressure_air_regulated").innerHTML = (data.pressure_air_regulated).toFixed(2);
-		//document.getElementById("pressure_o2_supply").innerHTML = (data.pressure_o2_supply).toFixed(2);
-		//document.getElementById("pressure_o2_regulated").innerHTML = (data.pressure_o2_regulated).toFixed(2);
-//document.getElementById("pressure_patient").innerHTML = (data.pressure_patient).toFixed(2);
-		//document.getElementById("pressure_diff_patient").innerHTML = (data.pressure_diff_patient).toFixed(2);
-//document.getElementById("fsm_state").innerHTML = (data.fsm_state).toFixed(2);
-		//document.getElementById("version").innerHTML = (data.version).toFixed(2); //Commented because not included in the html part
-		}
-	);
-	}
-	setInterval('update_variables()', 1000);
-*/	
-
-  </script>
-
-
-
-	{% endblock %}
-	{% block body_scripts %}
+{% block body_scripts %}
 
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
 <script src="{{ url_for('static', filename='js/Chart-displayLoop.js') }}"></script>
@@ -255,16 +208,61 @@ class gauge_controller {
 
 class input_controller{
 	constructor(name, element) {
-    this.name = name;
-	this.element = element;
-  }
-  getName(){ return this.name;}
-  getValue() {
-    return this.element.value;
-  }
-  setValue(val){
+    	this.name = name;
+		this.element = element;
+	}
+
+  	getName(){ return this.name;}
+	getValue() {
+	    return this.element.value;
+	}
+
+  	setValue(val){
+	  var currentval = this.element.value;
+	  var message = "Are you sure you want to update " + this.name + " from " + currentval + " to " + val;
+	  var c = confirm(message);
+	  if (!c) return;
+	  var colour = this.element.style.color;
+	  var element = this.element;
+	  var name = this.name;
 	  this.element.value = val;
-  }
+	  this.element.style.color="red";
+	  $.ajax({
+	      url: "/settings_handler",
+	      type: 'POST',
+	      data : { name : val },
+	      success: function(response){
+		        if (response == true){
+					element.style.color=colour;
+			        window.createNotification({
+		    			closeOnClick: 1,
+		    			displayCloseButton: 0,
+		    			positionClass: "nfc-bottom-right",
+		    			showDuration: false,
+		    			theme: "info"
+		      		})({
+		      			title: "Updated settings",
+		      			message: "Setting updated successfully"
+			      	  });
+				}
+				else {
+					element.style.color = colour;
+					element.value = currentval;
+
+					window.createNotification({
+		    			closeOnClick: 1,
+		    			displayCloseButton: 0,
+		    			positionClass: "nfc-bottom-right",
+		    			showDuration: false,
+		    			theme: "info"
+		      		})({
+		      			title: "Updated settings",
+		      			message: "Setting failed to update"
+			      	});
+				}
+		      }
+	    });
+  	}
   getMin(){
 	  if (this.element.min) return this.element.min;
 	  else return null;
@@ -334,9 +332,6 @@ $(document).ready ( function(){
   if (tablinks.length > 0){
     openTab(tablinks[0],"Main");
   }
-  // decide what to unlock based on mode
-  //var object = document.getElementById("Trends");
-  //var opt = object.options[object.selectedIndex];
 });
 function format_ie(thisElement,ie_cont)
 {
@@ -360,7 +355,7 @@ class input_controller_ie extends input_controller{
 	var posColon = val.search(":");
 	if( posColon != -1 ) {
 	    // already have colon...
-	    this.element.value = val;
+	    el.value = val;
 	}else{
 	    var ratio = parseFloat(val);
 	    if( ratio < 1 ){
@@ -373,7 +368,7 @@ class input_controller_ie extends input_controller{
 	}
     }
     setValueNoFormat(val){
-	this.element.value = val;
+		this.element.value = val;
     }
 }
 
