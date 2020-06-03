@@ -212,7 +212,7 @@ class PayloadFormat():
             8: IVTFormat,
             9: LogMsgFormat,
             10: TargetFormat,
-            11: BatteryFormat
+            11: BatteryFormat,
             12: LoopStatusFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
