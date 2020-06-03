@@ -180,6 +180,7 @@ class PAYLOAD_TYPE(IntEnum):
     IVT        = 8
     LOGMSG     = 9
     TARGET     = 10
+    STATUS     = 11
 
 class HEVVersionError(Exception):
     pass
@@ -209,7 +210,8 @@ class PayloadFormat():
             7: DebugFormat,
             8: IVTFormat,
             9: LogMsgFormat,
-            10: TargetFormat
+            10: TargetFormat,
+            11: StatusFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -484,6 +486,42 @@ class DebugFormat(PayloadFormat):
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self._byteArray = byteArray
 
+# =======================================
+# debug data payload; this can change
+# =======================================
+@dataclass
+class StatusFormat(PayloadFormat):
+    # subclass dataformat
+    _dataStruct = Struct("<BIBffIIBBB")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DEBUG
+
+    duration_loop        : float = 0.0
+    duration_loop_max    : float = 0.0
+    dropped_send         : int   = 0
+    dropped_receive      : int   = 0
+    buffer_alarm         : int   = 0
+    buffer_cmd           : int   = 0
+    buffer_data          : int   = 0
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        tmp_payload_type = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.duration_loop    ,
+        self.duration_loop_max,
+        self.dropped_send     ,
+        self.dropped_receive  ,
+        self.buffer_alarm     ,
+        self.buffer_cmd       ,
+        self.buffer_data      ,
+        ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self._byteArray = byteArray
 # =======================================
 # thresholds eata payload
 # =======================================

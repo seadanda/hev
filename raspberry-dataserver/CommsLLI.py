@@ -49,7 +49,7 @@ class CommsLLI:
         self._dv_data     = asyncio.Event(loop=self._loop)
         # maps between address and queues/events/timeouts 
         self._queues   = {0xC0: self._alarms, 0x80: self._commands, 0x40: self._data}
-        self._timeouts = {0xC0: 5, 0x80: 5, 0x40: 5}
+        self._timeouts = {0xC0: 7, 0x80: 7, 0x40: 7}
         self._acklist  = {0xC0: self._dv_alarms, 0x80: self._dv_commands, 0x40: self._dv_data}
         
         # receive

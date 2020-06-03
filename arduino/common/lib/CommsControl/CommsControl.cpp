@@ -33,7 +33,7 @@ void CommsControl::beginSerial() {
 // main function to always call and try and send data
 // _last_trans_time is changed when transmission occurs in sendQueue
 void CommsControl::sender() {
-    if (static_cast<uint32_t>(millis()) - _last_trans_time > COSNT_TIMEOUT_TRANSFER) {
+    if (static_cast<uint32_t>(millis()) - _last_trans_time > CONST_TIMEOUT_TRANSFER) {
         if (_packet_set) {
             resendPacket();
         } else {
@@ -140,7 +140,7 @@ bool CommsControl::writePayload(Payload &pl) {
         if (queue->isFull()) {
             CommsFormat comms_rm;
             if (queue->pop(comms_rm)) {
-                ;
+                _dropped_send++;
             }
         }
 
@@ -268,7 +268,7 @@ bool CommsControl::receivePacket(PRIORITY &type) {
     if (_ring_buff_received.isFull()) {
         Payload payload_rm;
         if (_ring_buff_received.pop(payload_rm)) {
-            ;
+            _dropped_receive++;
         }
     }
     return _ring_buff_received.push(_payload_tmp);

@@ -22,6 +22,10 @@ public:
     bool writePayload(Payload &pl);
     bool readPayload (Payload &pl);
 
+    uint32_t countDroppedSend()    { return _dropped_send   ; }
+    uint32_t countDroppedReceive() { return _dropped_receive; }
+    uint8_t  countBufferSize(PRIORITY type) { return getQueue(type)->size(); }
+
     void sender();
     void receiver();
 
@@ -53,6 +57,8 @@ private:
     CommsFormat _packet;
     uint8_t     _packet_retries = 0;
     bool        _packet_set = false;
+    uint32_t    _dropped_send = 0;
+    uint32_t    _dropped_receive = 0;
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_alarm;
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_data;
     RingBuf<CommsFormat, COMMS_MAX_SIZE_RB_SENDING> _ring_buff_cmd;
