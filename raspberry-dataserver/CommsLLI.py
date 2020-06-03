@@ -109,6 +109,9 @@ class CommsLLI:
                 6: generateAlarm,
                 7: generateData,
                 8: generateData,
+                9: generateData,
+                10:generateData,
+                11:generateData
             }
             generatePacket = PAYLOAD_TYPE_TO_GEN[payload.getType()]
             tmp_comms = generatePacket(payload)
@@ -123,6 +126,9 @@ class CommsLLI:
                 6: qlist[0],
                 7: qlist[2],
                 8: qlist[2],
+                9: qlist[2],
+                10:qlist[2],
+                11:qlist[2]
             }
             queue = PAYLOAD_TYPE_TO_QUEUE[payload.getType()]
             queue.put_nowait(tmp_comms)
@@ -259,11 +265,11 @@ class CommsLLI:
         self._packet_count += 1
         
         if self._dumpfile != '':
-            with open(self._dumpfile,'a') as f:
+            with open(self._dumpfile, 'a') as f:
                 # dump the payload in a dict which can be unpacked directly into a payloadFormat object
                 f.write(f"{binascii.hexlify(payload.byteArray)}\n")
             if self._packet_count >= self._dumpcount:
-                logging.critical("Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
+                logging.critical(f"Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
                 exit(0)
     
     def bind_to(self, callback):

@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAC
+#define HEV_FORMAT_VERSION 0xAD
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -43,7 +43,8 @@ enum PAYLOAD_TYPE : uint8_t {
     IVT          = 8,
     LOGMSG       = 9,
     TARGET       = 10,
-    LOOP_STATUS  = 11
+    BATTERY      = 11,
+    LOOP_STATUS  = 12
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -377,6 +378,23 @@ struct logmsg_data_format {
     char message[50];
 };
 #pragma pack()
+
+#pragma pack(1)
+struct battery_data_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::BATTERY;
+
+    uint8_t bat           = 0;
+    uint8_t ok            = 0;
+    uint8_t alarm         = 0;
+    uint8_t rdy2buf       = 0;
+    uint8_t process_bat85 = 0;
+    uint8_t prob_elec     = 0;
+    uint8_t dummy         = 0;
+};
+#pragma pack()
 //enum VALVE_STATES : bool {
 //    V_OPEN = HIGH,
 //    V_CLOSED = LOW
@@ -667,5 +685,6 @@ CommsControl* getGlobalComms();
 void setGlobalComms(CommsControl *comms);
 SystemUtils* getSystemUtils();
 void setSystemUtils(SystemUtils *sys_utils);
+
 
 #endif

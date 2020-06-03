@@ -26,19 +26,32 @@ UILoop::~UILoop()
 
 void UILoop::receiveCommands()
 {
-
     // check any received payload
-    if(_comms->readPayload(_plReceive)) {
+    if(_comms->readPayload(_pl_receive)) {
+        PAYLOAD_TYPE pl_type = *(reinterpret_cast<PAYLOAD_TYPE*>(_pl_receive.getInformation()) + 5);
 
-      if (_plReceive.getType() == PRIORITY::CMD_ADDR) {
-          // apply received cmd to ui loop
-          cmd_format cmd;
-          _plReceive.getPayload(reinterpret_cast<void*>(&cmd));
-          doCommand(cmd);
-      }
+        switch (pl_type) {
+            case PAYLOAD_TYPE::CMD: {
+                // apply received cmd to ui loop
+                cmd_format cmd;
+                _pl_receive.getPayload(reinterpret_cast<void*>(&cmd));
+                doCommand(cmd);
+                break;
+            }
+            case PAYLOAD_TYPE::BATTERY: {
+                battery_data_format bat;
+                _pl_receive.getPayload(reinterpret_cast<void*>(&bat));
+                _alarm_loop->setBatteryAlarms(bat);
+                // do what needs to be done with the battery information
+                //logMsg("received battery dummy " + String(bat.dummy));
+                break;
+            }
+            default:
+                break;
+        }
 
-      // unset received type not to read it again
-      _plReceive.setType(PRIORITY::UNSET_ADDR);
+        // unset received type not to read it again
+        _pl_receive.setType(PRIORITY::UNSET_ADDR);
     }
 }
 
@@ -69,8 +82,8 @@ void UILoop::reportFastReadings()
         _fast_data.volume= _breathing_loop->getVolume();
         _fast_data.airway_pressure= _breathing_loop->getAirwayPressure();
 
-        _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
-        _comms->writePayload(_plSend);
+        _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
+        _comms->writePayload(_pl_send);
         _fast_report_time = tnow;
     }
 }
@@ -118,9 +131,8 @@ void UILoop::reportReadbackValues()
         _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
-        //_plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
-        _plSend.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
-        _comms->writePayload(_plSend);
+        _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
+        _comms->writePayload(_pl_send);
         _readback_report_time = tnow;
     }
 }
@@ -152,8 +164,8 @@ void UILoop::reportCycleReadings()
         _cycle_data.apnea_index               = cr.apnea_index;
         _cycle_data.apnea_time                = cr.apnea_time;
         _cycle_data.mandatory_breath          = cr.mandatory_breath;
-        _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_cycle_data), sizeof(_cycle_data));
-        _comms->writePayload(_plSend);
+        _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_cycle_data), sizeof(_cycle_data));
+        _comms->writePayload(_pl_send);
         _cycle_report_time = tnow;
     }
 
@@ -175,8 +187,8 @@ void UILoop::reportAlarms()
                 _alarm.alarm_code = alarm_num;
                 _alarm.param      = _alarm_loop->getValues()[alarm_num];
 
-                _plSend.setPayload(PRIORITY::ALARM_ADDR, reinterpret_cast<void *>(&_alarm), sizeof(_alarm));
-                _comms->writePayload(_plSend);
+                _pl_send.setPayload(PRIORITY::ALARM_ADDR, reinterpret_cast<void *>(&_alarm), sizeof(_alarm));
+                _comms->writePayload(_pl_send);
 
                 *last_broadcast = tnow;
             }
@@ -208,8 +220,8 @@ void UILoop::reportIVTReadings()
         _ivt_data.inhale_i2caddr = iv->inhale_i2caddr;
         _ivt_data.exhale_i2caddr = iv->exhale_i2caddr;
         _ivt_data.system_temp = sys_temp;
-        _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_ivt_data), sizeof(_ivt_data));
-        _comms->writePayload(_plSend);
+        _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_ivt_data), sizeof(_ivt_data));
+        _comms->writePayload(_pl_send);
         _ivt_report_time = tnow;
     }
 
@@ -235,8 +247,8 @@ void UILoop::reportDebugValues()
         _debug_data.process_pressure   = pid.process_pressure;
         _debug_data.valve_duty_cycle   = pid.valve_duty_cycle;
 
-        _plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_debug_data), sizeof(_debug_data));
-        _comms->writePayload(_plSend);
+        _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_debug_data), sizeof(_debug_data));
+        _comms->writePayload(_pl_send);
         _debug_report_time = tnow;
     }
 }
@@ -255,9 +267,8 @@ void UILoop::reportTargets(target_variables targets)
     _target_data.peep = targets.peep;
     _target_data.fiO2 = targets.fiO2;
     _target_data.inhale_time = targets.inhale_time;
-    //_plSend.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
-    _plSend.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
-    _comms->writePayload(_plSend);
+    _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
+    _comms->writePayload(_pl_send);
 
 }
 

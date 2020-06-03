@@ -5945,10 +5945,10 @@ sb-topnav {
 .br-red{border: 1px solid #ff0000;}
 
 .reading{font-size:1.7rem;min-width:5rem;display:inline-block;text-align:right;}
-.reading-main{font-size:1.4rem;min-width:4rem;display:inline-block;text-align:right;}
+.reading-main, .setting-main{font-size:1.4rem;min-width:4rem;display:inline-block;text-align:right;}
 
-.input-reading{font-size:2.0rem;text-align:center;background:transparent;border:0;width:100%}
-.input-reading:disabled{color:black;}
+.setting-main{text-align:center;background:transparent;border:0;width:100%}
+.setting-main:disabled{color:black;}
 .input-editable:enabled{border:1;background:white;}
 
 
@@ -5991,11 +5991,11 @@ div.active .path-icon{
     border: 1px solid var(--cern);
     width:200px;
     height:100px;
-    //box-shadow:
-    //    inset 0 0 2px 0 rgba(255,255,255,.4),
-    //    inset 0 0 3px 0 rgba(0,0,0,.4),
-    //    inset 0 0 3px 5px rgba(0,0,0,.05),
-    //    2px 2px 4px 0 rgba(0,0,0,.25);
+    box-shadow:
+        inset 0 0 2px 0 rgba(255,255,255,.4),
+        inset 0 0 3px 0 rgba(0,0,0,.4),
+        inset 0 0 3px 5px rgba(0,0,0,.05),
+        2px 2px 4px 0 rgba(0,0,0,.25);
     border-radius: 4px;    
 
 }
@@ -6070,7 +6070,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 .fa-lock{
     width:2rem;height:2rem;
 }
-.col-charts-main, .col-cards-main, .card-reading{
+.col-charts-main, .col-cards-main, .col-settings-main, .card-reading{
   position: relative;
   width: 100%;
   padding-right: 0.75rem;
@@ -6082,10 +6082,22 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 
 }
 .col-cards-main {
-    flex: 0 0 41.6666666667%;
-    max-width: 41.6666666667%;
+    flex: 0 0 20.8333333333%;
+    max-width: 20.8333333333%;
 }
-.card-reading, .card-input-reading, .card-reading-proto, .card-input-reading-proto{
+.col-cards-proto {
+    flex: 0 0 41.6666666667%;
+    max-width: 41.66666666667%;
+}
+.col-settings-main {
+  flex: 0 0 20.8333333333%;
+  max-width: 20.8333333333%;
+}
+.col-settings-main{
+  background-color: white;
+}
+
+.card-reading, .card-setting, .card-input-reading, .card-reading-proto, .card-input-reading-proto{
     position: relative;
     min-width: 0;
     word-wrap: break-word;
@@ -6094,8 +6106,6 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     border-radius: 0.25rem;
     display:flex;
     flex-direction:column;
-    flex: 0 0 31.8%;
-    max-width: 31.8%;
     padding-right: 0.0rem !important;
     padding-left: 0.0rem !important;
     margin-right: 0.05rem !important;
@@ -6104,14 +6114,42 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     color:white;
     margin-bottom: 0.5rem !important;
 }
+.card-reading-proto{
+  flex: 0 0 31.8%;
+  max-width: 31.8%;
+
+}
+.card-input-reading, .card-input-reading-proto{
+    flex: 0 0 48.0%;
+    max-width: 48.0%;
+}
+.card-setting, .card-reading{
+  flex: 0 0 98.0%;
+  max-width: 98.0%;
+}
 .card-header {
   color:white;
 }
-.card-reading, .card-input-reading{
-    height:calc((100vh - var(--top-height) - 0.5rem)/4.0 - 0.5rem);
+/*
+.card-setting{
+  background-color:white;
+  box-shadow:
+      inset 0 0 2px 0 rgba(255,255,255,.4),
+      inset 0 0 3px 0 rgba(0,0,0,.4),
+      inset 0 0 3px 5px rgba(0,0,0,.05),
+      2px 2px 4px 0 rgba(0,0,0,.25);
+  border-radius: 4px;    
 }
-.card-reading-proto, .card-input-reading-proto{
-    height:calc((100vh - var(--top-height) - 0.5rem)/5.0 - 0.5rem);
+*/
+.card-setting .card-header{
+  background-color: rgba(0,0,0, 0.13);
+}
+
+.card-setting, .card-reading {
+    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/5.0 - 0.5rem);
+}
+.card-reading-proto, .card-input-reading-proto, .card-setting{
+    height:calc((100vh - var(--top-height) -  1.5rem - 1.0rem - 2.0rem)/5.0 - 0.5rem);
 }
 
 .range-button-container{
@@ -6123,7 +6161,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 .main-chart-container {
     position:relative;
     width:100%;
-    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem)/3.0); // 2.0rem if for the range-button container
+    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem)/3.0); // 2.0rem if for the range-button container, 1.5rem for the tab header
 }
 .main-gauge-container {
     display:flex;
@@ -6132,6 +6170,13 @@ border: 1px solid rgba(0, 0, 0, 0.125);
     width:100%;
   align-items:top;
   justify-content: center;
+}
+
+.main-header {
+  width:100%;
+  height:2.0rem;
+  color:white;
+  text-align:center;
 }
 
 .proto-chart-container {
@@ -6162,6 +6207,7 @@ border: 1px solid rgba(0, 0, 0, 0.125);
   overflow: hidden;
   border: 1px solid #ccc;
   background-color: #f1f1f1;
+  height:1.5rem;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -6188,8 +6234,8 @@ border: 1px solid rgba(0, 0, 0, 0.125);
 .tabcontent {
   display: none;
   padding: 6px 12px;
-  border: 1px solid #ccc;
-  border-top: none;
+  /*border: 1px solid #ccc;
+  border-top: none;*/
   position:relative;
 }
 

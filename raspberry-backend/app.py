@@ -12,7 +12,7 @@ import argparse
 from flask import json
 import chardet
 from hevclient import HEVClient
-from CommsCommon import DataFormat, CycleFormat, ReadbackFormat, AlarmFormat
+from CommsCommon import DataFormat, CycleFormat, ReadbackFormat, AlarmFormat, TargetFormat, BatteryFormat
 from datetime import datetime
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -24,30 +24,6 @@ import argparse
 import sqlite3
 from datetime import datetime
 import threading
-
-
-readBattery = True
-
-pin_bat     = 5
-pin_ok      = 6
-pin_alarm   = 12
-pin_rdy2buf = 13
-pin_bat85   = 19
-
-
-try:
-    import RPi.GPIO as gpio
-    gpio.setmode(gpio.BCM)
-    gpio.setup(pin_bat     , gpio.IN)
-    gpio.setup(pin_ok      , gpio.IN)
-    gpio.setup(pin_alarm   , gpio.IN)
-    gpio.setup(pin_rdy2buf , gpio.IN)
-    gpio.setup(pin_bat85   , gpio.IN)
-except ImportError:
-    print("No Raspberry Pi GPIO Module, battery information won't be reliable")
-    readBattery = False
-
-
 
 #SQLITE_FILE = 'database/HEV_monitoringDB.sqlite'  # name of the sqlite database file
 #SQLITE_FILE = 'hev::memory:?cache=shared'
@@ -65,10 +41,12 @@ def getList(dict):
 
 
 payload_types = {
-    'DATA' : {'table_name' : DATA_TABLE_NAME, 'format' : DataFormat().getDict()},
-    'CYCLE' : {'table_name' : CYCLE_TABLE_NAME, 'format' : CycleFormat().getDict()},
-    'READBACK' : { 'table_name' : READBACK_TABLE_NAME, 'format' : ReadbackFormat().getDict()},
-    'ALARM'    : { 'table_name' : ALARM_TABLE_NAME, 'format' : AlarmFormat().getDict() }
+    'DATA' : {'table_name' : DATA_TABLE_NAME, 'format' : DataFormat().getDict(), 'id' : 'DataID'},
+    'CYCLE' : {'table_name' : CYCLE_TABLE_NAME, 'format' : CycleFormat().getDict(), 'id': 'CycleID'},
+    'READBACK' : { 'table_name' : READBACK_TABLE_NAME, 'format' : ReadbackFormat().getDict(), 'id' : 'ReadBackID'},
+    'ALARM'    : { 'table_name' : ALARM_TABLE_NAME, 'format' : AlarmFormat().getDict(), 'id' : 'AlarmID' },
+    'TARGET' : { 'table_name' : 'hevmonitor_target', 'format' : TargetFormat().getDict(), 'id' : 'TargetID' },
+    'BATTERY' : { 'table_name' : 'hevmonitor_battery', 'format' : BatteryFormat().getDict(), 'id' : 'BatteryID' }
 }
 
 
@@ -86,7 +64,7 @@ class ArduinoClient(HEVClient):
 
     def get_updates(self, payload):
         """callback from the polling function, payload is data from socket"""
-        self.monitoring()
+        self.monitoring(payload)
 
     def check_table(self,tableName):
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
@@ -139,15 +117,12 @@ class ArduinoClient(HEVClient):
             conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
 
             #exec_string = "created_at  INTEGER  NOT NULL, "
-            exec_string = "DataID INTEGER, "
-            exec_string += "CycleID INTEGER, "
-            exec_string += "ReadBackID INTEGER, "
-            exec_string += "AlarmID INTEGER, "
-            exec_string += "FOREIGN KEY(DataID) REFERENCES {tn}(ROWID), ".format(tn = DATA_TABLE_NAME)
-            exec_string += "FOREIGN KEY(CycleID) REFERENCES {tn}(ROWID)".format(tn = CYCLE_TABLE_NAME)
-            exec_string += "FOREIGN KEY(ReadBackID) REFERENCES {tn}(ROWID)".format(tn = READBACK_TABLE_NAME)
-            exec_string += "FOREIGN KEY(AlarmID) REFERENCES {tn}(ROWID)".format(tn = ALARM_TABLE_NAME)
-
+            exec_string=""
+            for p in payload_types:
+                exec_string += "{pid} INTEGER, ".format(pid=payload_types[p]['id'])
+            for p in payload_types:
+                exec_string += "FOREIGN KEY({pid}) REFERENCES {tn}(ROWID) ,".format(pid = payload_types[p]['id'], tn = DATA_TABLE_NAME)
+            exec_string = exec_string[:-1]
             # Setting the maximum size of the DB to 100 MB
             conn.execute("PRAGMA max_page_count = 204800")
             conn.execute("PRAGMA page_size = 512")
@@ -161,7 +136,7 @@ class ArduinoClient(HEVClient):
             conn.close()
             logging.info('Table ' + MASTER_TABLE_NAME + ' created successfully!')
 
-    def monitoring(self):
+    def monitoring(self, payload):
         '''
         Store arduino data in the sqlite3 table.
         '''
@@ -174,30 +149,26 @@ class ArduinoClient(HEVClient):
         # Computing the time in seconds since the epoch because easier to manipulate.
         timestamp = (current_time -epoch).total_seconds() * 1000
 
-        data_receiver = self._fastdata
-        data_cycle    = self._cycle
-        data_alarms   = self._alarms
-        data_readback = self._readback
-        if data_receiver != None and len(data_receiver) > 0:
-            data_packet = { el : data_receiver[el] for el in payload_types['DATA']['format']}
+        if payload != None and payload['type'] in payload_types:
+            payload_type = payload['type']
+            data_packet = { el : payload[payload_type][el] for el in payload_types[payload_type]['format']}
             data_packet.update({"DB_time" : timestamp})
-            #data_packet.update({"alarms" : data_alarms})
-
             logging.debug("Writing to data database ...")
             try:
                 exec_string = "( :DB_time"
-                for el in payload_types['DATA']['format']:
+                for el in payload_types[payload_type]['format']:
                     exec_string += ", :" + el
                 exec_string += ") "
+
                 cursor.execute(
                         'INSERT INTO {tn} VALUES {ex_str} '
-                        .format(tn=payload_types['DATA']['table_name'], ex_str=exec_string), data_packet
+                        .format(tn=payload_types[payload_type]['table_name'], ex_str=exec_string), data_packet
                 )
                 conn.commit()
                 payload_id = cursor.lastrowid
                 columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
                 cursor.execute(
-                    'INSERT INTO {tn} (DataID) VALUES ( {pl} )'.format(tn = MASTER_TABLE_NAME, pl = payload_id )
+                    'INSERT INTO {tn} ({pid}) VALUES ( {pl} )'.format(pid = payload_types[payload_type]['id'], tn = MASTER_TABLE_NAME, pl = payload_id )
                 )
                 conn.commit()
             except sqlite3.Error as err:
@@ -205,86 +176,6 @@ class ArduinoClient(HEVClient):
                 raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
             finally:
                 sys.stdout.flush()
-
-        if data_alarms != None and len(data_alarms) > 0:
-            for data_alarm in data_alarms:
-                data_packet = { el : data_alarm[el] for el in payload_types['ALARM']['format']}
-                data_packet.update({"DB_time" : timestamp})
-
-                logging.debug("Writing to data database ...")
-                try:
-                    exec_string = "( :DB_time"
-                    for el in payload_types['ALARM']['format']:
-                        exec_string += ", :" + el
-                    exec_string += ") "
-                    cursor.execute(
-                            'INSERT INTO {tn} VALUES {ex_str} '
-                            .format(tn=payload_types['ALARM']['table_name'], ex_str=exec_string), data_packet
-                    )
-                    conn.commit()
-                    payload_id = cursor.lastrowid
-                    columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
-                    cursor.execute(
-                        'INSERT INTO {tn} (AlarmID) VALUES ( {pl} )'.format(tn = MASTER_TABLE_NAME, pl = payload_id )
-                    )
-                    conn.commit()
-                except sqlite3.Error as err:
-                    conn.close()
-                    raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
-                finally:
-                    sys.stdout.flush()
-        if data_cycle != None and len(data_cycle) > 0:
-            data_packet = { el : data_cycle[el] for el in payload_types['CYCLE']['format']}
-            data_packet.update({"DB_time" : timestamp})
-            logging.debug("Writing to cycle table ...")
-            try:
-                exec_string = "( :DB_time"
-                for el in payload_types['CYCLE']['format']:
-                    exec_string += ", :" + el
-                exec_string += ")"
-                cursor.execute(
-                        'INSERT INTO {tn} VALUES {ex_str} '
-                        .format(tn=payload_types['CYCLE']['table_name'], ex_str=exec_string), data_packet
-                )
-                conn.commit()
-                payload_id = cursor.lastrowid
-                columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
-                cursor.execute(
-                    'INSERT INTO {tn} (CycleID) VALUES ( {pl} )'.format(tn = MASTER_TABLE_NAME, pl = payload_id )
-                )
-                conn.commit()
-            except sqlite3.Error as err:
-                conn.close()
-                raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
-            finally:
-                sys.stdout.flush()
-
-        if data_readback != None and len(data_readback) > 0:
-            data_packet = { el : data_readback[el] for el in payload_types['READBACK']['format']}
-            data_packet.update({"DB_time" : timestamp})
-            logging.debug("Writing to readback table ...")
-            try:
-                exec_string = "( :DB_time"
-                for el in payload_types['READBACK']['format']:
-                    exec_string += ", :" + el
-                exec_string += ")"
-                cursor.execute(
-                        'INSERT INTO {tn} VALUES {ex_str} '
-                        .format(tn=payload_types['READBACK']['table_name'], ex_str=exec_string), data_packet
-                )
-                conn.commit()
-                payload_id = cursor.lastrowid
-                columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
-                cursor.execute(
-                    'INSERT INTO {tn} (ReadBackID) VALUES ( {pl} )'.format(tn = MASTER_TABLE_NAME, pl = payload_id )
-                )
-                conn.commit()
-            except sqlite3.Error as err:
-                conn.close()
-                raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
-            finally:
-                sys.stdout.flush()
-        conn.close()
 
 
 
@@ -420,6 +311,23 @@ def send_cmd():
     return ('', 204)
 
 
+@WEBAPP.route('/settings_handler', methods=['POST'])
+def settings_handler():
+    """
+    Update Settings
+    """
+    data = request.form
+    for d,v in data.items():
+        print(d,v)
+    #print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
+    # make this false if things don't go well
+    time.sleep(3)
+    response = make_response(json.dumps(True))
+    response.content_type = 'application/json'
+    return (response)
+
+import random
+
 @WEBAPP.route('/data_handler', methods=['POST'])
 def data_handler():
     """
@@ -431,9 +339,10 @@ def data_handler():
         print(d,v)
     #print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
     # make this false if things don't go well
-    response = make_response(json.dumps(True))
+    response = make_response(json.dumps(random.choice([True,False])))
     response.content_type = 'application/json'
     return (response)
+
 
 def modeSwitchter(modeName):
     switcher = {
@@ -515,79 +424,32 @@ def last_data(rowid):
     Output in json format
     """
 
-    data_variables = []
-    data_variables.append("ROWID")
-    data_variables.append("created_at")
-    #data_variables.append("alarms")
-    data_variables.extend(getList(DataFormat().getDict()))
-
-    alarm_variables = []
-    alarm_variables.append("ROWID")
-    alarm_variables.append("created_at")
-    #data_variables.append("alarms")
-    alarm_variables.extend(getList(AlarmFormat().getDict()))
-
-    cycle_variables = []
-    cycle_variables.append("ROWID")
-    cycle_variables.append("created_at")
-    #cycle_variables.append("alarms")
-    cycle_variables.extend(getList(CycleFormat().getDict()))
-
-    readback_variables = []
-    readback_variables.append("ROWID")
-    readback_variables.append("created_at")
-    #readback_variables.append("alarms")
-    readback_variables.extend(getList(ReadbackFormat().getDict()))
-
-    data_united_var = ','.join(data_variables)
-    cycle_united_var = ','.join(cycle_variables)
-    readback_united_var = ','.join(readback_variables)
-    alarm_united_var = ','.join(alarm_variables)
 
     fetched_all = []
     if client.check_table(MASTER_TABLE_NAME) and client.number_rows(MASTER_TABLE_NAME) > 0:
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        payload_names = ','.join([ payload_types[p]['id'] for p in payload_types ])
         cursor = conn.cursor()
-        cursor.execute(" SELECT ROWID,DataID,CycleID,ReadBackID FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size}".format(tn=MASTER_TABLE_NAME, size=100,rowid=rowid))
+        cursor.execute(" SELECT ROWID,{ids} FROM {tn} WHERE ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size}".format(tn=MASTER_TABLE_NAME, size=100,rowid=rowid,ids=payload_names))
 
         fetched = cursor.fetchall()
         for el in fetched:
             rowid = el[0]
-            dataid = el[1]
-            cycleid = el[2]
-            readbackid = el[3]
-            if dataid != None :
-                data = {}
-                cursor.execute(" SELECT {var} "
-                " FROM {tn} WHERE ROWID == {rowid}".format(tn=DATA_TABLE_NAME, var=data_united_var,rowid=dataid))
-                el = cursor.fetchone()
-                for index, item in enumerate(data_variables):
-                    data[item] = el[index]
-                # switch so rowid refers to master, and payload id is table rowid
-                data["PAYLOADID"] = dataid
-                data["ROWID"] = rowid
-                fetched_all.append(data)
-            if cycleid != None :
-                data= {}
-                cursor.execute(" SELECT {var} "
-                " FROM {tn} WHERE ROWID == {rowid}".format(tn=CYCLE_TABLE_NAME, var=cycle_united_var,rowid=cycleid))
-                el = cursor.fetchone()
-                for index, item in enumerate(cycle_variables):
-                    data[item] = el[index]
-                data["PAYLOADID"] = cycleid
-                data["ROWID"] = rowid
-                fetched_all.append(data)
+            for i,p in enumerate(payload_types):
+                united_vars = ','.join(list(payload_types[p]['format']) + ['ROWID', 'created_at'])
+                payloadid = el[i+1]
+                if payloadid != None :
+                    data = {}
+                    cursor.execute(" SELECT {var} "
+                    " FROM {tn} WHERE ROWID == {rowid}".format(tn=payload_types[p]['table_name'], var=united_vars,rowid=payloadid))
+                    payload_el = cursor.fetchone()
+                    for index, item in enumerate(payload_types[p]['format']):
+                        data[item] = payload_el[index]
+                    # switch so rowid refers to master, and payload id is table rowid
+                    data["PAYLOADID"] = payloadid
+                    data["ROWID"] = rowid
+                    fetched_all.append(data)
 
-            if readbackid != None :
-                data = {}
-                cursor.execute(" SELECT {var} "
-                " FROM {tn} WHERE ROWID == {rowid}".format(tn=READBACK_TABLE_NAME, var=readback_united_var,rowid=readbackid))
-                el = cursor.fetchone()
-                for index, item in enumerate(readback_variables):
-                    data[item] = el[index]
-                data["PAYLOADID"] = readbackid
-                data["ROWID"] = rowid
-                fetched_all.append(data)
     response = make_response(json.dumps(fetched_all).encode('utf-8') )
     response.content_type = 'application/json'
     return response

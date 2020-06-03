@@ -46,6 +46,7 @@ BreathingLoop::BreathingLoop()
 
     for(int i=0; i<RUNNING_AVG_READINGS; i++){
         _running_flows[i] = 0.0;
+        _running_peep[i] = 0.0;
     }
 
     _total_cycle_duration[0] = _states_durations.buff_loaded
@@ -72,6 +73,8 @@ BreathingLoop::BreathingLoop()
     _ap_readings_N = 0;
 
     _running_index = 0;
+    _running_index_peep = 0;
+
     _cycle_index = 0;
 
     _inhale_trigger_threshold = 0.005;  // abs flow ?unit
@@ -439,7 +442,9 @@ void BreathingLoop::FSM_assignment() {
             break;
 
         case BL_STATES::STANDBY:
-            if (_standby == true) {
+            if (_running == false) {
+                next_state = BL_STATES::STOP;
+            } else if (_standby == true) {
                 next_state = BL_STATES::STANDBY;
             } else {
                 next_state = BL_STATES::BUFF_LOADED;
@@ -575,12 +580,14 @@ void BreathingLoop::FSM_breathCycle()
             _peak_flow = -100000;  // reset peak after inhale
             _fsm_timeout = _states_durations.exhale_fill;
 		digitalWrite(pin_led_red, LOW);
+            measurePEEP();
             inhaleTrigger();
             break;
         case BL_STATES::EXHALE:
             _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.exhale;
+            measurePEEP();
             inhaleTrigger();
             break;
             
@@ -607,10 +614,10 @@ void BreathingLoop::FSM_breathCycle()
     }
     //logMsg("fsm timeout " + String(_fsm_timeout) + " state "+String(_bl_state));;
     safetyCheck();
-    measure_durations();
+    measureDurations();
 }
 
-void BreathingLoop::measure_durations( ) {
+void BreathingLoop::measureDurations( ) {
     if (_bl_state != _bl_laststate) {
         uint32_t tnow = static_cast<uint32_t>(millis());
         uint32_t tdiff = tnow - _lasttime;
@@ -649,6 +656,25 @@ void BreathingLoop::measure_durations( ) {
         _bl_laststate = _bl_state;
         _lasttime = tnow;
     }
+}
+
+void BreathingLoop::measurePEEP()
+{
+    if(fabs(_flow) < 0.1){
+        //    _peep = _readings_avgs.pressure_patient;
+        float sum_peep = 0;
+        _running_peep[_running_index_peep] = _readings_avgs.pressure_patient;
+
+        for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
+            sum_peep += static_cast<float>(fabs(_running_peep[i]));
+        }
+        _running_avg_peep = sum_peep/RUNNING_AVG_READINGS;
+
+        _running_index_peep = (_running_index_peep == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index_peep+1;
+
+        _peep = _running_avg_peep;
+    }
+	
 }
 
 void BreathingLoop::safetyCheck()
@@ -788,7 +814,7 @@ void BreathingLoop::updateIE()
 
     uint32_t total_cycle = static_cast<uint32_t>(60*1000/_targets_current->respiratory_rate);
     int32_t exhale_duration;
-    int32_t inhale_duration = _states_durations.inhale;
+    int32_t inhale_duration = _targets_current->inhale_time;
     if (_targets_current->ie_selected == true){
 	
 	    uint32_t tot_inh = total_cycle / (1.0 + (1.0/_targets_current->ie_ratio)); 
@@ -824,8 +850,7 @@ void BreathingLoop::updateIE()
 
 void BreathingLoop::updateFromTargets()
 {
-    
-    _pid.target_final_pressure = _targets_current->inspiratory_pressure;  //TODO -  should fix this to one variable
+    _pid.target_final_pressure = _targets_current->inspiratory_pressure ;  //TODO -  should fix this to one variable
     updateIE();
     //if (_targets.ie_selected == true){
         //setIERatio();
@@ -1133,6 +1158,9 @@ void BreathingLoop::runningAvgs()
 	//logMsg("INHALE "+String(_volume_inhale));
     } else if ((_bl_state == BL_STATES::EXHALE) || (_bl_state == BL_STATES::EXHALE_FILL)){
         _volume_exhale = _volume_inhale - getVolume();
+        //if(fabs(_flow) < 0.02){
+        //    _peep = _readings_avgs.pressure_patient;
+        //}
 	//logMsg(" EXHALE "+String(_volume_exhale));
     }
 

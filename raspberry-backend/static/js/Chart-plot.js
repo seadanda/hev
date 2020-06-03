@@ -3,10 +3,7 @@ var refreshIntervalId;
 var updateRefreshIntervalId;
 
 var initial_yaxis_var1 = [];
-var initial_yaxis_var2 = [];
-
 var updated_yaxis_var1 = [];
-var updated_yaxis_var2 = [];
 
 
 var current_timestamp = -1;
@@ -16,7 +13,6 @@ function setChartProtXaxisRange(min,max){
     chart.options.scales.xAxes[0].ticks.min = min;
     chart.options.scales.xAxes[0].ticks.max = max;   
 }
-
 
 
 /**
@@ -32,16 +28,13 @@ function init_results(){
           if (i==data.length-1) timestamp = seconds;
           if ( seconds == "" ) continue;
           initial_yaxis_var1.push({x : seconds, y : data[i]["pressure_patient"]});
-          initial_yaxis_var2.push({x : seconds, y : data[i]["volume"]});
         }
         //reverse because data is read from the other way
         initial_yaxis_var1.reverse();
-        initial_yaxis_var2.reverse();
         console.log('init results, timestamp: ',timestamp);
         for ( let i = 0 ; i < initial_yaxis_var1.length; i++){
           console.log('filling up with ',initial_yaxis_var1[i]['x'], ' - ',timestamp);
           initial_yaxis_var1[i]['x'] = initial_yaxis_var1[i]['x'] - timestamp;
-          initial_yaxis_var2[i]['x']   = initial_yaxis_var2[i]['x']   - timestamp;
         }        
     },
     cache: false
@@ -67,7 +60,7 @@ document.getElementById("timestamp").innerHTML = (data.timestamp/1000).toFixed(2
 document.getElementById("version").innerHTML = data.version; 
 //document.getElementById("version").innerHTML = (data.version).toFixed(2); //Commented because not included in the html part
 */
-function requestDataVar1(var1, var2) {
+function requestDataVar1(var1) {
   $.ajax({
       url: '/last-data',
       success: function(point) {
@@ -98,7 +91,7 @@ function requestDataVar1(var1, var2) {
               diff = seconds;
           }
           else {
-              diff = seconds - current_timestamp; //FUTURE: restore this line in case not using simulated data
+              diff = seconds - current_timestamp; 
           }
           current_timestamp = seconds;
           if(chart.data.datasets[0].data.length > 300){
@@ -106,17 +99,11 @@ function requestDataVar1(var1, var2) {
           }
 
           
-          if(chart.data.datasets[1].data.length > 300){
-            chart.data.datasets[1].data.shift();
-          }                  
- 
           for ( let i = 0 ; i < initial_yaxis_var1.length; i++){
               chart.data.datasets[0].data[i]['x'] = chart.data.datasets[0].data[i]['x'] - diff;
-              chart.data.datasets[1].data[i]['x'] = chart.data.datasets[1].data[i]['x'] - diff;
           }
   
           chart.data.datasets[0].data.push({x : 0, y : point[var1]});
-          chart.data.datasets[1].data.push({ x : 0, y : point[var2]});
           
           chart.update();
         }
@@ -125,7 +112,7 @@ function requestDataVar1(var1, var2) {
       cache: false
   });
   // call it again after time in ms
-  refreshIntervalId = setTimeout(requestDataVar1, 200, var1, var2);
+  refreshIntervalId = setTimeout(requestDataVar1, 200, var1);
 }
 
 
@@ -142,19 +129,10 @@ $(document).ready(function() {
         yAxisID: 'A',
         data: initial_yaxis_var1,
         label: "Pressure",
-        borderColor: "#0000FF",
+        borderColor: "#6496ff",
         fill: false,
         showLine: true,
-        }, 
-      { 
-        label: 'B',
-        yAxisID: 'B',
-        data: initial_yaxis_var2,
-        label: "Volume",
-        borderColor: "#ba0202",
-        fill: false,
-        showLine: true,
-      }]
+        }]
     },
     options: {
       elements: {
@@ -200,7 +178,7 @@ $(document).ready(function() {
           type: 'linear',
           position: 'left',
 		      ticks: {
-             fontColor: "#0000FF", // this here
+             fontColor: "#6496ff", // this here
              fontSize: 25,
            },
                         gridLines : {
@@ -208,16 +186,7 @@ $(document).ready(function() {
                             color: "rgba(255,255,255,0.2)",
                             zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
-          }, 
-        {
-          id: 'B',
-          type: 'linear',
-          position: 'right',
-		      ticks: {
-                  fontColor: "#000000", // this here
-                  fontSize: 25,
-          },
-		    }]
+          }]
 	    },
 		  legend : {
         display: true,
@@ -227,28 +196,15 @@ $(document).ready(function() {
       } 
     }
   });
-  requestDataVar1("pressure_patient", "volume");
+  requestDataVar1("pressure_patient");
 });
 
 
 
 
-// Function to parse the selection from a multiselect
-function getSelectValues(select) {
-  var result = [];
-  var options = select && select.options;
-  var opt;
-  for (var i=0, iLen=options.length; i<iLen; i++) {
-    opt = options[i];
-    if (opt.selected) {
-      result.push(opt.value || opt.text);
-    }
-  }
-  return result;
-}
 
 
-function updated_init_results(var1, var2){
+function updated_init_results(var1){
   $.getJSON({
     url: '/last_N_data',
     success: function(data) {
@@ -258,16 +214,13 @@ function updated_init_results(var1, var2){
           if (i==data.length-1) timestamp = seconds;
           if ( seconds == "" ) continue;
           updated_yaxis_var1.push({x : seconds, y : data[i][var1]});
-          updated_yaxis_var2.push({x : seconds, y : data[i][var2]});
         }
         //reverse because data is read from the other way
         updated_yaxis_var1.reverse();
-        updated_yaxis_var2.reverse();
         console.log('init results, timestamp: ',timestamp);
         for ( let i = 0 ; i < updated_yaxis_var1.length; i++){
           console.log('filling up with ',updated_yaxis_var1[i]['x'], ' - ',timestamp);
           updated_yaxis_var1[i]['x'] = updated_yaxis_var1[i]['x'] - timestamp;
-          updated_yaxis_var2[i]['x']   = updated_yaxis_var2[i]['x']   - timestamp;
         }        
     },
     cache: false
@@ -275,10 +228,23 @@ function updated_init_results(var1, var2){
 }
 
 
-function updateRequestDataVar(var1, var2) {
+function updateRequestDataVar(var1) {
   $.ajax({
-      url: '/live-data',
-      success: function(point) {
+    url: '/last-data',
+    success: function(point) {
+      var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
+      "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state", "volume", "flow", "airway_pressure","fsm_state",
+      "version","data_type","timestamp"];
+      for (let i = 0 ; i < readings.length; i++){
+        var el = document.getElementById(readings[i]);
+        var val = point[readings[i]];
+        if (el && val){
+          if(readings[i] == "timestamp") el.innerHTML = (val/1000).toFixed(2);
+          else if (readings[i] == "version" ) el.innerHTML = val;
+          else if (readings[i] == "fsm_state") el.innerHTML = "<small>" + val + "</small>";
+          else el.innerHTML = val.toFixed(2);
+            }
+        }
 
         var seconds = point["timestamp"]/1000;
 
@@ -299,18 +265,15 @@ function updateRequestDataVar(var1, var2) {
           if(chart.data.datasets[0].data.length > 300){
                           chart.data.datasets[0].data.shift();
           }
-          
-          if(chart.data.datasets[1].data.length > 300){
-            chart.data.datasets[1].data.shift();
-          }                  
+                    
  
           for ( let i = 0 ; i < updated_yaxis_var1.length; i++){
               chart.data.datasets[0].data[i]['x'] = chart.data.datasets[0].data[i]['x'] - diff;
-              chart.data.datasets[1].data[i]['x'] = chart.data.datasets[1].data[i]['x'] - diff;
           }
+          //console.log('UPDATED value ',point[var1], ' - ',timestamp);
+
   
           chart.data.datasets[0].data.push({x : 0, y : point[var1]});
-          chart.data.datasets[1].data.push({ x : 0, y : point[var2]});
           
           chart.update();
         }
@@ -319,26 +282,24 @@ function updateRequestDataVar(var1, var2) {
       cache: false
   });
   // call it again after time in ms
-  updateRefreshIntervalId = setTimeout(updateRequestDataVar, 200, var1, var2);
+  updateRefreshIntervalId = setTimeout(updateRequestDataVar, 200, var1);
 }
 
 
 
 // Function runs on chart type select update
 function updateChartType() {
-  var selection = document.multiselect('#chart_variables')._item
-  var selection_results = getSelectValues(selection)
+  var selection_results = document.getElementById("chart_variables").value;
   console.log("selected variables: ", selection_results);
   chart.destroy();
 
-  
+  initial_yaxis_var1 = [];
   updated_yaxis_var1 = [];
-  updated_yaxis_var2 = [];
 
   clearTimeout(refreshIntervalId);
   clearTimeout(updateRefreshIntervalId);
-  updated_init_results(selection_results[0], selection_results[1]);
-  updateRequestDataVar(selection_results[0], selection_results[1]);
+  //updated_init_results(selection_results);
+  //updateRequestDataVar(selection_results);
 
   $(document).ready(function() {
     var ctx = document.getElementById('pressure_air_supply_chart');
@@ -350,20 +311,11 @@ function updateChartType() {
           label: 'A',
           yAxisID: 'A',
           data: updated_yaxis_var1,
-          label: selection_results[0],
-          borderColor: "#0000FF",
+          label: selection_results,
+          borderColor: "#6496ff",
           fill: false,
           showLine: true,
-          }, 
-        { 
-          label: 'B',
-          yAxisID: 'B',
-          data: updated_yaxis_var2,
-          label: selection_results[1],
-          borderColor: "#000000",
-          fill: false,
-          showLine: true,
-        }]
+          }]
       },
       options: {
         elements: {
@@ -402,19 +354,10 @@ function updateChartType() {
             type: 'linear',
             position: 'left',
             ticks: {
-               fontColor: "#0000FF", // this here
+               fontColor: "#6496ff", // this here
                fontSize: 25,
              },
-            }, 
-          {
-            id: 'B',
-            type: 'linear',
-            position: 'right',
-            ticks: {
-                    fontColor: "#000000", // this here
-                    fontSize: 25,
-            },
-          }]
+            }]
         },
         legend : {
           display: true,
@@ -425,16 +368,7 @@ function updateChartType() {
       }
     });
   });
-   requestDataVar1(selection_results[0], selection_results[1]);
+  updateRequestDataVar(selection_results);
 }; // ends update button
 
-document.multiselect('#chart_variables')
-                        
-            .setCheckBoxClick("checkboxAll", function(target, args) {
-                    console.log("Checkbox 'Select All' was clicked and got value ", args.checked);})
-            .setCheckBoxClick("pressure_buffer", function(target, args) {
-                    console.log("Checkbox for item with value '1' was clicked and got value ", args.checked); });
-
-document.multiselect('#chart_variables')
-      .deselectAll();
 

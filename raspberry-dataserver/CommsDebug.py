@@ -106,8 +106,8 @@ async def commsDebug():
     await asyncio.sleep(1)
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
-    cmd = send_cmd(cmd_type="SET_TARGET", cmd_code="RESPIRATORY_RATE", param=10.0) 
-    cmd = send_cmd(cmd_type="SET_TARGET", cmd_code="IE_RATIO", param=0.2) 
+    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
+    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="IE_RATIO", param=0.2) 
     #print('sent inhale + exhale trigger -> 1')
     toggle = "STOP"
     while True:
