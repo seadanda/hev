@@ -48,10 +48,10 @@ class CMD_SET_DURATION(Enum):
     BUFF_FLUSH      =  3
     BUFF_PREFILL    =  4
     BUFF_FILL       =  5
-    BUFF_PRE_INHALE =  7
-    INHALE          =  8
-    PAUSE           =  9
-    EXHALE          = 11
+    BUFF_PRE_INHALE =  6
+    INHALE          =  7
+    PAUSE           =  8
+    EXHALE          =  9
 
 @unique
 class VENTILATION_MODE(Enum):
@@ -184,7 +184,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAD, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAE, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 

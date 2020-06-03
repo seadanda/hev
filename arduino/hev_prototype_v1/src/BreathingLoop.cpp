@@ -743,8 +743,7 @@ uint32_t BreathingLoop::calculateDurationExhale() {
     float new_exhale = total_dur 
                 - ( _measured_durations.buff_pre_inhale
                   + _measured_durations.inhale
-                  + _measured_durations.pause
-                  + _measured_durations.exhale);
+                  + _measured_durations.pause);
     if (new_exhale < 0)
         new_exhale = 0;
     return static_cast<uint32_t>(new_exhale);

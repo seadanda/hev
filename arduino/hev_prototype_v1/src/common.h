@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAD
+#define HEV_FORMAT_VERSION 0xAE
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -77,10 +77,10 @@ enum CMD_SET_DURATION : uint8_t {
     BUFF_FLUSH      =  3,
     BUFF_PREFILL    =  4,
     BUFF_FILL       =  5,
-    BUFF_PRE_INHALE =  7,
-    INHALE          =  8,
-    PAUSE           =  9,
-    EXHALE          = 11
+    BUFF_PRE_INHALE =  6,
+    INHALE          =  7,
+    PAUSE           =  8,
+    EXHALE          =  9
 };
 
 enum VENTILATION_MODE : uint8_t {
