@@ -330,8 +330,11 @@ if __name__ == "__main__":
             except NameError:
                 logging.critical("Arduino not connected")
                 exit(1)
-                
-        battery_lli = BatteryLLI()
+
+        if args.dump:
+            battery_lli = BatteryLLI(dump=True)
+        else:
+            battery_lli = BatteryLLI()
         battery = battery_lli.main()
         tasks.append(battery)
 

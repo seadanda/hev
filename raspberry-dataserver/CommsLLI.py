@@ -228,7 +228,7 @@ class CommsLLI:
         self._packet_count += 1
         
         if self._dumpfile != '':
-            with open(self._dumpfile,'a') as f:
+            with open(self._dumpfile, 'a') as f:
                 # dump the payload in a dict which can be unpacked directly into a payloadFormat object
                 f.write(f"{binascii.hexlify(payload.byteArray)}\n")
             if self._packet_count >= self._dumpcount:
