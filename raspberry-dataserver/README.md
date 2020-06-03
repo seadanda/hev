@@ -185,3 +185,16 @@ then in another terminal, run a hevserver with the argument `--use-dump-data`:
 
 Note that the version of the dumpfile must match the protocol version used by
 the hevserver.
+
+## Dumping to file using the hevserver
+
+The HEVServer has an option to dump a certain number of packets to file,
+which can later be read by the `ArduinoEmulator.py` script.
+
+To make a dump run:
+```bash
+./hevserver.py --dump 10000 -o share/new.dump
+```
+
+Using the hevserver is preferred over using the CommsLLI as the former will
+pass battery data to the microcontroller, while the latter will not.

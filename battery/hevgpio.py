@@ -8,12 +8,14 @@ HARD_PWM = 0
 SERIAL = 0
 UNKNOWN = 0
 
+PUD_DOWN = 0
+
 BCM = 0
     
 def setmode(mode):
     pass
     
-def setup(pin, mode):
+def setup(pin, mode, pull_up_down):
     pass
     
 def input(pin):
