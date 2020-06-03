@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAC
+#define HEV_FORMAT_VERSION 0xAD
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -223,11 +223,9 @@ struct readback_data_format {
     uint16_t duration_buff_flush      = 0;
     uint16_t duration_buff_prefill    = 0;
     uint16_t duration_buff_fill       = 0;
-    uint16_t duration_buff_loaded     = 0;
     uint16_t duration_buff_pre_inhale = 0;//
     uint16_t duration_inhale          = 0;
     uint16_t duration_pause           = 0;
-    uint16_t duration_exhale_fill     = 0;
     uint16_t duration_exhale          = 0;
 
     float    valve_air_in             = 0.0;//
@@ -344,6 +342,8 @@ struct target_data_format{
     float peep                  = 0.0;
     float fiO2                  = 0.0; 
     uint16_t inhale_time        = 0 ; 
+    float buffer_upper_pressure = 0.0; 
+    float buffer_lower_pressure = 0.0; 
 };
 #pragma pack()
 
@@ -388,7 +388,7 @@ struct states_durations {
     uint32_t buff_pre_inhale;
     uint32_t inhale;
     uint32_t pause;
-    uint32_t exhale_fill;
+    uint32_t exhale;
 };
 
 struct alarms {
@@ -562,6 +562,8 @@ struct target_variables {
     float peep;
     float fiO2; 
     uint16_t inhale_time; 
+    float buffer_upper_pressure; 
+    float buffer_lower_pressure; 
     bool  ie_selected;
 };
 

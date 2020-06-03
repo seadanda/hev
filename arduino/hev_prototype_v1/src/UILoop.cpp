@@ -105,12 +105,12 @@ void UILoop::reportReadbackValues()
         _readback_data.duration_buff_flush  = durations.buff_flush;
         _readback_data.duration_buff_prefill  = durations.buff_prefill;
         _readback_data.duration_buff_fill  = durations.buff_fill;
-        _readback_data.duration_buff_loaded  = durations.buff_loaded;
+        // _readback_data.duration_buff_loaded  = durations.buff_loaded;
         _readback_data.duration_buff_pre_inhale  = durations.buff_pre_inhale;
         _readback_data.duration_inhale  = durations.inhale;
         _readback_data.duration_pause  = durations.pause;
-        _readback_data.duration_exhale_fill  = durations.exhale_fill;
         _readback_data.duration_exhale  = durations.exhale;
+        // _readback_data.duration_exhale  = durations.exhale;
 
         _readback_data.valve_air_in = vin_air;
         _readback_data.valve_o2_in = vin_o2;
@@ -266,6 +266,8 @@ void UILoop::reportTargets(target_variables targets)
     _target_data.peep = targets.peep;
     _target_data.fiO2 = targets.fiO2;
     _target_data.inhale_time = targets.inhale_time;
+    _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
+    _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
     _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
     _comms->writePayload(_pl_send);
 
