@@ -232,7 +232,7 @@ class CommsLLI:
                 # dump the payload in a dict which can be unpacked directly into a payloadFormat object
                 f.write(f"{binascii.hexlify(payload.byteArray)}\n")
             if self._packet_count >= self._dumpcount:
-                logging.critical("Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
+                logging.critical(f"Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
                 exit(0)
     
     def bind_to(self, callback):

@@ -284,6 +284,8 @@ if __name__ == "__main__":
         parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
         parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
         parser.add_argument('--use-dump-data', action='store_true', help='Use dump data source')
+        parser.add_argument('--dump', type=int, default=0, help='Dump NUM raw data packets to file')
+        parser.add_argument('-o', '--dumpfile', type=str, default = '', help='File to dump to')
         args = parser.parse_args()
         if args.debug == 0:
             logging.getLogger().setLevel(logging.WARNING)
@@ -311,7 +313,17 @@ if __name__ == "__main__":
                     connected = arduinoConnected()
                     tasks.append(connected)
                 # setup serial device and init server
-                comms_lli = CommsLLI(loop)
+                if args.dump == 0:
+                    comms_lli = CommsLLI(loop)
+                elif args.dump > 0:
+                    if args.dumpfile == '':
+                        logging.critical("No dump file specified")
+                        raise KeyboardInterrupt # fake ctrl+c
+                    logging.warning(f"Dumping {args.dump} packets to {args.dumpfile}")
+                    comms_lli = CommsLLI(loop, file=args.dumpfile, number=args.dump)
+                else:
+                    logging.critical("Invalid number of packets to dump")
+                    raise KeyboardInterrupt # fake ctrl+c
                 comms = comms_lli.main(port_device, 115200)
                 tasks.append(comms)
                 logging.info(f"Serving data from device {port_device}")
