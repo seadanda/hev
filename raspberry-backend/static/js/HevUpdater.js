@@ -69,7 +69,7 @@ function requestData() {
                             "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
                             "fi02_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
                             "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
-                            "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume"];
+                            "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
                 for (let i = 0 ; i < readings.length; i++){
                     var gauge = document.getElementById("gauge_"+readings[i]);
                     var el = document.getElementById(readings[i]);
