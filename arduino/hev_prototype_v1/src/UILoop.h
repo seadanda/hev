@@ -37,7 +37,6 @@ private:
     void cmdSetThresholdMax(cmd_format &cf);
     void cmdSetValve(cmd_format &cf);
 
-
     BreathingLoop *_breathing_loop;
     AlarmLoop     *_alarm_loop    ;
     CommsControl  *_comms         ;

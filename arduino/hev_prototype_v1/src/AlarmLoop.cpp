@@ -6,12 +6,14 @@ AlarmLoop::AlarmLoop()
     for (uint8_t alarm_num = 0; alarm_num < ALARM_CODES::ALARMS_COUNT; alarm_num++) {
         _alarms.values[alarm_num] = (_alarms.thresholds_max[alarm_num] + _alarms.thresholds_min[alarm_num]) / 2;
     }
+
+    setBatteryThresholds();
 }
 
 AlarmLoop::~AlarmLoop()
 {;}
 
-ALARM_TYPE AlarmLoop::checkTresholds() {
+ALARM_TYPE AlarmLoop::checkThresholds() {
     _type = ALARM_TYPE::ALARM_TYPE_UNKNOWN;
     bool active = false;
     for (uint8_t alarm_num = 0; alarm_num < ALARM_CODES::ALARMS_COUNT; alarm_num++) {
@@ -26,7 +28,7 @@ ALARM_TYPE AlarmLoop::checkTresholds() {
 }
 
 void AlarmLoop::fireAlarms() {
-    switch (checkTresholds()) {
+    switch (checkThresholds()) {
         case ALARM_TYPE::PRIORITY_LOW:
             _av_controller.setAVs(AV_STYLE::PERM_OFF, AV_STYLE::PERM_ON , AV_STYLE::PERM_OFF, AV_STYLE::OSCIL   );
             break;
@@ -46,4 +48,36 @@ void AlarmLoop::fireAlarms() {
 
 void AlarmLoop::updateValues(readings<float> fast_data) {
     _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = static_cast<float>(fast_data.pressure_patient);
+}
+
+void AlarmLoop::setBatteryThresholds()
+{
+
+    // these are booleans
+    // 0 = no alarm
+    // 1 = alarm
+    // => limits are -1 to 0.5
+
+    setAlarm<float>(ALARM_CODES::AC_POWER_DISCONNECTION, _alarms.thresholds_min, -1.0);
+    setAlarm<float>(ALARM_CODES::BATTERY_CHARGE,         _alarms.thresholds_min, -1.0);
+    setAlarm<float>(ALARM_CODES::BATTERY_FAULT_SRVC,     _alarms.thresholds_min, -1.0);
+    setAlarm<float>(ALARM_CODES::LOW_BATTERY,            _alarms.thresholds_min, -1.0);
+
+    setAlarm<float>(ALARM_CODES::AC_POWER_DISCONNECTION, _alarms.thresholds_max, 0.5);
+    setAlarm<float>(ALARM_CODES::BATTERY_CHARGE,         _alarms.thresholds_max, 0.5);
+    setAlarm<float>(ALARM_CODES::BATTERY_FAULT_SRVC,     _alarms.thresholds_max, 0.5);
+    setAlarm<float>(ALARM_CODES::LOW_BATTERY,            _alarms.thresholds_max, 0.5);
+}
+
+void AlarmLoop::setBatteryAlarms(battery_data_format &bat)
+{
+    bool ac_power_disconnection = (bat.ok == 0);
+    bool battery_charge         = (bat.rdy2buf == 0);
+    bool low_battery            = (bat.process_bat85 == 0);
+    bool battery_fault_svc      = ((bat.prob_elec == 1) || (bat.alarm == 1));
+
+    setAlarm<float>(ALARM_CODES::AC_POWER_DISCONNECTION, _alarms.values, ac_power_disconnection);
+    setAlarm<float>(ALARM_CODES::BATTERY_CHARGE,         _alarms.values, battery_charge);
+    setAlarm<float>(ALARM_CODES::BATTERY_FAULT_SRVC,     _alarms.values, battery_fault_svc);
+    setAlarm<float>(ALARM_CODES::LOW_BATTERY,            _alarms.values, low_battery);
 }

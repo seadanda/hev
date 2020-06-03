@@ -367,13 +367,13 @@ struct battery_data_format {
     uint32_t timestamp                  = 0;
     uint8_t  payload_type               = PAYLOAD_TYPE::BATTERY;
 
-    uint8_t bat           = 0.0;
-    uint8_t ok            = 0.0;
-    uint8_t alarm         = 0.0;
-    uint8_t rdy2buf       = 0.0;
-    uint8_t process_bat85 = 0.0;
-    uint8_t prob_elec     = 0.0;
-    uint8_t dummy         = 0.0;
+    uint8_t bat           = 0;
+    uint8_t ok            = 0;
+    uint8_t alarm         = 0;
+    uint8_t rdy2buf       = 0;
+    uint8_t process_bat85 = 0;
+    uint8_t prob_elec     = 0;
+    uint8_t dummy         = 0;
 };
 #pragma pack()
 //enum VALVE_STATES : bool {
@@ -666,5 +666,6 @@ CommsControl* getGlobalComms();
 void setGlobalComms(CommsControl *comms);
 SystemUtils* getSystemUtils();
 void setSystemUtils(SystemUtils *sys_utils);
+
 
 #endif
