@@ -8,7 +8,7 @@ import time
 import json
 import threading
 from typing import List, Dict, Union
-from CommsCommon import PayloadFormat
+from CommsCommon import PayloadFormat, PAYLOAD_TYPE
 import logging
 logging.basicConfig(level=logging.INFO,
                     format='%(asctime)s - %(levelname)s - %(message)s')
@@ -93,11 +93,8 @@ class HEVClient(object):
                         elif payload["type"] == "ALARM":
                             with self._lock:
                                 self._alarms = payload["ALARM"]
-                        elif payload["type"] == "IVT":
-                            pass
-                        elif payload["type"] == "DEBUG":
-                            pass
-                        elif payload["type"] == "BATTERY":
+                        elif payload["type"] in [pt.name for pt in PAYLOAD_TYPE]:
+                            # payload type is a valid payload type
                             pass
                         else:
                             raise HEVPacketError("Invalid broadcast type")
