@@ -48,11 +48,9 @@ class CMD_SET_DURATION(Enum):
     BUFF_FLUSH      =  3
     BUFF_PREFILL    =  4
     BUFF_FILL       =  5
-    BUFF_LOADED     =  6
     BUFF_PRE_INHALE =  7
     INHALE          =  8
     PAUSE           =  9
-    EXHALE_FILL     = 10
     EXHALE          = 11
 
 @unique
@@ -156,11 +154,9 @@ class BL_STATES(Enum):
     CALIBRATION     =  2
     BUFF_PREFILL    =  3
     BUFF_FILL       =  4
-    BUFF_LOADED     =  5
     BUFF_PRE_INHALE =  6
     INHALE          =  7
     PAUSE           =  8
-    EXHALE_FILL     =  9
     EXHALE          = 10
     STOP            = 11
     BUFF_PURGE      = 12
@@ -311,7 +307,7 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBff")
+    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
 
 
@@ -320,11 +316,9 @@ class ReadbackFormat(PayloadFormat):
     duration_buff_flush: int      = 0
     duration_buff_prefill: int    = 0
     duration_buff_fill: int       = 0
-    duration_buff_loaded: int     = 0
     duration_buff_pre_inhale: int = 0
     duration_inhale: int          = 0
     duration_pause: int           = 0
-    duration_exhale_fill: int     = 0
     duration_exhale: int          = 0
 
     valve_air_in: float           = 0.0
@@ -359,11 +353,9 @@ class ReadbackFormat(PayloadFormat):
         self.duration_buff_flush,
         self.duration_buff_prefill,
         self.duration_buff_fill,
-        self.duration_buff_loaded,
         self.duration_buff_pre_inhale,
         self.duration_inhale,
         self.duration_pause,
-        self.duration_exhale_fill,
         self.duration_exhale,
         self.valve_air_in,
         self.valve_o2_in,
