@@ -88,8 +88,6 @@ async def commsDebug():
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1000.) #
     # Change TIMEOUT of breathing cycle (PAUSE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
-    # Change TIMEOUT of breathing cycle (EXHALE-FILL)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=1600.) #
     # Change TIMEOUT of breathing cycle (EXHALE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=8000.) #
     # Start the cycles
