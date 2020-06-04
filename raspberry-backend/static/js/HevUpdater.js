@@ -1,9 +1,44 @@
 var pause_charts = false;
 var current_timestamp = -1;
 
+var paused_pressure_data = Array(0);
+var paused_flow_data = Array(0);
+var paused_volume_data = Array(0);
+
 function togglePause(){
-    if (pause_charts) pause_charts = false;
-    else pause_charts = true;
+    if ( pause_charts ) {
+	pause_charts = false;
+	// update charts from buffered data 
+	if( paused_pressure_data.length > 0 ){
+	    // .slice() to make shallow copy, rather than copy reference only
+	    chart_pressure.data.datasets[0].data = paused_pressure_data.slice(); 
+	    chart_flow.data.datasets[0].data = paused_flow_data.slice();
+	    chart_volume.data.datasets[0].data = paused_volume_data.slice();
+	    paused_pressure_data.length = 0;
+	    paused_volume_data.length = 0;
+	    paused_flow_data.length = 0;	    
+	}
+	chart_pressure.update()
+	chart_flow.update()
+	chart_volume.update()
+
+	// turn off tooltips while running
+	chart_pressure.options.tooltips.enabled = false;
+	chart_flow.options.tooltips.enabled = false;	
+	chart_volume.options.tooltips.enabled = false;
+    } else {
+	pause_charts = true;
+	// copy charts to buffered data 
+	// .slice() to make shallow copy, rather than copy reference only
+	paused_pressure_data = chart_pressure.data.datasets[0].data.slice();
+	paused_flow_data = chart_flow.data.datasets[0].data.slice();
+	paused_volume_data = chart_volume.data.datasets[0].data.slice();
+
+	// turn on tooltips while not running
+	chart_pressure.options.tooltips.enabled = true;
+	chart_flow.options.tooltips.enabled = true;
+	chart_volume.options.tooltips.enabled = true;
+    }
 }
 
 function setChartXaxisRange(min,max){
@@ -54,22 +89,64 @@ function requestData() {
                 var data_point_idx = -1;
                 var cycle_point_idx = -1;
                 var readback_point_idx = -1;
+                var battery_point_idx = -1;
+                var target_point_idx = -1;
                 rowid = point["ROWID"];
 
                 for (let j = data.length -1 ; j >=0; j-- ){
                     if ( data[j]["payload_type"] == "DATA" ) data_point_idx = j;
                     if ( data[j]["payload_type"] == "CYCLE" ) cycle_point_idx = j;
                     if ( data[j]["payload_type"] == "READBACK" ) readback_point_idx = j;
+                    if ( data[j]["payload_type"] == "BATTERY" ) battery_point_idx = j;
+                    if ( data[j]["payload_type"] == "TARGET" ) target_point_idx = j;
 
                 }
                 var data_point = data_point_idx >= 0 ? data[data_point_idx] : null;
                 var cycle_point = cycle_point_idx >= 0 ? data[cycle_point_idx] : null;
                 var readback_point = readback_point_idx >= 0 ? data[readback_point_idx] : null;
-                var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply","pressure_air_regulated",
+                var battery_point = battery_point_idx >= 0 ? data[battery_point_idx] : null;
+                var target_point = target_point_idx >= 0 ? data[target_point_idx] : null;
+
+                if (battery_point != null) {
+                    //get our elements
+                    var powered = document.getElementById("powered");
+                    powered.classList.add("transparent");
+                      var full = document.getElementById("battery-full");
+                    full.classList.add("transparent");
+                      three_qtr = document.getElementById("battery-three-quarter");
+                    three_qtr.classList.add("transparent");
+                      var half = document.getElementById("battery-half");
+                    half.classList.add("transparent");
+                    var one_qtr = document.getElementById("battery-one-quarter");
+                    one_qtr.classList.add("transparent");
+                      var empty = document.getElementById("battery-empty");
+                    empty.classList.add("transparent");
+                    console.log(battery_point);
+                    // find the one to show
+                    if (battery_point['ok']) { powered.classList.remove("transparent"); }
+                    else if ( battery_point["bat"] && battery_point["bat85"] ) {full.classList.remove("transparent");}
+                    else  if ( battery_point["bat"] ) { three_qtr.classList.remove("transparent"); }
+                    //else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
+                    //else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
+                    else  { empty.classList.remove("transparent"); }
+                }
+
+                var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply",                "pressure_air_regulated",
                             "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
                             "fi02_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
                             "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
-                            "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume"];
+                            "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
+                var targets = [ "PEEP", "fi02_percent"];
+                for (let i = 0 ; i < targets.length; i++){
+                    var el = document.getElementById("setting_"+readings[i]);
+                    var val = null;
+                    if ( target_point != null && targets[i] in target_point){
+                        val = target_point[readings[i]];
+                    }
+                    if (el && val) el.value = val;
+                }
+
+                
                 for (let i = 0 ; i < readings.length; i++){
                     var gauge = document.getElementById("gauge_"+readings[i]);
                     var el = document.getElementById(readings[i]);
@@ -105,6 +182,8 @@ function requestData() {
                     }
                 }
                 
+                // if we have no data point, we can just return now, no need to fill
+                if (!data_point) return;
                 // get our current time stamp
                 // get difference between it and last received to update plots
                 var last_timestamp = data_point["timestamp"]/1000.0;
@@ -124,48 +203,61 @@ function requestData() {
                 // if charts exist we now update with all points received
                 */
                 
-                if (fillTrends){
-                    //update current plots with difference
-                    for ( let i = 0 ; i < chart_pressure.data.datasets[0].data.length; i++){
-                        chart_pressure.data.datasets[0].data[i]['x'] = chart_pressure.data.datasets[0].data[i]['x'] - diff;
-                        chart_flow.data.datasets[0].data[i]['x'] = chart_flow.data.datasets[0].data[i]['x'] - diff;
-                        chart_volume.data.datasets[0].data[i]['x'] = chart_volume.data.datasets[0].data[i]['x'] - diff;
+		// captive function to update either chart or paused data
+		function updateChartData(pressure_data, flow_data, volume_data, diff, data, last_timestamp){
+		    for ( let i = 0 ; i < pressure_data.length; i++){
+                        pressure_data[i]['x'] -= diff;
+                        flow_data[i]['x'] -= diff;
+                        volume_data[i]['x'] -= diff;
                     }
-                
-                    //add new points
+		    for (let ip = data.length-1 ; ip >= 0; ip--){
+			var point = data[ip];
+			if (point["payload_type"] != "DATA") {
+                            continue;
+                        }
+			var seconds = point["timestamp"]/1000;
+                        //must be greater than our last stopped point
+                        if (seconds < current_timestamp) continue;
+                	// this is a hack for the test data so that we can cycle data
+                	//protect against bogus timestamps, skip those that are earlier than we already have
+                	if (running_timestamp == -1 || seconds > running_timestamp  ) {
+                    	    // get difference between last time stamp and this and apply to existing points
+                    	    pressure_data.push({x : seconds - last_timestamp, y : point["pressure_patient"]});
+                    	    flow_data.push({ x : seconds - last_timestamp, y : point["flow"]});
+                    	    volume_data.push({ x : seconds - last_timestamp, y : point["volume"]});
+			    running_timestamp = seconds;
+                        }
+                    }
+		    var maxLen = 10000; // probably can be smaller 
+                    while( pressure_data.length > maxLen ) {
+			pressure_data.shift();
+			flow_data.shift();
+			volume_data.shift();
+		    }
+		    return;
+		}
+
+                if (fillTrends){
                     //keep track of timestamp to make sure we're not mixing it up
                     var running_timestamp = -1;
                     var running_rowid = 0;
-                    for (let ip = data.length-1 ; ip >= 0; ip--){
-                        var point = data[ip];
-                        if (point["payload_type"] != "DATA") {
-                            continue;
-                        }
-                        var seconds = point["timestamp"]/1000;
-                        //must be greater than our last stopped point
-                        if (seconds < current_timestamp) continue;
-                	    // this is a hack for the test data so that we can cycle data
-                        //if ( seconds - current_timestamp > 1.0) { console.log("Current Timestamp: ",current_timestamp, " against ",seconds);}
-                	    //protect against bogus timestamps, skip those that are earlier than we already have
-                	    if (running_timestamp == -1 || seconds > running_timestamp  )
-                	    {
-                    		// get difference between last time stamp and this and apply to existing points
-                    		chart_pressure.data.datasets[0].data.push({x : seconds - last_timestamp, y : point["pressure_patient"]});
-                    		chart_flow.data.datasets[0].data.push({ x : seconds - last_timestamp, y : point["flow"]});
-                    		chart_volume.data.datasets[0].data.push({ x : seconds - last_timestamp, y : point["volume"]});
-                            running_timestamp = seconds;
-                        }
-                    }
-                  	while(chart_pressure.data.datasets[0].data.length > 10000) chart_pressure.data.datasets[0].data.shift();
-                   	while(chart_flow.data.datasets[0].data.length > 10000) chart_flow.data.datasets[0].data.shift();
-                    while(chart_volume.data.datasets[0].data.length > 10000) chart_volume.data.datasets[0].data.shift();
 
+		    if ( pause_charts ){
+			updateChartData(paused_pressure_data, 
+					paused_flow_data, 
+					paused_volume_data, 
+					diff, data, last_timestamp);
+		    } else {
+			updateChartData(chart_pressure.data.datasets[0].data, 
+					chart_flow.data.datasets[0].data, 
+					chart_volume.data.datasets[0].data,
+					diff, data, last_timestamp);
+			// running so redraw now
+        		chart_pressure.update();
+                	chart_flow.update();
+                	chart_volume.update();
+		    }
                     current_timestamp = last_timestamp;
-                    if (!pause_charts){
-        		        chart_pressure.update(0);
-                		chart_flow.update(0);
-                		chart_volume.update(0);
-                    }
                 }
                 // fill loop plots
                 if ( fillLoops ) {

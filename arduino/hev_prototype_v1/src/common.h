@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAC
+#define HEV_FORMAT_VERSION 0xAD
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -43,7 +43,8 @@ enum PAYLOAD_TYPE : uint8_t {
     IVT          = 8,
     LOGMSG       = 9,
     TARGET       = 10,
-    BATTERY      = 11
+    BATTERY      = 11,
+    LOOP_STATUS  = 12
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -333,6 +334,24 @@ struct debug_data_format {
 #pragma pack()
 
 #pragma pack(1)
+struct status_format {
+// per breath values
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::LOOP_STATUS;
+
+    float    loop_duration     = 0.0;
+    float    loop_duration_max = 0.0;
+    uint32_t dropped_send      = 0  ;
+    uint32_t dropped_receive   = 0  ;
+
+    uint8_t  buffer_alarm      = 0  ;
+    uint8_t  buffer_cmd        = 0  ;
+    uint8_t  buffer_data       = 0  ;
+};
+#pragma pack()
+
+#pragma pack(1)
 struct target_data_format{
     uint8_t  version                    = HEV_FORMAT_VERSION;
     uint32_t timestamp                  = 0;
@@ -367,13 +386,13 @@ struct battery_data_format {
     uint32_t timestamp                  = 0;
     uint8_t  payload_type               = PAYLOAD_TYPE::BATTERY;
 
-    uint8_t bat           = 0.0;
-    uint8_t ok            = 0.0;
-    uint8_t alarm         = 0.0;
-    uint8_t rdy2buf       = 0.0;
-    uint8_t process_bat85 = 0.0;
-    uint8_t prob_elec     = 0.0;
-    uint8_t dummy         = 0.0;
+    uint8_t bat           = 0;
+    uint8_t ok            = 0;
+    uint8_t alarm         = 0;
+    uint8_t rdy2buf       = 0;
+    uint8_t process_bat85 = 0;
+    uint8_t prob_elec     = 0;
+    uint8_t dummy         = 0;
 };
 #pragma pack()
 //enum VALVE_STATES : bool {
@@ -666,5 +685,6 @@ CommsControl* getGlobalComms();
 void setGlobalComms(CommsControl *comms);
 SystemUtils* getSystemUtils();
 void setSystemUtils(SystemUtils *sys_utils);
+
 
 #endif

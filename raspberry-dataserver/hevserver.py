@@ -11,6 +11,8 @@ import threading
 import argparse
 import svpi
 import hevfromtxt
+import os
+import psutil
 from pathlib import Path
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
@@ -25,6 +27,9 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
 
 class HEVPacketError(Exception):
+    pass
+
+class HEVAlreadyRunning(Exception):
     pass
 
 class HEVServer(object):
@@ -61,9 +66,6 @@ class HEVServer(object):
             self._datavalid.set()
         elif payload_type in PAYLOAD_TYPE:
             # valid payload but ignored
-            pass
-        elif payload_type == PAYLOAD_TYPE.LOGMSG:
-            # ignore for the minute
             pass
         else:
             # invalid packet, don't throw exception just log and pop
@@ -287,6 +289,8 @@ if __name__ == "__main__":
         parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
         parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
         parser.add_argument('--use-dump-data', action='store_true', help='Use dump data source')
+        parser.add_argument('--dump', type=int, default=0, help='Dump NUM raw data packets to file')
+        parser.add_argument('-o', '--dumpfile', type=str, default = '', help='File to dump to')
         args = parser.parse_args()
         if args.debug == 0:
             logging.getLogger().setLevel(logging.WARNING)
@@ -294,7 +298,23 @@ if __name__ == "__main__":
             logging.getLogger().setLevel(logging.INFO)
         else:
             logging.getLogger().setLevel(logging.DEBUG)
+    
+        # check if hevserver is running
+        pidfile = "/dev/shm/hevpid"
+        mypid = os.getpid()
+        if os.path.exists(pidfile):
+            with open(pidfile, "r") as f:
+                try:
+                    pid = int(f.read())
+                except (OSError, ValueError):
+                    pass
+                else:
+                    if psutil.pid_exists(pid):
+                        raise HEVAlreadyRunning(f"hevserver is already running. To kill it run:\n $ kill {pid}")
         
+        with open(pidfile, 'w') as f:
+            f.write(str(mypid))
+
         if args.use_test_data:
             comms_lli = HEVTestData()
             logging.info(f"Using test data source")
@@ -308,21 +328,34 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 if args.use_dump_data:
-                    port_device = '/tmp/ttyEMU0'
+                    port_device = '/dev/shm/ttyEMU0'
                 else:
                     port_device = getArduinoPort()
                     connected = arduinoConnected()
                     tasks.append(connected)
                 # setup serial device and init server
-                comms_lli = CommsLLI(loop)
+                if args.dump == 0:
+                    comms_lli = CommsLLI(loop)
+                elif args.dump > 0:
+                    if args.dumpfile == '':
+                        logging.critical("No dump file specified")
+                        raise KeyboardInterrupt # fake ctrl+c
+                    logging.warning(f"Dumping {args.dump} packets to {args.dumpfile}")
+                    comms_lli = CommsLLI(loop, file=args.dumpfile, number=args.dump)
+                else:
+                    logging.critical("Invalid number of packets to dump")
+                    raise KeyboardInterrupt # fake ctrl+c
                 comms = comms_lli.main(port_device, 115200)
                 tasks.append(comms)
                 logging.info(f"Serving data from device {port_device}")
             except NameError:
                 logging.critical("Arduino not connected")
                 exit(1)
-                
-        battery_lli = BatteryLLI()
+
+        if args.dump:
+            battery_lli = BatteryLLI(dump=True)
+        else:
+            battery_lli = BatteryLLI()
         battery = battery_lli.main()
         tasks.append(battery)
 
@@ -336,6 +369,8 @@ if __name__ == "__main__":
         loop.run_forever()
     except asyncio.CancelledError:
         pass
+    except HEVAlreadyRunning as e:
+        logging.critical(e)
     except KeyboardInterrupt:
         logging.info("Server stopped")
     except StructError:

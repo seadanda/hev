@@ -17,6 +17,9 @@ from CommsFormat import CommsPacket, CommsACK, CommsNACK, CommsChecksumError, ge
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
 
+class SequenceReceiveMismatch(Exception):
+    pass
+
 class CommsLLI:
     def __init__(self, loop, throttle=1, file='', number=10000):
         super().__init__()
@@ -46,7 +49,7 @@ class CommsLLI:
         self._dv_data     = asyncio.Event(loop=self._loop)
         # maps between address and queues/events/timeouts 
         self._queues   = {0xC0: self._alarms, 0x80: self._commands, 0x40: self._data}
-        self._timeouts = {0xC0: 10, 0x80: 50, 0x40: 200}
+        self._timeouts = {0xC0: 7, 0x80: 7, 0x40: 7}
         self._acklist  = {0xC0: self._dv_alarms, 0x80: self._dv_commands, 0x40: self._dv_data}
         
         # receive
@@ -58,7 +61,7 @@ class CommsLLI:
 
         # packet counting
         self._sequence_send    = 0
-        self._sequence_receive = 0
+        self.resetReceiver(0)
 
     async def main(self, device, baudrate):
         try:
@@ -79,11 +82,12 @@ class CommsLLI:
             logging.debug("Waiting for Command")
             packet = await queue.get()
             packet.setSequenceSend(self._sequence_send)
-            for send_attempt in range(5):
-                # try to send the packet 5 times
+            for send_attempt in range(10):
+                # try to send the packet 10 times
                 try:
                     await self.sendPacket(packet)
                     await asyncio.wait_for(self._acklist[address].wait(), timeout=self._timeouts[address] / 1000)
+                    self._acklist[address].clear()
                 except asyncio.TimeoutError:
                     pass
                 except Exception:
@@ -146,9 +150,11 @@ class CommsLLI:
     async def sendPacket(self, packet):
         if isinstance(packet, CommsACK):
             # don't log acks
+            logging.debug(f"Sending ACK: {binascii.hexlify(packet.encode())}")
             pass
         elif isinstance(packet, CommsNACK):
-            logging.warning(f"Sending NACK: {binascii.hexlify(packet.encode())}")
+#             logging.debug(f"Sending NACK: {binascii.hexlify(packet.encode())}")
+            pass
         else:
             logging.info(f"Sending {binascii.hexlify(packet.encode())}")
         self._writer.write(packet.encode())
@@ -163,20 +169,33 @@ class CommsLLI:
                 break
         return CommsPacket(bytearray(rawdata))
 
-    def finishPacket(self, address):
-        self._sequence_send = (self._sequence_send + 1) % 128
+    def finishPacket(self, address, sequence_received):
         try:
-            self._queues[address].task_done()
+            sequence = (self._sequence_send + 1) % 128
+            if sequence == sequence_received:
+                self._queues[address].task_done()
+                self._sequence_send = sequence
         except ValueError:
             # task has already been purged from queue
             pass
         else:
             self._acklist[address].set()
+            
+    def resetReceiver(self, sequence_receive = -1):
+        self._mismatch_counter = 0
+        if sequence_receive >= 0:
+            self._sequence_receive = sequence_receive
+            
+    def trackMismatch(self, sequence_receive):
+        if self._mismatch_counter > 20 :
+            self.resetReceiver(sequence_receive)
+            logging.warning(f"Received more than 20 sequence_receive mismatches, resetting")
+        else:
+            self._mismatch_counter += 1
 
     async def recv(self):
         while self._connected:
             packet = await self.readPacket()
-
             try:
                 data = packet.decode()
             except CommsChecksumError:
@@ -189,28 +208,46 @@ class CommsLLI:
                 if packet.acked:
                     logging.info("Received ACK")
                     # increase packet counter
-                    self.finishPacket(packet.address)
+                    self.finishPacket(packet.address, packet.sequence_receive)
                 else:
-                    logging.debug("Received NACK")
+                    logging.info("Received NACK")
             else:
                 # packet should contain valid data
                 try:
                     payload = PayloadFormat.fromByteArray(packet.byteArray)
+                    
+                    self.sequence_receive = packet.sequence_send
+                    self.resetReceiver()
                     self.payloadrecv = payload
-                    logging.debug(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
+#                     logging.debug(f"Received payload type {payload.getType()} for timestamp {payload.timestamp}")
                     comms_response = CommsACK(packet.address)
                 except (StructError, ValueError):
                     # invalid payload, but valid checksum - this is bad!
                     logging.error(f"Invalid payload: {payload}")
                     # restart/reflash/swap to redundant microcontroller?
                     comms_response = CommsNACK(packet.address)
+                except SequenceReceiveMismatch:
+#                     logging.debug(f"Mismatch sequence receive, expected: {self.sequence_receive}; received: {packet.sequence_send}")
+                    comms_response = CommsNACK(packet.address)
+                    self.trackMismatch(packet.sequence_send)
                 except HEVVersionError as e:
                     logging.critical(f"HEVVersionError: {e}")
                     exit(1)
                 finally:
-                    comms_response.setSequenceReceive(packet.sequence_receive)
+                    comms_response.setSequenceReceive(self.sequence_receive)
                     await self.sendPacket(comms_response)
 
+    @property
+    def sequence_receive(self):
+        return self._sequence_receive
+    
+    @sequence_receive.setter
+    def sequence_receive(self, sequence):
+        if self._sequence_receive == sequence:
+            self._sequence_receive = (self._sequence_receive + 1) % 128
+        else:
+            raise SequenceReceiveMismatch
+                    
     # callback to dependants to read the received payload
     @property
     def payloadrecv(self):
@@ -228,11 +265,11 @@ class CommsLLI:
         self._packet_count += 1
         
         if self._dumpfile != '':
-            with open(self._dumpfile,'a') as f:
+            with open(self._dumpfile, 'a') as f:
                 # dump the payload in a dict which can be unpacked directly into a payloadFormat object
                 f.write(f"{binascii.hexlify(payload.byteArray)}\n")
             if self._packet_count >= self._dumpcount:
-                logging.critical("Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
+                logging.critical(f"Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
                 exit(0)
     
     def bind_to(self, callback):
