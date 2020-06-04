@@ -35,6 +35,7 @@ DEFINES += "__AVR_ATmega328P__"
 OTHER_FILES += platformio.ini
 
 HEADERS += src/common.h \
+            src/LinearFitter.h \
             src/MemoryFree.h \
             src/AlarmLoop.h \
             src/AudioVisualController.h \

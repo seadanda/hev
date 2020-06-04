@@ -176,12 +176,6 @@ private:
     // PID vars
 
     //float _pid_integral;  // moved to pid_variable struct
-    // linear regression
-#define MAX_FIT_ENTRIES 20
-    RingBuf<   float, MAX_FIT_ENTRIES> _fitter_flow;
-    RingBuf<uint32_t, MAX_FIT_ENTRIES> _fitter_time;
-
-    void linearRegression(float &slope, float &offset);
 
     // triggers
     void runningAvgs();
