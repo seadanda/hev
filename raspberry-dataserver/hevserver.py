@@ -11,6 +11,8 @@ import threading
 import argparse
 import svpi
 import hevfromtxt
+import os
+import psutil
 from pathlib import Path
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
@@ -25,6 +27,9 @@ logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
 logging.getLogger().setLevel(logging.INFO)
 
 class HEVPacketError(Exception):
+    pass
+
+class HEVAlreadyRunning(Exception):
     pass
 
 class HEVServer(object):
@@ -293,7 +298,23 @@ if __name__ == "__main__":
             logging.getLogger().setLevel(logging.INFO)
         else:
             logging.getLogger().setLevel(logging.DEBUG)
+    
+        # check if hevserver is running
+        pidfile = "/dev/shm/hevpid"
+        mypid = os.getpid()
+        if os.path.exists(pidfile):
+            with open(pidfile, "r") as f:
+                try:
+                    pid = int(f.read())
+                except (OSError, ValueError):
+                    pass
+                else:
+                    if psutil.pid_exists(pid):
+                        raise HEVAlreadyRunning(f"hevserver is already running. To kill it run:\n $ kill {pid}")
         
+        with open(pidfile, 'w') as f:
+            f.write(str(mypid))
+
         if args.use_test_data:
             comms_lli = HEVTestData()
             logging.info(f"Using test data source")
@@ -307,7 +328,7 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 if args.use_dump_data:
-                    port_device = '/tmp/ttyEMU0'
+                    port_device = '/dev/shm/ttyEMU0'
                 else:
                     port_device = getArduinoPort()
                     connected = arduinoConnected()
@@ -348,6 +369,8 @@ if __name__ == "__main__":
         loop.run_forever()
     except asyncio.CancelledError:
         pass
+    except HEVAlreadyRunning as e:
+        logging.critical(e)
     except KeyboardInterrupt:
         logging.info("Server stopped")
     except StructError:

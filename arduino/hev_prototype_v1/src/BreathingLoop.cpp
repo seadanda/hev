@@ -586,7 +586,7 @@ void BreathingLoop::FSM_breathCycle()
         case BL_STATES::EXHALE:
             _states_durations.exhale = calculateDurationExhale();
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-            _fsm_timeout = _states_durations.exhale;
+            //_fsm_timeout = _states_durations.exhale;
             measurePEEP();
             inhaleTrigger();
             break;

@@ -182,9 +182,11 @@ function requestData() {
                     }
                 }
                 
+                // if we have no data point, we can just return now, no need to fill
+                if (!data_point) return;
                 // get our current time stamp
                 // get difference between it and last received to update plots
-                var last_timestamp = point["timestamp"]/1000.0;
+                var last_timestamp = data_point["timestamp"]/1000.0;
                 var diff = 0;
                 
                 if (current_timestamp != -1) {

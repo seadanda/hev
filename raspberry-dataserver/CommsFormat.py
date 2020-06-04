@@ -143,6 +143,7 @@ class CommsPacket(object):
     def __init__(self, rawdata):
         self._data = rawdata
         self._sequence_receive = 0
+        self._sequence_receive_ack = 0
         self._address = None
         self._byteArray = None
         self._datavalid = False
@@ -155,6 +156,10 @@ class CommsPacket(object):
     @property
     def sequence_receive(self):
         return self._sequence_receive
+    
+    @property
+    def sequence_send(self):
+        return self._sequence_send
 
     @property
     def address(self):
@@ -186,7 +191,7 @@ class CommsPacket(object):
         tmp_comms.copyBytes(byteArray)
         if tmp_comms.compareCrc():
             control     = tmp_comms.getData()[tmp_comms.getControl()+1]
-            self._sequence_receive = (tmp_comms.getData()[tmp_comms.getControl()] >> 1) & 0x7F
+            self._sequence_receive = tmp_comms.getSequenceReceive()
             self._address = tmp_comms.getData()[1]
             
             # get type of packet
@@ -199,7 +204,7 @@ class CommsPacket(object):
                 self._acked = True
             else:
                 # received data
-                self._sequence_receive = ((control >> 1) & 0x7F) + 1
+                self._sequence_send = tmp_comms.getSequenceSend()
                 self._byteArray = tmp_comms.getData()[tmp_comms.getInformation():tmp_comms.getFcs()]
         else:
             raise CommsChecksumError
