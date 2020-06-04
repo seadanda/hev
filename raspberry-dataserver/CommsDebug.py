@@ -35,7 +35,7 @@ class Dependant(object):
 
     def update_llipacket(self, payload):
         global fsm
-        #logging.info(f"payload received: {payload}")
+        logging.info(f"payload received: {payload}")
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
@@ -84,12 +84,8 @@ async def commsDebug():
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # to set Kp=0.0002, param=200 i.e., micro_Kp
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=10.) # 
-    # Change TIMEOUT of breathing cycle (INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1000.) #
     # Change TIMEOUT of breathing cycle (PAUSE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
-    # Change TIMEOUT of breathing cycle (EXHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=8000.) #
     # Start the cycles
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # to set Kp=0.0002, param=200 i.e., micro_Kp
     # Enable exhale trigger threshold
@@ -103,9 +99,12 @@ async def commsDebug():
     print('sent cmd start')
     await asyncio.sleep(1)
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
+    await asyncio.sleep(1)
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
+    await asyncio.sleep(1)
     cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
-    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="IE_RATIO", param=0.2) 
+    await asyncio.sleep(1)
+    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1000) 
     #print('sent inhale + exhale trigger -> 1')
     toggle = "STOP"
     while True:
