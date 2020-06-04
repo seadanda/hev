@@ -1064,7 +1064,8 @@ void BreathingLoop::inhaleTrigger()
 
         //TODO: calculate expected point here?
         float expected_flow = _flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
-        if (((expected_flow - _readings_avgs.pressure_diff_patient) > _valves_controller.getValveParams().inhale_trigger_threshold)
+        // NOTE: _flow should be positive only in this case?
+        if (((_flow - expected_flow) > _valves_controller.getValveParams().inhale_trigger_threshold)
 //        if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold)
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
