@@ -556,7 +556,7 @@ void BreathingLoop::FSM_breathCycle()
             // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
             if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-            } else {
+            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_upper_pressure - 15){
                 _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             }
             measurePEEP();
