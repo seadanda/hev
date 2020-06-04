@@ -71,8 +71,8 @@ void LinearFitter::appendPoints(uint32_t x, float y) {
 bool LinearFitter::linearRegression(float &slope, float &offset) {
     if (_x.isEmpty() || _y.isEmpty())               return false;
     if ((_x[_x.size() - 1] - _x[0]) < _duration)    return false;
-    uint8_t entries;
-    if ((entries * _sum_x2) == (_sum_x * _sum_x))  return false;
+    uint8_t entries = _x.size();
+    if ((entries * _sum_x2) == (_sum_x * _sum_x))   return false;
 
     // results
     slope  = ((entries * _sum_xy) - (_sum_x * _sum_y)) / ((entries * _sum_x2) - (_sum_x * _sum_x));
