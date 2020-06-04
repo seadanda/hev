@@ -1114,6 +1114,21 @@ void BreathingLoop::exhaleTrigger()
     }
 }
 
+void BreathingLoop::linearRegression(float &slope, float &offset) {
+    float sumX=0, sumX2=0, sumY=0, sumXY=0;
+    int entries = _fitter_flow.size() < _fitter_time.size() ? _fitter_flow.size() : _fitter_time.size();
+
+    for(int idx = 0; idx < entries; idx++) {
+        sumX  += _fitter_time[idx];
+        sumX2 += _fitter_time[idx]*_fitter_time[idx];
+        sumY  += _fitter_flow[idx];
+        sumXY += _fitter_time[idx]*_fitter_flow[idx];
+    }
+
+    // results
+    slope  = ((entries * sumXY) - (sumX * sumY)) / ((entries * sumX2) - (sumX * sumX));
+    offset = (sumY - (slope * sumX)) / entries;
+}
 
 void BreathingLoop::runningAvgs()
 {
