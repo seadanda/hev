@@ -42,7 +42,8 @@ class Dependant(object):
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
             #logging.info(f"payload received: {payload}")
             #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-        #    logging.info(f"Fsm state: {payload.fsm_state}")
+            logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
+            #logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
         #if payload.getType() == PAYLOAD_TYPE.IVT.value:
         #    logging.info(f"payload received:  {payload} ")
@@ -58,6 +59,8 @@ class Dependant(object):
         #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+        if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+            logging.info(f"LOGMSG {payload} {fsm}") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -84,15 +87,9 @@ async def commsDebug():
     #cmd = send_cmd(cmd_type="SET_PID", cmd_code="TARGET_FINAL_PRESSURE", param=20.0)#
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=1.) # 
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=10.) # 
     # Change TIMEOUT of breathing cycle (INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1000.) #
-    # Change TIMEOUT of breathing cycle (PAUSE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=1.) #
-    # Change TIMEOUT of breathing cycle (EXHALE-FILL)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=5000.) #
-    # Change TIMEOUT of breathing cycle (EXHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=10.) #
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
     # Start the cycles
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # 
     # Enable exhale trigger threshold
@@ -100,15 +97,14 @@ async def commsDebug():
     # Start the cycles
     cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="TEST", param=0)
 
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
-    cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0)
+    send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
     #comms.writePayload(cmd)
     print('sent cmd start')
     await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
-    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
-    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1000) 
+    send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1000) 
     #print('sent inhale + exhale trigger -> 1')
     toggle = "STOP"
     while True:

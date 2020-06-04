@@ -48,12 +48,10 @@ class CMD_SET_DURATION(Enum):
     BUFF_FLUSH      =  3
     BUFF_PREFILL    =  4
     BUFF_FILL       =  5
-    BUFF_LOADED     =  6
-    BUFF_PRE_INHALE =  7
-    INHALE          =  8
-    PAUSE           =  9
-    EXHALE_FILL     = 10
-    EXHALE          = 11
+    BUFF_PRE_INHALE =  6
+    INHALE          =  7
+    PAUSE           =  8
+    EXHALE          =  9
 
 @unique
 class VENTILATION_MODE(Enum):
@@ -156,16 +154,14 @@ class BL_STATES(Enum):
     CALIBRATION     =  2
     BUFF_PREFILL    =  3
     BUFF_FILL       =  4
-    BUFF_LOADED     =  5
-    BUFF_PRE_INHALE =  6
-    INHALE          =  7
-    PAUSE           =  8
-    EXHALE_FILL     =  9
-    EXHALE          = 10
-    STOP            = 11
-    BUFF_PURGE      = 12
-    BUFF_FLUSH      = 13
-    STANDBY         = 14
+    BUFF_PRE_INHALE =  5
+    INHALE          =  6
+    PAUSE           =  7
+    EXHALE          =  8
+    STOP            =  9
+    BUFF_PURGE      = 10
+    BUFF_FLUSH      = 11
+    STANDBY         = 12
 
 @unique
 class PAYLOAD_TYPE(IntEnum):
@@ -189,7 +185,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAD, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAE, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -313,7 +309,7 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHHHffBBBBBBBBBBBff")
+    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
 
 
@@ -322,11 +318,9 @@ class ReadbackFormat(PayloadFormat):
     duration_buff_flush: int      = 0
     duration_buff_prefill: int    = 0
     duration_buff_fill: int       = 0
-    duration_buff_loaded: int     = 0
     duration_buff_pre_inhale: int = 0
     duration_inhale: int          = 0
     duration_pause: int           = 0
-    duration_exhale_fill: int     = 0
     duration_exhale: int          = 0
 
     valve_air_in: float           = 0.0
@@ -361,11 +355,9 @@ class ReadbackFormat(PayloadFormat):
         self.duration_buff_flush,
         self.duration_buff_prefill,
         self.duration_buff_fill,
-        self.duration_buff_loaded,
         self.duration_buff_pre_inhale,
         self.duration_inhale,
         self.duration_pause,
-        self.duration_exhale_fill,
         self.duration_exhale,
         self.valve_air_in,
         self.valve_o2_in,
@@ -534,7 +526,7 @@ class LoopStatusFormat(PayloadFormat):
 # =======================================
 @dataclass
 class IVTFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBffffffffffbbbbbf")
+    _dataStruct = Struct("<BIBffffffffffBBBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.IVT
 
     inhale_current : float = 0.0
@@ -589,7 +581,7 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBffffffH")
+    _dataStruct = Struct("<BIBBffffffHff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
     mode                  : int   = 0
@@ -600,6 +592,8 @@ class TargetFormat(PayloadFormat):
     peep                  : float = 0.0
     fiO2                  : float = 0.0
     inhale_time           : int   = 0 
+    buffer_upper_pressure : float = 0.0
+    buffer_lower_pressure : float = 0.0 
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -618,7 +612,9 @@ class TargetFormat(PayloadFormat):
         self.respiratory_rate    , 
         self.peep                , 
         self.fiO2                , 
-        self.inhale_time         ) = self._dataStruct.unpack(byteArray) 
+        self.inhale_time         ,
+        self.buffer_upper_pressure,
+        self.buffer_lower_pressure ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
