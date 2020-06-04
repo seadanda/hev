@@ -300,7 +300,7 @@ if __name__ == "__main__":
             logging.getLogger().setLevel(logging.DEBUG)
     
         # check if hevserver is running
-        pidfile = "/tmp/hevpid"
+        pidfile = "/dev/shm/hevpid"
         mypid = os.getpid()
         if os.path.exists(pidfile):
             with open(pidfile, "r") as f:
@@ -328,7 +328,7 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 if args.use_dump_data:
-                    port_device = '/tmp/ttyEMU0'
+                    port_device = '/dev/shm/ttyEMU0'
                 else:
                     port_device = getArduinoPort()
                     connected = arduinoConnected()
