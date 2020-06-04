@@ -70,14 +70,14 @@ public:
             CALIBRATION     =  2,
             BUFF_PREFILL    =  3,
             BUFF_FILL       =  4,
-            BUFF_PRE_INHALE =  6,
-            INHALE          =  7,
-            PAUSE           =  8,
-            EXHALE          =  9,
-            STOP            = 11,
-            BUFF_PURGE      = 12,
-            BUFF_FLUSH      = 13,
-            STANDBY         = 14
+            BUFF_PRE_INHALE =  5,
+            INHALE          =  6,
+            PAUSE           =  7,
+            EXHALE          =  8,
+            STOP            =  9,
+            BUFF_PURGE      = 10,
+            BUFF_FLUSH      = 11,
+            STANDBY         = 12
     };
 
 

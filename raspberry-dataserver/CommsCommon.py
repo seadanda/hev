@@ -154,14 +154,14 @@ class BL_STATES(Enum):
     CALIBRATION     =  2
     BUFF_PREFILL    =  3
     BUFF_FILL       =  4
-    BUFF_PRE_INHALE =  6
-    INHALE          =  7
-    PAUSE           =  8
-    EXHALE          = 10
-    STOP            = 11
-    BUFF_PURGE      = 12
-    BUFF_FLUSH      = 13
-    STANDBY         = 14
+    BUFF_PRE_INHALE =  5
+    INHALE          =  6
+    PAUSE           =  7
+    EXHALE          =  8
+    STOP            =  9
+    BUFF_PURGE      = 10
+    BUFF_FLUSH      = 11
+    STANDBY         = 12
 
 @unique
 class PAYLOAD_TYPE(IntEnum):
@@ -526,7 +526,7 @@ class LoopStatusFormat(PayloadFormat):
 # =======================================
 @dataclass
 class IVTFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBffffffffffbbbbbf")
+    _dataStruct = Struct("<BIBffffffffffBBBBBf")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.IVT
 
     inhale_current : float = 0.0
@@ -581,7 +581,7 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBffffffH")
+    _dataStruct = Struct("<BIBBffffffHff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
     mode                  : int   = 0
@@ -592,6 +592,8 @@ class TargetFormat(PayloadFormat):
     peep                  : float = 0.0
     fiO2                  : float = 0.0
     inhale_time           : int   = 0 
+    buffer_upper_pressure : float = 0.0
+    buffer_lower_pressure : float = 0.0 
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -610,7 +612,9 @@ class TargetFormat(PayloadFormat):
         self.respiratory_rate    , 
         self.peep                , 
         self.fiO2                , 
-        self.inhale_time         ) = self._dataStruct.unpack(byteArray) 
+        self.inhale_time         ,
+        self.buffer_upper_pressure,
+        self.buffer_lower_pressure ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
