@@ -77,27 +77,28 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
     await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=2.5*0.001)#0.0108/5) # 108/4) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=2.5*0.0003)#0.00162*0.4)#0.0054/2) # 0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0)#0.00162*1.5)#0.0054/2) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25.0)#set Kp=0.0002, param=200 i.e., micro_Kp
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=1.0*0.001)#
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=1.0*0.0005)# 0.0005
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KD", param=1.0*0.001)# 0.001
+    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=17.5)#
+    #cmd = send_cmd(cmd_type="SET_PID", cmd_code="TARGET_FINAL_PRESSURE", param=20.0)#
+    cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=10.) # 
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=1.) # 
     # Change TIMEOUT of breathing cycle (INHALE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="INHALE", param=1000.) #
     # Change TIMEOUT of breathing cycle (PAUSE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=1.) #
     # Change TIMEOUT of breathing cycle (EXHALE-FILL)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=1600.) #
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE_FILL", param=5000.) #
     # Change TIMEOUT of breathing cycle (EXHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=8000.) #
+    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="EXHALE", param=10.) #
     # Start the cycles
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # 
     # Enable exhale trigger threshold
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.25) # to set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.25) # 
     # Start the cycles
-    cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="HEV_MODE_PC_AC", param=0)
+    cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="TEST", param=0)
 
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
     cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0)
@@ -107,12 +108,12 @@ async def commsDebug():
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
     cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
     cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
-    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="IE_RATIO", param=0.2) 
+    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1000) 
     #print('sent inhale + exhale trigger -> 1')
     toggle = "STOP"
     while True:
         await asyncio.sleep(300)
-        #cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=5) # to set Kp=0.2, param=200 i.e., milli_Kp
+        #cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=5) # 
         #comms.writePayload(cmd)
         #print('sent cmd set Kp = 0.2')
         await asyncio.sleep(300)

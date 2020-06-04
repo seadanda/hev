@@ -86,6 +86,7 @@ $(document).ready(function() {
                     display: true,
                     text: 'Pressure [mbar]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
+			fontColor: "#cccccc",
                 },            
                 scales: {
                     xAxes: [{
@@ -99,7 +100,7 @@ $(document).ready(function() {
                 		    maxRotation: 0,
                             min: -60,
                             max: 0,
-            	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
+            	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc"}}],
             		yAxes: [{
                         gridLines : {
                             display: true,
@@ -109,7 +110,7 @@ $(document).ready(function() {
                         ticks: {
                             beginAtZero: true,
                             suggestedMax: 25,
-            	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+            	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
                 		    maxTicksLimit: 8,
                         },
         				scaleLabel: {
@@ -192,6 +193,7 @@ $(document).ready(function() {
                   display: true,
             		text: 'Flow [mL/min]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
+			fontColor: "#cccccc",
                 },
                 scales: {
                     xAxes: [{
@@ -206,7 +208,7 @@ $(document).ready(function() {
                 		    maxRotation: 0,
                             min: -60,
                             max: 0,
-                    		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),}}],
+                    		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",}}],
         			yAxes: [{
                         gridLines : {
                             display: true,
@@ -216,7 +218,7 @@ $(document).ready(function() {
                         ticks: {
                             beginAtZero: true,
                             maxTicksLimit: 8,
-                		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+                		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
                         },
         				scaleLabel: {
         					display: false,
@@ -296,6 +298,7 @@ $(document).ready(function() {
                     display: true,
                     text: 'Volume [mL]',
 	            	fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
+			fontColor: "#cccccc",
                 },
                 scales: {
                     xAxes: [{
@@ -309,7 +312,7 @@ $(document).ready(function() {
                 		    maxRotation: 0,
                             min: -60,
                             max: 0,
-                            fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+                            fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
                         }
                     }],
                             
@@ -323,7 +326,7 @@ $(document).ready(function() {
                             beginAtZero: true,
             	    		suggestedMax: 25,
                 			maxTicksLimit: 8,
-                		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+                		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
 		                },
 		        		scaleLabel: {
         					display: false,
