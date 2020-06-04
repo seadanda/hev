@@ -1,0 +1,4 @@
+#ifndef LINEARFITTER_H
+#define LINEARFITTER_H
+
+#endif // LINEARFITTER_H
