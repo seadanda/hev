@@ -1061,6 +1061,13 @@ void BreathingLoop::inhaleTrigger()
         }
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
+
+        //TODO: calculate expected point here?
+//        float expected_flow = _flow_fitter.extrapolate(tnow);
+//        if (expected_flow - _readings_avgs.pressure_diff_patient) {
+//            ;
+//        }
+
         if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold) 
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
@@ -1140,6 +1147,8 @@ void BreathingLoop::runningAvgs()
         uint32_t tnow = static_cast<uint32_t>(millis());
         _valley_flow_time = tnow;
         _valley_flow = _flow;
+
+        _flow_fitter.resetCalculation(tnow);
     }
 
     if(_bl_state == BL_STATES::PAUSE ){
@@ -1165,6 +1174,8 @@ void BreathingLoop::runningAvgs()
 
     _sum_airway_pressure += _readings_avgs.pressure_patient;
     _ap_readings_N++;
+
+    _flow_fitter.appendPoints(millis(), _flow);
 }
 
 void BreathingLoop::tsigReset()

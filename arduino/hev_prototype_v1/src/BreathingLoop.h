@@ -9,6 +9,7 @@
 #include <Arduino.h>
 #include "common.h"
 #include "ValvesController.h"
+#include "LinearFitter.h"
 
 #include "RingBuf.h"
 
@@ -177,6 +178,7 @@ private:
 
     //float _pid_integral;  // moved to pid_variable struct
 
+    LinearFitter _flow_fitter = LinearFitter(300, 10);
     // triggers
     void runningAvgs();
     void inhaleTrigger();
