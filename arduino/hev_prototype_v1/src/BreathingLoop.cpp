@@ -469,6 +469,8 @@ void BreathingLoop::FSM_assignment() {
 
 void BreathingLoop::FSM_breathCycle()
 {
+    bool en1 = _valves_controller.getValveParams().exhale_trigger_enable;
+    bool en2 = _valves_controller.getValveParams().inhale_trigger_enable;
     // basic cycle for testing hardware
     switch (_bl_state) {
         case BL_STATES::IDLE:
@@ -545,6 +547,7 @@ void BreathingLoop::FSM_breathCycle()
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.pause;
             _states_durations.exhale = calculateDurationExhale();
+    // logMsg("new exhale " + String(_states_durations.exhale) + " " + String(en1) + " " +String(en2));
             break;
         case BL_STATES::EXHALE:
             _peak_flow = -100000;  // reset peak after inhale
@@ -561,7 +564,6 @@ void BreathingLoop::FSM_breathCycle()
             inhaleTrigger();
 		digitalWrite(pin_led_red, LOW);
             break;
-            
         case BL_STATES::STANDBY:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = 1000;
@@ -592,7 +594,7 @@ void BreathingLoop::measureDurations( ) {
     if (_bl_state != _bl_laststate) {
         uint32_t tnow = static_cast<uint32_t>(millis());
         uint32_t tdiff = tnow - _lasttime;
-        switch (_bl_state)
+        switch (_bl_laststate)
         {
         case BL_STATES::CALIBRATION:
             _measured_durations.calibration = tdiff;
@@ -746,6 +748,13 @@ uint32_t BreathingLoop::calculateDurationExhale() {
                   + _measured_durations.pause);
     if (new_exhale < 0)
         new_exhale = 0;
+    // logMsg("new exhale " 
+    //               + String(total_dur) 
+    //               +" "+String( _measured_durations.buff_pre_inhale)
+    //               +" "+String( _measured_durations.inhale)
+    //               +" "+String( _measured_durations.pause)
+    //               +" "+String( _measured_durations.exhale));
+    
     return static_cast<uint32_t>(new_exhale);
 }
 
@@ -756,12 +765,12 @@ float    BreathingLoop::getIERatio(){
     return total_inhale_time/total_exhale_time;
 }
 
-float BreathingLoop::getRespiratoryRate(){
-    // 60*1000ms / total time for a full cycle
-    float avg = (_total_cycle_duration[0]+_total_cycle_duration[1]+_total_cycle_duration[2])/3.0;
-    return 60000.0/avg;
-}
-
+//float BreathingLoop::getRespiratoryRate(){
+//    // 60*1000ms / total time for a full cycle
+//    float avg = (_total_cycle_duration[0]+_total_cycle_duration[1]+_total_cycle_duration[2])/3.0;
+//    return 60000.0/avg;
+//}
+//
 // void BreathingLoop::setTargetRespiratoryRate(float rate){
 //     //rate is per min (60*1000ms)
 //     _targets.respiratory_rate = rate;
@@ -789,8 +798,7 @@ void BreathingLoop::updateIE()
 	    
     } else {
 
-	    int32_t exhale_plus_fill_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
-	    exhale_duration = exhale_plus_fill_duration - _states_durations.exhale;
+	    exhale_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
     }
 
     int32_t min_inhale = (static_cast<int32_t>(_min_inhale_time - _states_durations.pause) < 0) ? 0 : _min_inhale_time - _states_durations.pause;
@@ -842,15 +850,15 @@ ValvesController* BreathingLoop::getValvesController()
     return &_valves_controller;
 }
 
-void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
-{
-    const uint8_t N = 3;
-    for(int i=0; i<N-1; i++){
-        _total_cycle_duration[i] = _total_cycle_duration[i+1];
+// void BreathingLoop::updateTotalCycleDuration(uint16_t newtotal)
+// {
+//     const uint8_t N = 3;
+//     for(int i=0; i<N-1; i++){
+//         _total_cycle_duration[i] = _total_cycle_duration[i+1];
 
-    }
-    _total_cycle_duration[N-1] = newtotal;
-}
+//     }
+//     _total_cycle_duration[N-1] = newtotal;
+// }
 
 float BreathingLoop::getFlow(){
     const float temperature = 298.0;

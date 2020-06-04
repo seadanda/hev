@@ -29,7 +29,7 @@ public:
     void updateCycleReadings();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
-    float getRespiratoryRate();
+    // float getRespiratoryRate();
     float getTargetRespiratoryRate();
     float getIERatio();
     void setIERatio();
@@ -145,7 +145,7 @@ private:
     // calculations
     cycle_readings _cycle_readings;
     bool _cycle_done;
-    void updateTotalCycleDuration(uint16_t newtotal);
+    // void updateTotalCycleDuration(uint16_t newtotal);
     uint16_t _total_cycle_duration[CYCLE_AVG_READINGS];
     uint16_t _inhale_cycle_duration[CYCLE_AVG_READINGS];
     uint16_t _exhale_cycle_duration[CYCLE_AVG_READINGS];
