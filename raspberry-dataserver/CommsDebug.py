@@ -80,7 +80,7 @@ async def commsDebug():
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=2.5*0.001)#0.0108/5) # 108/4) # to set Kp=0.0002, param=200 i.e., micro_Kp
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=2.5*0.0003)#0.00162*0.4)#0.0054/2) # 0004)#0002) # to set Kp=0.0002, param=200 i.e., micro_Kp
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0)#0.00162*1.5)#0.0054/2) # to set Kp=0.0002, param=200 i.e., micro_Kp
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="TARGET_FINAL_PRESSURE", param=15.0)#set Kp=0.0002, param=200 i.e., micro_Kp
+    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25.0)#set Kp=0.0002, param=200 i.e., micro_Kp
     cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # to set Kp=0.0002, param=200 i.e., micro_Kp
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
     cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=10.) # 
