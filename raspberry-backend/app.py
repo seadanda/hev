@@ -53,7 +53,6 @@ payload_types = {
 class ArduinoClient(HEVClient):
     def __init__(self):
         super().__init__(polling=True)
-        self.last_row_accessed = 0
 
     def start_client(self):
         """runs in other thread - works as long as super goes last and nothing
@@ -311,18 +310,28 @@ def send_cmd():
     return ('', 204)
 
 
-@WEBAPP.route('/settings_handler', methods=['POST'])
-def settings_handler():
+@WEBAPP.route('/current_target_handler', methods=['POST'])
+def current_target_handler():
     """
-    Update Settings
+    Update Current Targets
+
+    INSPIRATORY_PRESSURE = 1
+    RESPIRATORY_RATE     = 2 
+    IE_RATIO             = 3
+    VOLUME               = 4
+    PEEP                 = 5
+    FIO2                 = 6
+    INHALE_TIME          = 7
+
+
     """
     data = request.form
+    success = True
     for d,v in data.items():
         print(d,v)
-    #print(client.send_cmd("SET_DURATION", data['name'].upper(), int(data['value'])))
-    # make this false if things don't go well
-    time.sleep(3)
-    response = make_response(json.dumps(True))
+        success = client.send_cmd("SET_TARGET_CURRENT", d, v)
+    
+    response = make_response(json.dumps(success))
     response.content_type = 'application/json'
     return (response)
 
@@ -394,26 +403,6 @@ def live_data():
     Output in json format
     """
     response = make_response(json.dumps(client.get_values()).encode('utf-8') )
-    response.content_type = 'application/json'
-    return response
-
-
-@WEBAPP.route('/battery', methods=['GET'])
-def live_battery():
-    """
-    Get battery info
-    Output in json format
-    """
-    battery = {'bat' : 0, 'ok' : 0, 'alarm' : 0, 'rdy2buf' : 0, 'bat85' : 0}
-    if readBattery:
-        battery = {
-        'bat'     : gpio.input(pin_bat    ) ,
-        'ok'      : gpio.input(pin_ok     ) ,
-        'alarm'   : gpio.input(pin_alarm  ) ,
-        'rdy2buf' : gpio.input(pin_rdy2buf) ,
-        'bat85'   : gpio.input(pin_bat85  )
-        }
-    response = make_response(json.dumps(battery).encode('utf-8') )
     response.content_type = 'application/json'
     return response
 
