@@ -1,6 +1,8 @@
 #ifndef LINEARFITTER_H
 #define LINEARFITTER_H
 
+#include <Arduino.h>
+#include <limits>
 #include "RingBuf.h"
 
 // just absolute maximum of entries
@@ -9,20 +11,26 @@
 class LinearFitter
 {
 public:
-    LinearFitter();
+    LinearFitter(uint32_t duration, uint32_t delay);
 
     void appendPoints(uint32_t x, float y);
     bool linearRegression(float &slope, float &offset);
+    float extrapolate(uint32_t x);
 
     void resetCalculation(uint32_t reset_time = 0);
-    void setDuration(uint32_t duration) { _duration = duration; }
+    void setDuration(uint32_t duration) { _duration = duration; calculateSums();}
+    void setDelay   (uint32_t delay   ) { _delay    = delay   ; calculateSums();}
 
 private:
+    void resetSums();
+    void calculateSums();
     void calculateSums(uint32_t &x, float &y, int8_t sign = 1);
 
 private:
-    uint32_t _x_zero = 0;
+    uint32_t _x_zero   = 0;
+    uint8_t  _entries  = 0;
     uint32_t _duration = 0;
+    uint32_t _delay    = 0;
 
     // linear regression
     RingBuf<uint32_t, MAX_FIT_ENTRIES> _x;
@@ -35,7 +43,10 @@ private:
 };
 
 
-LinearFitter::LinearFitter() {
+LinearFitter::LinearFitter(uint32_t duration, uint32_t delay):
+    _duration(duration),
+    _delay(delay)
+{
     ;
 }
 
@@ -43,6 +54,26 @@ void LinearFitter::resetCalculation(uint32_t reset_time) {
     _x_zero = reset_time;
     _x.clear();
     _y.clear();
+}
+
+void LinearFitter::resetSums() {
+    _entries = 0;
+
+    _sum_x  = 0;
+    _sum_x2 = 0;
+    _sum_y  = 0;
+    _sum_xy = 0;
+}
+
+void LinearFitter::calculateSums() {
+    resetSums();
+    for (uint8_t idx = 0; idx < _x.size(); idx++) {
+        if (_x[idx] - _x[0] >= _duration) {
+            break;
+        }
+        _entries++;
+        calculateSums(_x[idx], _y[idx]);
+    }
 }
 
 void LinearFitter::calculateSums(uint32_t &x, float &y, int8_t sign) {
@@ -56,28 +87,37 @@ void LinearFitter::appendPoints(uint32_t x, float y) {
     x -= _x_zero;
 
     // remove entry if buffer full or if _duration (in ms) longer than defined
-    if ((_x.isFull() && _y.isFull()) || (!_x.isEmpty() && ((x - _x[0]) >= _duration) )) {
+    while ((!_x.isEmpty() && ((x - _x[0]) >= (_duration + _delay)) ) || (_x.isFull() && _y.isFull())) {
         uint32_t x_tmp;
         float    y_tmp;
         _x.pop(x_tmp);
         _y.pop(y_tmp);
-        calculateSums(x_tmp, y_tmp, -1);
     }
 
-    // only calculate if successfully pushed both values
-    if (_x.push(x) && _y.push(y) ) calculateSums(x, y);
+    _x.push(x);
+    _y.push(y);
+    calculateSums();
 }
 
 bool LinearFitter::linearRegression(float &slope, float &offset) {
     if (_x.isEmpty() || _y.isEmpty())               return false;
-    if ((_x[_x.size() - 1] - _x[0]) < _duration)    return false;
-    uint8_t entries = _x.size();
-    if ((entries * _sum_x2) == (_sum_x * _sum_x))   return false;
+    if ((_x[_entries - 1] - _x[0]) < _duration )    return false;
+    if ((_entries * _sum_x2) == (_sum_x * _sum_x))  return false;
 
     // results
-    slope  = ((entries * _sum_xy) - (_sum_x * _sum_y)) / ((entries * _sum_x2) - (_sum_x * _sum_x));
-    offset = (_sum_y - (slope * _sum_x)) / entries;
+    slope  = ((_entries * _sum_xy) - (_sum_x * _sum_y)) / ((_entries * _sum_x2) - (_sum_x * _sum_x));
+    offset = (_sum_y - (slope * _sum_x)) / _entries;
     return true;
+}
+
+float LinearFitter::extrapolate(uint32_t x) {
+    x -= _x_zero;
+    float slope, offset;
+    if (linearRegression(slope, offset)) {
+        return (x*slope + offset);
+    }
+
+    return std::numeric_limits<float>::max(); // max float value
 }
 
 #endif // LINEARFITTER_H
