@@ -178,7 +178,7 @@ private:
 
     //float _pid_integral;  // moved to pid_variable struct
 
-    LinearFitter _flow_fitter = LinearFitter(300, 10);
+    LinearFitter _flow_fitter = LinearFitter(100, 10);
     // triggers
     void runningAvgs();
     void inhaleTrigger();
