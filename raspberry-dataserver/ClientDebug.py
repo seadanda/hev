@@ -111,7 +111,7 @@ class ClientPlots(QtWidgets.QMainWindow):
                             logging.info("data acquired")
                             self.PID_D.append(payload["flow"])
                             self.PID_I.append(payload["volume"])
-                            self.PID_P.append(payload["airway_pressure"])
+                            self.PID_P.append(payload["pressure_patient"])
                             if len(self.PID_D) > self.history_length:
                                 self.PID_D = self.PID_D[1:]
                                 self.PID_I = self.PID_I[1:]

@@ -174,6 +174,8 @@ void BreathingLoop::updateReadings()
         _readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
 #endif
 
+	_pid.process_pressure = _readings_avgs.pressure_inhale; // Update the process pressure independent of the system state
+
 
         // add Oscar code here:
         if (getFsmState() == BL_STATES::INHALE){
@@ -964,7 +966,7 @@ void BreathingLoop::doPID(){
 
     _pid.istep +=1;
 
-    _pid.process_pressure = _readings_avgs.pressure_inhale;
+    //_pid.process_pressure = _readings_avgs.pressure_inhale;
 
     float _pid_set_point_step = _pid.target_final_pressure/_pid.nsteps;
 
