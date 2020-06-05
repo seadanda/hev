@@ -133,10 +133,10 @@ function requestData() {
 
                 var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply",                "pressure_air_regulated",
                             "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
-                            "fi02_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
+                            "fiO2_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
                             "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
                             "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
-                var targets = [ "PEEP", "fi02_percent"];
+                var targets = [ "PEEP", "fiO2_percent"];
                 for (let i = 0 ; i < targets.length; i++){
                     var el = document.getElementById("setting_"+readings[i]);
                     var val = null;
@@ -340,7 +340,7 @@ function requestData() {
                     }
                 }
                 
-                if (typeof obj != 'undefined' && "fi02_percent_gauge" in obj) obj["fi02_percent_gauge"].update();
+                if (typeof obj != 'undefined' && "fiO2_percent_gauge" in obj) obj["fiO2_percent_gauge"].update();
                 if (typeof obj != 'undefined' && "p_plateau_gauge" in obj) obj["p_plateau_gauge"].update();
             }
         },

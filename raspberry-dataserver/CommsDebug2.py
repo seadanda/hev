@@ -107,8 +107,8 @@ async def commsDebug():
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
 
     await asyncio.sleep(1)
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1220) 
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25)
+    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1220) 
+    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25)
     #await asyncio.sleep(1)
     #print('get all targets pcac')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
@@ -122,11 +122,11 @@ async def commsDebug():
     #print('sent inhale + exhale trigger -> 1')
     while True:
         await asyncio.sleep(1)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
         send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
 
         #send_cmd(cmd_type="GENERAL", cmd_code="STANDBY", param=0)

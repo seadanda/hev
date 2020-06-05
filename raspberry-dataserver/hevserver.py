@@ -114,6 +114,8 @@ class HEVServer(object):
                                         cmd_code=CMD_MAP[reqcmdtype].value[reqcmd].value,
                                         param=reqparam)
 
+                #print('***sending cmd ') 
+                #print(command)
                 self._comms_lli.writePayload(command)
 
                 # processed and sent to controller, send ack to GUI since it's in enum

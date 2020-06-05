@@ -161,6 +161,7 @@ class HEVClient(object):
 
     def send_cmd(self, cmdtype:str, cmd: str, param: Union[float,int]=None) -> bool:
         # send a cmd and wait to see if it's valid
+        #print(cmdtype, cmd, param)
         return asyncio.run(self.send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param))
 
     def ack_alarm(self, alarm: str) -> bool:

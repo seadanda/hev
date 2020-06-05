@@ -377,5 +377,5 @@ function create_gauge_chart(var_name, setvalue, limits) {
     }
 }
 
-create_gauge_chart("fi02_percent", 15, [0, 10, 90,100]);
+create_gauge_chart("fiO2_percent", 15, [0, 10, 90,100]);
 create_gauge_chart("plateau_pressure",10,[0,4,16,20]);

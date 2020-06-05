@@ -403,7 +403,7 @@ class CycleFormat(PayloadFormat):
     peak_inspiratory_pressure: float = 0.0
     plateau_pressure: float          = 0.0
     mean_airway_pressure: float      = 0.0
-    fi02_percent: float              = 0.0
+    fiO2_percent: float              = 0.0
     apnea_index: int                 = 0
     apnea_time: int                  = 0
     mandatory_breath: int            = 0
@@ -430,7 +430,7 @@ class CycleFormat(PayloadFormat):
         self.peak_inspiratory_pressure,
         self.plateau_pressure,
         self.mean_airway_pressure,
-        self.fi02_percent,
+        self.fiO2_percent,
         self.apnea_index,
         self.apnea_time,
         self.mandatory_breath) = self._dataStruct.unpack(byteArray) 
