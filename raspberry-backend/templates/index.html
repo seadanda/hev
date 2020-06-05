@@ -220,51 +220,61 @@ class input_controller{
   	setValue(val){
 	  var currentval = this.element.value;
 	  var message = "Are you sure you want to update " + this.name + " from " + currentval + " to " + val;
-	  var c = confirm(message);
-	  if (!c) return;
 	  var colour = this.element.style.color;
-	  var element = this.element;
-	  var target = this.name;
-	  this.element.value = val;
-	  this.element.style.color="red";
-	  console.log("TARGET IS ",target);
-	  var param = {}
-	  var[target] = val;
-	  $.ajax({
-	      url: "/current_target_handler",
-	      type: 'POST',
-	      data : param,
-	      success: function(response){
-		        if (response == true){
-					element.style.color=colour;
-			        window.createNotification({
-		    			closeOnClick: 1,
-		    			displayCloseButton: 0,
-		    			positionClass: "nfc-bottom-right",
-		    			showDuration: false,
-		    			theme: "info"
-		      		})({
-		      			title: "Updated settings",
-		      			message: "Setting updated successfully"
-			      	  });
-				}
-				else {
-					element.style.color = colour;
-					element.value = currentval;
+		var element = this.element;
+		var target = this.name;
+		var param = {}
+		param[target] = val;
 
-					window.createNotification({
-		    			closeOnClick: 1,
-		    			displayCloseButton: 0,
-		    			positionClass: "nfc-bottom-right",
-		    			showDuration: false,
-		    			theme: "info"
-		      		})({
-		      			title: "Updated settings",
-		      			message: "Setting failed to update"
-			      	});
-				}
-		      }
-	    });
+	  //var c = confirm(message);
+	  $.confirm({
+		title: 'Confirmation',
+		content: message,
+	    buttons: {
+	        confirm: function () {
+			  element.value = val;
+			  element.style.color="red";
+			  $.ajax({
+			      url: "/current_target_handler",
+			      type: 'POST',
+			      data : param,
+			      success: function(response){
+				        if (response == true){
+							element.style.color=colour;
+					        window.createNotification({
+				    			closeOnClick: 1,
+				    			displayCloseButton: 0,
+				    			positionClass: "nfc-bottom-right",
+				    			showDuration: false,
+				    			theme: "info"
+				      		})({
+				      			title: "Updated settings",
+				      			message: "Setting updated successfully"
+					      	  });
+						}
+						else {
+							element.style.color = colour;
+							element.value = currentval;
+							window.createNotification({
+				    			closeOnClick: 1,
+				    			displayCloseButton: 0,
+				    			positionClass: "nfc-bottom-right",
+				    			showDuration: false,
+				    			theme: "info"
+				      		})({
+				      			title: "Updated settings",
+				      			message: "Setting failed to update"
+					      	});
+						}
+				      }
+			    });
+				$.dialog('Confirmed!');
+			 },
+	        cancel: function () {
+	            $.dialog('Canceled!');
+	        },
+	    }
+	  });
   	}
   getMin(){
 	  if (this.element.min) return this.element.min;

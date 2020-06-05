@@ -330,12 +330,38 @@ def current_target_handler():
     data = request.form
     success = True
     for d,v in data.items():
-        print(d,v)
-        success = client.send_cmd("SET_TARGET_CURRENT", d, v)
+        print("SET_TARGET_CURRENT", d, v,type(d),type(v))
+        success = client.send_cmd("SET_TARGET_CURRENT", d, float(v))
     
     response = make_response(json.dumps(success))
     response.content_type = 'application/json'
     return (response)
+    
+@WEBAPP.route('/target_handler', methods=['POST'])
+def target_handler():
+    """
+    Update Current Targets
+
+    INSPIRATORY_PRESSURE = 1
+    RESPIRATORY_RATE     = 2 
+    IE_RATIO             = 3
+    VOLUME               = 4
+    PEEP                 = 5
+    FIO2                 = 6
+    INHALE_TIME          = 7
+
+
+    """
+    data = request.form
+    success = True
+    for d,v in data.items():
+        if 'setting_pcac_' in d:
+            success = client.send_cmd("SET_TARGET_PCAC", d.replace('setting_pcac_',''), v)
+    
+    response = make_response(json.dumps(success))
+    response.content_type = 'application/json'
+    return (response)
+
 
 import random
 
