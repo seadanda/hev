@@ -20,9 +20,6 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value)
         case CMD_SET_DURATION::BUFF_FILL:
             durations.buff_fill       = static_cast<uint32_t>(value);
             break;
-        case CMD_SET_DURATION::BUFF_LOADED:
-            durations.buff_loaded     = static_cast<uint32_t>(value);
-            break;
         case CMD_SET_DURATION::BUFF_PRE_INHALE:
             durations.buff_pre_inhale = static_cast<uint32_t>(value);
             break;
@@ -32,11 +29,8 @@ void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value)
         case CMD_SET_DURATION::PAUSE:
             durations.pause           = static_cast<uint32_t>(value);
             break;
-        case CMD_SET_DURATION::EXHALE_FILL:
-            durations.exhale_fill     = static_cast<uint32_t>(value);
-            break;
         case CMD_SET_DURATION::EXHALE:
-            durations.exhale          = static_cast<uint32_t>(value);
+            durations.exhale     = static_cast<uint32_t>(value);
             break;
         default:
             break;

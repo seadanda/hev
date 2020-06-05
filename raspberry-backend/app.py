@@ -302,6 +302,8 @@ def send_cmd():
         print(client.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
         print(client.send_cmd("GENERAL", "STOP"))
+    elif web_form.get('standby') == "STANDBY":
+        print(client.send_cmd("GENERAL", "STANDBY"))
     #elif web_form.get('reset') == "RESET":
     #    print(client.send_cmd("GENERAL", "RESET"))
     elif web_form.get('export') == "EXPORT":

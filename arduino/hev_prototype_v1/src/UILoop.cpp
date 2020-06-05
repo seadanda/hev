@@ -11,14 +11,16 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _cycle_report_time = tnow;
     _ivt_report_time = tnow;
     _debug_report_time = tnow;
+    _target_report_time = tnow;
 
     _fast_report_timeout = 10;  //ms
     _readback_report_timeout = 300; 
     _cycle_report_timeout = 1000;  // this should probably be based on fsm state
-
     _alarm_report_timeout = 1000; // max timeout to report, actual sending timeout is timeout/priority
     _ivt_report_timeout = 510;  // this should probably be based on fsm state
     _debug_report_timeout = 310; 
+    _target_report_timeout = 1000;  
+
 }
 
 UILoop::~UILoop()
@@ -106,12 +108,12 @@ void UILoop::reportReadbackValues()
         _readback_data.duration_buff_flush  = durations.buff_flush;
         _readback_data.duration_buff_prefill  = durations.buff_prefill;
         _readback_data.duration_buff_fill  = durations.buff_fill;
-        _readback_data.duration_buff_loaded  = durations.buff_loaded;
+        // _readback_data.duration_buff_loaded  = durations.buff_loaded;
         _readback_data.duration_buff_pre_inhale  = durations.buff_pre_inhale;
         _readback_data.duration_inhale  = durations.inhale;
         _readback_data.duration_pause  = durations.pause;
-        _readback_data.duration_exhale_fill  = durations.exhale_fill;
         _readback_data.duration_exhale  = durations.exhale;
+        // _readback_data.duration_exhale  = durations.exhale;
 
         _readback_data.valve_air_in = vin_air;
         _readback_data.valve_o2_in = vin_o2;
@@ -253,7 +255,17 @@ void UILoop::reportDebugValues()
     }
 }
 
-void UILoop::reportTargets(target_variables targets)
+void UILoop::reportTargets()
+{
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (tnow - _target_report_time >= _target_report_timeout)
+    {
+        reportTargetsNow(_breathing_loop->getTargetVariablesCurrent());
+        _target_report_time = tnow;
+    }
+}
+
+void UILoop::reportTargetsNow(target_variables targets)
 {
 
     uint32_t tnow = static_cast<uint32_t>(millis());
@@ -267,6 +279,8 @@ void UILoop::reportTargets(target_variables targets)
     _target_data.peep = targets.peep;
     _target_data.fiO2 = targets.fiO2;
     _target_data.inhale_time = targets.inhale_time;
+    _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
+    _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
     _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
     _comms->writePayload(_pl_send);
 
@@ -384,22 +398,22 @@ void UILoop::cmdGetTarget(cmd_format &cf){
     switch(mode){
 
         case VENTILATION_MODE::PC_AC : 
-            reportTargets(_breathing_loop->getTargetVariablesPC_AC());
+            reportTargetsNow(_breathing_loop->getTargetVariablesPC_AC());
             break;
         case VENTILATION_MODE::PC_AC_PRVC: 
-            reportTargets(_breathing_loop->getTargetVariablesPC_AC_PRVC());
+            reportTargetsNow(_breathing_loop->getTargetVariablesPC_AC_PRVC());
             break;
         case VENTILATION_MODE::PC_PSV : 
-            reportTargets(_breathing_loop->getTargetVariablesPC_PSV());
+            reportTargetsNow(_breathing_loop->getTargetVariablesPC_PSV());
             break;
         case VENTILATION_MODE::CPAP : 
-            reportTargets(_breathing_loop->getTargetVariablesCPAP());
+            reportTargetsNow(_breathing_loop->getTargetVariablesCPAP());
             break;
         case VENTILATION_MODE::TEST : 
-            reportTargets(_breathing_loop->getTargetVariablesTest());
+            reportTargetsNow(_breathing_loop->getTargetVariablesTest());
             break;
         case VENTILATION_MODE::CURRENT: 
-            reportTargets(_breathing_loop->getTargetVariablesCurrent());
+            reportTargetsNow(_breathing_loop->getTargetVariablesCurrent());
             break;
         default: 
             break;

@@ -1,0 +1,7 @@
+home:/home/pi
+ansible:/home/pi/hev-sw/ansible
+dataserver:/home/pi/hev-sw/raspberry-dataserver
+webui:/home/pi/hev-sw/raspberry-backend
+hevproto:/home/pi/hev-sw/arduino/hev_prototype_v1
+hev-sw:/home/pi/hev-sw
+utils:/home/pi/hev-sw/utils
