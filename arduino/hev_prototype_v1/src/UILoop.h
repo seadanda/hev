@@ -21,7 +21,8 @@ public:
     void reportDebugValues();
     void reportCycleReadings();
     void reportAlarms();
-    void reportTargets(target_variables targets);
+    void reportTargets();
+    void reportTargetsNow(target_variables targets);
 
     void reportIVTReadings();
     void receiveCommands();
@@ -48,11 +49,13 @@ private:
     uint32_t _cycle_report_time;
     uint32_t _ivt_report_time;
     uint32_t _debug_report_time;
+    uint32_t _target_report_time;
     uint16_t _fast_report_timeout;
     uint16_t _readback_report_timeout;
     uint16_t _cycle_report_timeout;
     uint16_t _ivt_report_timeout;
     uint16_t _debug_report_timeout;
+    uint16_t _target_report_timeout;
     fast_data_format _fast_data;
     readback_data_format _readback_data;
     cycle_data_format _cycle_data;

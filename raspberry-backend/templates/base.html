@@ -62,6 +62,15 @@
 	
       </nav>
         <div id="layoutSidenav">
+
+		<div class = "lock">
+			<a class="unlock" id="toggle_lock" onclick="toggle_lock()">
+			<svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="fa-lock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
+			  <path class="path-icon transparent" id = "path-locked-main" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
+			  <path class="path-icon transparent" id="path-unlocked-main" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
+			</svg>
+			</a>
+			</div>
           <div id="layoutSidenav_nav" class="py-1">
                 <nav class="sb-sidenav accordion sb-sidenav-dark px-1" id="sidenavAccordion">
                   <div class="sb-sidenav-menu">
@@ -94,6 +103,7 @@
 		    <div class = "controls py-1 ml-auto mr-auto">
 		    <input type="submit" name="start" value="START" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
 			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+			<input type="submit" name="standby" value="STANDBY" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
 		    <input type="submit" name="export" value="EXPORT" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
 			</div>
 			</form>
@@ -111,14 +121,6 @@
 
 
 	
-      <div class = "lock">
-      <a class="unlock" id="toggle_lock" onclick="toggle_lock()">
-	  <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="lock" class="fa-lock" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-	    <path class="path-icon transparent" id = "path-locked-main" d="M400 224h-24v-72C376 68.2 307.8 0 224 0S72 68.2 72 152v72H48c-26.5 0-48 21.5-48 48v192c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V272c0-26.5-21.5-48-48-48zm-104 0H152v-72c0-39.7 32.3-72 72-72s72 32.3 72 72v72z"></path>
-	    <path class="path-icon transparent" id="path-unlocked-main" d="M400 256H152V152.9c0-39.6 31.7-72.5 71.3-72.9 40-.4 72.7 32.1 72.7 72v16c0 13.3 10.7 24 24 24h32c13.3 0 24-10.7 24-24v-16C376 68 307.5-.3 223.5 0 139.5.3 72 69.5 72 153.5V256H48c-26.5 0-48 21.5-48 48v160c0 26.5 21.5 48 48 48h352c26.5 0 48-21.5 48-48V304c0-26.5-21.5-48-48-48z"></path>
-	  </svg>
-	  </a>
-      </div>
 
 	
         <script src="{{ url_for('static', filename='js/jquery-3.4.1.min.js') }}"></script>

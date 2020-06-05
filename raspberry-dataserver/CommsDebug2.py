@@ -54,12 +54,12 @@ class Dependant(object):
         #   logging.info(f"payload received:  {payload} ")
         #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
         #    logging.info(f"payload received:  {payload.peep} {fsm}")
-        if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-            logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+        #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+        #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
         if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-        #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-        #    logging.info(f"TARGET {payload} {fsm}") 
+        if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+            logging.info(f"TARGET {payload} {fsm}") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):

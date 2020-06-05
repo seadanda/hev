@@ -10,12 +10,12 @@
   <div class="container-fluid">
 
     <div class="tab">
-      <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
-      <button class="tablinks" onclick="openTab(this, 'Advanced')">Advanced</button>
+	      <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
+		  <button class="tablinks" onclick="openTab(this, 'Advanced')">Advanced</button>
     </div>
   
-    <div id="Main" class="tabcontent">
-	    <div class = "row">
+    <div id="Main" class="tabcontent px-0 py-0">
+	    <div class = "row no-gutters">
 	      	<div class = "col-charts-main">
 				<!-- chart on left -->
 			    <div class="row">
@@ -23,12 +23,12 @@
 					    <div class = "main-chart-container"><canvas id="pressure_chart"></canvas></div>
 					</div>
 			    </div>
-			    <div class = "row">
+			    <div class = "row no-gutters">
 					<div class="col-md-12">
 					  <div class="main-chart-container"><canvas id="flow_chart"></canvas></div>
 					</div>
 		    	</div>
-			    <div class = "row">
+			    <div class = "row no-gutters">
 					<div class="col-md-12">
 						  <div class = "main-chart-container"><canvas id="volume_chart"></canvas></div>
 					</div>
@@ -44,12 +44,12 @@
 			    </div>
 	      	</div>
 	     	<div class = "col-cards-main">
-				 <div class = "row">
+				 <div class = "row no-gutters">
 					<div class = "main-header">
 						Measurement
 					</div>
 				 </div>
-				<div class = "row">
+				<div class = "row no-gutters">
 				    <div class="card-reading">
 		            	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 					      <span class="small text-white col-center" href="#">Mode</span>
@@ -107,36 +107,36 @@
 						Target
 					</div>
 				</div>
-				<div class = "row">
+				<div class = "row no-gutters">
 					<div class="card-setting">
 						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 							<a class="small text-dark col-center" href="#">Inhale Time</a>
 						</div>
-						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inhale_time" value = 0.0 onclick = "show_easy_numpad(this, new input_controller('inhale_time',this))"></div> 
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inhale_time" value = 0.0 onclick = "show_easy_numpad(this, new input_controller('INHALE_TIME',this))"></div> 
 					</div>
 					<div class="card-setting">
 						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 							<a class="small text-dark col-center" href="#">RR</a>
 						</div>
-						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_respiratory_rate" value=0.0 onclick="show_easy_numpad(this, new input_controller('RR',this));"></input></div> 
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_respiratory_rate" value=0.0 onclick="show_easy_numpad(this, new input_controller('RESPIRATORY_RATE',this));"></input></div> 
 					</div>
 					<div class="card-setting">
 						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 							<a class="small text-dark col-center" href="#">PEEP</a>
 						</div>
-						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_PEEP" value=0.0 onclick="show_easy_numpad(this,new input_controller('peep',this))"></div> 
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_PEEP" value=0.0 onclick="show_easy_numpad(this,new input_controller('PEEP',this))"></div> 
 					</div>
 					<div class="card-setting">
 						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 							<a class="small text-dark col-center" href="#">P<sub>Peak</sub> <small>[cmH20]</small></a>
 						</div>
-						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inspiratory_pressure" value=0.0 onclick="show_easy_numpad(this,new input_controller('inspiratory_pressure',this))"></div> 
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inspiratory_pressure" value=0.0 onclick="show_easy_numpad(this,new input_controller('INSPIRATORY_PRESSURE',this))"></div> 
 					</div>
 					<div class="card-setting">
 						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 							<a class="small text-dark col-center" href="#">FIO<sub>2</sub> <small>[%]</small></a>
 						</div>
-						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_fi02_percent" value=0.0 onclick="show_easy_numpad(this,new input_controller('fi02_percent',this))"></div> 
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_fi02_percent" value=0.0 onclick="show_easy_numpad(this,new input_controller('FI02',this))"></div> 
 					</div>
 
 
@@ -224,13 +224,16 @@ class input_controller{
 	  if (!c) return;
 	  var colour = this.element.style.color;
 	  var element = this.element;
-	  var name = this.name;
+	  var target = this.name;
 	  this.element.value = val;
 	  this.element.style.color="red";
+	  console.log("TARGET IS ",target);
+	  var param = {}
+	  var[target] = val;
 	  $.ajax({
-	      url: "/settings_handler",
+	      url: "/current_target_handler",
 	      type: 'POST',
-	      data : { name : val },
+	      data : param,
 	      success: function(response){
 		        if (response == true){
 					element.style.color=colour;
