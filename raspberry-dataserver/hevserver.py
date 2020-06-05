@@ -53,6 +53,7 @@ class HEVServer(object):
             PAYLOAD_TYPE.DATA,
             PAYLOAD_TYPE.READBACK,
             PAYLOAD_TYPE.CYCLE,
+            PAYLOAD_TYPE.TARGET,
             PAYLOAD_TYPE.THRESHOLDS,
             PAYLOAD_TYPE.ALARM,
             PAYLOAD_TYPE.DEBUG,
@@ -128,6 +129,9 @@ class HEVServer(object):
                 # ignore for the minute
                 pass
             elif reqtype == "CYCLE":
+                # ignore for the minute
+                pass
+            elif reqtype == "TARGET":
                 # ignore for the minute
                 pass
             elif reqtype == "IVT":

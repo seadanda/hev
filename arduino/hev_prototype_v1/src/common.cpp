@@ -119,7 +119,7 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
             targets.peep = value;
             break;
         case CMD_SET_TARGET::FIO2: 
-            targets.fiO2 = value;
+            targets.fiO2_percent = value;
             break;
         case CMD_SET_TARGET::INHALE_TIME: 
             targets.inhale_time = value;
@@ -210,7 +210,7 @@ float adcToO2PercentFloat(float adc, float offset)
     float Sensor_Gain		= 100./10000.	; // the sensor gain is 100 % / 10000 mVolts
     float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
     
-    float o2pc = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); 
+    float o2pc = 100.0 * PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); 
 
     return o2pc;
 }

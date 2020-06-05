@@ -277,7 +277,7 @@ void UILoop::reportTargetsNow(target_variables targets)
     _target_data.volume = targets.volume;
     _target_data.respiratory_rate = targets.respiratory_rate;
     _target_data.peep = targets.peep;
-    _target_data.fiO2 = targets.fiO2;
+    _target_data.fiO2_percent = targets.fiO2_percent;
     _target_data.inhale_time = targets.inhale_time;
     _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
     _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
