@@ -32,6 +32,7 @@ SQLITE_FILE = '/dev/shm/HEV_monitoringDB.sqlite'  # use the linux shared memory 
 MASTER_TABLE_NAME = 'hev_monitor' # this table keeps track of the data we get through keys to other tables
 DATA_TABLE_NAME = 'hev_monitor_data'  # name of the table to be created for payload type data
 CYCLE_TABLE_NAME = 'hev_monitor_cycle'  # name of the table to be created for payload type cycle
+TARGET_TABLE_NAME = 'hev_monitor_target'  # name of the table to be created for payload type target
 READBACK_TABLE_NAME = 'hev_monitor_readback'  # name of the table to be created for payload type readback
 ALARM_TABLE_NAME = 'hev_monitor_alarm'  # name of the table to be created for payload type readback
 
@@ -45,7 +46,8 @@ payload_types = {
     'CYCLE' : {'table_name' : CYCLE_TABLE_NAME, 'format' : CycleFormat().getDict(), 'id': 'CycleID'},
     'READBACK' : { 'table_name' : READBACK_TABLE_NAME, 'format' : ReadbackFormat().getDict(), 'id' : 'ReadBackID'},
     'ALARM'    : { 'table_name' : ALARM_TABLE_NAME, 'format' : AlarmFormat().getDict(), 'id' : 'AlarmID' },
-    'TARGET' : { 'table_name' : 'hevmonitor_target', 'format' : TargetFormat().getDict(), 'id' : 'TargetID' },
+    #'TARGET' : { 'table_name' : 'hevmonitor_target', 'format' : TargetFormat().getDict(), 'id' : 'TargetID' },
+    'TARGET' : { 'table_name' : TARGET_TABLE_NAME, 'format' : TargetFormat().getDict(), 'id' : 'TargetID' },
     'BATTERY' : { 'table_name' : 'hevmonitor_battery', 'format' : BatteryFormat().getDict(), 'id' : 'BatteryID' }
 }
 
@@ -417,6 +419,8 @@ def send_ack():
         print(client.send_cmd("GENERAL", "START"))
     elif web_form.get('stop') == "STOP":
         print(client.send_cmd("GENERAL", "STOP"))
+    elif web_form.get('standby') == "STANDBY":
+        print(client.send_cmd("GENERAL", "STANDBY"))
     elif web_form.get('reset') == "RESET":
         print(client.send_cmd("GENERAL", "RESET"))
     #return render_template('index.html', result=live_data())

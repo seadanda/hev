@@ -127,7 +127,7 @@ async def commsDebug():
         #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
         #send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
         #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
 
         #send_cmd(cmd_type="GENERAL", cmd_code="STANDBY", param=0)
 
