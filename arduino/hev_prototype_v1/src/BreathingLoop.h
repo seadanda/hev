@@ -176,6 +176,7 @@ private:
     void runningAvgs();
     void inhaleTrigger();
     void exhaleTrigger();
+    void volumeTrigger();
     bool _apnea_event;
     float _running_flows[RUNNING_AVG_READINGS];
     float _running_avg_flow;
