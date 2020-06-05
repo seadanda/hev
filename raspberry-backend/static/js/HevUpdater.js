@@ -137,10 +137,9 @@ function requestData() {
                             "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
                             "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
                 //var targets = [ "peep", "fiO2_percent"];
-		var targets = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2", "inhale_time", "buffer_upper_pressure", "buffer_lower_pressure"]
+		var targets = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "buffer_upper_pressure", "buffer_lower_pressure"]
 
 		if (target_point != null){
-		        console.log(target_point) 
 		        for (let i = 0 ; i < targets.length; i++){
 		    	    var el = document.getElementById("setting_"+targets[i]);
 		    	    var val = null;

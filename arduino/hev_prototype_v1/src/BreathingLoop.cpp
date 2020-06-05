@@ -99,7 +99,7 @@ void BreathingLoop::initTargets()
     _targets_pcac.volume = 400;
     _targets_pcac.inhale_time= 1000;
     _targets_pcac.peep = 5;
-    _targets_pcac.fiO2 = 0.21;
+    _targets_pcac.fiO2_percent = 21;
     _targets_pcac.buffer_lower_pressure = 0.0;
     _targets_pcac.buffer_upper_pressure = 300.0;
 

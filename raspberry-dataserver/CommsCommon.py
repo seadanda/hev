@@ -590,7 +590,7 @@ class TargetFormat(PayloadFormat):
     volume                : float = 0.0
     respiratory_rate      : float = 0.0
     peep                  : float = 0.0
-    fiO2                  : float = 0.0
+    fiO2_percent          : float = 0.0
     inhale_time           : int   = 0 
     buffer_upper_pressure : float = 0.0
     buffer_lower_pressure : float = 0.0 
@@ -611,7 +611,7 @@ class TargetFormat(PayloadFormat):
         self.volume              , 
         self.respiratory_rate    , 
         self.peep                , 
-        self.fiO2                , 
+        self.fiO2_percent        , 
         self.inhale_time         ,
         self.buffer_upper_pressure,
         self.buffer_lower_pressure ) = self._dataStruct.unpack(byteArray) 

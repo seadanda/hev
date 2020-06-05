@@ -359,7 +359,7 @@ struct target_data_format{
     float volume                = 0.0;
     float respiratory_rate      = 0.0;
     float peep                  = 0.0;
-    float fiO2                  = 0.0; 
+    float fiO2_percent          = 0.0; 
     uint16_t inhale_time        = 0 ; 
     float buffer_upper_pressure = 0.0; 
     float buffer_lower_pressure = 0.0; 
@@ -579,7 +579,7 @@ struct target_variables {
     float volume;
     float respiratory_rate;
     float peep;
-    float fiO2; 
+    float fiO2_percent; 
     uint16_t inhale_time; 
     float buffer_upper_pressure; 
     float buffer_lower_pressure; 
