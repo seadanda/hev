@@ -31,6 +31,7 @@ class CMD_TYPE(Enum):
     SET_TARGET_TEST        =  12
     SET_TARGET_CURRENT     =  13
     GET_TARGETS            =  14
+    SET_PERSONAL           =  15
 
 
 @unique
@@ -97,6 +98,14 @@ class CMD_SET_TARGET(Enum):
     INHALE_TIME          = 7
 
 @unique
+class CMD_SET_PERSONAL(Enum):
+    NAME   = 1
+    AGE    = 2
+    SEX    = 3
+    HEIGHT = 4
+    WEIGHT = 5
+
+@unique
 class ALARM_TYPE(Enum):
     PRIORITY_LOW    = 1
     PRIORITY_MEDIUM = 2
@@ -146,6 +155,7 @@ class CMD_MAP(Enum):
     SET_THRESHOLD_MIN      =  ALARM_CODES
     SET_THRESHOLD_MAX      =  ALARM_CODES
     GET_TARGETS            =  VENTILATION_MODE
+    SET_PERSONAL           =  CMD_SET_PERSONAL
 
 @unique
 class BL_STATES(Enum):
@@ -178,6 +188,7 @@ class PAYLOAD_TYPE(IntEnum):
     TARGET     = 10
     BATTERY    = 11
     LOOP_STATUS     = 12
+    PERSONAL        = 13
 
 class HEVVersionError(Exception):
     pass
@@ -210,6 +221,7 @@ class PayloadFormat():
             10: TargetFormat,
             11: BatteryFormat,
             12: LoopStatusFormat
+            13: PersonalFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -615,6 +627,41 @@ class TargetFormat(PayloadFormat):
         self.inhale_time         ,
         self.buffer_upper_pressure,
         self.buffer_lower_pressure ) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self.mode         = VENTILATION_MODE(tmp_mode)
+        self._byteArray = byteArray
+
+# =======================================
+# Personal data payload
+# =======================================
+@dataclass
+class PersonalFormat(PayloadFormat):
+    _dataStruct = Struct("<BIB60sBcBB")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.PERSONAL
+
+    name    : str = ""
+    age     : int = 0
+    sex     : str = ""
+    height  : int = 0
+    weight  : int = 0
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        tmp_mode = 0
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        self.name,
+        self.age,
+        self.sex,
+        self.height,
+        self.weight) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)

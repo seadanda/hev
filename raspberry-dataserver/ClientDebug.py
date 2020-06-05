@@ -125,6 +125,10 @@ class ClientPlots(QtWidgets.QMainWindow):
                             pass
                         elif brtype == "THRESHOLDS":
                             pass
+                        elif brtype == "TARGET":
+                            pass
+                        elif brtype == "PERSONAL":
+                            pass
                         elif brtype == "ALARM":
                             logging.error(f"received ALARM {payload}")
                         elif brtype == "IVT":

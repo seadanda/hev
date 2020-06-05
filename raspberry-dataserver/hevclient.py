@@ -91,6 +91,9 @@ class HEVClient(object):
                         elif payload["type"] == "TARGET":
                             with self._lock:
                                 self._target = payload["TARGET"]
+                        elif payload["type"] == "PERSONAL":
+                            with self._lock:
+                                self._target = payload["PERSONAL"]
                         elif payload["type"] == "THRESHOLDS":
                             with self._lock:
                                 self._thresholds = payload["THRESHOLDS"]

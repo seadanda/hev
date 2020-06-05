@@ -58,6 +58,7 @@ class HEVServer(object):
             PAYLOAD_TYPE.ALARM,
             PAYLOAD_TYPE.DEBUG,
             PAYLOAD_TYPE.IVT,
+            PAYLOAD_TYPE.PERSONAL,
         ]
         if payload_type in whitelist:
             # pass data to db
@@ -132,6 +133,9 @@ class HEVServer(object):
                 # ignore for the minute
                 pass
             elif reqtype == "TARGET":
+                # ignore for the minute
+                pass
+            elif reqtype == "PERSONAL":
                 # ignore for the minute
                 pass
             elif reqtype == "IVT":

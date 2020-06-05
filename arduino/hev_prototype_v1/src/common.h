@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAE
+#define HEV_FORMAT_VERSION 0xAF
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -44,7 +44,8 @@ enum PAYLOAD_TYPE : uint8_t {
     LOGMSG       = 9,
     TARGET       = 10,
     BATTERY      = 11,
-    LOOP_STATUS  = 12
+    LOOP_STATUS  = 12,
+    PERSONAL     = 13
 };
 
 enum CMD_TYPE  : uint8_t {
@@ -61,7 +62,8 @@ enum CMD_TYPE  : uint8_t {
     SET_TARGET_CPAP        =  11,
     SET_TARGET_TEST        =  12,
     SET_TARGET_CURRENT     =  13,
-    GET_TARGETS            =  14
+    GET_TARGETS            =  14,
+    SET_PERSONAL           =  15
 };
 
 enum CMD_GENERAL : uint8_t {
@@ -125,6 +127,14 @@ enum CMD_SET_TARGET : uint8_t {
     PEEP                 = 5,
     FIO2                 = 6,
     INHALE_TIME          = 7
+};
+
+enum CMD_SET_PERSONAL : uint8_t {
+    NAME   = 1,
+    AGE    = 2,
+    SEX    = 3,
+    HEIGHT = 4,
+    WEIGHT = 5
 };
 
 #pragma pack(1)
@@ -393,10 +403,20 @@ struct battery_data_format {
     uint8_t dummy         = 0;
 };
 #pragma pack()
-//enum VALVE_STATES : bool {
-//    V_OPEN = HIGH,
-//    V_CLOSED = LOW
-//};
+
+#pragma pack(1)
+struct personal_data_format {
+    uint8_t  version                    = HEV_FORMAT_VERSION;
+    uint32_t timestamp                  = 0;
+    uint8_t  payload_type               = PAYLOAD_TYPE::PERSONAL;
+
+    char    name[60];
+    uint8_t age;
+    char    sex;
+    uint8_t height;
+    uint8_t weight;  // ideal weight
+};
+#pragma pack()
 
 struct states_durations {
     uint32_t calibration;
@@ -667,6 +687,14 @@ struct cycle_readings{
 
     uint8_t mandatory_breath            = 0;
 
+};
+
+struct personal_details{
+    char name[60];
+    uint8_t age;
+    char    sex;
+    uint8_t height;
+    uint8_t weight;  // ideal weight
 };
 
 //void setThreshold(ALARM_CODES alarm, alarm_thresholds &thresholds, uint32_t &value);

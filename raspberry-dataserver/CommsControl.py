@@ -240,6 +240,8 @@ class CommsControl():
                 payload = CommsCommon.DebugFormat()
             elif data_type == CommsCommon.PAYLOAD_TYPE.TARGET
                 payload = CommsCommon.TargetFormat()
+            elif data_type == CommsCommon.PAYLOAD_TYPE.PERSONAL
+                payload = CommsCommon.PersonalFormat()
             elif data_type == CommsCommon.PAYLOAD_TYPE.THRESHOLDS:
                 # FIXME: nothing yet defined, TBD!!
                 return False
