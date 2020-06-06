@@ -426,7 +426,19 @@ def send_ack():
     #return render_template('index.html', result=live_data())
     return ('', 204)
 
-
+@WEBAPP.route('/personal_data_handler', methods=['POST'])
+def personal_data_handler():
+    """
+    Send personal data to the Arduino
+    """
+    #data = request.get_json(force=True)
+    data = request.form
+    personal = {}
+    for d,v in data.items():
+        print(d,v)
+        personal[d.replace('input_', '')] = v
+        print(client.send_personal("PERSONAL", personal=personal ))
+    return ('', 204)
 
 @WEBAPP.route('/live-data', methods=['GET'])
 def live_data():

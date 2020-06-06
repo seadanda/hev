@@ -31,7 +31,7 @@ class CMD_TYPE(Enum):
     SET_TARGET_TEST        =  12
     SET_TARGET_CURRENT     =  13
     GET_TARGETS            =  14
-    SET_PERSONAL           =  15
+    # SET_PERSONAL           =  15
 
 
 @unique
@@ -98,12 +98,12 @@ class CMD_SET_TARGET(Enum):
     INHALE_TIME          = 7
 
 @unique
-class CMD_SET_PERSONAL(Enum):
-    NAME   = 1
-    AGE    = 2
-    SEX    = 3
-    HEIGHT = 4
-    WEIGHT = 5
+# class CMD_SET_PERSONAL(Enum):
+#     NAME   = 1
+#     AGE    = 2
+#     SEX    = 3
+#     HEIGHT = 4
+#     WEIGHT = 5
 
 @unique
 class ALARM_TYPE(Enum):
@@ -155,7 +155,7 @@ class CMD_MAP(Enum):
     SET_THRESHOLD_MIN      =  ALARM_CODES
     SET_THRESHOLD_MAX      =  ALARM_CODES
     GET_TARGETS            =  VENTILATION_MODE
-    SET_PERSONAL           =  CMD_SET_PERSONAL
+    # SET_PERSONAL           =  CMD_SET_PERSONAL
 
 @unique
 class BL_STATES(Enum):
@@ -196,7 +196,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAE, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAF, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -220,7 +220,7 @@ class PayloadFormat():
             9: LogMsgFormat,
             10: TargetFormat,
             11: BatteryFormat,
-            12: LoopStatusFormat
+            12: LoopStatusFormat,
             13: PersonalFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]

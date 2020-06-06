@@ -50,6 +50,18 @@ void UILoop::receiveCommands()
                 //logMsg("received battery dummy " + String(bat.dummy));
                 break;
             }
+            case PAYLOAD_TYPE::PERSONAL: {
+                personal_data_format pers;
+                _pl_receive.getPayload(reinterpret_cast<void*>(&pers));
+                strcpy(_personal.name, pers.name);
+                _personal.age = pers.age;
+                _personal.sex = pers.sex;
+                _personal.height = pers.height;
+                _personal.weight = pers.weight;
+                // do what needs to be done with the battery information
+                //logMsg("received battery dummy " + String(bat.dummy));
+                break;
+            }
             default:
                 break;
         }
@@ -295,7 +307,7 @@ void UILoop::reportPersonal()
     {
         _personal_data.timestamp = static_cast<uint32_t>(tnow);
 
-        _personal_data.name   = _personal.name;
+        strcpy(_personal_data.name, _personal.name);
         _personal_data.age    = _personal.age   ;
         _personal_data.sex    = _personal.sex   ;
         _personal_data.height = _personal.height;
@@ -353,9 +365,9 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::GET_TARGETS:
             cmdGetTarget(cf);
             break;
-        case CMD_TYPE::SET_PERSONAL:
-            cmdSetPersonal(cf);
-            break;
+        // case CMD_TYPE::SET_PERSONAL:
+        //     cmdSetPersonal(cf);
+        //     break;
         default:
             break;
     }
@@ -416,28 +428,28 @@ void UILoop::cmdSetTarget(cmd_format &cf, int8_t mode){
     }
 }
 
-void UILoop::cmdSetPersonal(cmd_format &cf){
-    switch(cf.cmd_code){
+// void UILoop::cmdSetPersonal(cmd_format &cf){
+//     switch(cf.cmd_code){
 
-        case CMD_SET_PERSONAL::NAME: 
-		_personal.name = static_cast<char*>(cf.param);
-		break;
-        case CMD_SET_PERSONAL::AGE: 
-		_personal.age = static_cast<uint8_t>(cf.param);
-		break;
-        case CMD_SET_PERSONAL::SEX: 
-		_personal.sex = static_cast<char>(cf.param);
-		break;
-        case CMD_SET_PERSONAL::HEIGHT: 
-		_personal.height = static_cast<uint8_t>(cf.param);
-		break;
-        case CMD_SET_PERSONAL::WEIGHT: 
-		_personal.weight = static_cast<uint8_t>(cf.param);
-		break;
-        default: 
-            break;
-    }
-}
+//         case CMD_SET_PERSONAL::NAME: 
+// 		_personal.name = static_cast<char*>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::AGE: 
+// 		_personal.age = static_cast<uint8_t>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::SEX: 
+// 		_personal.sex = static_cast<char>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::HEIGHT: 
+// 		_personal.height = static_cast<uint8_t>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::WEIGHT: 
+// 		_personal.weight = static_cast<uint8_t>(cf.param);
+// 		break;
+//         default: 
+//             break;
+//     }
+// }
 
 void UILoop::cmdGetTarget(cmd_format &cf){
 

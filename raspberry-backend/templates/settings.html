@@ -11,13 +11,21 @@
 
   <!-- Tab content -->
   <div id="Personal" class="tabcontent">
+    <form action="{{ url_for('personal_data_handler') }}" method="post">
         <table class = "ml-auto mr-auto">
-      <tr><td><label class="small" for="inputName">Name</label></td><td><input class="form-control py-1" id="inputName" type="name" value="John Smith" readOnly name='patient_name' /></td></tr>
-      <tr><td><label class="small" for="inputEmailAddress">Age</label></td><td><input class="form-control py-1" id="inputAge" type="number" readOnly placeholder=87 /></td></tr>
-      <tr><td><label class="small" for="inputHeight">Height (cm)</label></td><td><input class="form-control py-1" id="inputHeight" type="number" readOnly placeholder=180 /></td></tr>
-      <tr><td><label class="small" for="inputWeight">Weight (kg)</label></td><td><input class="form-control py-1" id="inputWeight" type="number" readOnly placeholder=80 /></td></tr>
+      <tr><td><label class="small" for="input_name">Name</label></td><td><input class="form-control py-1" id="input_name" type="name" value="John Smith" name='patient_name' /></td></tr>
+      <tr><td><label class="small" for="input_age">Age</label></td><td><input class="form-control py-1" id="input_age" type="number" placeholder=87 /></td></tr>
+      <tr><td><label class="small" for="input_sex">Sex</label></td><td>
+                      <select class="form-control py-1" id="input_sex"  >
+                              <option value='M'>M</option>
+                              <option value='F'>F</option>
+                      </select>
+              </td></tr>
+      <tr><td><label class="small" for="input_height">Height (cm)</label></td><td><input class="form-control py-1" id="input_height" type="number" placeholder=180 /></td></tr>
+      <tr><td><label class="small" for="input_weight">Weight (kg)</label></td><td><input class="form-control py-1" id="input_weight" type="number" placeholder=80 /></td></tr>
         </table>
         <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+    </form>
   </div>
 
   <div id="Mode" class="tabcontent">
