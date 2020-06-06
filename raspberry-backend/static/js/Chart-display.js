@@ -1,3 +1,36 @@
+// place to hard code chart parameters (can not make a separate .js as import of js not supported)
+
+function chartParam(chartName) {
+    // values for all plots
+    let gridColor     = "hsla(0, 0%, 75%, 0.4)"; 
+    let zeroGridColor = "hsla(0, 0%, 90%, 1.0)"; 
+
+    // values for specific plots
+    let plotColor;    
+    // chosen to have the same saturation and luminosity, tweak to taste
+    if( chartName == "pressure" ) plotColor = "hsla(240, 100%, 75%, 1)";
+    if( chartName == "flow" )     plotColor = "hsla(114, 100%, 75%, 1)";
+    if( chartName == "volume" )   plotColor = "hsla(  0, 100%, 75%, 1)";
+
+    // start with global params for all plots
+    let params = {
+	dataset : {
+	    borderColor          : plotColor,
+	    backgroundColor      : plotColor,
+	    borderWidth          : 4,
+	    fill                 : false,
+	    showLine             : true
+	},
+	gridLines : {
+	    display       : true,
+	    color         : gridColor,
+	    zeroLineColor : zeroGridColor
+	}
+    };
+
+    return params;
+}
+
 var chart_pressure;
 var chart_flow;
 var chart_volume;
@@ -34,21 +67,19 @@ function getGaugeMaxValue(name){
 $(document).ready(function() {
     var ctx_pressure = document.getElementById('pressure_chart');
     if ( ctx_pressure ) {
+	let params = chartParam("pressure");
         chart_pressure = new Chart(ctx_pressure, {
             type: 'scatter',
             data: {
                 datasets: [{
                     data: [],
                     label: "Var1",
-                    borderColor: "#0049b8",
-                    borderWidth: 4,
-                    fill: false,
-                    pointColor: "rgba(220,220,220,1)",
-                    pointStrokeColor: "#fff",
-                    pointHighlightFill: "#fff",
-                    pointHighlightStroke: "rgba(220,220,220,1)",
-    		showLine: true,
-                  }
+		    borderColor         : params.dataset.borderColor,
+		    backgroundColor     : params.dataset.backgroundColor,
+		    borderWidth         : params.dataset.borderWidth,
+		    fill                : params.dataset.fill,
+		    showLine            : params.dataset.showLine
+                  } 
                 ]
             },
             options: {
@@ -61,7 +92,7 @@ $(document).ready(function() {
                     },
                 },            
                 responsive: true,
-        	    maintainAspectRatio: false,
+        	maintainAspectRatio: false,
                 bezierCurve : false,
                 stroke: {
                 },
@@ -91,9 +122,9 @@ $(document).ready(function() {
                 scales: {
                     xAxes: [{
                         gridLines : {
-                            display: true,
-                            color: "rgba(255,255,255,0.2)",
-                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                            display:       params.gridLines.display,
+                            color:         params.gridLines.color,
+                            zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
             		        maxTicksLimit: 13,
@@ -103,9 +134,9 @@ $(document).ready(function() {
             	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc"}}],
             		yAxes: [{
                         gridLines : {
-                            display: true,
-                            color: "rgba(255,255,255,0.2)",
-                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                            display:       params.gridLines.display,
+                            color:         params.gridLines.color,
+                            zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
                             beginAtZero: true,
@@ -135,15 +166,10 @@ $(document).ready(function() {
     }
 });
 
-
-
-
-
-
-
 $(document).ready(function() {
     var ctx_flow = document.getElementById('flow_chart');
     if (ctx_flow) {
+	let params = chartParam("flow");
         chart_flow = new Chart(ctx_flow, {
             type: 'scatter',
             data: {
@@ -151,11 +177,11 @@ $(document).ready(function() {
                 datasets: [{
                     data: [],
                     label: "Var1",
-                    //borderColor: "#3e95cd",
-                    borderColor: "green",
-                    borderWidth: 4,
-                    fill: false,
-            		showLine: true,
+		    borderColor         : params.dataset.borderColor,
+		    backgroundColor     : params.dataset.backgroundColor,
+		    borderWidth         : params.dataset.borderWidth,
+		    fill                : params.dataset.fill,
+		    showLine            : params.dataset.showLine
                 }]
             },
             options: {
@@ -198,9 +224,9 @@ $(document).ready(function() {
                 scales: {
                     xAxes: [{
                         gridLines : {
-                            display: true,
-                            color: "rgba(255,255,255,0.2)",
-                            zeroLineColor: 'rgba(255,255,255,0.2)',
+			    display:       params.gridLines.display,
+                            color:         params.gridLines.color,
+                            zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
             		        maxTicksLimit: 13,
@@ -211,9 +237,9 @@ $(document).ready(function() {
                     		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",}}],
         			yAxes: [{
                         gridLines : {
-                            display: true,
-                            color: "rgba(255,255,255,0.2)",
-                            zeroLineColor: 'rgba(255,255,255,0.2)',
+			    display:       params.gridLines.display,
+                            color:         params.gridLines.color,
+                            zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
                             beginAtZero: true,
@@ -249,16 +275,18 @@ $(document).ready(function() {
 $(document).ready(function() {
     var ctx_volume = document.getElementById('volume_chart');
     if (ctx_volume) {
+	let params = chartParam("volume");
         chart_volume = new Chart(ctx_volume, {
             type: 'scatter',
             data: {
                 datasets: [{
                     data: [],
                     label: "Var1",
-                    borderColor: "#ba0202",
-                    borderWidth: 4,
-                    fill: false,
-            		showLine: true,
+		    borderColor         : params.dataset.borderColor,
+		    backgroundColor     : params.dataset.backgroundColor,
+		    borderWidth         : params.dataset.borderWidth,
+		    fill                : params.dataset.fill,
+		    showLine            : params.dataset.showLine
                 }]
             },
 	
@@ -303,9 +331,9 @@ $(document).ready(function() {
                 scales: {
                     xAxes: [{
                         gridLines : {
-                            display: true,
-                            color: "rgba(255,255,255,0.2)",
-                            zeroLineColor: 'rgba(255,255,255,0.2)',
+			    display:       params.gridLines.display,
+                            color:         params.gridLines.color,
+                            zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
                 		    maxTicksLimit: 13,
@@ -318,9 +346,9 @@ $(document).ready(function() {
                             
             		yAxes: [{
                         gridLines : {
-                            display: true,
-                            color: "rgba(255,255,255,0.2)",
-                            zeroLineColor: 'rgba(255,255,255,0.2)',
+                            display:       params.gridLines.display,
+                            color:         params.gridLines.color,
+                            zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
                             beginAtZero: true,

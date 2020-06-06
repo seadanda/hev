@@ -146,7 +146,7 @@ function requestData() {
 		    	    if ( target_point != null && targets[i] in target_point){
 		    		    val = target_point[targets[i]];
 		    	    }
-		    	    if (el && val) el.value = val;
+		    	    if (el && val) el.value = val.toPrecision(4);
 		        }
 		}
 
