@@ -29,13 +29,15 @@
 
     <div class="tab">
       <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
-      <button class="tablinks" onclick="openTab(this, 'Thresholds')">Thresholds</button>
+      <button class="tablinks" onclick="openTab(this, 'clinicalAlarms')">Clinical Alarms</button>
+      <button class="tablinks" onclick="openTab(this, 'technicalAlarms')">Technical Alarms</button>
+
     </div>
 
     <div id="Main" class="tabcontent">
 
     <input type="button" class="form-control py-2" value="Update alarms" id="update_button"></input>
-    <button type="button" class="form-control py-2" id="ack_alarms">Acknowledge all alarms</button>
+    <!-- <button type="button" class="form-control py-2" id="ack_alarms">Acknowledge all alarms</button> -->
 
 
       <table id="HEV_logs" class="text-white">
@@ -62,9 +64,56 @@
     </table>
   </div>
 
-  <div id="Thresholds" class="tabcontent">
+  <div id="clinicalAlarms" class="tabcontent">
+    <form class="settings-form">
+      <table class = "ml-auto mr-auto">
+  
+        <tr></tr><tr>
+          <td></td>
+          <td><label class="small">APNEA</label></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_APNEA" type="number" value="15" disabled/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_APNEA" type="number" value="0" disabled/></td>
+          <td><input type="button" class="form-control py-2" value="Submit thresholds" id="APNEA" onclick=submit_thresholds(this)></input></td>
+          <td><span></span></td>
+        </tr>
+           
+        <tr></tr><tr>
+          <td></td>
+          <td><label class="small">CHECK_VALVE_EXHALE</label></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_VALVE_EXHALE" type="number" value="0" disabled/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_VALVE_EXHALE" type="number" value="15" disabled/></td>
+          <td><input type="button" class="form-control py-2" value="Submit thresholds" id="CHECK_VALVE_EXHALE" onclick=submit_thresholds(this)></input></td>
+          <td><span></span></td>
+        </tr>            
 
+        <tr></tr><tr>
+          <td></td>
+          <td><label class="small">CHECK_P_PATIENT</label></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_P_PATIENT" type="number" value="0" disabled/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_P_PATIENT" type="number" value="15" disabled/></td>
+          <td><input type="button" class="form-control py-2" value="Submit thresholds" id="CHECK_P_PATIENT" onclick=submit_thresholds(this)></input></td>
+          <td><span></span></td>
+        </tr>            
+
+        <tr></tr><tr>
+          <td></td>
+          <td><label class="small">EXPIRATION_SENSE_FAULT_OR_LEAK</label></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="1" disabled/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="2" disabled/></td>
+          <td><input type="button" class="form-control py-2" value="Submit thresholds" id="EXPIRATION_SENSE_FAULT_OR_LEAK" onclick=submit_thresholds(this)></input></td>
+          <td><span></span></td>
+        </tr>            
+
+      </table>
+    </form>      
   </div>
+
+
+  <div id="technicalAlarms" class="tabcontent">
+TO BE ADDED
+  </div>
+
+
   </div>
 </main>
 
@@ -124,16 +173,54 @@ var button_state = false;
 
 document.getElementById('update_button').onclick = function(){
   if (button_state == false) {
+    this.style.color = "white";
     this.value = "Loading alarms"
     this.style.backgroundColor = "green";
     button_state = true;
     update_logs();
   } else {
+    this.style.color = "#383838";
     this.value = "Update alarms"
-    this.style.backgroundColor = "#1f4793";
+    this.style.backgroundColor = "white";
     button_state = false;
     clearInterval(alarmLogs);
   }
+}
+
+/*
+document.getElementById('submit_thresholds').onclick = function() {
+    var $row = $(this).closest("tr");    // Find the row
+    //var $text = $row.find(".small").text(); // Find the text
+    var $text = $row.text(); // Find the text
+
+    //minimum_val = document.getElementById("min_"+String($text));
+    //maximum_val = document.getElementById("max_"+String($text));
+
+    // Test
+    //alert(minimum_val.value + "  " + maximum_val.value);
+    alert($text);
+
+};
+*/
+
+
+
+function set_alarm_threshold(var_name, var_min, var_max) {
+  var buffer = {name: var_name, min : var_min, max : var_max};
+  console.log(buffer);
+  $.ajax({
+        type: "POST",
+        url:"/set_alarm_threshold",
+        data: buffer   // converts js value to JSON string
+        })    
+};
+
+submit_thresholds = function(element){
+    minimum_val = document.getElementById("min_"+String(element.id)).value;
+    maximum_val = document.getElementById("max_"+String(element.id)).value;
+    set_alarm_threshold(element.id, minimum_val, maximum_val);
+    // Test
+    //alert(minimum_val.value + "  " + maximum_val.value);
 }
 
 

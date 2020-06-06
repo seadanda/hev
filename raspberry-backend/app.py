@@ -314,6 +314,24 @@ def send_cmd():
     return ('', 204)
 
 
+@WEBAPP.route('/set_alarm_threshold', methods=['POST'])
+def set_alarm_threshold():
+    """
+    Send alarm command to the data server
+    """
+    data = request.form
+    #print(data.get('name'))
+    #print(data.get('min'))
+    #print(data.get('max'))
+
+    print(client.send_cmd("SET_THRESHOLD_MIN", data.get('name'), int(data.get('min'))))
+    print(client.send_cmd("SET_THRESHOLD_MAX", data.get('name'), int(data.get('max'))))
+
+    return ('', 204)
+
+
+
+
 @WEBAPP.route('/current_target_handler', methods=['POST'])
 def current_target_handler():
     """
