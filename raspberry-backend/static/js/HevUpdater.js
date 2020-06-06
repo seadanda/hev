@@ -91,6 +91,7 @@ function requestData() {
                 var readback_point_idx = -1;
                 var battery_point_idx = -1;
                 var target_point_idx = -1;
+                var personal_point_idx = -1;
                 rowid = point["ROWID"];
 
                 for (let j = data.length -1 ; j >=0; j-- ){
@@ -99,6 +100,7 @@ function requestData() {
                     if ( data[j]["payload_type"] == "READBACK" ) readback_point_idx = j;
                     if ( data[j]["payload_type"] == "BATTERY" ) battery_point_idx = j;
                     if ( data[j]["payload_type"] == "TARGET" ) target_point_idx = j;
+                    if ( data[j]["payload_type"] == "PERSONAL" ) personal_point_idx = j;
 
                 }
                 var data_point = data_point_idx >= 0 ? data[data_point_idx] : null;
@@ -106,6 +108,7 @@ function requestData() {
                 var readback_point = readback_point_idx >= 0 ? data[readback_point_idx] : null;
                 var battery_point = battery_point_idx >= 0 ? data[battery_point_idx] : null;
                 var target_point = target_point_idx >= 0 ? data[target_point_idx] : null;
+                var personal_point = personal_point_idx >= 0 ? data[personal_point_idx] : null;
 
                 if (battery_point != null) {
                     //get our elements
@@ -121,7 +124,7 @@ function requestData() {
                     one_qtr.classList.add("transparent");
                       var empty = document.getElementById("battery-empty");
                     empty.classList.add("transparent");
-                    console.log(battery_point);
+	            //console.log(battery_point);
                     // find the one to show
                     if (battery_point['ok']) { powered.classList.remove("transparent"); }
                     else if ( battery_point["bat"] && battery_point["bat85"] ) {full.classList.remove("transparent");}
@@ -138,6 +141,7 @@ function requestData() {
                             "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
                 //var targets = [ "peep", "fiO2_percent"];
 		var targets = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "buffer_upper_pressure", "buffer_lower_pressure"]
+		var personals = ["name", "age", "sex", "height", "weight"]
 
 		if (target_point != null){
 		        for (let i = 0 ; i < targets.length; i++){
@@ -148,6 +152,28 @@ function requestData() {
 		    	    }
 		    	    if (el && val) el.value = val;
 		        }
+		}
+
+		if (personal_point != null){
+			console.log(personal_point);
+			var name, age, sex, height, weight
+		        for (let i = 0 ; i < personals.length; i++){
+		    	    var el = document.getElementById("input_"+personals[i]);
+		    	    var val = null;
+		    	    if ( personal_point != null && personals[i] in personal_point){
+		    		    val = personal_point[personals[i]];
+				    if (personals[i] == "name") name = val;
+				    else if (personals[i] == "age") age = val;
+				    else if (personals[i] == "sex") sex = val;
+				    else if (personals[i] == "height") height = val;
+				    else if (personals[i] == "weight") weight = val;
+		    	    }
+		    	    if (el && val) {
+				    el.value = val;
+			    }
+		        }
+		    	var el = document.getElementById("patient_info_top");
+			el.innerHTML = name + ", "+age+", "+sex+", "+height+"cm, "+weight+"kg"; 
 		}
 
                 

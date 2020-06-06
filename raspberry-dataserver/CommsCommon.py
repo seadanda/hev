@@ -31,7 +31,6 @@ class CMD_TYPE(Enum):
     SET_TARGET_TEST        =  12
     SET_TARGET_CURRENT     =  13
     GET_TARGETS            =  14
-    # SET_PERSONAL           =  15
 
 
 @unique
@@ -653,19 +652,21 @@ class PersonalFormat(PayloadFormat):
         #logging.info(f"bytearray size {len(byteArray)} ")
         #logging.info(binascii.hexlify(byteArray))
         tmp_payload_type = 0
-        tmp_mode = 0
+        tmp_name = None
+        tmp_sex = None
         (self.version,
         self.timestamp,
         tmp_payload_type,
-        self.name,
+        tmp_name,
         self.age,
-        self.sex,
+        tmp_sex,
         self.height,
         self.weight) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
-        self.mode         = VENTILATION_MODE(tmp_mode)
+        self.name         = tmp_name.decode().rstrip('\0')
+        self.sex          = tmp_sex.decode()
         self._byteArray = byteArray
 # =======================================
 # Log msg payload

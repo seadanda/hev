@@ -12,7 +12,7 @@ import argparse
 from flask import json
 import chardet
 from hevclient import HEVClient
-from CommsCommon import DataFormat, CycleFormat, ReadbackFormat, AlarmFormat, TargetFormat, BatteryFormat
+from CommsCommon import DataFormat, CycleFormat, ReadbackFormat, AlarmFormat, TargetFormat, BatteryFormat, PersonalFormat
 from datetime import datetime
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -35,6 +35,7 @@ CYCLE_TABLE_NAME = 'hev_monitor_cycle'  # name of the table to be created for pa
 TARGET_TABLE_NAME = 'hev_monitor_target'  # name of the table to be created for payload type target
 READBACK_TABLE_NAME = 'hev_monitor_readback'  # name of the table to be created for payload type readback
 ALARM_TABLE_NAME = 'hev_monitor_alarm'  # name of the table to be created for payload type readback
+PERSONAL_TABLE_NAME = 'hev_personal_target'  # name of the table to be created for payload type personal
 
 
 def getList(dict):
@@ -48,7 +49,8 @@ payload_types = {
     'ALARM'    : { 'table_name' : ALARM_TABLE_NAME, 'format' : AlarmFormat().getDict(), 'id' : 'AlarmID' },
     #'TARGET' : { 'table_name' : 'hevmonitor_target', 'format' : TargetFormat().getDict(), 'id' : 'TargetID' },
     'TARGET' : { 'table_name' : TARGET_TABLE_NAME, 'format' : TargetFormat().getDict(), 'id' : 'TargetID' },
-    'BATTERY' : { 'table_name' : 'hevmonitor_battery', 'format' : BatteryFormat().getDict(), 'id' : 'BatteryID' }
+    'BATTERY' : { 'table_name' : 'hevmonitor_battery', 'format' : BatteryFormat().getDict(), 'id' : 'BatteryID' },
+    'PERSONAL' : { 'table_name' : PERSONAL_TABLE_NAME, 'format' : PersonalFormat().getDict(), 'id' : 'PersonalID' },
 }
 
 
@@ -437,7 +439,7 @@ def personal_data_handler():
     for d,v in data.items():
         print(d,v)
         personal[d.replace('input_', '')] = v
-        print(client.send_personal("PERSONAL", personal=personal ))
+    print(client.send_personal(personal=personal ))
     return ('', 204)
 
 @WEBAPP.route('/live-data', methods=['GET'])

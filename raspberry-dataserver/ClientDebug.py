@@ -128,6 +128,7 @@ class ClientPlots(QtWidgets.QMainWindow):
                         elif brtype == "TARGET":
                             pass
                         elif brtype == "PERSONAL":
+                            logging.info("personal data acquired")
                             pass
                         elif brtype == "ALARM":
                             logging.error(f"received ALARM {payload}")

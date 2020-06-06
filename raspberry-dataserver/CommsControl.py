@@ -190,6 +190,8 @@ class CommsControl():
             tmp_comms = CommsFormat.generateAlarm(payload)
         elif payload_type == CommsCommon.PAYLOAD_TYPE.CMD:
             tmp_comms = CommsFormat.generateCmd(payload)
+        elif payload_type == CommsCommon.PAYLOAD_TYPE.PERSONAL:
+            tmp_comms = CommsFormat.generateData(payload)
         elif payload_type == CommsCommon.PAYLOAD_TYPE.DATA:
             tmp_comms = CommsFormat.generateData(payload)
         else:
@@ -206,6 +208,7 @@ class CommsControl():
         with self._lock_serial:
             logging.debug("Sending data...")
             logging.debug(binascii.hexlify(self.encoder(comms.getData())))
+            logging.info(binascii.hexlify(self.encoder(comms.getData())))
             self._serial.write(self.encoder(comms.getData()))
     
     def finishPacket(self, queue):

@@ -60,6 +60,7 @@ void UILoop::receiveCommands()
                 _personal.weight = pers.weight;
                 // do what needs to be done with the battery information
                 //logMsg("received battery dummy " + String(bat.dummy));
+		reportPersonal();
                 break;
             }
             default:
@@ -402,26 +403,30 @@ void UILoop::cmdSetPID(cmd_format &cf){
 }
 
 void UILoop::cmdSetTarget(cmd_format &cf, int8_t mode){
-    //logMsg("cmdSetTarget "+String(mode));
     switch(mode){
-
         case VENTILATION_MODE::PC_AC : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesPC_AC());
             break;
         case VENTILATION_MODE::PC_AC_PRVC: 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC_PRVC(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesPC_AC_PRVC());
             break;
         case VENTILATION_MODE::PC_PSV : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_PSV(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesPC_PSV());
             break;
         case VENTILATION_MODE::CPAP : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesCPAP(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesCPAP());
             break;
         case VENTILATION_MODE::TEST : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesTest(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesTest());
             break;
         case VENTILATION_MODE::CURRENT: 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesCurrent(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesCurrent());
             break;
         default: 
             break;

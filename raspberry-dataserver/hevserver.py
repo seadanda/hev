@@ -17,7 +17,7 @@ from pathlib import Path
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
 from BatteryLLI import BatteryLLI
-from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_DURATION, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat
+from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_DURATION, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat, PersonalFormat
 from collections import deque
 from serial.tools import list_ports
 from typing import List
@@ -65,6 +65,7 @@ class HEVServer(object):
             with self._dblock:
                 self._values = payload
             # let broadcast thread know there is data to send
+            #if payload_type == PAYLOAD_TYPE.PERSONAL : print("PERSONAL")
             self._datavalid.set()
         elif payload_type in PAYLOAD_TYPE:
             # valid payload but ignored
@@ -137,6 +138,14 @@ class HEVServer(object):
                 pass
             elif reqtype == "PERSONAL":
                 # ignore for the minute
+                name   = request["name"].encode()
+                age    = int(request["age"])
+                sex    = request["sex"].encode()
+                height = int(request["height"])
+                weight = int(request["weight"])
+                pfmt = PersonalFormat(name=name, age=age, sex=sex, height=height, weight=weight)
+                self._comms_lli.writePayload(pfmt)
+                payload = {"type": "ack"}
                 pass
             elif reqtype == "IVT":
                 # ignore for the minute
