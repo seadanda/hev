@@ -71,8 +71,8 @@
         <tr></tr><tr>
           <td></td>
           <td><label class="small">APNEA</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_APNEA" type="number" value="15" disabled/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_APNEA" type="number" value="0" disabled/></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_APNEA" type="number" value="15" onclick="show_easy_numpad(this, min_APNEA_controller);" readOnly/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_APNEA" type="number" value="0" onclick="show_easy_numpad(this, max_APNEA_controller);" readOnly/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="APNEA" onclick=submit_thresholds(this)></input></td>
           <td><span></span></td>
         </tr>
@@ -80,8 +80,8 @@
         <tr></tr><tr>
           <td></td>
           <td><label class="small">CHECK_VALVE_EXHALE</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_VALVE_EXHALE" type="number" value="0" disabled/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_VALVE_EXHALE" type="number" value="15" disabled/></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_VALVE_EXHALE" type="number" value="0" onclick="show_easy_numpad(this, min_CHECK_VALVE_EXHALE_controller);" readOnly/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_VALVE_EXHALE" type="number" value="15" onclick="show_easy_numpad(this, max_CHECK_VALVE_EXHALE_controller);" readOnly/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="CHECK_VALVE_EXHALE" onclick=submit_thresholds(this)></input></td>
           <td><span></span></td>
         </tr>            
@@ -89,8 +89,8 @@
         <tr></tr><tr>
           <td></td>
           <td><label class="small">CHECK_P_PATIENT</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_P_PATIENT" type="number" value="0" disabled/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_P_PATIENT" type="number" value="15" disabled/></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_P_PATIENT" type="number" value="0" onclick="show_easy_numpad(this, min_CHECK_P_PATIENT_controller);" readOnly/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_P_PATIENT" type="number" value="15" onclick="show_easy_numpad(this, max_CHECK_P_PATIENT_controller);" readOnly/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="CHECK_P_PATIENT" onclick=submit_thresholds(this)></input></td>
           <td><span></span></td>
         </tr>            
@@ -98,8 +98,8 @@
         <tr></tr><tr>
           <td></td>
           <td><label class="small">EXPIRATION_SENSE_FAULT_OR_LEAK</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="1" disabled/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="2" disabled/></td>
+          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="1" onclick="show_easy_numpad(this, min_EXPIRATION_SENSE_FAULT_OR_LEAK_controller);" readOnly/></td>
+          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="2" onclick="show_easy_numpad(this, max_EXPIRATION_SENSE_FAULT_OR_LEAK_controller);" readOnly/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="EXPIRATION_SENSE_FAULT_OR_LEAK" onclick=submit_thresholds(this)></input></td>
           <td><span></span></td>
         </tr>            
@@ -118,6 +118,55 @@ TO BE ADDED
 </main>
 
 <script>
+
+
+class input_controller{
+	constructor(name, element) {
+    this.name = name;
+	this.element = element;
+  }
+  getName(){ return this.name;}
+  getValue() {
+    return this.element.value;
+  }
+  setValue(val){
+    //e.g.
+    window.createNotification({
+			closeOnClick: 1,
+			displayCloseButton: 0,
+			positionClass: "nfc-bottom-right",
+			showDuration: false,
+			theme: "info"
+		})({
+			title: "Alarm settings",
+			message: "Threshold updated from " + this.element.value + " to " + val + " for " + this.name
+	  });
+	  this.element.value = val;
+    //sendCmd(this.name, val);
+  }
+  getMin(){
+	  if (this.element.min) return this.element.min;
+	  else return null;
+  }
+  getMax(){
+	  if (this.element.max) return this.element.max;
+	  else return null;
+  }
+}
+
+min_APNEA_controller = new input_controller("min_APNEA", document.getElementById("min_APNEA"));
+max_APNEA_controller = new input_controller("max_APNEA", document.getElementById("max_APNEA"));
+
+min_CHECK_VALVE_EXHALE_controller = new input_controller("min_CHECK_VALVE_EXHALE", document.getElementById("min_CHECK_VALVE_EXHALE"));
+max_CHECK_VALVE_EXHALE_controller = new input_controller("max_CHECK_VALVE_EXHALE", document.getElementById("max_CHECK_VALVE_EXHALE"));
+
+min_CHECK_P_PATIENT_controller = new input_controller("min_CHECK_P_PATIENT", document.getElementById("min_CHECK_P_PATIENT"));
+max_CHECK_P_PATIENT_controller = new input_controller("max_CHECK_P_PATIENT", document.getElementById("max_CHECK_P_PATIENT"));
+
+min_EXPIRATION_SENSE_FAULT_OR_LEAK_controller = new input_controller("min_EXPIRATION_SENSE_FAULT_OR_LEAK", document.getElementById("min_EXPIRATION_SENSE_FAULT_OR_LEAK"));
+max_EXPIRATION_SENSE_FAULT_OR_LEAK_controller = new input_controller("max_EXPIRATION_SENSE_FAULT_OR_LEAK", document.getElementById("max_EXPIRATION_SENSE_FAULT_OR_LEAK"));
+
+
 var logging;
 
 
@@ -186,22 +235,6 @@ document.getElementById('update_button').onclick = function(){
     clearInterval(alarmLogs);
   }
 }
-
-/*
-document.getElementById('submit_thresholds').onclick = function() {
-    var $row = $(this).closest("tr");    // Find the row
-    //var $text = $row.find(".small").text(); // Find the text
-    var $text = $row.text(); // Find the text
-
-    //minimum_val = document.getElementById("min_"+String($text));
-    //maximum_val = document.getElementById("max_"+String($text));
-
-    // Test
-    //alert(minimum_val.value + "  " + maximum_val.value);
-    alert($text);
-
-};
-*/
 
 
 
