@@ -42,7 +42,7 @@ class Dependant(object):
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
             #logging.info(f"payload received: {payload}")
             #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-            logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
+            #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
             #logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
         #if payload.getType() == PAYLOAD_TYPE.IVT.value:

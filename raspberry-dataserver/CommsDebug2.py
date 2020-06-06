@@ -56,10 +56,12 @@ class Dependant(object):
         #    logging.info(f"payload received:  {payload.peep} {fsm}")
         #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
         #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+        if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
+           logging.info(f"payload received:  {payload} ")
         if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-        if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-            logging.info(f"TARGET {payload} {fsm}") 
+        #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+        #    logging.info(f"TARGET {payload} {fsm}") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -76,11 +78,27 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
     else:
         return cmd
 
+def send_personal(name, age, sex, height, weight):
+    try:
+        cmd = PersonalFormat(version=0xAF, name=name.encode(), age=int(age), sex=sex.encode(), height=int(height), weight=int(weight))
+        logging.info(f' payload sent {cmd}')
+        comms.writePayload(cmd)
+    except Exception as e:
+        logging.critical(e)
+        exit(1)
+    else:
+        return cmd
+
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
     await asyncio.sleep(1)
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
     await asyncio.sleep(1)
+
+    await asyncio.sleep(10)
+    print('send personal info')
+    #send_personal("JJ Jones", 22, 'M', 123, 55)
+
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)

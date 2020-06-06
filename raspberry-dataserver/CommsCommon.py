@@ -97,6 +97,14 @@ class CMD_SET_TARGET(Enum):
     INHALE_TIME          = 7
 
 @unique
+# class CMD_SET_PERSONAL(Enum):
+#     NAME   = 1
+#     AGE    = 2
+#     SEX    = 3
+#     HEIGHT = 4
+#     WEIGHT = 5
+
+@unique
 class ALARM_TYPE(Enum):
     PRIORITY_LOW    = 1
     PRIORITY_MEDIUM = 2
@@ -146,6 +154,7 @@ class CMD_MAP(Enum):
     SET_THRESHOLD_MIN      =  ALARM_CODES
     SET_THRESHOLD_MAX      =  ALARM_CODES
     GET_TARGETS            =  VENTILATION_MODE
+    # SET_PERSONAL           =  CMD_SET_PERSONAL
 
 @unique
 class BL_STATES(Enum):
@@ -178,6 +187,7 @@ class PAYLOAD_TYPE(IntEnum):
     TARGET     = 10
     BATTERY    = 11
     LOOP_STATUS     = 12
+    PERSONAL        = 13
 
 class HEVVersionError(Exception):
     pass
@@ -185,7 +195,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAE, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xAF, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -209,7 +219,8 @@ class PayloadFormat():
             9: LogMsgFormat,
             10: TargetFormat,
             11: BatteryFormat,
-            12: LoopStatusFormat
+            12: LoopStatusFormat,
+            13: PersonalFormat
         }
         ReturnType = DATA_TYPE_TO_CLASS[rec_bytes[5]]
         payload_obj = ReturnType()
@@ -619,6 +630,43 @@ class TargetFormat(PayloadFormat):
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self.mode         = VENTILATION_MODE(tmp_mode)
+        self._byteArray = byteArray
+
+# =======================================
+# Personal data payload
+# =======================================
+@dataclass
+class PersonalFormat(PayloadFormat):
+    _dataStruct = Struct("<BIB60sBcBB")
+    payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.PERSONAL
+
+    name    : str = ""
+    age     : int = 0
+    sex     : str = ""
+    height  : int = 0
+    weight  : int = 0
+
+    # for receiving DataFormat from microcontroller
+    # fill the struct from a byteArray, 
+    def fromByteArray(self, byteArray):
+        #logging.info(f"bytearray size {len(byteArray)} ")
+        #logging.info(binascii.hexlify(byteArray))
+        tmp_payload_type = 0
+        tmp_name = None
+        tmp_sex = None
+        (self.version,
+        self.timestamp,
+        tmp_payload_type,
+        tmp_name,
+        self.age,
+        tmp_sex,
+        self.height,
+        self.weight) = self._dataStruct.unpack(byteArray) 
+
+        self.checkVersion()
+        self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self.name         = tmp_name.decode().rstrip('\0')
+        self.sex          = tmp_sex.decode()
         self._byteArray = byteArray
 # =======================================
 # Log msg payload

@@ -12,6 +12,7 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _ivt_report_time = tnow;
     _debug_report_time = tnow;
     _target_report_time = tnow;
+    _personal_report_time = tnow;
 
     _fast_report_timeout = 10;  //ms
     _readback_report_timeout = 300; 
@@ -20,6 +21,7 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _ivt_report_timeout = 510;  // this should probably be based on fsm state
     _debug_report_timeout = 310; 
     _target_report_timeout = 1000;  
+    _personal_report_timeout = 3000;  
 
 }
 
@@ -46,6 +48,19 @@ void UILoop::receiveCommands()
                 _alarm_loop->setBatteryAlarms(bat);
                 // do what needs to be done with the battery information
                 //logMsg("received battery dummy " + String(bat.dummy));
+                break;
+            }
+            case PAYLOAD_TYPE::PERSONAL: {
+                personal_data_format pers;
+                _pl_receive.getPayload(reinterpret_cast<void*>(&pers));
+                strcpy(_personal.name, pers.name);
+                _personal.age = pers.age;
+                _personal.sex = pers.sex;
+                _personal.height = pers.height;
+                _personal.weight = pers.weight;
+                // do what needs to be done with the battery information
+                //logMsg("received battery dummy " + String(bat.dummy));
+		reportPersonal();
                 break;
             }
             default:
@@ -286,6 +301,26 @@ void UILoop::reportTargetsNow(target_variables targets)
 
 }
 
+void UILoop::reportPersonal()
+{
+    uint32_t tnow = static_cast<uint32_t>(millis());
+    if (tnow - _personal_report_time >= _personal_report_timeout)
+    {
+        _personal_data.timestamp = static_cast<uint32_t>(tnow);
+
+        strcpy(_personal_data.name, _personal.name);
+        _personal_data.age    = _personal.age   ;
+        _personal_data.sex    = _personal.sex   ;
+        _personal_data.height = _personal.height;
+        _personal_data.weight = _personal.weight;
+
+        _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_personal_data), sizeof(_personal_data));
+        _comms->writePayload(_pl_send);
+        _personal_report_time = tnow;
+    }
+}
+
+
 int UILoop::doCommand(cmd_format &cf)
 {
     switch(cf.cmd_type) {
@@ -331,6 +366,9 @@ int UILoop::doCommand(cmd_format &cf)
         case CMD_TYPE::GET_TARGETS:
             cmdGetTarget(cf);
             break;
+        // case CMD_TYPE::SET_PERSONAL:
+        //     cmdSetPersonal(cf);
+        //     break;
         default:
             break;
     }
@@ -365,31 +403,58 @@ void UILoop::cmdSetPID(cmd_format &cf){
 }
 
 void UILoop::cmdSetTarget(cmd_format &cf, int8_t mode){
-    //logMsg("cmdSetTarget "+String(mode));
     switch(mode){
-
         case VENTILATION_MODE::PC_AC : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesPC_AC());
             break;
         case VENTILATION_MODE::PC_AC_PRVC: 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC_PRVC(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesPC_AC_PRVC());
             break;
         case VENTILATION_MODE::PC_PSV : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_PSV(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesPC_PSV());
             break;
         case VENTILATION_MODE::CPAP : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesCPAP(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesCPAP());
             break;
         case VENTILATION_MODE::TEST : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesTest(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesTest());
             break;
         case VENTILATION_MODE::CURRENT: 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesCurrent(), cf.param);
+	    reportTargetsNow(_breathing_loop->getTargetVariablesCurrent());
             break;
         default: 
             break;
     }
 }
+
+// void UILoop::cmdSetPersonal(cmd_format &cf){
+//     switch(cf.cmd_code){
+
+//         case CMD_SET_PERSONAL::NAME: 
+// 		_personal.name = static_cast<char*>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::AGE: 
+// 		_personal.age = static_cast<uint8_t>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::SEX: 
+// 		_personal.sex = static_cast<char>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::HEIGHT: 
+// 		_personal.height = static_cast<uint8_t>(cf.param);
+// 		break;
+//         case CMD_SET_PERSONAL::WEIGHT: 
+// 		_personal.weight = static_cast<uint8_t>(cf.param);
+// 		break;
+//         default: 
+//             break;
+//     }
+// }
 
 void UILoop::cmdGetTarget(cmd_format &cf){
 
@@ -419,6 +484,7 @@ void UILoop::cmdGetTarget(cmd_format &cf){
             break;
     }
 }
+
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
     setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);

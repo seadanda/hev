@@ -25,6 +25,7 @@ class HEVPacketError(Exception):
 class HEVClient(object):
     def __init__(self, polling=True):
         self._alarms = []  # db for alarms
+        self._personal = None # db for personal data
         self._fastdata = None  # db for sensor values
         self._readback = None  # db for sensor values
         self._cycle = None  # db for sensor values
@@ -91,6 +92,9 @@ class HEVClient(object):
                         elif payload["type"] == "TARGET":
                             with self._lock:
                                 self._target = payload["TARGET"]
+                        elif payload["type"] == "PERSONAL":
+                            with self._lock:
+                                self._personal = payload["PERSONAL"]
                         elif payload["type"] == "THRESHOLDS":
                             with self._lock:
                                 self._thresholds = payload["THRESHOLDS"]
@@ -104,6 +108,7 @@ class HEVClient(object):
                             raise HEVPacketError("Invalid broadcast type")
 
                         self._alarms = payload["alarms"]
+                        #self._personal = payload["personal"]
                         self.get_updates(payload) # callback function to be overridden
                     except json.decoder.JSONDecodeError:
                         logging.warning(f"Could not decode packet: {data}")
@@ -122,7 +127,7 @@ class HEVClient(object):
         """Overrideable function called after receiving data from the socket, with that data as an argument"""
         pass
 
-    async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None) -> bool:
+    async def send_request(self, reqtype, cmdtype:str=None, cmd: str=None, param: str=None, alarm: str=None, personal: str=None) -> bool:
         # open connection and send packet
         reader, writer = await asyncio.open_connection("127.0.0.1", 54321)
         payload = {"type": reqtype}
@@ -134,6 +139,12 @@ class HEVClient(object):
             payload["alarm_type"] = alarm["alarm_type"]
             payload["alarm_code"] = alarm["alarm_code"]
             payload["param"] = param
+        elif reqtype == "PERSONAL":
+            payload["name"]   = personal["name"]
+            payload["age"]    = int(personal["age"])
+            payload["sex"]    = personal["sex"]
+            payload["height"] = int(personal["height"])
+            payload["weight"] = int(personal["weight"])
         else:
             raise HEVPacketError("Invalid packet type")
 
@@ -172,6 +183,11 @@ class HEVClient(object):
         # acknowledge alarm to remove it from the hevserver list
         return asyncio.run(self.send_request("ALARM", alarm=alarm))
 
+    #def send_personal(self, personal: Dict[str, str]=None ) -> bool:
+    def send_personal(self, personal: str) -> bool:
+        # acknowledge alarm to remove it from the hevserver list
+        return asyncio.run(self.send_request("PERSONAL", personal=personal))
+
     def get_values(self) -> Dict:
         # get sensor values from db
         self._mmFile.seek(0)
@@ -193,6 +209,10 @@ class HEVClient(object):
     def get_cycle(self) -> Dict:
         # get cycle data from db
         return self._cycle
+
+    def get_personal(self) -> Dict:
+        # get personal data from db
+        return self._personal
 
     def get_target(self) -> Dict:
         # get target data from db
