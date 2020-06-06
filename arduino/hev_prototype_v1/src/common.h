@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xAF
+#define HEV_FORMAT_VERSION 0xB0
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -220,6 +220,12 @@ struct fast_data_format {
     float airway_pressure           = 0.0;
     float flow                      = 0.0;
     float volume                    = 0.0;
+    float target_pressure  = 0.0; //
+    float process_pressure = 0.0; 
+    float valve_duty_cycle = 0.0; 
+    float proportional     = 0.0; 
+    float integral         = 0.0; //
+    float derivative       = 0.0;
 };
 #pragma pack()
 

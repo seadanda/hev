@@ -14,11 +14,11 @@ UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
     _target_report_time = tnow;
     _personal_report_time = tnow;
 
-    _fast_report_timeout = 10;  //ms
+    _fast_report_timeout = 20;  //ms
     _readback_report_timeout = 300; 
     _cycle_report_timeout = 1000;  // this should probably be based on fsm state
     _alarm_report_timeout = 1000; // max timeout to report, actual sending timeout is timeout/priority
-    _ivt_report_timeout = 510;  // this should probably be based on fsm state
+    _ivt_report_timeout = 2000;  // this should probably be based on fsm state
     _debug_report_timeout = 310; 
     _target_report_timeout = 1000;  
     _personal_report_timeout = 3000;  
@@ -94,6 +94,14 @@ void UILoop::reportFastReadings()
         _fast_data.pressure_o2_supply     = readings.pressure_o2_supply;
         _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
         _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
+
+        pid_variables pid = _breathing_loop->getPIDVariables();
+        _fast_data.proportional       = pid.proportional;
+        _fast_data.integral           = pid.integral;
+        _fast_data.derivative         = pid.derivative;
+        _fast_data.target_pressure    = pid.target_pressure;
+        _fast_data.process_pressure   = pid.process_pressure;
+        _fast_data.valve_duty_cycle   = pid.valve_duty_cycle;
 
         _fast_data.flow = _breathing_loop->getFlow();
         _fast_data.volume= _breathing_loop->getVolume();

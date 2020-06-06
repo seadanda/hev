@@ -40,7 +40,7 @@ class Dependant(object):
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            #logging.info(f"payload received: {payload}")
+            logging.info(f"payload received: {payload}")
             #logging.info(f"payload received: {payload.timestamp}") 
             #logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state

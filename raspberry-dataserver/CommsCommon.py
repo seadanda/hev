@@ -195,7 +195,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xAF, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xB0, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -264,7 +264,7 @@ class PayloadFormat():
 @dataclass
 class DataFormat(PayloadFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHfHffffHfHHfff")
+    _dataStruct = Struct("<BIBBHfHffffHfHHfffffffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
     # subclass member variables
     fsm_state: BL_STATES          = BL_STATES.IDLE
@@ -282,6 +282,14 @@ class DataFormat(PayloadFormat):
     airway_pressure: float        = 0.0
     flow: float                   = 0.0
     volume: float                 = 0.0
+    target_pressure : float = 0.0 ##
+    process_pressure: float = 0.0 
+    valve_duty_cycle: float = 0.0 
+    proportional    : float = 0.0 
+    integral        : float = 0.0 ##
+    derivative      : float = 0.0
+
+
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -307,7 +315,14 @@ class DataFormat(PayloadFormat):
         self.ambient_temperature,
         self.airway_pressure,
         self.flow,
-        self.volume) = self._dataStruct.unpack(byteArray) 
+        self.volume,
+        self.target_pressure ,
+        self.process_pressure,
+        self.valve_duty_cycle,
+        self.proportional    ,
+        self.integral        ,
+        self.derivative      
+        ) = self._dataStruct.unpack(byteArray) 
         self.fsm_state = BL_STATES(tmp_state)
 
         self.checkVersion()
