@@ -54,7 +54,6 @@ class CommsLLI:
         
         # receive
         self._payloadrecv = asyncio.Queue()
-        self._observers = []
         # for reducing the rate for use in the lab
         self._packet_count = 0
         self._throttle = throttle
@@ -252,16 +251,12 @@ class CommsLLI:
         else:
             raise SequenceReceiveMismatch
                     
-    # callback to dependants to read the received payload
     @property
     def payloadrecv(self):
         return self._payloadrecv
 
     @payloadrecv.setter
     def payloadrecv(self, payload):
-        for callback in self._observers:
-            callback(payload)
-
         if self._throttle > 0:
             if self._packet_count % self._throttle == 0:
                 self._payloadrecv.put_nowait(payload)
@@ -276,9 +271,6 @@ class CommsLLI:
                 logging.critical(f"Dump count reached. {self._packet_count} packets dumped to file {self._dumpfile}")
                 exit(0)
     
-    def bind_to(self, callback):
-        self._observers.append(callback)
-
 
 if __name__ == "__main__":
     try:

@@ -37,7 +37,6 @@ class HEVServer(object):
         self._alarms = []
         self._dblock = threading.Lock()  # make alarms db threadsafe
         self._comms_lli = comms_lli
-        self._comms_lli.bind_to(self.polling)
         self._battery_lli = battery_lli
 
         self._broadcasts = []
@@ -55,7 +54,7 @@ class HEVServer(object):
     async def polling(self):
         while True:
             payload = await self._comms_lli._payloadrecv.get()
-            logging.warning(f"Payload received: {payload}")
+            logging.debug(f"Payload received: {payload}")
             # check if it is data or alarm
             payload_type = payload.getType()
             whitelist = [
