@@ -35,10 +35,11 @@ class CMD_TYPE(Enum):
 
 @unique
 class CMD_GENERAL(Enum):
-    START =  1
-    STOP  =  2
-    RESET =  3
-    STANDBY = 4
+    START        = 1
+    STOP         = 2
+    RESET        = 3
+    STANDBY      = 4
+    GET_PERSONAL = 5
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique

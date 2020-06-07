@@ -398,6 +398,8 @@ void UILoop::cmdGeneral(cmd_format &cf) {
             break;
         case CMD_GENERAL::STANDBY : _breathing_loop->doStandby();
             break;
+        case CMD_GENERAL::GET_PERSONAL: reportPersonal();
+            break;
         default:
             break;
     }

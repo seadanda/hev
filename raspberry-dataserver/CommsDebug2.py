@@ -40,7 +40,7 @@ class Dependant(object):
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
         if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload}")
             #logging.info(f"payload received: {payload.timestamp}") 
             #logging.info(f"Fsm state: {payload.fsm_state}")
             fsm = payload.fsm_state
@@ -94,10 +94,12 @@ async def commsDebug():
     await asyncio.sleep(1)
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
     await asyncio.sleep(1)
+    print('get personal info')
+    send_cmd(cmd_type="GENERAL", cmd_code="GET_PERSONAL")
 
     await asyncio.sleep(10)
     print('send personal info')
-    #send_personal("JJ Jones", 22, 'M', 123, 55)
+        send_personal("Jessica Jones", 29, 'F', 175, 58)
 
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
