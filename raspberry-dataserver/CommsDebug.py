@@ -105,6 +105,7 @@ async def commsDebug():
     send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1000) 
+    send_cmd(cmd_type="GENERAL", cmd_code="START", param=1000) 
     #print('sent inhale + exhale trigger -> 1')
     toggle = "STOP"
     while True:

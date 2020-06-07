@@ -55,9 +55,11 @@ ValvesController::ValvesController()
     _valve_params.valve_purge_enable        = 1;
     _valve_params.inhale_trigger_enable     = 0;   // params - associated val of peak flow
     _valve_params.exhale_trigger_enable     = 0;
+    _valve_params.volume_trigger_enable     = 0;
 
     _valve_params.inhale_trigger_threshold     = 0.0025;   // abs flow ? unit / 
-    _valve_params.exhale_trigger_threshold     = 0.3;  // 20% of the peak flow
+    _valve_params.exhale_trigger_threshold     = 0.3;  // 30% of the peak flow
+    _valve_params.volume_trigger_threshold     = 400;  // ml
 
     _PID_output                = 0;
 

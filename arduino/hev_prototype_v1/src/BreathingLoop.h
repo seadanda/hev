@@ -174,8 +174,9 @@ private:
     //float _pid_integral;  // moved to pid_variable struct
     // triggers
     void runningAvgs();
-    void inhaleTrigger();
-    void exhaleTrigger();
+    bool inhaleTrigger();
+    bool exhaleTrigger();
+    bool volumeTrigger();
     bool _apnea_event;
     float _running_flows[RUNNING_AVG_READINGS];
     float _running_avg_flow;

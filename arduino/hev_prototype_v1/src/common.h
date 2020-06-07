@@ -660,11 +660,13 @@ struct valve_params{
     bool valve_purge_enable    ;
     bool inhale_trigger_enable ;   // params - associated val of peak flow
     bool exhale_trigger_enable ;
+    bool volume_trigger_enable ;
     float inhale_duty_cycle;
     float inhale_open_min;
     float inhale_open_max;
     float inhale_trigger_threshold ;   // params - associated val of peak flow
     float exhale_trigger_threshold ;
+    float volume_trigger_threshold ;
 
 };
 
