@@ -33,10 +33,12 @@ class Dependant(object):
         self._lli = lli
         self._lli.bind_to(self.update_llipacket)
 
-    def update_llipacket(self, payload):
-        global fsm
-        if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            logging.info(f"Fsm state: {payload.fsm_state}")
+    async def update_llipacket(self):
+        while True:
+            payload = await self._lli._payloadrecv.get()
+            global fsm
+            if payload.getType() == PAYLOAD_TYPE.DATA.value:
+                logging.info(f"Fsm state: {payload.fsm_state}")
 
 def send_cmd(cmd_type, cmd_code, param=0.0):
     try:
@@ -62,12 +64,15 @@ try:
     # setup serial device and init server
     loop = asyncio.get_event_loop()
     comms = CommsLLI(loop)
-    #dep = Dependant(comms)
 
     # create tasks
     lli = comms.main(getTTYPort(), 115200)
     debug = commsDebug()
     tasks = [lli, debug]
+
+    #dep = Dependant(comms)
+    #deppoll = dep.update_llipacket()
+    #tasks.append(deppoll)
 
     # run tasks
     asyncio.gather(*tasks, return_exceptions=True)

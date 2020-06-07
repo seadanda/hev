@@ -92,7 +92,7 @@ class CMD_SET_TARGET(Enum):
     IE_RATIO                 = 3
     VOLUME                   = 4
     PEEP                     = 5
-    FIO2                     = 6
+    FIO2_PERCENT             = 6
     INHALE_TIME              = 7
     INHALE_TRIGGER_THRESHOLD = 8
     EXHALE_TRIGGER_THRESHOLD = 9
