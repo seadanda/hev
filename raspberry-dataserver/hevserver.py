@@ -35,44 +35,53 @@ class HEVAlreadyRunning(Exception):
 class HEVServer(object):
     def __init__(self, comms_lli, battery_lli):
         self._alarms = []
-        self._values = None
-        self._dblock = threading.Lock()  # make db threadsafe
+        self._dblock = threading.Lock()  # make alarms db threadsafe
         self._comms_lli = comms_lli
         self._comms_lli.bind_to(self.polling)
         self._battery_lli = battery_lli
 
+        self._broadcasts = []
         self._broadcasting = True
-        self._datavalid = None           # something has been received from arduino. placeholder for asyncio.Event()
 
-    def polling(self, payload):
-        # get values when we get a callback from commsControl (lli)
-        logging.debug(f"Payload received: {payload}")
-        # check if it is data or alarm
-        payload_type = payload.getType()
-        whitelist = [
-            PAYLOAD_TYPE.DATA,
-            PAYLOAD_TYPE.READBACK,
-            PAYLOAD_TYPE.CYCLE,
-            PAYLOAD_TYPE.TARGET,
-            PAYLOAD_TYPE.THRESHOLDS,
-            PAYLOAD_TYPE.ALARM,
-            PAYLOAD_TYPE.DEBUG,
-            PAYLOAD_TYPE.IVT,
-            PAYLOAD_TYPE.PERSONAL,
-        ]
-        if payload_type in whitelist:
-            # pass data to db
-            with self._dblock:
-                self._values = payload
-            # let broadcast thread know there is data to send
-            #if payload_type == PAYLOAD_TYPE.PERSONAL : print("PERSONAL")
-            self._datavalid.set()
-        elif payload_type in PAYLOAD_TYPE:
-            # valid payload but ignored
-            pass
-        else:
-            # invalid packet, don't throw exception just log and pop
-            logging.error(f"Received invalid packet, ignoring: {payload}")
+    def push_to(self, queue, payload) -> None:
+        try:
+            queue.put_nowait(payload)
+        except asyncio.queues.QueueFull:
+            # if the queue is full, dump the oldest element and put again
+            queue.get_nowait()
+            queue.task_done()
+            queue.put_nowait(payload)
+
+    async def polling(self):
+        while True:
+            payload = await self._comms_lli._payloadrecv.get()
+            logging.warning(f"Payload received: {payload}")
+            # check if it is data or alarm
+            payload_type = payload.getType()
+            whitelist = [
+                PAYLOAD_TYPE.DATA,
+                PAYLOAD_TYPE.READBACK,
+                PAYLOAD_TYPE.CYCLE,
+                PAYLOAD_TYPE.TARGET,
+                PAYLOAD_TYPE.THRESHOLDS,
+                PAYLOAD_TYPE.ALARM,
+                PAYLOAD_TYPE.DEBUG,
+                PAYLOAD_TYPE.IVT,
+                PAYLOAD_TYPE.PERSONAL,
+            ]
+            if payload_type in whitelist:
+                # fork data to broadcast threads
+                for queue in self._broadcasts:
+                    self.push_to(queue, payload)
+
+                #if payload_type == PAYLOAD_TYPE.PERSONAL : print("PERSONAL")
+            elif payload_type in PAYLOAD_TYPE:
+                # valid payload but ignored
+                pass
+            else:
+                # invalid packet, don't throw exception just log and pop
+                logging.error(f"Received invalid packet, ignoring: {payload}")
+
     
     async def handle_battery(self) -> None:
         while True:
@@ -84,11 +93,9 @@ class HEVServer(object):
                 if payload.getType() != PAYLOAD_TYPE.BATTERY:
                     raise HEVPacketError("Battery state invalid")
 
-                # pass data to db
-                with self._dblock:
-                    self._values = payload
-                # let broadcast thread know there is data to send
-                self._datavalid.set()
+                # fork data to broadcast threads
+                for queue in self._broadcasts:
+                    self.push_to(queue, payload)
 
                 # send to uC
                 self._comms_lli.writePayload(payload)
@@ -192,41 +199,33 @@ class HEVServer(object):
         addr = writer.get_extra_info("peername")
         logging.info(f"Broadcasting to {addr!r}")
 
+        bindex = len(self._broadcasts) # index of current broadcast client's queue in broadcasts
+        self._broadcasts.append(asyncio.Queue(maxsize=16)) # append new queue
+
         while self._broadcasting:
-            # wait for data from serial port
-            if not self._datavalid.is_set():
-                # make sure client is still connected
-                await asyncio.sleep(0.025)
-                broadcast_packet = {"type": "keepalive"}
-                await asyncio.sleep(0.025)
-            else:
-                # take lock of db and prepare packet
-                with self._dblock:
-                    if self._values is None:
-                        continue # should never get here
-                    values: List[float] = self._values
-                    # Alarm is latched until acknowledged in GUI
-                    if self._values.getType() == PAYLOAD_TYPE.ALARM:
-                        if self._values not in self._alarms:
-                            self._alarms.append(self._values)
-                        else:
-                            # update param and timestamp
-                            idx = self._alarms.index(self._values)
-                            self._alarms[idx] = self._values
+            # wait for data from queue
+            payload = await self._broadcasts[bindex].get()
+            # Alarm is latched until acknowledged in GUI
+            if payload.getType() == PAYLOAD_TYPE.ALARM:
+                if payload not in self._alarms:
+                    self._alarms.append(payload)
+                else:
+                    # update param and timestamp
+                    idx = self._alarms.index(payload)
+                    self._alarms[idx] = payload
 
-                    alarms = self._alarms if len(self._alarms) > 0 else None
+            alarms = self._alarms if len(self._alarms) > 0 else None
 
-                data_type = values.getType().name
-                broadcast_packet = {"type": data_type}
+            data_type = payload.getType().name
+            broadcast_packet = {"type": data_type}
 
-                broadcast_packet[data_type] = values.getDict()
+            broadcast_packet[data_type] = payload.getDict()
 
-                broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
-                # take control of datavalid and reset it
-                self._datavalid.clear()
+            broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
+            self._broadcasts[bindex].task_done()
 
-                logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
-                logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
+            logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
+            logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
                 writer.write(json.dumps(broadcast_packet).encode() + b"\0")
@@ -239,6 +238,7 @@ class HEVServer(object):
 
         self._broadcasting = True
         writer.close()
+        del self._broadcasts[bindex]
 
     async def serve_request(self, ip: str, port: int) -> None:
         server = await asyncio.start_server(
@@ -269,7 +269,8 @@ class HEVServer(object):
         r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
         b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
         battery = self.handle_battery()              # Battery status
-        tasks = [b1, r1, b2, battery]
+        poll = self.polling()                        # Battery status
+        tasks = [b1, r1, b2, poll, battery]
         await asyncio.gather(*tasks, return_exceptions=True)
 
 def getArduinoPort():
