@@ -3,202 +3,260 @@
 
 {% block content %}
 <div class="container text-white">
-  <div class="tab">
-    <button class="tablinks" onclick="openSetting(this, 'Mode')">Mode</button>
-    <button class="tablinks" onclick="openSetting(this, 'Personal')">Personal</button>
-    <button class="tablinks" onclick="openSetting(this, 'Advanced')">Advanced</button>
-  </div>
+  
+  <div class="tab d-none">
+    <button class="tablinks" onclick="openSetting(this, 'mode')">Mode</button>
+    <button class="tablinks" onclick="openSetting(this, 'pcac')">PC-A/C</button>
+    <button class="tablinks" onclick="openSetting(this, 'prvc')">PC-A/C-PRVC</button>
+    <button class="tablinks" onclick="openSetting(this, 'psv')">PC-PSV</button>
 
+  </div>
+  
   <!-- Tab content -->
-  <div id="Personal" class="tabcontent">
-    <form action="{{ url_for('personal_data_handler') }}" method="post">
+  <div id = "mode" class = "tabcontent">
+    <div class = "select-container lockable">
+      <select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Setting" placeholder = "Select Settings to Edit" width="10%">
+        <option value = "">Select Setting</option>
+        <option value = "personal">Personal Details</option>
+          <option value="pcac">PC-A/C</option>
+          <option value="prvc">PC-A/C-PRVC</option>
+          <option value="psv">PC-PSV</option>
+          <option value="cpap">CPAP</option>
+          <option value = "test">TEST</options>
+      </select>
+    </div>
+  </div>
+  <div id="personal" class="tabcontent">
+    <form method="post" id = "personal-settings-form">
         <table class = "ml-auto mr-auto">
-      <tr><td><label class="small" for="input_name">Name</label></td><td><input class="form-control py-1" id="input_name" type="name" value="John Smith" name="name" /></td></tr>
-      <tr><td><label class="small" for="input_age">Age</label></td><td><input class="form-control py-1" id="input_age" type="number" placeholder=87 name="age"/></td></tr>
-      <tr><td><label class="small" for="input_sex">Sex</label></td><td>
-                      <select class="form-control py-1" id="input_sex" name="sex" >
-                              <option value='M'>M</option>
+      <tr><td><label class="small" for="personal_name">Name</label></td><td><input class="form-control py-1 lockable" id="personal_name" type="name" value="John Smith" name="name" disabled/></td></tr>
+      <tr><td><label class="small" for="personal_age">Age</label></td><td><input class="form-control py-1 lockable" id="personal_age" type="number" value=87 name="age" disabled/></td></tr>
+      <tr><td><label class="small" for="personal_sex">Sex</label></td><td>
+                      <select class="form-control py-1 lockable" id="personal_sex" name="sex" disabled >
+                              <option value='M' selected>M</option>
                               <option value='F'>F</option>
                       </select>
               </td></tr>
-      <tr><td><label class="small" for="input_height">Height (cm)</label></td><td><input class="form-control py-1" id="input_height" type="number" placeholder=180 name="height"/></td></tr>
-      <tr><td><label class="small" for="input_weight">Weight (kg)</label></td><td><input class="form-control py-1" id="input_weight" type="number" placeholder=80 name="weight"/></td></tr>
+      <tr><td><label class="small" for="personal_height">Height (cm)</label></td><td><input class="form-control py-1 lockable" id="personal_height" type="number" value=180 name="height" disabled/></td></tr>
+      <tr><td><label class="small" for="personal_weight">Weight (kg)</label></td><td><input class="form-control py-1 lockable" id="personal_weight" type="number" value=80 name="weight" disabled/></td></tr>
         </table>
         <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
     </form>
   </div>
 
-  <div id="Mode" class="tabcontent">
-  <!--<form action="{{ url_for('data_handler') }}" method="post">-->
-  <form class="settings-form">
+  <div id="pcac" class="tabcontent">
+  <form id="pcac-settings-form" class="settings-forms">
     <table class = "ml-auto mr-auto">
     <tr>
     <td></td>
     <td></td>
-    <td>Set Value</td>
-    <td>Measured Value</td>
+    <td>Set Target</td>
     </tr>
-
-    <tr>
-      <td></td><td><label class="small">Mode</label> </td>
-      <td>
-      <div class = "select-container lockable" disabled>
-		  <select class = "ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
-		  <option value = ""></option>
-		  <optgroup label = "Pressure Control Modes">
-		    <option value="pcac" selected>PC-A/C</option>
-		    <option value="prvc">PC-A/C-PRVC</option>
-		  </optgroup>
-		  <optgroup label = "Pressure Support Modes">
-		    <option value="psv">PC-PSV</option>
-		    <!--<option value="opt4">CPAP</option>-->
-		  </optgroup>
-      </select>
-      </div>
-      </td></tr>
-
       <tr>
         <td></td>
         <td><label class="small">Respiratory Rate</label></td>
-        <td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_respiratory_rate" type="number" value="" disabled/></td>
-        <td><span></span></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
       </tr>
       <tr>
-        <td><input type="radio" name="time_or_ie" id = "radio_inhale_time" onclick = "edit_inhale_time()" checked></td>
-        <td><label class="small" for="radio_inhale_time">Inhale Time</label></td>
-        <td><input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_time" name="inhale_time" type="text" value="" disabled name='inhale_time' /></td>
-        <td><span></span></td>
+        <td><input type="radio" name="time_or_ie" id = "pcac_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
+        <td><label class="small" for="pcac_radio_inhale_time">Inhale Time</label></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
       </tr>
         <tr>
-        <td><input type="radio" name="time_or_ie" id = "radio_ie_ratio" onclick="edit_ie_ratio()"></td>
-        <td><label class="small" for="radio_ie_ratio">I:E Ratio</label></td>
-        <td><input class="form-control py-1 lockOnly" id="mode_ie_ratio" type="text" value="" disabled name='i_e_ratio' /></td>
-        <td><span></span></td>
+        <td><input type="radio" name="time_or_ie" id = "pcac_radio_ie_ratio" onclick="edit_ie_ratio(this)"></td>
+        <td><label class="small" for="pcac_radio_ie_ratio">I:E Ratio</label></td>
+        <td><input class="form-control py-1 lockOnly" id="pcac_setting_ie_ratio" type="number" step = "any"  value="" disabled name='Inhale:Exhale Ratio' /></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">Inhale Trigger Sensitivity</label></td>
-        <td><input name="inhale_trigger" class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_inhale_trg_sensitivity" type="number" value="" disabled /></td>
-        <td><span></span></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">Exhale Trigger Sensitivity</label></td>
-        <td><input name="exhale_trigger" class="form-control py-1 psv-edit lockOnly" id="mode_exhale_trg_sensitivity" type="number" value="" disabled /></td>
-        <td><span id="pressure_buffer"></span></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">Inhale Pressure</label></td>
-        <td><input name="inhale_pressure" class="form-control py-1 psv-edit pcac-edit lockOnly" id="mode_inhale_trigger" type="number" value="" disabled /></td>
-        <td><span></span></td>
+        <td><input name="Inhale Pressure" class="form-control py-1 lockable" id="pcac_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">Inhale Volume</label></td>
-        <td><input name="inhale_volume" class="form-control py-1 prvc-edit lockOnly" id="mode_inhale_volume" type="number" value="" disabled /></td>
-        <td><span></span></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_volume" type="number" step = "any" value="" disabled name="Inhale Volume"/></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">PEEP</label></td>
-        <td><input name="peep" class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="mode_peep" type="number" value="" disabled /></td>
-        <td><span></span></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
       </tr>
     </table>
       <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
 </form>
     </div>
 
-  <div id="Advanced" class="tabcontent">
-    <form action="{{ url_for('data_handler') }}" method="post">
-      <table class="ml-auto mr-auto">
-        <tr><td>
-          <table>
+    <div id="prvc" class="tabcontent">
+      <form id="prvc-settings-form" class="settings-forms">
+        <table class = "ml-auto mr-auto">
         <tr>
-          <td> <label class="small" for="inputVar1" >Buffer fill [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="buff_fill" type="number" value="1"  onclick="show_easy_numpad(this, buff_fill_controller);lock();"  readOnly disabled/></td>
+        <td></td>
+        <td></td>
+        <td>Target</td>
         </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar2">Buffer flush [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="buff_flush" type="number" value="1"   onclick="show_easy_numpad(this, buff_flush_controller);lock();"  readOnly disabled/></td>
-
-        </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar4">Buffer pre-fill [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="buff_prefill" type="number" value="1"   onclick="show_easy_numpad(this, buff_prefill_controller);lock();"  readOnly disabled/></td>
-        </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar5">Buffer pre-inhale [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="buff_preinhale" type="number" value="1"   onclick="show_easy_numpad(this, buff_preinhale_controller);lock();"  readOnly disabled/></td>
-
-        </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar6">Buffer purge [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="buff_purge" type="number" value="1"   onclick="show_easy_numpad(this, buff_purge_controller);lock();"  readOnly disabled/></td>
-
-        </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar7">Inhale [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="inhale" type="number" value="1"   onclick="show_easy_numpad(this, inhale_controller);lock();"  readOnly disabled/></td>
-
-        </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar8">Pause [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="pause" type="number" value="1"   onclick="show_easy_numpad(this, pause_controller);lock();"  readOnly disabled/></td>
-
-        </tr>
-        <tr>
-          <td><span class="form-group"><label class="small" for="inputVar9">Exhale [ms]</label></td>
-            <td><input class="form-control py-1 input-editable" id="exhale" type="number" value="1"   onclick="show_easy_numpad(this, exhale_controller);lock();"  readOnly disabled/></td>
-
-        </tr>
-
-        <tr>
-		<td><span class="form-group"><label class="small" for="inputVar13">Calibration [ms]</label></td>
-          <td><input class="form-control py-1 input-editable" id="calibration" type="number" value="1"   onclick="show_easy_numpad(this, calibration_controller);lock();"  readOnly disabled/></td>
-        </tr>
-
-
-      </table>
-    </td>
-    <td>
-      <table>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar11">Valve (Air)</label></td>
-      <td><input class="form-control py-1" id="valve_air" type="number" value="1"   onclick="show_easy_numpad(this, valve_air_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar12">Valve (O2)</label></td>
-      <td><input class="form-control py-1" id="valve_o2" type="number" value="1"   onclick="show_easy_numpad(this, valve_02_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Inhale) [%]</label></td>
-      <td><input class="form-control py-1" id="valve_inhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_inhale_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Exhale) [%]</label></td>
-      <td><input class="form-control py-1" id="valve_exhale" type="number" value="1"   onclick="show_easy_numpad(this, valve_exhale_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">Valve (Purge)</label></td>
-      <td><input class="form-control py-1" id="valve_purge" type="number" value="1"   onclick="show_easy_numpad(this, valve_purge_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">PEEP [cmH2O]</label></td>
-      <td><input class="form-control py-1" id="peep" type="number" value="1"   onclick="show_easy_numpad(this, purge_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">State</label></td>
-      <td><input class="form-control py-1" id="state" type="number" value="1"   onclick="show_easy_numpad(this, state_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">RPM</label></td>
-      <td><input class="form-control py-1" id="rpm" type="number" value="1"   onclick="show_easy_numpad(this, rpm_controller);lock();"  readOnly disabled/></td>
-
-    <tr><td><span class="form-group"><label class="small" for="inputVar13">Inhale:Exhale</label></td>
-      <td><input class="form-control py-1" id="inhale_exhale" type="number" value="1"   onclick="show_easy_numpad(this, inhale_exhale_controller);lock();"  readOnly disabled/></td>
-
-      </table></td>
-    </tr>
-    </table>
-    <input class="form-button float-bottom-right" type="submit" value="Update Settings">
-</form>
-</div>
-</div>
+          <tr>
+            <td></td>
+            <td><label class="small">Respiratory Rate</label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+          </tr>
+          <tr>
+            <td><input type="radio" name="time_or_ie" id = "prvc_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
+            <td><label class="small" for="prvc_radio_inhale_time">Inhale Time</label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
+          </tr>
+            <tr>
+            <td><input type="radio" name="time_or_ie" id = "prvc_radio_ie_ratio" onclick="edit_ie_ratio(this)"></td>
+            <td><label class="small" for="prvc_radio_ie_ratio">I:E Ratio</label></td>
+            <td><input class="form-control py-1 lockOnly" id="prvc_setting_ie_ratio" type="number" step = "any"  value="" disabled name='Inhale:Exhale Ratio' /></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">Inhale Trigger Sensitivity</label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">Exhale Trigger Sensitivity</label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">Inhale Pressure</label></td>
+            <td><input name="Inhale Pressure" class="form-control py-1 lockable" id="prvc_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">Inhale Volume</label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_volume" type="number" step = "any" value="" disabled name="Inhale Volume"/></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">PEEP</label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+          </tr>
+        </table>
+          <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+    </form>
+        </div>
+  
+        <div id="psv" class="tabcontent">
+          <form id="psv-settings-form" class="settings-forms">
+            <table class = "ml-auto mr-auto">
+            <tr>
+            <td></td>
+            <td></td>
+            <td>Target</td>
+            </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">Respiratory Rate</label></td>
+                <td><input class="form-control py-1 lockable" id="psv_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+              </tr>
+              <tr>
+                <td><input type="radio" name="time_or_ie" id = "psv_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
+                <td><label class="small" for="psv_radio_inhale_time">Inhale Time</label></td>
+                <td><input class="form-control py-1 lockable" id="psv_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
+              </tr>
+                <tr>
+                <td><input type="radio" name="time_or_ie" id = "psv_radio_ie_ratio" onclick="edit_ie_ratio(this)"></td>
+                <td><label class="small" for="psv_radio_ie_ratio">I:E Ratio</label></td>
+                <td><input class="form-control py-1 lockOnly" id="psv_setting_ie_ratio" type="number" step = "any"  value="" disabled name='Inhale:Exhale Ratio' /></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">Inhale Trigger Sensitivity</label></td>
+                <td><input class="form-control py-1 prvc-edit psv-edit psv-edit lockable" id="psv_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">Exhale Trigger Sensitivity</label></td>
+                <td><input class="form-control py-1 psv-edit lockable" id="psv_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">Inhale Pressure</label></td>
+                <td><input name="Inhale Pressure" class="form-control py-1 psv-edit psv-edit lockable" id="psv_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">Inhale Volume</label></td>
+                <td><input class="form-control py-1 prvc-edit lockable" id="psv_setting_volume" type="number" step = "any" value="" disabled name="Inhale Volume"/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">PEEP</label></td>
+                <td><input class="form-control py-1 prvc-edit psv-edit psv-edit lockable" id="psv_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+              </tr>
+            </table>
+              <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+        </form>
+            </div>
+            <div id="test" class="tabcontent">
+              <form id="test-settings-form" class="settings-forms">
+                <table class = "ml-auto mr-auto">
+                <tr>
+                <td></td>
+                <td></td>
+                <td>Set Target</td>
+                </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">Respiratory Rate</label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+                  </tr>
+                  <tr>
+                    <td><input type="radio" name="time_or_ie" id = "test_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
+                    <td><label class="small" for="test_radio_inhale_time">Inhale Time</label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
+                  </tr>
+                    <tr>
+                    <td><input type="radio" name="time_or_ie" id = "test_radio_ie_ratio" onclick="edit_ie_ratio(this)"></td>
+                    <td><label class="small" for="test_radio_ie_ratio">I:E Ratio</label></td>
+                    <td><input class="form-control py-1 lockOnly" id="test_setting_ie_ratio" type="number" step = "any"  value="" disabled name='Inhale:Exhale Ratio' /></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">Inhale Trigger Sensitivity</label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">Exhale Trigger Sensitivity</label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">Inhale Pressure</label></td>
+                    <td><input name="Inhale Pressure" class="form-control py-1 lockable" id="test_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">Inhale Volume</label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_volume" type="number" step = "any" value="" disabled name="Inhale Volume"/></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">PEEP</label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+                  </tr>
+                </table>
+                  <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+            </form>
+                </div>
+            
+            
+          </div>
 
 {% endblock %}
 
@@ -230,22 +288,30 @@ var object = document.getElementById("vent_mode");
 object.addEventListener("change", function(){
   var object = document.getElementById("vent_mode");
   var opt = object.options[object.selectedIndex];
-  unlock_mode_elements(opt.value);
+  console.log(opt.value);
+  openSettingContent(opt.value);
 
 });
 
-function edit_ie_ratio(){
+
+function edit_ie_ratio(element){
   if (unlocked){
-    var ie_ratio_input = document.getElementById('mode_ie_ratio');
-    var inhale_time_input    = document.getElementById('mode_inhale_time');
+    var radio_id = element.id;
+    var ie_ratio_id    = radio_id.replace("radio","setting");
+    var inhale_time_id = radio_id.replace("radio_ie_ratio", "setting_inhale_time");
+    var ie_ratio_input = document.getElementById(ie_ratio_id);
+    var inhale_time_input    = document.getElementById(inhale_time_id);
     ie_ratio_input.disabled = false;
     inhale_time_input.disabled = true;
   }
 }
-function edit_inhale_time(){
+function edit_inhale_time(element){
   if (unlocked){
-    var ie_ratio_input = document.getElementById('mode_ie_ratio');
-    var inhale_time_input    = document.getElementById('mode_inhale_time');
+    var radio_id = element.id;
+    var ie_ratio_id    = radio_id.replace("radio_inhale_time","setting_ie_ratio");
+    var inhale_time_id = radio_id.replace("radio", "setting");
+    var ie_ratio_input = document.getElementById(ie_ratio_id);
+    var inhale_time_input    = document.getElementById(inhale_time_id);
     ie_ratio_input.disabled = true;
     inhale_time_input.disabled = false;
   }
@@ -261,6 +327,116 @@ function sendCmd(var_name, var_value) {
         })    
 };
 
+function updateSettings(event, name){
+  var message = "You are about to update the following settings for "+name+" mode";
+  var jsonForm = {};
+  $("input[type=number]:enabled", $(event.target)).each(function(index){
+    if(this.value!="") {
+      jsonForm[$(this).attr("id")] = this.value;
+      message += "<br> "+this.name + " " + this.value;
+    }
+  });
+  if (Object.keys(jsonForm).length == 0){
+    $.dialog("No New Settings Chosen, Not Updating");
+    event.preventDefault();
+    return;
+  }
+
+  $.confirm({
+  	title: 'Confirmation',
+		content: message,
+	  buttons: {
+	    confirm: function () {
+        $.ajax({
+          url: "/target_handler",
+          type: 'POST',
+          data : jsonForm,
+          success: function(response){
+            if (response == true){
+              $.dialog('Settings Updated');
+            }
+            else{
+              $.dialog("Problem updating settings, please try again");
+            }
+          }
+        });
+      },
+	    cancel: function () {
+	      $.dialog('Canceled!');
+	    },
+	  }
+  });
+  event.preventDefault();
+
+}
+
+function updatePersonal(event){
+  var message = "You are about to update the following personal details";
+  var jsonForm = {};
+  $("input", $(event.target)).each(function(index){
+    if(this.value!="") {
+      jsonForm[$(this).attr("id")] = this.value;
+      message += "<br> "+this.name + " " + this.value;
+    }
+  });
+  $("select", $(event.target)).each(function(index){
+    if(this.value!="") {
+      jsonForm[$(this).attr("id")] = this.value;
+      message += "<br> "+this.name + " " + this.value;
+    }
+  });
+  if (Object.keys(jsonForm).length == 0){
+    $.dialog("No New Details Chosen, Not Updating");
+    event.preventDefault();
+    return;
+  }
+
+  $.confirm({
+  	title: 'Confirmation',
+		content: message,
+	  buttons: {
+	    confirm: function () {
+        $.ajax({
+          url: "/personal_data_handler",
+          type: 'POST',
+          data : jsonForm,
+          success: function(response){
+            if (response == true){
+              $.dialog('Personal Details Updated');
+            }
+            else{
+              $.dialog("Problem updating settings, please try again");
+            }
+          }
+        });
+      },
+	    cancel: function () {
+	      $.dialog('Canceled!');
+	    },
+	  }
+  });
+  event.preventDefault();
+
+}
+
+$('#personal-settings-form').submit(event, function(){
+  updatePersonal(event);
+});
+$('#pcac-settings-form').submit(event, function(){
+  updateSettings(event,"PC-AC");
+});
+$('#prvc-settings-form').submit(event, function(){
+  updateSettings(event,"PC-PR/VC");
+});
+$('#psv-settings-form').submit(event, function(){
+  updateSettings(event,"PC-PSV");
+});
+$('#test-settings-form').submit(event, function(){
+  updateSettings(event,"TEST");
+});
+
+
+/*
 $('.settings-form').submit(event, function(){
     $.ajax({
       url: "/data_handler",
@@ -283,7 +459,21 @@ $('.settings-form').submit(event, function(){
     });
     event.preventDefault();
 });
+*/
 
+function openSettingContent(cityName) {
+  // Declare all variables
+  var i, tabcontent;
+
+  // Get all elements with class="tabcontent" and hide them
+  tabcontent = document.getElementsByClassName("tabcontent");
+  for (i = 0; i < tabcontent.length; i++) {
+    tabcontent[i].style.display = "none";
+  }
+
+  // Show the current tab, and add an "active"
+  document.getElementById(cityName).style.display = "block";
+}
 function openSetting(el, cityName) {
   // Declare all variables
   var i, tabcontent, tablinks;
@@ -304,17 +494,6 @@ function openSetting(el, cityName) {
   document.getElementById(cityName).style.display = "block";
   el.className += " active";
 }
-
-$(document).ready ( function(){
-  var tablinks = document.getElementsByClassName("tablinks");
-  if (tablinks.length > 0){
-    openSetting(tablinks[0],"Mode");
-  }
-  // decide what to unlock based on mode
-  var object = document.getElementById("vent_mode");
-  var opt = object.options[object.selectedIndex];
-  unlock_mode_elements(opt.value);
-});
 
   class input_controller{
 	constructor(name, element) {
@@ -349,6 +528,96 @@ $(document).ready ( function(){
 	  else return null;
   }
 }
+
+var settings = ["respiratory_rate", "peep", "ie_ratio", "inhale_time", "fio2_percent","volume", "inspiratory_pressure"];
+
+$(document).ready(function(){
+  var tablinks = document.getElementsByClassName("tablinks");
+  if (tablinks.length > 0){
+    openSetting(tablinks[0],"mode");
+  }
+	$.ajax({
+	  url: '/last-targets',
+	  success: function(data) {
+      console.log("GOT DATA")
+  		if (data.length == 0) {
+        // we've not got any targets
+        console.log("Got no targets");
+      } else
+	    {
+        for (let i = 0 ; i < data.length; i++){
+          var target = data[i];
+          if (target["mode"] == "TEST"){
+            console.log("target: ",target);
+            for (let j = 0 ; j < settings.length; j++){
+              var element = document.getElementById("test_setting_"+settings[j]);
+              if (settings[j] in target && element){
+                element.value = target[settings[j]];
+              }
+            }
+          }
+          if (target["mode"] == "PC_AC"){
+            for (let j = 0 ; j < settings.length; j++){
+              var element = document.getElementById("pcac_setting_"+settings[j]);
+              if (settings[j] in target && element){
+                element.value = target[settings[j]];
+              }
+            }
+          }
+          if (target["mode"] == "PC_AC_PRVC"){
+            for (let j = 0 ; j < settings.length; j++){
+              var element = document.getElementById("prvc_setting_"+settings[j]);
+              if (settings[j] in target && element){
+                element.value = target[settings[j]];
+              }
+            }
+          }
+          if (target["mode"] == "PC_AC_PSV"){
+            for (let j = 0 ; j < settings.length; j++){
+              var element = document.getElementById("psv_setting_"+settings[j]);
+              if (settings[j] in target && element){
+                element.value = target[settings[j]];
+              }
+            }
+          }
+          if (target["mode"] == "CPAP"){
+            for (let j = 0 ; j < settings.length; j++){
+              var element = document.getElementById("cpap_setting_"+settings[j]);
+              if (settings[j] in target && element){
+                element.value = target[settings[j]];
+              }
+            }
+          }
+
+        }
+  		}
+    },
+	  cache: false
+  });
+
+  var personals = ["name", "age", "sex", "height", "weight"];
+  $.ajax({
+	  url: '/last-personal',
+	  success: function(data) {
+		  if (data.length == 0) {
+      // we're not getting any new data from the hevserver
+      console.log("Got no new personal details");
+	    } else
+	    {
+        console.log(data);
+        for (let j = 0 ; j < personals.length; j++){
+              var element = document.getElementById("personal_"+personals[j]);
+              console.log("personal_setting_"+personals[j],element);
+              if (personals[j] in data && element){
+                element.value = data[personals[j]];
+              }
+            }
+			}
+		},
+	  cache: false
+	});
+});
+
 
 
 pickout.to({
