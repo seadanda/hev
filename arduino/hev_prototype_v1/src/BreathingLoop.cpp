@@ -476,6 +476,9 @@ void BreathingLoop::FSM_breathCycle()
 {
     bool en1 = _valves_controller.getValveParams().exhale_trigger_enable;
     bool en2 = _valves_controller.getValveParams().inhale_trigger_enable;
+    bool mand_ex = false;
+    bool mand_vol = false;
+
     // basic cycle for testing hardware
     switch (_bl_state) {
         case BL_STATES::IDLE:
@@ -546,8 +549,9 @@ void BreathingLoop::FSM_breathCycle()
             _inhale_triggered = false; // reset inhale trigger
             _valley_flow = 100000;  // reset valley after exhale
             
-            exhaleTrigger();
-	    volumeTrigger();
+            mand_ex = exhaleTrigger();
+	        mand_vol = volumeTrigger();
+            _mandatory_exhale = mand_ex & mand_vol;
             break;
         case BL_STATES::PAUSE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
@@ -565,8 +569,7 @@ void BreathingLoop::FSM_breathCycle()
                 _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             }
             measurePEEP();
-            // _fsm_timeout = _states_durations.exhale;
-            inhaleTrigger();
+            _mandatory_inhale = inhaleTrigger();
 		digitalWrite(pin_led_red, LOW);
             break;
         case BL_STATES::STANDBY:
@@ -1022,7 +1025,7 @@ target_variables& BreathingLoop::getTargetVariablesCPAP(){ return _targets_cpap;
 target_variables& BreathingLoop::getTargetVariablesTest(){ return _targets_test; }
 target_variables& BreathingLoop::getTargetVariablesCurrent(){ return (*_targets_current); }
 
-void BreathingLoop::inhaleTrigger()
+bool BreathingLoop::inhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().inhale_trigger_enable;
 
@@ -1045,8 +1048,8 @@ void BreathingLoop::inhaleTrigger()
                 result = "   -- INHALE TRIGGER" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
-                _mandatory_inhale = false;
                 _inhale_triggered = true;
+                return false;
 		digitalWrite(pin_led_red, HIGH);
             }
         } else if (tnow - _fsm_time >= _max_exhale_time){
@@ -1055,16 +1058,16 @@ void BreathingLoop::inhaleTrigger()
                 //logMsg("   -- inhale trigger - max exhale time exceeded");
                 result = "   -- TIME EXCEEDED" ;
                 _fsm_timeout = 0; // go to next state immediately
-                _mandatory_inhale = true;
                 _apnea_event = true;
+                return true;
         }
     }  else {
-        _mandatory_inhale = true;
+        return true;
     }
     //logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6) + " " +result +" "+String(millis()));
 }
 
-void BreathingLoop::exhaleTrigger()
+bool BreathingLoop::exhaleTrigger()
 {
     bool en = _valves_controller.getValveParams().exhale_trigger_enable;
 
@@ -1081,16 +1084,16 @@ void BreathingLoop::exhaleTrigger()
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
-                _mandatory_exhale = false;
+                return false;// not mandatory exhale
 		digitalWrite(pin_led_red , HIGH);
             }
         }
     } else {
-        _mandatory_exhale = true;
+        return true; //mandatory exhale
     }
 }
 
-void BreathingLoop::volumeTrigger()
+bool BreathingLoop::volumeTrigger()
 {
     bool en = _valves_controller.getValveParams().volume_trigger_enable;
 
@@ -1104,12 +1107,12 @@ void BreathingLoop::volumeTrigger()
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
-                _mandatory_exhale = false;
+                return false;// not mandatory exhale
 		digitalWrite(pin_led_red , HIGH);
             }
         }
     } else {
-        _mandatory_exhale = true;
+        return true; //mandatory exhale
     }
 }
 
