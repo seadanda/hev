@@ -552,7 +552,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("test_setting_"+settings[j]);
               if (settings[j] in target && element){
-                element.value = target[settings[j]];
+                element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
@@ -560,7 +560,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("pcac_setting_"+settings[j]);
               if (settings[j] in target && element){
-                element.value = target[settings[j]];
+                element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
@@ -568,7 +568,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("prvc_setting_"+settings[j]);
               if (settings[j] in target && element){
-                element.value = target[settings[j]];
+                element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
@@ -576,7 +576,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("psv_setting_"+settings[j]);
               if (settings[j] in target && element){
-                element.value = target[settings[j]];
+                element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
@@ -584,7 +584,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("cpap_setting_"+settings[j]);
               if (settings[j] in target && element){
-                element.value = target[settings[j]];
+                element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
