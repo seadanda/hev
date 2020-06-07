@@ -49,12 +49,6 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value)
         case CMD_SET_VALVE::PURGE_ENABLE :
             vparams.valve_purge_enable = (value > 0.9);
             break;
-        case CMD_SET_VALVE::INHALE_TRIGGER_ENABLE :
-            vparams.inhale_trigger_enable = (value > 0.9);
-            break;
-        case CMD_SET_VALVE::EXHALE_TRIGGER_ENABLE :
-            vparams.exhale_trigger_enable = (value > 0.9);
-            break;
         case CMD_SET_VALVE::INHALE_DUTY_CYCLE : 
             vparams.inhale_duty_cycle = (value < 0) ? 0.0 : (value > MAX_VALVE_FRAC_OPEN) ? MAX_VALVE_FRAC_OPEN : value;
             break;
@@ -63,12 +57,6 @@ void setValveParam(CMD_SET_VALVE cmd, valve_params &vparams, float value)
             break;
         case CMD_SET_VALVE::INHALE_OPEN_MAX :
             vparams.inhale_open_max = (value < 0) ? 0.0 : (value > MAX_VALVE_FRAC_OPEN) ? MAX_VALVE_FRAC_OPEN : value;
-            break;
-        case CMD_SET_VALVE::INHALE_TRIGGER_THRESHOLD :
-            vparams.inhale_trigger_threshold = value;
-            break;
-        case CMD_SET_VALVE::EXHALE_TRIGGER_THRESHOLD :
-            vparams.exhale_trigger_threshold = value;
             break;
         default:
             break;
@@ -124,6 +112,21 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
         case CMD_SET_TARGET::INHALE_TIME: 
             targets.inhale_time = value;
             targets.ie_selected = false;
+            break;
+        case CMD_SET_TARGET::INHALE_TRIGGER_ENABLE :
+            targets.inhale_trigger_enable = (value > 0.9);
+            break;
+        case CMD_SET_TARGET::EXHALE_TRIGGER_ENABLE :
+            targets.exhale_trigger_enable = (value > 0.9);
+            break;
+        case CMD_SET_TARGET::VOLUME_TRIGGER_ENABLE :
+            targets.volume_trigger_enable = (value > 0.9);
+            break;
+        case CMD_SET_TARGET::INHALE_TRIGGER_THRESHOLD :
+            targets.inhale_trigger_threshold = value;
+            break;
+        case CMD_SET_TARGET::EXHALE_TRIGGER_THRESHOLD :
+            targets.exhale_trigger_threshold = value;
             break;
     }
 }

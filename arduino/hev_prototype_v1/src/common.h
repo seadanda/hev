@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xB0
+#define HEV_FORMAT_VERSION 0xB1
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -106,10 +106,6 @@ enum CMD_SET_VALVE: uint8_t {
     INHALE_DUTY_CYCLE = 4,
     INHALE_OPEN_MIN = 5,
     INHALE_OPEN_MAX = 6,
-    INHALE_TRIGGER_ENABLE = 7,
-    EXHALE_TRIGGER_ENABLE = 8,
-    INHALE_TRIGGER_THRESHOLD = 9,
-    EXHALE_TRIGGER_THRESHOLD = 10
 };
 
 enum CMD_SET_PID : uint8_t {
@@ -121,13 +117,20 @@ enum CMD_SET_PID : uint8_t {
 };
 
 enum CMD_SET_TARGET : uint8_t {
-    INSPIRATORY_PRESSURE = 1,
-    RESPIRATORY_RATE     = 2, 
-    IE_RATIO             = 3,
-    VOLUME               = 4,
-    PEEP                 = 5,
-    FIO2                 = 6,
-    INHALE_TIME          = 7
+    INSPIRATORY_PRESSURE     = 1,
+    RESPIRATORY_RATE         = 2, 
+    IE_RATIO                 = 3,
+    VOLUME                   = 4,
+    PEEP                     = 5,
+    FIO2                     = 6,
+    INHALE_TIME              = 7,
+    INHALE_TRIGGER_THRESHOLD = 8,
+    EXHALE_TRIGGER_THRESHOLD = 9,
+    // for debugging only; not for UIs
+    INHALE_TRIGGER_ENABLE    = 10,
+    EXHALE_TRIGGER_ENABLE    = 11,
+    VOLUME_TRIGGER_ENABLE    = 12
+
 };
 
 enum CMD_SET_PERSONAL : uint8_t {
@@ -381,6 +384,11 @@ struct target_data_format{
     float peep                  = 0.0;
     float fiO2_percent          = 0.0; 
     uint16_t inhale_time        = 0 ; 
+    uint8_t inhale_trigger_enable = 0;   // params - associated val of peak flow
+    uint8_t exhale_trigger_enable = 0;
+    uint8_t volume_trigger_enable = 0;
+    float inhale_trigger_threshold ;   // params - associated val of peak flow
+    float exhale_trigger_threshold ;
     float buffer_upper_pressure = 0.0; 
     float buffer_lower_pressure = 0.0; 
 };
@@ -611,6 +619,11 @@ struct target_variables {
     float peep;
     float fiO2_percent; 
     uint16_t inhale_time; 
+    bool  inhale_trigger_enable ;   // params - associated val of peak flow
+    bool  exhale_trigger_enable ;
+    bool  volume_trigger_enable ;
+    float inhale_trigger_threshold ;   // params - associated val of peak flow
+    float exhale_trigger_threshold ;
     float buffer_upper_pressure; 
     float buffer_lower_pressure; 
     bool  ie_selected;
@@ -659,15 +672,9 @@ struct valve_params{
     bool valve_air_in_enable   ;
     bool valve_o2_in_enable    ;
     bool valve_purge_enable    ;
-    bool inhale_trigger_enable ;   // params - associated val of peak flow
-    bool exhale_trigger_enable ;
-    bool volume_trigger_enable ;
     float inhale_duty_cycle;
     float inhale_open_min;
     float inhale_open_max;
-    float inhale_trigger_threshold ;   // params - associated val of peak flow
-    float exhale_trigger_threshold ;
-    float volume_trigger_threshold ;
 
 };
 
