@@ -293,7 +293,7 @@ void UILoop::reportTargets()
     }
 }
 
-void UILoop::reportTargetsNow(target_variables targets)
+void UILoop::reportTargetsNow(target_variables &targets)
 {
 
     uint32_t tnow = static_cast<uint32_t>(millis());

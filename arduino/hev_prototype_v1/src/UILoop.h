@@ -22,7 +22,7 @@ public:
     void reportCycleReadings();
     void reportAlarms();
     void reportTargets();
-    void reportTargetsNow(target_variables targets);
+    void reportTargetsNow(target_variables &targets);
     void reportPersonal();
 
     void reportIVTReadings();

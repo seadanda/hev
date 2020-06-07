@@ -3,7 +3,7 @@
 
 #include <Arduino.h>
 
-#define CONST_TIMEOUT_TRANSFER 7
+#define CONST_TIMEOUT_TRANSFER 10
 #define CONST_PACKET_RETRIES 10
 #define CONST_MISMATCH_COUNTER 20
 
