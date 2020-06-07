@@ -218,7 +218,7 @@ var pickout = (function(){
 		_.addClass(modal, '-show');
 		_.addClass(overlay, '-show');
 
-		var title = select.hasAttribute('placeholder') ? _.attr(select, 'placeholder') : 'Select Ventilator Mode';
+		var title = select.hasAttribute('placeholder') ? _.attr(select, 'placeholder') : 'Select Setting';
 		_.$('.head', modal).innerHTML = title;
 		
 		_.rmClass(modal, '-multiple');
@@ -514,6 +514,7 @@ var pickout = (function(){
 	 * @param {HTMLObject} select
 	 * @param {Object} data
 	 */
+	/*
 	function sendMode(var_name) {
 		var buffer = {name : var_name};
 		$.ajax({
@@ -522,13 +523,10 @@ var pickout = (function(){
 			  data: JSON.stringify(buffer)   // converts js value to JSON string
 			  })    
 	};
-
+	*/
 
     function setOptionSimple(select, data, txt){
 	if (data.txt != select.parentElement.querySelector('.pk-field').innerHTML){
-	    var success = confirm("Are you sure you want to switch the ventilator mode to " + data.txt + "?");
-	    if (success){
-		sendMode(data.txt)
 		_.toArray(select).map(function(option, index){
 		    if (index === data.index) {
 			_.attr(option, 'selected', 'selected');
@@ -538,9 +536,7 @@ var pickout = (function(){
 		    option.removeAttribute('selected');
 		});
 		feedField(select, data.txt);
-	}
 	closeModal();
-	if (success) {
 	if ("createEvent" in document) {
 		var evt = document.createEvent("HTMLEvents");
 		evt.initEvent("change", false, true);
@@ -549,8 +545,6 @@ var pickout = (function(){
 	else
 		select.fireEvent("onchange");
 		}
-	}
-	//lock(); // added by S. Farry
     }
 
 	function feedField(select, value){

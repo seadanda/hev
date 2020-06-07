@@ -54,7 +54,7 @@ payload_types = {
 }
 
 
-class ArduinoClient(HEVClient):
+class WebClient(HEVClient):
     def __init__(self):
         super().__init__(polling=True)
 
@@ -64,6 +64,14 @@ class ArduinoClient(HEVClient):
         then use async"""
         self.database_setup()
         super().start_client()
+        # call for all the targets and personal details
+        # when starting the web app so we always have some in the db
+        self.send_cmd("GET_TARGETS","PC_AC")
+        self.send_cmd("GET_TARGETS","PC_AC_PRVC")
+        self.send_cmd("GET_TARGETS","PC_PSV")
+        self.send_cmd("GET_TARGETS","TEST")
+        self.send_cmd("GENERAL", "GET_PERSONAL")
+
 
     def get_updates(self, payload):
         """callback from the polling function, payload is data from socket"""
@@ -223,7 +231,7 @@ def progress(status, remaining, total):
 WEBAPP = Flask(__name__)
 
 # Instantiating the client
-client = ArduinoClient()
+client = WebClient()
 
 N = 300 # number of entries to request for alarms and data (300 = 60 s of data divided by 0.2 s interval)
 
@@ -377,8 +385,16 @@ def target_handler():
     data = request.form
     success = True
     for d,v in data.items():
+        print(d,v)
         if 'setting_pcac_' in d:
-            success = client.send_cmd("SET_TARGET_PCAC", d.replace('setting_pcac_',''), v)
+            #success = client.send_cmd("SET_TARGET_PC_AC", d.replace('setting_pcac_',''), float(v))
+            print(d.replace('setting_pcac'),v)
+        elif 'setting_prvc_' in d:
+            #success = client.send_cmd("SET_TARGET_PC_AC_PRVC", d.replace('setting_prvc_',''), float(v))
+            print(d.replace('setting_prvc'),v)
+        elif 'setting_psv_' in d:
+            #success = client.send_cmd("SET_TARGET_PC_PSV", d.replace('setting_psv_',''), float(v))
+            print(d.replace('setting_psv'),v)
     
     response = make_response(json.dumps(success))
     response.content_type = 'application/json'
@@ -454,11 +470,16 @@ def personal_data_handler():
     #data = request.get_json(force=True)
     data = request.form
     personal = {}
+
     for d,v in data.items():
         print(d,v)
-        personal[d.replace('input_', '')] = v
-    print(client.send_personal(personal=personal ))
-    return ('', 204)
+        personal[d.replace('personal_', '')] = v
+
+    print(personal)
+    success = client.send_personal(personal=personal )
+    response = make_response(json.dumps(success))
+    response.content_type = 'application/json'
+    return (response)
 
 @WEBAPP.route('/live-data', methods=['GET'])
 def live_data():
@@ -545,6 +566,68 @@ def last_datum():
                 data[item] = ""
 
             fetched_all.append(data)
+
+    response = make_response(json.dumps(fetched_all[0]).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
+
+@WEBAPP.route('/last-targets', methods=['GET'])
+def last_targets():
+    """
+    Query the sqlite3 table for the last targets for each mode
+    Output in json format
+    """
+
+    list_variables = []
+    list_variables.append("created_at")
+    list_variables.extend(getList(TargetFormat().getDict()))
+
+    united_var = ','.join(list_variables)
+
+    fetched_all = []
+
+    if client.check_table(DATA_TABLE_NAME) and client.number_rows(TARGET_TABLE_NAME) > 1:
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
+
+        for mode in ( "PCAP", "TEST" ):
+            cursor.execute(" SELECT {var} "
+            " FROM {tn} WHERE mode == '{md}' ORDER BY ROWID DESC LIMIT 1 ".format(tn=TARGET_TABLE_NAME, var=united_var, md = mode))
+            fetched = cursor.fetchone()
+            if fetched:
+                fetched_all.append({item : fetched[index] for index,item in enumerate(list_variables)})
+        conn.close()
+
+    response = make_response(json.dumps(fetched_all).encode('utf-8') )
+    response.content_type = 'application/json'
+
+    return response
+
+@WEBAPP.route('/last-personal', methods=['GET'])
+def last_personal():
+    """
+    Query the sqlite3 table for the last targets for each mode
+    Output in json format
+    """
+
+    list_variables = []
+    list_variables.append("created_at")
+    list_variables.extend(getList(PersonalFormat().getDict()))
+
+    united_var = ','.join(list_variables)
+
+    fetched_all = []
+
+    if client.check_table(PERSONAL_TABLE_NAME) and client.number_rows(PERSONAL_TABLE_NAME) > 0:
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
+
+        cursor.execute(" SELECT {var} FROM {tn} ORDER BY ROWID DESC LIMIT 1 ".format(tn=PERSONAL_TABLE_NAME, var=united_var))
+        fetched = cursor.fetchone()
+        if fetched:
+            fetched_all.append({item : fetched[index] for index,item in enumerate(list_variables)})
+        conn.close()
 
     response = make_response(json.dumps(fetched_all[0]).encode('utf-8') )
     response.content_type = 'application/json'

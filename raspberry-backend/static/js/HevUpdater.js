@@ -155,10 +155,9 @@ function requestData() {
 		}
 
 		if (personal_point != null){
-			console.log(personal_point);
 			var name, age, sex, height, weight
 		        for (let i = 0 ; i < personals.length; i++){
-		    	    var el = document.getElementById("input_"+personals[i]);
+		    	    var el = document.getElementById("personal_"+personals[i]);
 		    	    var val = null;
 		    	    if ( personal_point != null && personals[i] in personal_point){
 		    		    val = personal_point[personals[i]];
