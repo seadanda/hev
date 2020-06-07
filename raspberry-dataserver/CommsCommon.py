@@ -35,10 +35,11 @@ class CMD_TYPE(Enum):
 
 @unique
 class CMD_GENERAL(Enum):
-    START =  1
-    STOP  =  2
-    RESET =  3
-    STANDBY = 4
+    START        = 1
+    STOP         = 2
+    RESET        = 3
+    STANDBY      = 4
+    GET_PERSONAL = 5
 
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
@@ -75,8 +76,6 @@ class CMD_SET_VALVE(Enum):
     INHALE_OPEN_MAX = 6
     INHALE_TRIGGER_ENABLE = 7
     EXHALE_TRIGGER_ENABLE = 8
-    INHALE_TRIGGER_THRESHOLD = 9
-    EXHALE_TRIGGER_THRESHOLD = 10
 
 @unique
 class CMD_SET_PID(Enum):
@@ -88,13 +87,19 @@ class CMD_SET_PID(Enum):
 
 @unique
 class CMD_SET_TARGET(Enum):
-    INSPIRATORY_PRESSURE = 1
-    RESPIRATORY_RATE     = 2 
-    IE_RATIO             = 3
-    VOLUME               = 4
-    PEEP                 = 5
-    FIO2                 = 6
-    INHALE_TIME          = 7
+    INSPIRATORY_PRESSURE     = 1
+    RESPIRATORY_RATE         = 2 
+    IE_RATIO                 = 3
+    VOLUME                   = 4
+    PEEP                     = 5
+    FIO2                     = 6
+    INHALE_TIME              = 7
+    INHALE_TRIGGER_THRESHOLD = 8
+    EXHALE_TRIGGER_THRESHOLD = 9
+    # for debugging only; not for UIs
+    INHALE_TRIGGER_ENABLE    = 10
+    EXHALE_TRIGGER_ENABLE    = 11
+    VOLUME_TRIGGER_ENABLE    = 12
 
 @unique
 # class CMD_SET_PERSONAL(Enum):
@@ -195,7 +200,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xB0, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xB1, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -614,19 +619,24 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBffffffHff")
+    _dataStruct = Struct("<BIBBffffffHBBBffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
-    mode                  : int   = 0
-    inspiratory_pressure  : float = 0.0
-    ie_ratio              : float = 0.0
-    volume                : float = 0.0
-    respiratory_rate      : float = 0.0
-    peep                  : float = 0.0
-    fiO2_percent          : float = 0.0
-    inhale_time           : int   = 0 
-    buffer_upper_pressure : float = 0.0
-    buffer_lower_pressure : float = 0.0 
+    mode                     : int   = 0
+    inspiratory_pressure     : float = 0.0
+    ie_ratio                 : float = 0.0
+    volume                   : float = 0.0
+    respiratory_rate         : float = 0.0
+    peep                     : float = 0.0
+    fiO2_percent             : float = 0.0
+    inhale_time              : int   = 0 
+    inhale_trigger_enable    : int = 0
+    exhale_trigger_enable    : int = 0
+    volume_trigger_enable    : int = 0
+    inhale_trigger_threshold : float = 0.0
+    exhale_trigger_threshold : float = 0.0
+    buffer_upper_pressure    : float = 0.0
+    buffer_lower_pressure    : float = 0.0 
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -646,6 +656,11 @@ class TargetFormat(PayloadFormat):
         self.peep                , 
         self.fiO2_percent        , 
         self.inhale_time         ,
+        self.inhale_trigger_enable    ,
+        self.exhale_trigger_enable    ,
+        self.volume_trigger_enable    ,
+        self.inhale_trigger_threshold ,
+        self.exhale_trigger_threshold ,
         self.buffer_upper_pressure,
         self.buffer_lower_pressure ) = self._dataStruct.unpack(byteArray) 
 
