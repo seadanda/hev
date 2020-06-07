@@ -307,6 +307,11 @@ void UILoop::reportTargetsNow(target_variables &targets)
     _target_data.peep = targets.peep;
     _target_data.fiO2_percent = targets.fiO2_percent;
     _target_data.inhale_time = targets.inhale_time;
+    _target_data.inhale_trigger_enable    = targets.inhale_trigger_enable ;
+    _target_data.exhale_trigger_enable    = targets.exhale_trigger_enable ; 
+    _target_data.volume_trigger_enable    = targets.volume_trigger_enable ; 
+    _target_data.inhale_trigger_threshold = targets.inhale_trigger_threshold; 
+    _target_data.exhale_trigger_threshold = targets.exhale_trigger_threshold;  
     _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
     _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
     _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));

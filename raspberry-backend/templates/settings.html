@@ -70,12 +70,12 @@
       <tr>
         <td></td>
         <td><label class="small">Inhale Trigger Sensitivity</label></td>
-        <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">Exhale Trigger Sensitivity</label></td>
-        <td><input class="form-control py-1 lockable" id="pcac_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
       </tr>
       <tr>
         <td></td>
@@ -123,12 +123,12 @@
           <tr>
             <td></td>
             <td><label class="small">Inhale Trigger Sensitivity</label></td>
-            <td><input class="form-control py-1 lockable" id="prvc_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
           </tr>
           <tr>
             <td></td>
             <td><label class="small">Exhale Trigger Sensitivity</label></td>
-            <td><input class="form-control py-1 lockable" id="prvc_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
           </tr>
           <tr>
             <td></td>
@@ -176,12 +176,12 @@
               <tr>
                 <td></td>
                 <td><label class="small">Inhale Trigger Sensitivity</label></td>
-                <td><input class="form-control py-1 prvc-edit psv-edit psv-edit lockable" id="psv_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+                <td><input class="form-control py-1 prvc-edit psv-edit psv-edit lockable" id="psv_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
               </tr>
               <tr>
                 <td></td>
                 <td><label class="small">Exhale Trigger Sensitivity</label></td>
-                <td><input class="form-control py-1 psv-edit lockable" id="psv_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+                <td><input class="form-control py-1 psv-edit lockable" id="psv_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
               </tr>
               <tr>
                 <td></td>
@@ -228,12 +228,12 @@
                   <tr>
                     <td></td>
                     <td><label class="small">Inhale Trigger Sensitivity</label></td>
-                    <td><input class="form-control py-1 lockable" id="test_setting_inhale_trg_sensitivity" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
                   </tr>
                   <tr>
                     <td></td>
                     <td><label class="small">Exhale Trigger Sensitivity</label></td>
-                    <td><input class="form-control py-1 lockable" id="test_setting_exhale_trg_sensitivity" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
                   </tr>
                   <tr>
                     <td></td>
@@ -529,7 +529,9 @@ function openSetting(el, cityName) {
   }
 }
 
-var settings = ["respiratory_rate", "peep", "ie_ratio", "inhale_time", "fio2_percent","volume", "inspiratory_pressure"];
+var settings = ["respiratory_rate", "peep", "ie_ratio", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold","fio2_percent","volume", "inspiratory_pressure"];
+
+//var targets = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure"]
 
 $(document).ready(function(){
   var tablinks = document.getElementsByClassName("tablinks");

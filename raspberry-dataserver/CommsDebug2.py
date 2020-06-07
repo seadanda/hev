@@ -60,8 +60,8 @@ class Dependant(object):
            logging.info(f"payload received:  {payload} ")
         if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-        #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-        #    logging.info(f"TARGET {payload} {fsm}") 
+        if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+            logging.info(f"TARGET {payload} {fsm}") 
         #if hasattr(payload, 'ventilation_mode'):
         #    logging.info(f"payload received: {payload.ventilation_mode}")
         #if hasattr(payload, 'duration_inhale'):
@@ -99,7 +99,7 @@ async def commsDebug():
 
     await asyncio.sleep(10)
     print('send personal info')
-        send_personal("Jessica Jones", 29, 'F', 175, 58)
+    send_personal("Jessica Jones", 29, 'F', 175, 58)
 
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
@@ -142,12 +142,12 @@ async def commsDebug():
     #print('sent inhale + exhale trigger -> 1')
     while True:
         await asyncio.sleep(1)
-        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
-        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
-        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
-        #send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
-        #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
-        #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
+        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
+        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
+        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
+        send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
+        send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
+        send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
 
         #send_cmd(cmd_type="GENERAL", cmd_code="STANDBY", param=0)
 

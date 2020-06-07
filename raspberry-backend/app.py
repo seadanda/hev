@@ -384,17 +384,21 @@ def target_handler():
     """
     data = request.form
     success = True
+    print("**************************set target test");
     for d,v in data.items():
         print(d,v)
-        if 'setting_pcac_' in d:
-            #success = client.send_cmd("SET_TARGET_PC_AC", d.replace('setting_pcac_',''), float(v))
-            print(d.replace('setting_pcac'),v)
-        elif 'setting_prvc_' in d:
-            #success = client.send_cmd("SET_TARGET_PC_AC_PRVC", d.replace('setting_prvc_',''), float(v))
-            print(d.replace('setting_prvc'),v)
-        elif 'setting_psv_' in d:
-            #success = client.send_cmd("SET_TARGET_PC_PSV", d.replace('setting_psv_',''), float(v))
-            print(d.replace('setting_psv'),v)
+        if 'pcac_setting_' in d:
+            success = client.send_cmd("SET_TARGET_PC_AC", d.replace('pcac_setting_','').upper(), float(v))
+            print(d.replace('pcac_setting_',''),v)
+        elif 'prvc_setting_' in d:
+            success = client.send_cmd("SET_TARGET_PC_AC_PRVC", d.replace('prvc_setting_','').upper(), float(v))
+            print(d.replace('prvc_setting_',''),v)
+        elif 'psv_setting_' in d:
+            success = client.send_cmd("SET_TARGET_PC_PSV", d.replace('psv_setting_','').upper(), float(v))
+            print(d.replace('psv_setting_',''),v)
+        elif 'test_setting_' in d:
+            success = client.send_cmd("SET_TARGET_TEST", d.replace('test_setting_','').upper(), float(v))
+            print(d.replace('test_setting_',''),v)
     
     response = make_response(json.dumps(success))
     response.content_type = 'application/json'
