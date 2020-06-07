@@ -14,6 +14,37 @@
 //suggests that there could be another version using
 //exhalation flow, if possible.
 
+function chartParamLoop(chartName) {
+    // values for all plots
+    let gridColor     = "hsla(0, 0%, 75%, 0.4)"; 
+    let zeroGridColor = "hsla(0, 0%, 90%, 1.0)"; 
+
+    // values for specific plots
+    let plotColor;    
+    // chosen to have the same saturation and luminosity, tweak to taste
+    if( chartName == "inhale" ) plotColor = "hsla(221, 100%, 70%, 1)";
+    if( chartName == "exhale" ) plotColor = "hsla(17, 100%, 70%, 1)";
+
+    // start with global params for all plots
+    let params = {
+	dataset : {
+	    borderColor          : plotColor,
+	    backgroundColor      : plotColor,
+	    borderWidth          : 4,
+	    fill                 : false,
+	    showLine             : true,
+	},
+	gridLines : {
+	    display       : true,
+	    color         : gridColor,
+	    zeroLineColor : zeroGridColor
+	}
+    };
+
+    return params;
+}
+
+
 //3 loop displays: Pressure-Volume, Flow-Volume and Pressure-Flow.
 var chart_PV;
 var chart_FV;
@@ -60,20 +91,26 @@ function RunLoop() {
 
 $(document).ready(function() {
     var ctx_PV = document.getElementById('pressure_volume_chart');
+    let paramInhale = chartParamLoop("inhale");
+    let paramExhale = chartParamLoop("exhale");
     chart_PV = new Chart(ctx_PV, {
         type: 'scatter',
         data: {datasets: [{data: [],
 			   label: "Inhale",
-			   borderColor: "rgb(100,150,255)",
-			   pointBackgroundColor : "rgb(100,150,255)",
-			   fill: false,
-			   showLine: true },
+			   borderColor         : paramInhale.dataset.borderColor,
+			   backgroundColor     : paramInhale.dataset.backgroundColor,
+			   borderWidth         : paramInhale.dataset.borderWidth,
+			   fill                : paramInhale.dataset.fill,
+			   showLine            : paramInhale.dataset.showLine
+			  },
 			  {data: [],
 			   label: "Exhale : Pressure - Volume",
-			   borderColor: "rgb(255,150,100)",
-			   pointBackgroundColor : "rgb(255,150,100)",
-			   fill: false,
-			   showLine: true }
+			   borderColor         : paramExhale.dataset.borderColor,
+			   backgroundColor     : paramExhale.dataset.backgroundColor,
+			   borderWidth         : paramExhale.dataset.borderWidth,
+			   fill                : paramExhale.dataset.fill,
+			   showLine            : paramExhale.dataset.showLine
+			  }
 			  ]},
 	options: {elements: { point: { radius: 5}},
 		  legend: { display: true, labels: {fontSize: 24 } },
@@ -114,16 +151,20 @@ $(document).ready(function() {
         type: 'scatter',
         data: {datasets: [{data: [],
 			   label: "Inhale",
-			   borderColor: "rgb(100,150,255)",
-			   pointBackgroundColor : "rgb(100,150,255)",
-			   fill: false,
-			   showLine: true },
+			   borderColor         : paramInhale.dataset.borderColor,
+			   backgroundColor     : paramInhale.dataset.backgroundColor,
+			   borderWidth         : paramInhale.dataset.borderWidth,
+			   fill                : paramInhale.dataset.fill,
+			   showLine            : paramInhale.dataset.showLine
+			  },
 			  {data: [],
 			   label: "Exhale : Volume - Flow",
-			   borderColor: "rgb(255,150,100)",
-			   pointBackgroundColor : "rgb(255,150,100)",
-			   fill: false,
-			   showLine: true }]}
+			   borderColor         : paramExhale.dataset.borderColor,
+			   backgroundColor     : paramExhale.dataset.backgroundColor,
+			   borderWidth         : paramExhale.dataset.borderWidth,
+			   fill                : paramExhale.dataset.fill,
+			   showLine            : paramExhale.dataset.showLine
+			  }]}
 	,options: {elements: { point: { radius: 5}},
 		  legend: { display: true, labels: {fontSize: 24 } },
 		scales: {xAxes: [{display: true,
@@ -163,16 +204,20 @@ $(document).ready(function() {
         type: 'scatter',
         data: {datasets: [{data: [],
 			   label: "Inhale",
-			   borderColor: "rgb(100,150,255)",
-			   pointBackgroundColor : "rgb(100,150,255)",
-			   fill: false,
-			   showLine: true },
+			   borderColor         : paramInhale.dataset.borderColor,
+			   backgroundColor     : paramInhale.dataset.backgroundColor,
+			   borderWidth         : paramInhale.dataset.borderWidth,
+			   fill                : paramInhale.dataset.fill,
+			   showLine            : paramInhale.dataset.showLine
+			  },
 			  {data: [],
 			   label: "Exhale : Pressure - Flow",
-			   borderColor: "rgb(255,150,100)",
-			   pointBackgroundColor : "rgb(255,150,100)",
-			   fill: false,
-			   showLine: true }]}
+			   borderColor         : paramExhale.dataset.borderColor,
+			   backgroundColor     : paramExhale.dataset.backgroundColor,
+			   borderWidth         : paramExhale.dataset.borderWidth,
+			   fill                : paramExhale.dataset.fill,
+			   showLine            : paramExhale.dataset.showLine
+			  }]}
 	,options: {elements: { point: { radius: 5, fill: true}},
 		  legend: { display: true, labels: {fontSize: 24 } },
 		   scales: {xAxes: [{display: true,
