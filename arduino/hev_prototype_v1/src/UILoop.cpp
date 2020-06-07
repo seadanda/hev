@@ -151,8 +151,8 @@ void UILoop::reportReadbackValues()
         _readback_data.valve_air_in_enable   = vparams.valve_air_in_enable;
         _readback_data.valve_o2_in_enable    = vparams.valve_o2_in_enable;
         _readback_data.valve_purge_enable    = vparams.valve_purge_enable;
-        _readback_data.inhale_trigger_enable = vparams.inhale_trigger_enable;
-        _readback_data.exhale_trigger_enable = vparams.exhale_trigger_enable;
+        _readback_data.inhale_trigger_enable = _breathing_loop->getTargetVariablesCurrent().inhale_trigger_enable;
+        _readback_data.exhale_trigger_enable = _breathing_loop->getTargetVariablesCurrent().exhale_trigger_enable;
         _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
@@ -448,28 +448,6 @@ void UILoop::cmdSetTarget(cmd_format &cf, int8_t mode){
     }
 }
 
-// void UILoop::cmdSetPersonal(cmd_format &cf){
-//     switch(cf.cmd_code){
-
-//         case CMD_SET_PERSONAL::NAME: 
-// 		_personal.name = static_cast<char*>(cf.param);
-// 		break;
-//         case CMD_SET_PERSONAL::AGE: 
-// 		_personal.age = static_cast<uint8_t>(cf.param);
-// 		break;
-//         case CMD_SET_PERSONAL::SEX: 
-// 		_personal.sex = static_cast<char>(cf.param);
-// 		break;
-//         case CMD_SET_PERSONAL::HEIGHT: 
-// 		_personal.height = static_cast<uint8_t>(cf.param);
-// 		break;
-//         case CMD_SET_PERSONAL::WEIGHT: 
-// 		_personal.weight = static_cast<uint8_t>(cf.param);
-// 		break;
-//         default: 
-//             break;
-//     }
-// }
 
 void UILoop::cmdGetTarget(cmd_format &cf){
 

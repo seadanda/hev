@@ -74,12 +74,6 @@ BreathingLoop::BreathingLoop()
 
     _cycle_index = 0;
 
-    _inhale_trigger_threshold = 0.005;  // abs flow ?unit
-    _exhale_trigger_threshold = 0.2;  // 30% of peak
-
-    _inhale_trigger_threshold = _valves_controller.getValveParams().inhale_trigger_threshold;
-    _exhale_trigger_threshold = _valves_controller.getValveParams().exhale_trigger_threshold;
-
     _min_inhale_time = 150;
     _min_exhale_time = 300;
     _max_exhale_time = 30000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
@@ -100,7 +94,11 @@ void BreathingLoop::initTargets()
     _targets_pcac.inhale_time= 1000;
     _targets_pcac.peep = 5;
     _targets_pcac.fiO2_percent = 21;
-    _targets_pcac.buffer_lower_pressure = 0.0;
+
+    _targets_pcac.inhale_trigger_threshold     = 0.0005;   // abs flow ? unit / 
+    _targets_pcac.exhale_trigger_threshold     = 0.25;  // 25% of the peak flow
+
+    _targets_pcac.buffer_lower_pressure = 285.0;
     _targets_pcac.buffer_upper_pressure = 300.0;
 
     // copy all from PCAC
@@ -109,6 +107,21 @@ void BreathingLoop::initTargets()
     _targets_cpap = _targets_pcac;
     _targets_test = _targets_pcac;
 
+    _targets_pcac.inhale_trigger_enable = true; 
+    _targets_pcac.exhale_trigger_enable = false; 
+    _targets_pcac.volume_trigger_enable = false; 
+    _targets_pcac_prvc.inhale_trigger_enable = true; 
+    _targets_pcac_prvc.exhale_trigger_enable = false; 
+    _targets_pcac_prvc.volume_trigger_enable = true; 
+    _targets_pc_psv.inhale_trigger_enable = true; 
+    _targets_pc_psv.exhale_trigger_enable = true; 
+    _targets_pc_psv.volume_trigger_enable = false; 
+    _targets_cpap.inhale_trigger_enable = true; 
+    _targets_cpap.exhale_trigger_enable = true; 
+    _targets_cpap.volume_trigger_enable = false; 
+    _targets_test.inhale_trigger_enable = true; 
+    _targets_test.exhale_trigger_enable = true; 
+    _targets_test.volume_trigger_enable = false; 
     // "current" mode is set by ventilation mode
 
     // set modes for readback
@@ -301,37 +314,34 @@ void BreathingLoop::updateCycleReadings()
 void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
 {
     _ventilation_mode = mode;
-    valve_params &vp = _valves_controller.getValveParams();
     switch(_ventilation_mode){
 
         case VENTILATION_MODE::PC_AC :
-            vp.inhale_trigger_enable = true; 
-            vp.exhale_trigger_enable = false; 
-            vp.volume_trigger_enable = false; 
+            _targets_pcac.inhale_trigger_enable = true; 
+            _targets_pcac.exhale_trigger_enable = false; 
+            _targets_pcac.volume_trigger_enable = false; 
             _targets_current = &_targets_pcac;
         break;
         case VENTILATION_MODE::PC_AC_PRVC :
-            vp.inhale_trigger_enable = true; 
-            vp.exhale_trigger_enable = false; 
-            vp.volume_trigger_enable = true; 
+            _targets_pcac_prvc.inhale_trigger_enable = true; 
+            _targets_pcac_prvc.exhale_trigger_enable = false; 
+            _targets_pcac_prvc.volume_trigger_enable = true; 
             _targets_current = &_targets_pcac_prvc;
         break;
         case VENTILATION_MODE::PC_PSV :
-            vp.inhale_trigger_enable = true; 
-            vp.exhale_trigger_enable = true; 
-            vp.volume_trigger_enable = false; 
+            _targets_pc_psv.inhale_trigger_enable = true; 
+            _targets_pc_psv.exhale_trigger_enable = true; 
+            _targets_pc_psv.volume_trigger_enable = false; 
             _targets_current = &_targets_pc_psv;
         break;
         case VENTILATION_MODE::CPAP :
-            vp.inhale_trigger_enable = true; 
-            vp.exhale_trigger_enable = true; 
-            vp.volume_trigger_enable = false; 
+            _targets_cpap.inhale_trigger_enable = true; 
+            _targets_cpap.exhale_trigger_enable = true; 
+            _targets_cpap.volume_trigger_enable = false; 
             _targets_current = &_targets_cpap;
         break;
         case VENTILATION_MODE::TEST:
-            vp.inhale_trigger_enable = true; 
-            vp.exhale_trigger_enable = true; 
-            vp.volume_trigger_enable = false; 
+        // in test mode you can set the triggers on / off
             _targets_current = &_targets_test;
         break;
         default : 
@@ -567,7 +577,7 @@ void BreathingLoop::FSM_breathCycle()
             // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
             if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_upper_pressure - 15){
+            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
                 _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             }
             measurePEEP();
@@ -1029,7 +1039,7 @@ target_variables& BreathingLoop::getTargetVariablesCurrent(){ return (*_targets_
 
 bool BreathingLoop::inhaleTrigger()
 {
-    bool en = _valves_controller.getValveParams().inhale_trigger_enable;
+    bool en = _targets_current->inhale_trigger_enable;
 
     //logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6));
     String result = "";
@@ -1042,7 +1052,7 @@ bool BreathingLoop::inhaleTrigger()
         }
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold) 
+        if((_readings_avgs.pressure_diff_patient > _targets_current->inhale_trigger_threshold) 
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
@@ -1070,7 +1080,7 @@ bool BreathingLoop::inhaleTrigger()
 
 bool BreathingLoop::exhaleTrigger()
 {
-    bool en = _valves_controller.getValveParams().exhale_trigger_enable;
+    bool en = _targets_current->exhale_trigger_enable;
 
     //logMsg("EXhale trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().exhale_trigger_threshold)+" "+String(_peak_flow));
 
@@ -1078,7 +1088,7 @@ bool BreathingLoop::exhaleTrigger()
         //logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
         valve_params vp = _valves_controller.getValveParams();
-        if((_running_avg_flow < (vp.exhale_trigger_threshold * _peak_flow)) 
+        if((_running_avg_flow < (_targets_current->exhale_trigger_threshold * _peak_flow)) 
             && (tnow - _peak_flow_time >= 100)){ // wait 10ms after peak
             //TODO - check we're past 'peak'
             //logMsg("  EXhale trig- " + String(_running_avg_flow) +" "+ String(vp.exhale_trigger_threshold)+" "+String(_peak_flow));
@@ -1095,15 +1105,14 @@ bool BreathingLoop::exhaleTrigger()
 
 bool BreathingLoop::volumeTrigger()
 {
-    bool en = _valves_controller.getValveParams().volume_trigger_enable;
+    bool en = _targets_current->volume_trigger_enable;
 
     //logMsg("volume trig- " + String(_flow) + " " + String(_running_avg_flow) +" "+ String(_valves_controller.getValveParams().exhale_trigger_threshold)+" "+String(_peak_flow));
 
     if(en == true){
         //logMsg("volume trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
-        valve_params vp = _valves_controller.getValveParams();
-        if(_volume < vp.volume_trigger_threshold  ){ 
+        if(_volume < _targets_current->volume){ 
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately

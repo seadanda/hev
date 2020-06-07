@@ -80,47 +80,43 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
     await asyncio.sleep(1)
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=1.0*0.001)#
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KI", param=1.0*0.0005)# 0.0005
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="KD", param=1.0*0.001)# 0.001
-    cmd = send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=17.5)#
-    #cmd = send_cmd(cmd_type="SET_PID", cmd_code="TARGET_FINAL_PRESSURE", param=20.0)#
-    cmd = send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
-  #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=10.) # 
-    # Change TIMEOUT of breathing cycle (INHALE)
-    cmd = send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
-    # Start the cycles
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # 
-    # Enable exhale trigger threshold
-    cmd = send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.25) # 
-    # Start the cycles
-    cmd = CommandFormat(cmd_type="SET_MODE", cmd_code="TEST", param=0)
+    send_cmd(cmd_type="SET_MODE", cmd_code="TEST", param=0)
 
-    send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
-    #comms.writePayload(cmd)
-    print('sent cmd start')
-    await asyncio.sleep(1)
-    send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
-    send_cmd(cmd_type="SET_VALVE", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_PID", cmd_code="KP", param=1.0*0.001)#
+    send_cmd(cmd_type="SET_PID", cmd_code="KI", param=1.0*0.0005)# 0.0005
+    send_cmd(cmd_type="SET_PID", cmd_code="KD", param=1.0*0.001)# 0.001
+    send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
+    
+  #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
+    send_cmd(cmd_type="SET_DURATION", cmd_code="BUFF_PRE_INHALE", param=10.) # 
+    send_cmd(cmd_type="SET_DURATION", cmd_code="PAUSE", param=10.) #
+
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=10.0) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1000) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=17.5)#
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.25) # 
+
+    send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
+
+    ### NOTE : THESE ARE FOR TESTING ONLY, AS THEY OVERRIDE THE VALUES SET BY THE VENTILATION MODE
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="VOLUME_TRIGGER_ENABLE", param=0) 
+
+    print('sent cmd start')
     send_cmd(cmd_type="GENERAL", cmd_code="START", param=1000) 
-    #print('sent inhale + exhale trigger -> 1')
+
     toggle = "STOP"
     while True:
         await asyncio.sleep(300)
-        #cmd = send_cmd(cmd_type="SET_PID", cmd_code="KP", param=5) # 
-        #comms.writePayload(cmd)
-        #print('sent cmd set Kp = 0.2')
         await asyncio.sleep(300)
-        cmd = send_cmd(cmd_type="GENERAL", cmd_code=toggle, param=0)
+        send_cmd(cmd_type="GENERAL", cmd_code=toggle, param=0)
         if toggle == "STOP" :
             toggle = "START"
         else : 
             toggle = "STOP"
 
-        comms.writePayload(cmd)
         print('sent cmd stop')
 
 try:

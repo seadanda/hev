@@ -192,8 +192,6 @@ private:
     uint8_t _running_index_peep;
 
     bool  _inhale_triggered;
-    float _inhale_trigger_threshold;
-    float _exhale_trigger_threshold;
     float _peak_flow;
     float _valley_flow;
     uint32_t _peak_flow_time;
