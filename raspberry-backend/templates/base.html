@@ -154,12 +154,32 @@
 
 	  //our default is locked, but if we load and the unlock is set, unlock page
 	  window.onload = function(){
-	  if (unlocked) {
-	  unlock();
-	  }
-	  else{
-	  lock(); // should be locked already, this mainly tidies up the lock graphic
-	  }
+		$.ajax({
+	        url: '/last-personal',
+	        success: function(data) {
+				if (data.length == 0) {
+                // we're not getting any new data from the hevserver
+                console.log("Got no new personal details");
+	            } else
+	            {
+					console.log(data);
+					var name = data["name"];
+					var age = data["age"];
+					var sex = data["sex"];
+					var height = data["height"];
+					var weight = data["weight"];
+			    	var el = document.getElementById("patient_info_top");
+					if (el) el.innerHTML = name + ", "+age+", "+sex+", "+height+"cm, "+weight+"kg"; 
+				}
+			},
+	        cache: false
+	    });
+		if (unlocked) {
+			unlock();
+		}
+		else{
+			lock(); // should be locked already, this mainly tidies up the lock graphic
+		}
 	  };
 
 
