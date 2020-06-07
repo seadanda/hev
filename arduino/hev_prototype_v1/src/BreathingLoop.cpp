@@ -471,8 +471,8 @@ void BreathingLoop::FSM_assignment() {
 
 void BreathingLoop::FSM_breathCycle()
 {
-    bool en1 = _valves_controller.getValveParams().exhale_trigger_enable;
-    bool en2 = _valves_controller.getValveParams().inhale_trigger_enable;
+    // bool en1 = _valves_controller.getValveParams().exhale_trigger_enable;
+    // bool en2 = _valves_controller.getValveParams().inhale_trigger_enable;
     // basic cycle for testing hardware
     switch (_bl_state) {
         case BL_STATES::IDLE:

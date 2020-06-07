@@ -156,6 +156,11 @@ void UILoop::reportReadbackValues()
         _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
+        pid_variables pid = _breathing_loop->getPIDVariables();
+        _readback_data.kp = pid.Kp;
+        _readback_data.ki = pid.Ki;
+        _readback_data.kd = pid.Kd;
+
         _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
         _comms->writePayload(_pl_send);
         _readback_report_time = tnow;

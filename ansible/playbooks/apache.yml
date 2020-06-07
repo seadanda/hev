@@ -1,0 +1,45 @@
+---
+- hosts: hevpi
+  remote_user: pi
+  vars:
+        download_dir: /home/pi/Downloads
+        repos: 
+            - hev-sw
+            - hev-display
+
+  tasks: 
+        - name: include vars
+          include_vars: lists.yml
+
+        - name: apt update, apt upgrade
+          apt: 
+              upgrade: yes
+              update_cache: yes
+          become: yes
+        
+        - name: install software via apt
+          apt: 
+              name: "{{ rpi_swlist }}"  
+              state: present
+          become: yes
+
+        - name: copy apache script
+          template: src=setup_apache.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+        
+        - name: Adding user pi to www-data
+          user: 
+              name: pi
+              groups: www-data
+              append: yes
+          become: yes
+
+        - name: install hevconf into apache 
+          copy:
+              src: "{{ ansible_env.HOME }}/hev-sw/raspberry-backend/share/hev.conf" 
+              dest: "/etc/apache2/sites-available/hev.conf"
+              remote_src: yes
+          become: yes
+
+        - name: setup apache
+          command: "{{ download_dir }}/setup_apache.sh"
+          become: yes

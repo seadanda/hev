@@ -261,6 +261,9 @@ struct readback_data_format {
     uint8_t exhale_trigger_enable     = 0;
     float   peep                      = 0.0;//
     float   inhale_exhale_ratio       = 0.0;
+    float kp = 0.0;
+    float ki = 0.0;
+    float kd = 0.0;
 };
 #pragma pack()
 

@@ -335,7 +335,7 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBff")
+    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBfffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
 
 
@@ -366,6 +366,9 @@ class ReadbackFormat(PayloadFormat):
     peep: float                   = 0.0
     inhale_exhale_ratio: float    = 0.0
 
+    kp              : float = 0.0
+    ki              : float = 0.0
+    kd              : float = 0.0
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
     def fromByteArray(self, byteArray):
@@ -399,7 +402,11 @@ class ReadbackFormat(PayloadFormat):
         self.inhale_trigger_enable,
         self.exhale_trigger_enable,
         self.peep,
-        self.inhale_exhale_ratio) = self._dataStruct.unpack(byteArray) 
+        self.inhale_exhale_ratio,
+        self.kp              , 
+        self.ki              ,
+        self.kd              ,
+        ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.ventilation_mode = VENTILATION_MODE(tmp_mode)
