@@ -31,9 +31,9 @@ class Dependant(object):
     def __init__(self, lli):
         self._llipacket = None
         self._lli = lli
-        self._lli.bind_to(self.update_llipacket)
 
-    def update_llipacket(self, payload):
+    async def update_llipacket(self):
+        payload = await self._lli._payloadrecv.get()
         global fsm
         #logging.info(f"payload received: {payload}")
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
@@ -128,11 +128,12 @@ try:
     loop = asyncio.get_event_loop()
     comms = CommsLLI(loop)
     dep = Dependant(comms)
+    deppoll = dep.update_llipacket()
 
     # create tasks
     lli = comms.main(getTTYPort(), 115200)
     debug = commsDebug()
-    tasks = [lli, debug]
+    tasks = [lli, debug, deppoll]
 
     # run tasks
     asyncio.gather(*tasks, return_exceptions=True)
