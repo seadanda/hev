@@ -14,21 +14,23 @@
   
   <!-- Tab content -->
   <div id = "mode" class = "tabcontent">
-    <div class = "select-container lockable">
-      <select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Setting" placeholder = "Select Settings to Edit" width="10%">
-        <option value = "">Select Setting</option>
+    <div id = "select-settings" class = "select-container lockable d-flex justify-content-center">
+      <select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Settings" placeholder = "Select Settings to Edit">
+        <option value = "select">Select Setting</option>
         <option value = "personal">Personal Details</option>
           <option value="pcac">PC-A/C</option>
           <option value="prvc">PC-A/C-PRVC</option>
           <option value="psv">PC-PSV</option>
-          <option value="cpap">CPAP</option>
+          <!--<option value="cpap">CPAP</option>-->
           <option value = "test">TEST</options>
       </select>
     </div>
   </div>
-  <div id="personal" class="tabcontent">
+  <div id="personal" class="tabcontent align-items-center justify-content-center">
     <form method="post" id = "personal-settings-form">
+
         <table class = "ml-auto mr-auto">
+          <th colspan="2">Personal Details</th>
       <tr><td><label class="small" for="personal_name">Name</label></td><td><input class="form-control py-1 lockable" id="personal_name" type="name" value="John Smith" name="name" disabled/></td></tr>
       <tr><td><label class="small" for="personal_age">Age</label></td><td><input class="form-control py-1 lockable" id="personal_age" type="number" value=87 name="age" disabled/></td></tr>
       <tr><td><label class="small" for="personal_sex">Sex</label></td><td>
@@ -41,16 +43,17 @@
       <tr><td><label class="small" for="personal_weight">Weight (kg)</label></td><td><input class="form-control py-1 lockable" id="personal_weight" type="number" value=80 name="weight" disabled/></td></tr>
         </table>
         <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+        <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+        </div>
     </form>
   </div>
 
-  <div id="pcac" class="tabcontent">
+  <div id="pcac" class="tabcontent justify-content-center align-items-center">
   <form id="pcac-settings-form" class="settings-forms">
     <table class = "ml-auto mr-auto">
-    <tr>
-    <td></td>
-    <td></td>
-    <td>Set Target</td>
+      <tr>
+      <th colspan="3">PC-A/C Settings</th>
     </tr>
       <tr>
         <td></td>
@@ -94,17 +97,18 @@
       </tr>
     </table>
       <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+      <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+      </div>
 </form>
     </div>
 
-    <div id="prvc" class="tabcontent">
+    <div id="prvc" class="tabcontent align-items-center justify-content-center">
       <form id="prvc-settings-form" class="settings-forms">
         <table class = "ml-auto mr-auto">
-        <tr>
-        <td></td>
-        <td></td>
-        <td>Target</td>
-        </tr>
+      <tr>
+        <th colspan="3">PC-A/C-PRVC Settings</th>
+      </tr>
           <tr>
             <td></td>
             <td><label class="small">Respiratory Rate</label></td>
@@ -147,16 +151,17 @@
           </tr>
         </table>
           <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+          <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+          </div>
     </form>
         </div>
   
-        <div id="psv" class="tabcontent">
+        <div id="psv" class="tabcontent justify-content-center align-items-center">
           <form id="psv-settings-form" class="settings-forms">
             <table class = "ml-auto mr-auto">
             <tr>
-            <td></td>
-            <td></td>
-            <td>Target</td>
+              <th colspan="3">PC-PSV Settings</th>
             </tr>
               <tr>
                 <td></td>
@@ -200,15 +205,16 @@
               </tr>
             </table>
               <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+              <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+              </div>
         </form>
             </div>
-            <div id="test" class="tabcontent">
+            <div id="test" class="tabcontent justify-content-center align-items-center">
               <form id="test-settings-form" class="settings-forms">
                 <table class = "ml-auto mr-auto">
                 <tr>
-                <td></td>
-                <td></td>
-                <td>Set Target</td>
+                  <th colspan="3">TEST Settings</th>
                 </tr>
                   <tr>
                     <td></td>
@@ -252,6 +258,9 @@
                   </tr>
                 </table>
                   <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
+                  <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+                  </div>
             </form>
                 </div>
             
@@ -290,7 +299,8 @@ object.addEventListener("change", function(){
   var opt = object.options[object.selectedIndex];
   console.log(opt.value);
   openSettingContent(opt.value);
-
+  console.log("setting value to select");
+  object.value="select";
 });
 
 
@@ -373,7 +383,7 @@ function updateSettings(event, name){
 function updatePersonal(event){
   var message = "You are about to update the following personal details";
   var jsonForm = {};
-  $("input", $(event.target)).each(function(index){
+  $("input", $(event.target)).not(':input[type=submit]').each(function(index){
     if(this.value!="") {
       jsonForm[$(this).attr("id")] = this.value;
       message += "<br> "+this.name + " " + this.value;
@@ -435,32 +445,6 @@ $('#test-settings-form').submit(event, function(){
   updateSettings(event,"TEST");
 });
 
-
-/*
-$('.settings-form').submit(event, function(){
-    $.ajax({
-      url: "/data_handler",
-      type: 'POST',
-      data : $(event.target).serialize(),
-      success: function(response){
-        if (response == true){
-          window.createNotification({
-    			closeOnClick: 1,
-    			displayCloseButton: 0,
-    			positionClass: "nfc-bottom-right",
-    			showDuration: false,
-    			theme: "info"
-      		})({
-      			title: "Updated settings",
-      			message: "Settings updated successfully"
-      	  });
-        }
-      }
-    });
-    event.preventDefault();
-});
-*/
-
 function openSettingContent(cityName) {
   // Declare all variables
   var i, tabcontent;
@@ -472,7 +456,7 @@ function openSettingContent(cityName) {
   }
 
   // Show the current tab, and add an "active"
-  document.getElementById(cityName).style.display = "block";
+  document.getElementById(cityName).style.display = "flex";
 }
 function openSetting(el, cityName) {
   // Declare all variables
@@ -491,7 +475,7 @@ function openSetting(el, cityName) {
   }
 
   // Show the current tab, and add an "active" class to the button that opened the tab
-  document.getElementById(cityName).style.display = "block";
+  document.getElementById(cityName).style.display = "flex";
   el.className += " active";
 }
 

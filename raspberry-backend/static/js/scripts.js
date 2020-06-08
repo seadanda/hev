@@ -16,6 +16,7 @@
 
     // Toggle the side navigation
     $("#sidebarToggle").on("click", function(e) {
+        if ($(this).disabled) return;
         e.preventDefault();
         $("body").toggleClass("sb-sidenav-toggled");
     });

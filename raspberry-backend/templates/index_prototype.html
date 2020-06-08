@@ -11,13 +11,13 @@
 
 
     <div class="tab">
-      <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
-      <button class="tablinks" onclick="openTab(this, 'Advanced')">Advanced Settings</button>
+      <button class="tablinks" onclick="openTab(this, 'Main', false)">Main</button>
+      <button class="tablinks" onclick="openTab(this, 'Advanced', false)">Advanced Settings</button>
     </div>
 
     <div id="Main" class="tabcontent">
     <!--<h1 class="mt-4">Info</h1> !-->
-	    <div class = "row">
+	    <div class = "row no-gutters">
 	    	<div class = "col-charts-main">
 				<div class="col-md-12">
 					<div class="row col-center pb-1">
@@ -51,7 +51,7 @@
 				</div>
 			</div>
 		<div class = "col-cards-proto">
-			<div class = "row">
+			<div class = "row no-gutters">
 		  	    <div class="card-reading-proto">
 	        	    <div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
 				    	<a class="small text-white stretched-link col-center" href="#">State</a>
@@ -329,7 +329,9 @@
       if (!element.disabled){ setChartProtXaxisRange(min,max);  }
       }
     
-function openTab(el, cityName) {
+function openTab(el, cityName, force) {
+ if (el.disabled && (!force)) return;
+ if (el.parentElement.disabled && (!force)) return;
   // Declare all variables
   var i, tabcontent, tablinks;
 
@@ -353,7 +355,7 @@ function openTab(el, cityName) {
 $(document).ready ( function(){
   var tablinks = document.getElementsByClassName("tablinks");
   if (tablinks.length > 0){
-    openTab(tablinks[0],"Main");
+    openTab(tablinks[0],"Main", true);
   }
   // decide what to unlock based on mode
   //var object = document.getElementById("Trends");

@@ -28,9 +28,9 @@
 
 
     <div class="tab">
-      <button class="tablinks" onclick="openTab(this, 'Main')">Main</button>
-      <button class="tablinks" onclick="openTab(this, 'clinicalAlarms')">Clinical Alarms</button>
-      <button class="tablinks" onclick="openTab(this, 'technicalAlarms')">Technical Alarms</button>
+      <button class="tablinks" onclick="openTab(this, 'Main',false)">Main</button>
+      <button class="tablinks" onclick="openTab(this, 'clinicalAlarms',false)">Clinical Alarms</button>
+      <button class="tablinks" onclick="openTab(this, 'technicalAlarms',false)">Technical Alarms</button>
 
     </div>
 
@@ -266,6 +266,8 @@ submit_thresholds = function(element){
 <script>
 
 function openTab(el, cityName) {
+ if (el.disabled && (!force)) return;
+ if (el.parentElement.disabled && (!force)) return;
   // Declare all variables
   var i, tabcontent, tablinks;
 
@@ -289,7 +291,7 @@ function openTab(el, cityName) {
 $(document).ready ( function(){
   var tablinks = document.getElementsByClassName("tablinks");
   if (tablinks.length > 0){
-    openTab(tablinks[0],"Main");
+    openTab(tablinks[0],"Main",true);
   }
   // decide what to unlock based on mode
   //var object = document.getElementById("Trends");

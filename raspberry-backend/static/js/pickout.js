@@ -147,6 +147,17 @@ var pickout = (function(){
 		    break;
 		}
 	    }
+		//added by S. Farry
+		select.addEventListener("change", function(){
+			var opt;
+		    for ( var i = 0, len = select.options.length; i < len; i++ ) {
+				opt = select.options[i];
+				if ( opt.selected === true ) {
+				    field.innerHTML = opt.text;
+			    break;
+				}
+			}
+		}, false);
 
 		if(parent.hasAttribute('for')) _.attr(field, 'id', _.attr(parent, 'for'));
 		
@@ -218,7 +229,7 @@ var pickout = (function(){
 		_.addClass(modal, '-show');
 		_.addClass(overlay, '-show');
 
-		var title = select.hasAttribute('placeholder') ? _.attr(select, 'placeholder') : 'Select Setting';
+		var title = select.hasAttribute('placeholder') ? _.attr(select, 'placeholder') : 'Select';
 		_.$('.head', modal).innerHTML = title;
 		
 		_.rmClass(modal, '-multiple');

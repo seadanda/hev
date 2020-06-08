@@ -5885,8 +5885,9 @@ sb-topnav {
 }
 
 .sb-sidenav-dark {
-    #background-color: #212529;
-    #background-color: rgb(31,71,147) !important;
+    /*background-color: #212529;
+    background-color: rgb(31,71,147) !important;*/
+    background-color:rgba(30,30,30,0.8);
     color: rgba(255, 255, 255, 0.5);
 }
 .sb-sidenav-dark .sb-sidenav-menu .sb-sidenav-menu-heading {
@@ -6058,7 +6059,7 @@ div.active .path-icon{
 position: fixed;
 bottom: 1.0rem;
 width:5%;
-right: 0.5rem;
+right: 0rem;
 text-align: center;
 border-top-left-radius: 1.0rem !important;
 border-bottom-left-radius: 1.0rem !important;
@@ -6210,6 +6211,7 @@ z-index:1000;
   /*border: 1px solid #ccc;*/
   background-color: #f1f1f1;
   height:1.5rem;
+  display:flex;
 }
 
 /* Style the buttons that are used to open the tab content */
@@ -6219,8 +6221,9 @@ z-index:1000;
   border: none;
   outline: none;
   cursor: pointer;
-  padding: 14px 16px;
+  /*padding: 14px 16px;*/
   transition: 0.3s;
+  padding:0.3rem;
 }
 
 /* Change background color of buttons on hover */
@@ -6236,13 +6239,22 @@ z-index:1000;
 .tabcontent {
   display: none;
   padding: 6px 12px;
-  /*border: 1px solid #ccc;
-  border-top: none;*/
+  /*border: 1px solid red;*/
   position:relative;
+  min-height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem)/1.0); // 2.0rem if for the range-button container, 1.5rem for the tab header
 }
 
 .float-bottom-right {
   position: absolute;
   right:    0;
   bottom:   0;
+}
+.float-top-right {
+  position: absolute;
+  right:    0;
+  top:   0;
+}
+#select-setting{
+  font-size:5rem;
+  font-color:red;
 }
