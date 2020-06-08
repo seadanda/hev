@@ -113,25 +113,25 @@ $(document).ready(function() {
 			  }
 			  ]},
 	options: {elements: { point: { radius: 5}},
-		  legend: { display: true, labels: {fontSize: 24 } },
+		  legend: { display: true, labels: {fontSize: 24, fontColor:"#cccccc" } },
 		  scales: {xAxes: [{display: true,
-				    scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24},
+				    scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24, fontColor:"#cccccc"},
                     gridLines : {
                         display: true,
                         color: "rgba(255,255,255,0.2)",
                         zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
 				    ticks: {min: 0, max: 35,
-					     stepSize: 5, fontSize: 25 }}],
+					     stepSize: 5, fontSize: 25, fontColor:"#cccccc" }}],
 			   yAxes: [{display: true,
-				    scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24},
+				    scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24, fontColor:"#cccccc"},
                     gridLines : {
                         display: true,
                         color: "rgba(255,255,255,0.2)",
                         zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
 				    ticks: {min: 0, max: 800,
-					    stepSize: 100, fontSize:25 }}]},
+					    stepSize: 100, fontSize:25, fontColor:"#cccccc" }}]},
 		  tooltips: {
 		      callbacks: {
 			  label: function(tooltipItem) {
@@ -166,31 +166,31 @@ $(document).ready(function() {
 			   showLine            : paramExhale.dataset.showLine
 			  }]}
 	,options: {elements: { point: { radius: 5}},
-		  legend: { display: true, labels: {fontSize: 24 } },
+		  legend: { display: true, labels: {fontSize: 24 , fontColor:"#cccccc"} },
 		scales: {xAxes: [{display: true,
-				  scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24},
+				  scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24, fontColor:"#cccccc"},
                     gridLines : {
                         display: true,
                         color: "rgba(255,255,255,0.2)",
                         zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
 				  ticks: {min: 0, max: 800,
-					  stepSize: 100, fontSize: 25 }}],
+					  stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}],
 			    yAxes: [{display: true,
-				     scaleLabel: { display: true, labelString: 'Flow [ml/min]', fontSize: 24},
+				     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc"},
                     gridLines : {
                         display: true,
                         color: "rgba(255,255,255,0.2)",
                         zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
 				     ticks: {min: -300, max: 300,
-					     stepSize: 100, fontSize: 25 }}]},
+					     stepSize: 100, fontSize: 25 , fontColor:"#cccccc"}}]},
 		   tooltips: {
 		       callbacks: {
 			   label: function(tooltipItem) {
 			       //console.info(tooltipItem)
 			       var label = 'Volume ' + Math.round(tooltipItem.xLabel) + ' [ml]';
-			       label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [ml/min]';
+			       label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/h]';
 			       return label;
 			   }
 		       },
@@ -219,31 +219,31 @@ $(document).ready(function() {
 			   showLine            : paramExhale.dataset.showLine
 			  }]}
 	,options: {elements: { point: { radius: 5, fill: true}},
-		  legend: { display: true, labels: {fontSize: 24 } },
+		  legend: { display: true, labels: {fontSize: 24, fontColor:"#cccccc", } },
 		   scales: {xAxes: [{display: true,
-				     scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24},
+				     scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24, fontColor:"#cccccc",},
                     gridLines : {
                         display: true,
                         color: "rgba(255,255,255,0.2)",
                         zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
 				     ticks: {min: 0, max: 35 ,
-					     stepSize: 5  , fontSize: 25 }}],
+					     stepSize: 5  , fontSize: 25, fontColor:"#cccccc" }}],
 			    yAxes: [{display: true,
-				     scaleLabel: { display: true, labelString: 'Flow [ml/min]', fontSize: 24},
+				     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc",},
                     gridLines : {
                         display: true,
                         color: "rgba(255,255,255,0.2)",
                         zeroLineColor: 'rgba(255,255,255,0.2)',
                         },
 				     ticks: {min: -300, max: 300,
-					     stepSize: 100, fontSize: 25 }}]},
+					     stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}]},
 		   tooltips: {
 		       callbacks: {
 			   label: function(tooltipItem) {
 			       //console.info(tooltipItem)
 			       var label = 'Pressure ' + Math.round(tooltipItem.xLabel*10)/10 + ' [mbar]';
-			       label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [ml/min]';
+			       label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/H]';
 			       return label;
 			   }
 		       },
