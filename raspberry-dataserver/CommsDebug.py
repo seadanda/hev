@@ -33,39 +33,40 @@ class Dependant(object):
         self._lli = lli
 
     async def update_llipacket(self):
-        payload = await self._lli._payloadrecv.get()
-        global fsm
-        #logging.info(f"payload received: {payload}")
-        #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
-        #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
-        
-        if payload.getType() == PAYLOAD_TYPE.DATA.value:
+        while True:
+            payload = await self._lli._payloadrecv.get()
+            global fsm
             #logging.info(f"payload received: {payload}")
-            #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-            #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
-            #logging.info(f"Fsm state: {payload.fsm_state}")
-            fsm = payload.fsm_state
-        #if payload.getType() == PAYLOAD_TYPE.IVT.value:
-        #    logging.info(f"payload received:  {payload} ")
-            #logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
-        #logging.info(f"payload received: {payload}")
-        #if hasattr(payload, 'inhale_exhale_ratio'):
-        #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
-        #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
-        #   logging.info(f"payload received:  {payload} ")
-        #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
-        #    logging.info(f"payload received:  {payload} ")
-        #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-        #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-        if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-            logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-        if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-            logging.info(f"LOGMSG {payload} {fsm}") 
-        #if hasattr(payload, 'ventilation_mode'):
-        #    logging.info(f"payload received: {payload.ventilation_mode}")
-        #if hasattr(payload, 'duration_inhale'):
-        #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
-        self._llipacket = payload.getDict() # returns a dict
+            #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
+            #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
+        
+            if payload.getType() == PAYLOAD_TYPE.DATA.value:
+                #logging.info(f"payload received: {payload}")
+                #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
+                #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
+                #logging.info(f"Fsm state: {payload.fsm_state}")
+                fsm = payload.fsm_state
+            #if payload.getType() == PAYLOAD_TYPE.IVT.value:
+            #    logging.info(f"payload received:  {payload} ")
+                #logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
+            #logging.info(f"payload received: {payload}")
+            #if hasattr(payload, 'inhale_exhale_ratio'):
+            #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
+            #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
+            #   logging.info(f"payload received:  {payload} ")
+            #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
+            #    logging.info(f"payload received:  {payload} ")
+            #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+            #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+            if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+                logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+            if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+                logging.info(f"LOGMSG {payload} {fsm}") 
+            #if hasattr(payload, 'ventilation_mode'):
+            #    logging.info(f"payload received: {payload.ventilation_mode}")
+            #if hasattr(payload, 'duration_inhale'):
+            #    logging.info(f"payload received: inhale duration = {payload.duration_inhale} ")
+            self._llipacket = payload.getDict() # returns a dict
 
 def send_cmd(cmd_type, cmd_code, param=0.0):
     try:
