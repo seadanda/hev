@@ -35,7 +35,7 @@ class Dependant(object):
     async def update_llipacket(self):
         payload = await self._lli._payloadrecv.get()
         global fsm
-        #logging.info(f"payload received: {payload}")
+        logging.info(f"payload received: {payload}")
         #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
         #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
@@ -80,7 +80,7 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
 
 def send_personal(name, age, sex, height, weight):
     try:
-        cmd = PersonalFormat(version=0xAF, name=name.encode(), age=int(age), sex=sex.encode(), height=int(height), weight=int(weight))
+        cmd = PersonalFormat(name=name.encode(), age=int(age), sex=sex.encode(), height=int(height), weight=int(weight))
         logging.info(f' payload sent {cmd}')
         comms.writePayload(cmd)
     except Exception as e:
@@ -97,10 +97,11 @@ async def commsDebug():
     print('get personal info')
     send_cmd(cmd_type="GENERAL", cmd_code="GET_PERSONAL")
 
-    await asyncio.sleep(10)
-    print('send personal info')
-    send_personal("Jessica Jones", 29, 'F', 175, 58)
+    #await asyncio.sleep(10)
+    #print('send personal info')
+    #send_personal("Jessica Jones", 29, 'F', 175, 58)
 
+    
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
@@ -127,7 +128,9 @@ async def commsDebug():
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
 
     await asyncio.sleep(1)
-    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1220) 
+
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_RISE_TIME", param=200.0) 
+    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1.220) 
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25)
     #await asyncio.sleep(1)
     #print('get all targets pcac')
@@ -142,6 +145,7 @@ async def commsDebug():
     #print('sent inhale + exhale trigger -> 1')
     while True:
         await asyncio.sleep(1)
+        print("get targets")
         send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
         send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
         send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)

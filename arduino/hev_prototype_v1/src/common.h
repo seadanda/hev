@@ -392,7 +392,7 @@ struct target_data_format{
     float exhale_trigger_threshold ;
     float buffer_upper_pressure = 0.0; 
     float buffer_lower_pressure = 0.0; 
-    float inhale_rise_time      = 0.0;
+    uint16_t inhale_rise_time      = 0;  //ms
 };
 #pragma pack()
 
@@ -628,7 +628,7 @@ struct target_variables {
     float exhale_trigger_threshold ;
     float buffer_upper_pressure; 
     float buffer_lower_pressure; 
-    float inhale_rise_time; 
+    uint16_t inhale_rise_time;  //ms
     bool  ie_selected;
 };
 

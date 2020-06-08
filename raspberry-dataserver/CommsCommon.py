@@ -620,7 +620,7 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBffffffHBBBfffff")
+    _dataStruct = Struct("<BIBBffffffHBBBffffH")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
     mode                     : int   = 0
@@ -638,7 +638,7 @@ class TargetFormat(PayloadFormat):
     exhale_trigger_threshold : float = 0.0
     buffer_upper_pressure    : float = 0.0
     buffer_lower_pressure    : float = 0.0 
-    inhale_rise_time         : float = 0.0
+    inhale_rise_time         : int   = 0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 

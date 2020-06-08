@@ -100,7 +100,7 @@ void BreathingLoop::initTargets()
 
     _targets_pcac.buffer_lower_pressure = 285.0;
     _targets_pcac.buffer_upper_pressure = 300.0;
-    _targets_pcac.inhale_rise_time  = 100.0;  // not yet doing anything
+    _targets_pcac.inhale_rise_time  = 100;  // not yet doing anything
 
     // copy all from PCAC
     _targets_pcac_prvc = _targets_pcac;
