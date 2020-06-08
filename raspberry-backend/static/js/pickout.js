@@ -149,14 +149,7 @@ var pickout = (function(){
 	    }
 		//added by S. Farry
 		select.addEventListener("change", function(){
-			var opt;
-		    for ( var i = 0, len = select.options.length; i < len; i++ ) {
-				opt = select.options[i];
-				if ( opt.selected === true ) {
-				    field.innerHTML = opt.text;
-			    break;
-				}
-			}
+			setInitialValue(config);
 		}, false);
 
 		if(parent.hasAttribute('for')) _.attr(field, 'id', _.attr(parent, 'for'));
@@ -537,9 +530,13 @@ var pickout = (function(){
 	*/
 
     function setOptionSimple(select, data, txt){
+		console.log("setting option simple ",data);
+		console.log(select.parentElement.querySelector('.pk-field').innerHTML);
 	if (data.txt != select.parentElement.querySelector('.pk-field').innerHTML){
+		console.log("selecting options",data.txt);
 		_.toArray(select).map(function(option, index){
 		    if (index === data.index) {
+				console.log("index and data.index ",index,data.index);
 			_.attr(option, 'selected', 'selected');
 			return;
 		    }
@@ -547,13 +544,14 @@ var pickout = (function(){
 		    option.removeAttribute('selected');
 		});
 		feedField(select, data.txt);
+	}
 	closeModal();
 	if ("createEvent" in document) {
 		var evt = document.createEvent("HTMLEvents");
 		evt.initEvent("change", false, true);
 		select.dispatchEvent(evt);
 	}
-	else
+	else {
 		select.fireEvent("onchange");
 		}
     }

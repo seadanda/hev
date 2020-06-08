@@ -128,9 +128,7 @@ function requestData() {
                     // find the one to show
                     if (battery_point['ok']) { powered.classList.remove("transparent"); }
                     else if ( battery_point["bat"] && battery_point["bat85"] ) {full.classList.remove("transparent");}
-                    else  if ( battery_point["bat"] ) { three_qtr.classList.remove("transparent"); }
-                    //else  if (battery >= 37.5 && battery < 67.5) { half.classList.remove("transparent"); }
-                    //else  if (battery >= 7.5 && battery < 37.5) { one_qtr.classList.remove("transparent"); }
+                    else if ( battery_point["bat"] ) { three_qtr.classList.remove("transparent"); }
                     else  { empty.classList.remove("transparent"); }
                 }
 

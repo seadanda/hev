@@ -65,43 +65,34 @@
   </div>
 
   <div id="clinicalAlarms" class="tabcontent">
-    <form class="settings-form">
+    <form class="settings-form w-100">
       <table class = "ml-auto mr-auto">
-  
         <tr></tr><tr>
-          <td></td>
           <td><label class="small">APNEA</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_APNEA" type="number" value="15" onclick="show_easy_numpad(this, min_APNEA_controller);" readOnly/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_APNEA" type="number" value="0" onclick="show_easy_numpad(this, max_APNEA_controller);" readOnly/></td>
+          <td>MIN <input class="form-control py-1 lockable" id="min_APNEA" type="number" value="15" onclick="show_easy_numpad(this, min_APNEA_controller);"/></td>
+          <td>MAX <input class="form-control py-1 lockable" id="max_APNEA" type="number" value="0" onclick="show_easy_numpad(this, max_APNEA_controller);"/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="APNEA" onclick=submit_thresholds(this)></input></td>
-          <td><span></span></td>
         </tr>
            
         <tr></tr><tr>
-          <td></td>
           <td><label class="small">CHECK_VALVE_EXHALE</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_VALVE_EXHALE" type="number" value="0" onclick="show_easy_numpad(this, min_CHECK_VALVE_EXHALE_controller);" readOnly/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_VALVE_EXHALE" type="number" value="15" onclick="show_easy_numpad(this, max_CHECK_VALVE_EXHALE_controller);" readOnly/></td>
+          <td>MIN <input class="form-control py-1 lockable" id="min_CHECK_VALVE_EXHALE" type="number" value="0" onclick="show_easy_numpad(this, min_CHECK_VALVE_EXHALE_controller);"/></td>
+          <td>MAX <input class="form-control py-1 lockable" id="max_CHECK_VALVE_EXHALE" type="number" value="15" onclick="show_easy_numpad(this, max_CHECK_VALVE_EXHALE_controller);"/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="CHECK_VALVE_EXHALE" onclick=submit_thresholds(this)></input></td>
-          <td><span></span></td>
         </tr>            
 
         <tr></tr><tr>
-          <td></td>
           <td><label class="small">CHECK_P_PATIENT</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_CHECK_P_PATIENT" type="number" value="0" onclick="show_easy_numpad(this, min_CHECK_P_PATIENT_controller);" readOnly/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_CHECK_P_PATIENT" type="number" value="15" onclick="show_easy_numpad(this, max_CHECK_P_PATIENT_controller);" readOnly/></td>
+          <td>MIN <input class="form-control py-1 lockable" id="min_CHECK_P_PATIENT" type="number" value="0" onclick="show_easy_numpad(this, min_CHECK_P_PATIENT_controller);"/></td>
+          <td>MAX <input class="form-control py-1 lockable" id="max_CHECK_P_PATIENT" type="number" value="15" onclick="show_easy_numpad(this, max_CHECK_P_PATIENT_controller);"/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="CHECK_P_PATIENT" onclick=submit_thresholds(this)></input></td>
-          <td><span></span></td>
         </tr>            
 
         <tr></tr><tr>
-          <td></td>
           <td><label class="small">EXPIRATION_SENSE_FAULT_OR_LEAK</label></td>
-          <td>MIN <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="min_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="1" onclick="show_easy_numpad(this, min_EXPIRATION_SENSE_FAULT_OR_LEAK_controller);" readOnly/></td>
-          <td>MAX <input class="form-control py-1 prvc-edit psv-edit pcac-edit lockOnly" id="max_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="2" onclick="show_easy_numpad(this, max_EXPIRATION_SENSE_FAULT_OR_LEAK_controller);" readOnly/></td>
+          <td>MIN <input class="form-control py-1 lockable" id="min_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="1" onclick="show_easy_numpad(this, min_EXPIRATION_SENSE_FAULT_OR_LEAK_controller);"/></td>
+          <td>MAX <input class="form-control py-1 lockable" id="max_EXPIRATION_SENSE_FAULT_OR_LEAK" type="number" value="2" onclick="show_easy_numpad(this, max_EXPIRATION_SENSE_FAULT_OR_LEAK_controller);"/></td>
           <td><input type="button" class="form-control py-2" value="Submit thresholds" id="EXPIRATION_SENSE_FAULT_OR_LEAK" onclick=submit_thresholds(this)></input></td>
-          <td><span></span></td>
         </tr>            
 
       </table>
