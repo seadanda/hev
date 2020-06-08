@@ -4,16 +4,20 @@
 {% block content %}
 <div class="container text-white">
   
-  <div class="tab d-none">
-    <button class="tablinks" onclick="openSetting(this, 'mode')">Mode</button>
-    <button class="tablinks" onclick="openSetting(this, 'pcac')">PC-A/C</button>
-    <button class="tablinks" onclick="openSetting(this, 'prvc')">PC-A/C-PRVC</button>
-    <button class="tablinks" onclick="openSetting(this, 'psv')">PC-PSV</button>
-
-  </div>
   
   <!-- Tab content -->
-  <div id = "mode" class = "tabcontent">
+  <div id = "mode" class = "tabcontent align-items-center justify-content-center">
+    <div class="menu">
+      <h1>Select Settings To Edit</h1>
+      <!--<button class="tablinks" onclick="openSetting(this, 'mode')">Mode</button>-->
+      <button class="tablinks" onclick="openSetting(this, 'personal')">Personal Details</button>
+      <button class="tablinks" onclick="openSetting(this, 'pcac')">PC-A/C</button>
+      <button class="tablinks" onclick="openSetting(this, 'prvc')">PC-A/C-PRVC</button>
+      <button class="tablinks" onclick="openSetting(this, 'psv')">PC-PSV</button>
+      <button class="tablinks" onclick = "openSetting(this,'test')">TEST</options>
+    </div>
+
+    <!--
     <div id = "select-settings" class = "select-container lockable d-flex justify-content-center">
       <select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Settings" placeholder = "Select Settings to Edit">
         <option value = "select">Select Setting</option>
@@ -21,10 +25,9 @@
           <option value="pcac">PC-A/C</option>
           <option value="prvc">PC-A/C-PRVC</option>
           <option value="psv">PC-PSV</option>
-          <!--<option value="cpap">CPAP</option>-->
           <option value = "test">TEST</options>
       </select>
-    </div>
+    </div>-->
   </div>
   <div id="personal" class="tabcontent align-items-center justify-content-center">
     <form method="post" id = "personal-settings-form">
@@ -44,7 +47,7 @@
         </table>
         <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
         <div class="float-top-right px-2" onclick="openSettingContent('mode')">
-          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+          <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
         </div>
     </form>
   </div>
@@ -62,7 +65,7 @@
       </tr>
       <tr>
         <td><input type="radio" name="time_or_ie" id = "pcac_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
-        <td><label class="small" for="pcac_radio_inhale_time">Inhale Time</label></td>
+        <td><label class="small" for="pcac_radio_inhale_time">Inhale Time <small>[s]</small></label></td>
         <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
       </tr>
         <tr>
@@ -72,17 +75,17 @@
       </tr>
       <tr>
         <td></td>
-        <td><label class="small">Inhale Trigger Sensitivity</label></td>
+        <td><label class="small">Inhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
         <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
       </tr>
       <tr>
         <td></td>
-        <td><label class="small">Exhale Trigger Sensitivity</label></td>
+        <td><label class="small">Exhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
         <td><input class="form-control py-1 lockable" id="pcac_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
       </tr>
       <tr>
         <td></td>
-        <td><label class="small">Inhale Pressure</label></td>
+        <td><label class="small">Inhale Pressure <small>[cmH2O]</small></label></td>
         <td><input name="Inhale Pressure" class="form-control py-1 lockable" id="pcac_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
       </tr>
       <tr>
@@ -92,13 +95,23 @@
       </tr>
       <tr>
         <td></td>
-        <td><label class="small">PEEP</label></td>
+        <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
+        <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="pcac_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">PEEP <small>[cmH2O]</small></label></td>
         <td><input class="form-control py-1 lockable" id="pcac_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+      </tr>
+      <tr>
+        <td></td>
+        <td><label class="small">FIO2 <small>[%]</small></label></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
       </tr>
     </table>
       <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
       <div class="float-top-right px-2" onclick="openSettingContent('mode')">
-        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+        <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
       </div>
 </form>
     </div>
@@ -116,7 +129,7 @@
           </tr>
           <tr>
             <td><input type="radio" name="time_or_ie" id = "prvc_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
-            <td><label class="small" for="prvc_radio_inhale_time">Inhale Time</label></td>
+            <td><label class="small" for="prvc_radio_inhale_time">Inhale Time <small>[s]</small></label></td>
             <td><input class="form-control py-1 lockable" id="prvc_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
           </tr>
             <tr>
@@ -126,17 +139,17 @@
           </tr>
           <tr>
             <td></td>
-            <td><label class="small">Inhale Trigger Sensitivity</label></td>
+            <td><label class="small">Inhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
             <td><input class="form-control py-1 lockable" id="prvc_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
           </tr>
           <tr>
             <td></td>
-            <td><label class="small">Exhale Trigger Sensitivity</label></td>
+            <td><label class="small">Exhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
             <td><input class="form-control py-1 lockable" id="prvc_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
           </tr>
           <tr>
             <td></td>
-            <td><label class="small">Inhale Pressure</label></td>
+            <td><label class="small">Inhale Pressure <small>[cmH2O]</small></label></td>
             <td><input name="Inhale Pressure" class="form-control py-1 lockable" id="prvc_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
           </tr>
           <tr>
@@ -146,13 +159,23 @@
           </tr>
           <tr>
             <td></td>
-            <td><label class="small">PEEP</label></td>
+            <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
+            <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="prvc_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">PEEP <small>[cmH2O]</small></label></td>
             <td><input class="form-control py-1 lockable" id="prvc_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+          </tr>
+          <tr>
+            <td></td>
+            <td><label class="small">FIO2 <small>[%]</small></label></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
           </tr>
         </table>
           <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
           <div class="float-top-right px-2" onclick="openSettingContent('mode')">
-            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+            <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
           </div>
     </form>
         </div>
@@ -170,7 +193,7 @@
               </tr>
               <tr>
                 <td><input type="radio" name="time_or_ie" id = "psv_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
-                <td><label class="small" for="psv_radio_inhale_time">Inhale Time</label></td>
+                <td><label class="small" for="psv_radio_inhale_time">Inhale Time <small>[s]</small></label></td>
                 <td><input class="form-control py-1 lockable" id="psv_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
               </tr>
                 <tr>
@@ -180,17 +203,17 @@
               </tr>
               <tr>
                 <td></td>
-                <td><label class="small">Inhale Trigger Sensitivity</label></td>
+                <td><label class="small">Inhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
                 <td><input class="form-control py-1 prvc-edit psv-edit psv-edit lockable" id="psv_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
               </tr>
               <tr>
                 <td></td>
-                <td><label class="small">Exhale Trigger Sensitivity</label></td>
+                <td><label class="small">Exhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
                 <td><input class="form-control py-1 psv-edit lockable" id="psv_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
               </tr>
               <tr>
                 <td></td>
-                <td><label class="small">Inhale Pressure</label></td>
+                <td><label class="small">Inhale Pressure <small>[cmH2O]</small></label></td>
                 <td><input name="Inhale Pressure" class="form-control py-1 psv-edit psv-edit lockable" id="psv_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
               </tr>
               <tr>
@@ -200,13 +223,23 @@
               </tr>
               <tr>
                 <td></td>
-                <td><label class="small">PEEP</label></td>
+                <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
+                <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="psv_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">PEEP <small>[cmH2O]</small></label></td>
                 <td><input class="form-control py-1 prvc-edit psv-edit psv-edit lockable" id="psv_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+              </tr>
+              <tr>
+                <td></td>
+                <td><label class="small">FIO2 <small>[%]</small></label></td>
+                <td><input class="form-control py-1 lockable" id="psv_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
               </tr>
             </table>
               <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
               <div class="float-top-right px-2" onclick="openSettingContent('mode')">
-                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+                <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
               </div>
         </form>
             </div>
@@ -223,7 +256,7 @@
                   </tr>
                   <tr>
                     <td><input type="radio" name="time_or_ie" id = "test_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
-                    <td><label class="small" for="test_radio_inhale_time">Inhale Time</label></td>
+                    <td><label class="small" for="test_radio_inhale_time">Inhale Time <small>[s]</small></label></td>
                     <td><input class="form-control py-1 lockable" id="test_setting_inhale_time" type="number" step = "any"  value="" disabled name='Inhale Time' /></td>
                   </tr>
                     <tr>
@@ -233,17 +266,17 @@
                   </tr>
                   <tr>
                     <td></td>
-                    <td><label class="small">Inhale Trigger Sensitivity</label></td>
+                    <td><label class="small">Inhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
                     <td><input class="form-control py-1 lockable" id="test_setting_inhale_trigger_threshold" step = "any"  type="number" value="" name = "Inhale Trigger Sensitivity" disabled /></td>
                   </tr>
                   <tr>
                     <td></td>
-                    <td><label class="small">Exhale Trigger Sensitivity</label></td>
+                    <td><label class="small">Exhale Trigger Sensitivity <small>[cmH2O]</small></label></td>
                     <td><input class="form-control py-1 lockable" id="test_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" /></td>
                   </tr>
                   <tr>
                     <td></td>
-                    <td><label class="small">Inhale Pressure</label></td>
+                    <td><label class="small">Inhale Pressure <small>[cmH2O]</small></label></td>
                     <td><input name="Inhale Pressure" class="form-control py-1 lockable" id="test_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
                   </tr>
                   <tr>
@@ -253,13 +286,23 @@
                   </tr>
                   <tr>
                     <td></td>
-                    <td><label class="small">PEEP</label></td>
+                    <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
+                    <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="test_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">PEEP <small>[cmH2O]</small></label></td>
                     <td><input class="form-control py-1 lockable" id="test_setting_peep" type="number" step = "any" value="" disabled name = "PEEP"/></td>
+                  </tr>
+                  <tr>
+                    <td></td>
+                    <td><label class="small">FIO2 <small>[%]</small></label></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
                   </tr>
                 </table>
                   <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
                   <div class="float-top-right px-2" onclick="openSettingContent('mode')">
-                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="arrow-left" class="svg-inline--fa fa-arrow-left fa-w-14" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" d="M257.5 445.1l-22.2 22.2c-9.4 9.4-24.6 9.4-33.9 0L7 273c-9.4-9.4-9.4-24.6 0-33.9L201.4 44.7c9.4-9.4 24.6-9.4 33.9 0l22.2 22.2c9.5 9.5 9.3 25-.4 34.3L136.6 216H424c13.3 0 24 10.7 24 24v32c0 13.3-10.7 24-24 24H136.6l120.5 114.8c9.8 9.3 10 24.8.4 34.3z"></path></svg>
+                    <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
                   </div>
             </form>
                 </div>
@@ -292,17 +335,18 @@ function unlock_mode_elements(mode){
   }
 
 }
-
+/*
 var object = document.getElementById("vent_mode");
 object.addEventListener("change", function(){
   var object = document.getElementById("vent_mode");
   var opt = object.options[object.selectedIndex];
-  console.log(opt.value);
+  console.log("try to open up: ",opt.value);
   openSettingContent(opt.value);
   console.log("setting value to select");
   object.value="select";
+  //object.selectedIndex="2";
 });
-
+*/
 
 function edit_ie_ratio(element){
   if (unlocked){
@@ -604,12 +648,6 @@ $(document).ready(function(){
 	});
 });
 
-
-
-pickout.to({
-  el:'.pickout',
-  theme:'MySelector'
-  });
 
 buff_fill_controller = new input_controller("buff_fill", document.getElementById("buff_fill"));
 buff_flush_controller = new input_controller("buff_flush", document.getElementById("buff_flush"));

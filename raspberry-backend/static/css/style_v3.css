@@ -5966,7 +5966,7 @@ sb-topnav {
 }
 .path-icon{ fill:white; }
 .path-icon-alarm{ fill:red; }
-.transparent{ fill:none;fill-opacity:1.0; }
+.transparent{ fill:none;fill-opacity:0; }
 .w-100{width:100%;}
 .w-95{width:95%;}
 .w-99{width:99%;}
@@ -6100,7 +6100,7 @@ z-index:1000;
   background-color: white;
 }
 
-.card-reading, .card-setting, .card-input-reading, .card-reading-proto, .card-input-reading-proto{
+.card-reading, .card-setting, .card-reading-proto, .card-input-reading-proto{
     position: relative;
     min-width: 0;
     word-wrap: break-word;
@@ -6146,12 +6146,16 @@ z-index:1000;
 */
 .card-setting .card-header{
   background-color: rgba(0,0,0, 0.13);
+
 }
 
-.card-setting, .card-reading {
+.card-reading {
     height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/5.0 - 0.5rem);
 }
-.card-reading-proto, .card-input-reading-proto, .card-setting{
+.card-setting {
+    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0 - 0.5rem);
+}
+.card-reading-proto, .card-input-reading-proto {
     height:calc((100vh - var(--top-height) -  1.5rem - 1.0rem - 2.0rem)/5.0 - 0.5rem);
 }
 
@@ -6210,12 +6214,19 @@ z-index:1000;
   overflow: hidden;
   /*border: 1px solid #ccc;*/
   background-color: #f1f1f1;
+}
+/*
+.tab{
   height:1.5rem;
+}
+*/
+.menu{
   display:flex;
+  flex-direction: column;
 }
 
 /* Style the buttons that are used to open the tab content */
-.tab button {
+.tab button, .menu button {
   background-color: inherit;
   float: left;
   border: none;
@@ -6225,14 +6236,17 @@ z-index:1000;
   transition: 0.3s;
   padding:0.3rem;
 }
+.menu button{
+  font-size:1.4rem;
+}
 
 /* Change background color of buttons on hover */
-.tab button:hover {
+.tab button:hover, .menu button:hover {
   background-color: #ddd;
 }
 
 /* Create an active/current tablink class */
-.tab button.active {
+.tab, .menu button.active {
   background-color: #ccc;
 }
 /* Style the tab content */
@@ -6253,8 +6267,4 @@ z-index:1000;
   position: absolute;
   right:    0;
   top:   0;
-}
-#select-setting{
-  font-size:5rem;
-  font-color:red;
 }

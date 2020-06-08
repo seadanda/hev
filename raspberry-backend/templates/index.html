@@ -111,34 +111,40 @@
 				</div>
 				<div class = "row no-gutters">
 					<div class="card-setting">
-						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+						<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-dark col-center" href="#">Inhale Time</a>
 						</div>
 						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inhale_time" value = 0.0 onclick = "show_easy_numpad(this, new input_controller('INHALE_TIME',this))"></div> 
 					</div>
 					<div class="card-setting">
-						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+						<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-dark col-center" href="#">RR</a>
 						</div>
 						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_respiratory_rate" value=0.0 onclick="show_easy_numpad(this, new input_controller('RESPIRATORY_RATE',this));"></input></div> 
 					</div>
 					<div class="card-setting">
-						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+						<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-dark col-center" href="#">PEEP</a>
 						</div>
 						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_peep" value=0.0 onclick="show_easy_numpad(this,new input_controller('PEEP',this))"></div> 
 					</div>
 					<div class="card-setting">
-						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+						<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-dark col-center" href="#">P<sub>Peak</sub> <small>[cmH20]</small></a>
 						</div>
 						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_inspiratory_pressure" value=0.0 onclick="show_easy_numpad(this,new input_controller('INSPIRATORY_PRESSURE',this))"></div> 
 					</div>
 					<div class="card-setting">
-						<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
+						<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-dark col-center" href="#">FIO<sub>2</sub> <small>[%]</small></a>
 						</div>
 						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_fiO2_percent" value=0.0 onclick="show_easy_numpad(this,new input_controller('FIO2',this))"></div> 
+					</div>
+					<div class="card-setting">
+						<div class="card-header d-flex align-items-center justify-content-between">
+							<a class="small text-dark col-center" href="#">Inhale Rise Time <small>[s]</small></a>
+						</div>
+						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "inhale_rise_time" value=0.0 onclick="show_easy_numpad(this,new input_controller('INHALE_RISE_TIME',this))"></div> 
 					</div>
 
 
@@ -315,10 +321,6 @@ Object.defineProperty(gauge_fio_container, 'getValue', {
 });
 */
 
-  pickout.to({
-  el:'.pickout',
-  theme:'MySelector'
-  });
 
 
 function openTab(el, cityName, force) {
