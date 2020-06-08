@@ -632,8 +632,9 @@ def last_personal():
         if fetched:
             fetched_all.append({item : fetched[index] for index,item in enumerate(list_variables)})
         conn.close()
-
-    response = make_response(json.dumps(fetched_all[0]).encode('utf-8') )
+    fetched_last = {}
+    if (len(fetched_all) > 0): fetched_last = fetched_all[0]
+    response = make_response(json.dumps(fetched_last).encode('utf-8') )
     response.content_type = 'application/json'
 
     return response
