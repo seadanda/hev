@@ -115,7 +115,7 @@ $(document).ready(function() {
                 },
                 title: {
                     display: true,
-                    text: 'Pressure [mbar]',
+                    text: 'Pressure [cm2H2O]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
 			fontColor: "#cccccc",
                 },            
@@ -217,7 +217,7 @@ $(document).ready(function() {
                 },
                 title: {
                   display: true,
-            		text: 'Flow [mL/min]',
+            		text: 'Flow [NL/h]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
 			fontColor: "#cccccc",
                 },
