@@ -37,6 +37,10 @@ private:
     void cmdSetMode(cmd_format &cf);
     void cmdSetThresholdMin(cmd_format &cf);
     void cmdSetThresholdMax(cmd_format &cf);
+    void cmdGetThresholdMin(cmd_format &cf);
+    void cmdGetThresholdMax(cmd_format &cf);
+    void reportThresholdMin(ALARM_CODES alarm_code);
+    void reportThresholdMax(ALARM_CODES alarm_code);
     void cmdSetValve(cmd_format &cf);
     void cmdSetPersonal(cmd_format &cf);
 

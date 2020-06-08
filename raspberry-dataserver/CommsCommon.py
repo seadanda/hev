@@ -31,6 +31,9 @@ class CMD_TYPE(Enum):
     SET_TARGET_TEST        =  12
     SET_TARGET_CURRENT     =  13
     GET_TARGETS            =  14
+    SET_PERSONAL           =  15
+    GET_THRESHOLD_MIN      =  16
+    GET_THRESHOLD_MAX      =  17
 
 
 @unique

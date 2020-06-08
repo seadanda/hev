@@ -388,6 +388,12 @@ int UILoop::doCommand(cmd_format &cf)
         // case CMD_TYPE::SET_PERSONAL:
         //     cmdSetPersonal(cf);
         //     break;
+        case CMD_TYPE::GET_THRESHOLD_MIN :
+            cmdGetThresholdMin(cf);
+            break;
+        case CMD_TYPE::GET_THRESHOLD_MAX :
+            cmdGetThresholdMax(cf);
+            break;
         default:
             break;
     }
@@ -486,13 +492,49 @@ void UILoop::cmdGetTarget(cmd_format &cf){
 
 // FIXME shouldn't these use setThresholdMin,Max ...?
 void UILoop::cmdSetThresholdMin(cmd_format &cf) {
-    setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMin(), cf.param);
+    ALARM_CODES alarm_code = static_cast<ALARM_CODES>(cf.cmd_code);
+    setAlarm<float>(alarm_code, _alarm_loop->getThresholdsMin(), cf.param);
+    reportThresholdMin(alarm_code);
 }
 
 void UILoop::cmdSetThresholdMax(cmd_format &cf) {
-    setAlarm<float>(static_cast<ALARM_CODES>(cf.cmd_code), _alarm_loop->getThresholdsMax(), cf.param);
+    ALARM_CODES alarm_code = static_cast<ALARM_CODES>(cf.cmd_code);
+    setAlarm<float>(alarm_code, _alarm_loop->getThresholdsMax(), cf.param);
+    reportThresholdMax(alarm_code);
+}
+
+void UILoop::cmdGetThresholdMin(cmd_format &cf) {
+    ALARM_CODES alarm_code = static_cast<ALARM_CODES>(cf.cmd_code);
+    reportThresholdMin(alarm_code);
+}
+
+void UILoop::cmdGetThresholdMax(cmd_format &cf) {
+    ALARM_CODES alarm_code = static_cast<ALARM_CODES>(cf.cmd_code);
+    reportThresholdMax(alarm_code);
 }
 
 void UILoop::cmdSetValve(cmd_format &cf) {
     setValveParam(static_cast<CMD_SET_VALVE>(cf.cmd_code), _breathing_loop->getValvesController()->getValveParams(), cf.param);
+}
+
+void UILoop::reportThresholdMin(ALARM_CODES alarm_code)
+{
+    cmd_format response;
+    response.timestamp = millis();
+    response.cmd_type = CMD_TYPE::GET_THRESHOLD_MIN;
+    response.cmd_code = alarm_code;
+    response.param = _alarm_loop->getThresholdsMin()[alarm_code];
+    _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&response), sizeof(response));
+    _comms->writePayload(_pl_send);
+
+}
+void UILoop::reportThresholdMax(ALARM_CODES alarm_code)
+{
+    cmd_format response;
+    response.timestamp = millis();
+    response.cmd_type = CMD_TYPE::GET_THRESHOLD_MAX;
+    response.cmd_code = alarm_code;
+    response.param = _alarm_loop->getThresholdsMax()[alarm_code];
+    _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&response), sizeof(response));
+    _comms->writePayload(_pl_send);
 }

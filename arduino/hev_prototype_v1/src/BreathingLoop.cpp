@@ -1088,7 +1088,6 @@ bool BreathingLoop::exhaleTrigger()
     if(en == true){
         //logMsg("exhale trigger");
         uint32_t tnow = static_cast<uint32_t>(millis());
-        valve_params vp = _valves_controller.getValveParams();
         if((_running_avg_flow < (_targets_current->exhale_trigger_threshold * _peak_flow)) 
             && (tnow - _peak_flow_time >= 100)){ // wait 10ms after peak
             //TODO - check we're past 'peak'

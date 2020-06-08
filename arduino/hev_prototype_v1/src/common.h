@@ -63,7 +63,9 @@ enum CMD_TYPE  : uint8_t {
     SET_TARGET_TEST        =  12,
     SET_TARGET_CURRENT     =  13,
     GET_TARGETS            =  14,
-    SET_PERSONAL           =  15
+    SET_PERSONAL           =  15,
+    GET_THRESHOLD_MIN      =  16,
+    GET_THRESHOLD_MAX      =  17
 };
 
 enum CMD_GENERAL : uint8_t {
