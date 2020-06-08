@@ -110,7 +110,7 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
             targets.fiO2_percent = value;
             break;
         case CMD_SET_TARGET::INHALE_TIME: 
-            targets.inhale_time = value;
+            targets.inhale_time = 1000.0*value;// set in s, stored in ms
             targets.ie_selected = false;
             break;
         case CMD_SET_TARGET::INHALE_TRIGGER_ENABLE :
@@ -128,6 +128,8 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
         case CMD_SET_TARGET::EXHALE_TRIGGER_THRESHOLD :
             targets.exhale_trigger_threshold = value;
             break;
+        case CMD_SET_TARGET::INHALE_RISE_TIME: 
+            targets.inhale_rise_time = value;  
     }
 }
 
