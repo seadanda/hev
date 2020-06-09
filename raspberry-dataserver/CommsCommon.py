@@ -787,16 +787,20 @@ class CommandFormat(PayloadFormat):
     param: float  = 0.0
 
     def fromByteArray(self, byteArray):
+        cmd = 0
+        code = 0
         tmp_payload_type = 0
         (self.version,
         self.timestamp,
         tmp_payload_type,
-        self.cmd_type,
-        self.cmd_code,
+        cmd,
+        code,
         self.param) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
+        self.cmd_type     = CMD_TYPE(cmd)
+        self.cmd_code     = CMD_MAP[self.cmd_type.name].value(code)
         self._byteArray = byteArray
 
 
