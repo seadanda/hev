@@ -86,6 +86,7 @@ async def commsDebug():
     send_cmd(cmd_type="SET_PID", cmd_code="KP", param=1.0*0.001)#
     send_cmd(cmd_type="SET_PID", cmd_code="KI", param=1.0*0.0005)# 0.0005
     send_cmd(cmd_type="SET_PID", cmd_code="KD", param=1.0*0.001)# 0.001
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2.5) 
     send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
     
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)

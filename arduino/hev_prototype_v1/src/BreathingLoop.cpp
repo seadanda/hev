@@ -100,7 +100,7 @@ void BreathingLoop::initTargets()
 
     _targets_pcac.buffer_lower_pressure = 285.0;
     _targets_pcac.buffer_upper_pressure = 300.0;
-    _targets_pcac.inhale_rise_time  = 100;  // not yet doing anything
+    _targets_pcac.pid_gain = 1;  // not yet doing anything
 
     // copy all from PCAC
     _targets_pcac_prvc = _targets_pcac;
@@ -599,7 +599,7 @@ void BreathingLoop::FSM_breathCycle()
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = 1000;
             break;
         default:
@@ -1001,8 +1001,8 @@ void BreathingLoop::doPID(){
     //Calculate the PID error based on the pid set point
     float error = _pid.target_pressure - _pid.process_pressure;
 
-    _pid.proportional       = _pid.Kp*error;
-    _pid.integral          += _pid.Ki*error;
+    _pid.proportional       = _targets_current->pid_gain * _pid.Kp*error;
+    _pid.integral          += _targets_current->pid_gain * _pid.Ki*error;
 
     //Derivative calculation
 

@@ -36,7 +36,7 @@ class Dependant(object):
         while True:
             payload = await self._lli._payloadrecv.get()
             global fsm
-            logging.info(f"payload received: {payload}")
+            #logging.info(f"payload received: {payload}")
             #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
             #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
@@ -57,10 +57,10 @@ class Dependant(object):
             #    logging.info(f"payload received:  {payload.peep} {fsm}")
             #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
             #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-            if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
-               logging.info(f"payload received:  {payload} ")
-            if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-                logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+            #if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
+            #   logging.info(f"payload received:  {payload} ")
+            #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+            #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
             if payload.getType() == PAYLOAD_TYPE.TARGET.value:
                 logging.info(f"TARGET {payload} {fsm}") 
             if payload.getType() == PAYLOAD_TYPE.CMD.value:
@@ -135,7 +135,7 @@ async def commsDebug():
 
     await asyncio.sleep(1)
 
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_RISE_TIME", param=200.0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2.3) 
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1.220) 
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25)
     #await asyncio.sleep(1)

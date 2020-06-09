@@ -99,7 +99,7 @@ class CMD_SET_TARGET(Enum):
     INHALE_TIME              = 7
     INHALE_TRIGGER_THRESHOLD = 8
     EXHALE_TRIGGER_THRESHOLD = 9
-    INHALE_RISE_TIME         = 10
+    PID_GAIN                 = 10
     # for debugging only; not for UIs
     INHALE_TRIGGER_ENABLE    = 11
     EXHALE_TRIGGER_ENABLE    = 12
@@ -206,7 +206,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xB2, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xB3, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -625,7 +625,7 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBffffffHBBBffffH")
+    _dataStruct = Struct("<BIBBffffffHBBBfffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
     mode                     : int   = 0
@@ -643,7 +643,7 @@ class TargetFormat(PayloadFormat):
     exhale_trigger_threshold : float = 0.0
     buffer_upper_pressure    : float = 0.0
     buffer_lower_pressure    : float = 0.0 
-    inhale_rise_time         : int   = 0
+    pid_gain                 : float = 0.0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -670,7 +670,7 @@ class TargetFormat(PayloadFormat):
         self.exhale_trigger_threshold ,
         self.buffer_upper_pressure,
         self.buffer_lower_pressure,
-        self.inhale_rise_time ) = self._dataStruct.unpack(byteArray) 
+        self.pid_gain             ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
