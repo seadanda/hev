@@ -46,7 +46,7 @@
       <tr><td><label class="small" for="personal_weight">Weight (kg)</label></td><td><input class="form-control py-1 lockable" id="personal_weight" type="number" value=80 name="weight" disabled/></td></tr>
         </table>
         <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
-        <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+        <div class="float-top-right px-2" onclick="openSettingContent('mode');reset_settings('PC_AC')">
           <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
         </div>
     </form>
@@ -61,7 +61,7 @@
       <tr>
         <td></td>
         <td><label class="small">Respiratory Rate</label></td>
-        <td><input class="form-control py-1 lockable" id="pcac_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_respiratory_rate" type="number" step = "any" value=""" name="Respiratory Rate"  disabled/></td>
       </tr>
       <tr>
         <td><input type="radio" name="time_or_ie" id = "pcac_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
@@ -110,7 +110,7 @@
       </tr>
     </table>
       <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
-      <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+      <div class="float-top-right px-2" onclick="openSettingContent('mode');reset_settings('PC_AC')">
         <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
       </div>
 </form>
@@ -174,7 +174,7 @@
           </tr>
         </table>
           <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
-          <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+          <div class="float-top-right px-2" onclick="openSettingContent('mode');reset_settings('PC_AC')">
             <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
           </div>
     </form>
@@ -238,7 +238,7 @@
               </tr>
             </table>
               <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
-              <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+              <div class="float-top-right px-2" onclick="openSettingContent('mode');reset_settings('PC_AC')">
                 <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
               </div>
         </form>
@@ -301,7 +301,7 @@
                   </tr>
                 </table>
                   <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
-                  <div class="float-top-right px-2" onclick="openSettingContent('mode')">
+                  <div class="float-top-right px-2" onclick="openSettingContent('mode');reset_settings('PC_AC')">
                     <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="times" class="svg-inline--fa fa-times fa-w-11" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 352 512"><path fill="currentColor" d="M242.72 256l100.07-100.07c12.28-12.28 12.28-32.19 0-44.48l-22.24-22.24c-12.28-12.28-32.19-12.28-44.48 0L176 189.28 75.93 89.21c-12.28-12.28-32.19-12.28-44.48 0L9.21 111.45c-12.28 12.28-12.28 32.19 0 44.48L109.28 256 9.21 356.07c-12.28 12.28-12.28 32.19 0 44.48l22.24 22.24c12.28 12.28 32.2 12.28 44.48 0L176 322.72l100.07 100.07c12.28 12.28 32.2 12.28 44.48 0l22.24-22.24c12.28-12.28 12.28-32.19 0-44.48L242.72 256z"></path></svg>
                   </div>
             </form>
@@ -382,6 +382,7 @@ function sendCmd(var_name, var_value) {
 };
 
 function updateSettings(event, name){
+  var mode = name;
   var message = "You are about to update the following settings for "+name+" mode";
   var jsonForm = {};
   $("input[type=number]:enabled", $(event.target)).each(function(index){
@@ -401,6 +402,7 @@ function updateSettings(event, name){
 		content: message,
 	  buttons: {
 	    confirm: function () {
+        wait_update(mode);
         $.ajax({
           url: "/target_handler",
           type: 'POST',
@@ -501,6 +503,11 @@ function openSettingContent(cityName) {
 
   // Show the current tab, and add an "active"
   document.getElementById(cityName).style.display = "flex";
+  // Get all elements with class="tablinks" and remove the class "active"
+  tablinks = document.getElementsByClassName("tablinks");
+  for (i = 0; i < tablinks.length; i++) {
+    tablinks[i].className = tablinks[i].className.replace(" active", "");
+  }
 }
 function openSetting(el, cityName) {
   // Declare all variables
@@ -561,15 +568,43 @@ function openSetting(el, cityName) {
 
 var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "inhale_rise_time"]
 
+var short_names = {
+  PC_AC : "pcac",
+  PC_AC_PRVC : "prvc",
+  PC_PSV : "psv",
+  CPAP : "cpap",
+  TEST : "test",
+  PERSONAL : "personal"
+}
+
+var initial_targets = {
+  PC_AC : {},
+  PC_AC_PRVC : {},
+  PC_PSV : {},
+  CPAP : {},
+  TEST : {},
+  PERSONAL : {}
+}
+// make sure we have initial null values in case we got no initial ones
+for (let j = 0 ; j < settings.length; j++){
+  initial_targets['PC_AC'][settings[j]] = "";
+  initial_targets['PC_AC_PRVC'][settings[j]] = "";
+  initial_targets['PC_PSV'][settings[j]] = "";
+  initial_targets['CPAP'][settings[j]] = "";
+  initial_targets['TEST'][settings[j]] = "";
+  initial_targets['PERSONAL'][settings[j]] = "";
+}
+
+
+
 $(document).ready(function(){
   var tablinks = document.getElementsByClassName("tablinks");
   if (tablinks.length > 0){
-    openSetting(tablinks[0],"mode");
+    openSettingContent("mode");
   }
 	$.ajax({
 	  url: '/last-targets',
 	  success: function(data) {
-      console.log("GOT DATA")
   		if (data.length == 0) {
         // we've not got any targets
         console.log("Got no targets");
@@ -582,6 +617,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("test_setting_"+settings[j]);
               if (settings[j] in target && element){
+                initial_targets['TEST'][settings[j]] = target[settings[j]].toPrecision(4);
                 element.value = target[settings[j]].toPrecision(4);
               }
             }
@@ -590,6 +626,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("pcac_setting_"+settings[j]);
               if (settings[j] in target && element){
+                initial_targets['PC_AC'][settings[j]] = target[settings[j]];
                 element.value = target[settings[j]].toPrecision(4);
               }
             }
@@ -598,6 +635,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("prvc_setting_"+settings[j]);
               if (settings[j] in target && element){
+                initial_targets['PC_AC_PRVC'][settings[j]] = target[settings[j]];
                 element.value = target[settings[j]].toPrecision(4);
               }
             }
@@ -606,6 +644,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("psv_setting_"+settings[j]);
               if (settings[j] in target && element){
+                initial_targets['PC_PSV'][settings[j]] = target[settings[j]];
                 element.value = target[settings[j]].toPrecision(4);
               }
             }
@@ -614,6 +653,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("cpap_setting_"+settings[j]);
               if (settings[j] in target && element){
+                initial_targets['CPAP'][settings[j]] = target[settings[j]];
                 element.value = target[settings[j]].toPrecision(4);
               }
             }
@@ -624,7 +664,6 @@ $(document).ready(function(){
     },
 	  cache: false
   });
-
   var personals = ["name", "age", "sex", "height", "weight"];
   $.ajax({
 	  url: '/last-personal',
@@ -649,29 +688,112 @@ $(document).ready(function(){
 });
 
 
-buff_fill_controller = new input_controller("buff_fill", document.getElementById("buff_fill"));
-buff_flush_controller = new input_controller("buff_flush", document.getElementById("buff_flush"));
-buff_loaded_controller = new input_controller("buff_loaded", document.getElementById("buff_loaded"));
-buff_prefill_controller = new input_controller("buff_prefill", document.getElementById("buff_prefill"));
-buff_preinhale_controller = new input_controller("buff_pre_inhale", document.getElementById("buff_pre_inhale"));
-buff_purge_controller = new input_controller("buff_purge", document.getElementById("buff_purge"));
-inhale_controller = new input_controller("inhale", document.getElementById("inhale"));
-pause_controller = new input_controller("pause", document.getElementById("pause"));
-exhale_controller = new input_controller("exhale", document.getElementById("exhale"));
-exhale_fill_controller = new input_controller("exhale_fill", document.getElementById("exhale_fill"));
+function wait_update(mode){
+  console.log("waiting update");
+  var mode = mode;
+  var updateInterval;
+  var lastrow = 0;
+  $.ajax({
+	  url: '/last-targets',
+	  success: function(data) {
+  		if (data.length == 0) {
+        // we've not got any targets
+        console.log("Got no targets");
+      } else
+	    {
+        for (let i = 0 ; i < data.length; i++){
+          var target = data[i];
+          if (target["mode"] != mode) continue;
+          lastrow = target["rowid"];
+        }
+      } 
+    },
+	  cache: false
+  });
+  console.log("got row number ",lastrow);
+  function updateTargets(mode){
+    var short_name = short_names[mode];
+    var got_update = false;
+    $.ajax({
+  	  url: '/last-targets',
+  	  success: function(data) {
+    		if (data.length == 0) {
+          // we've not got any targets
+          console.log("Got no new targets for upate");
+        } else
+  	    {
+          for (let i = 0 ; i < data.length; i++){
+            var target = data[i];
+            if (target["mode"] != mode || target['ROWID'] <= lastrow) continue;
+            for (let j = 0 ; j < settings.length; j++){
+              var element = document.getElementById(short_name + "_setting_"+settings[j]);
+              if (settings[j] in payload && element){
+                element.value = payload[settings[j]].toPrecision(4);
+                element.style.color='black';
+              }
+            }
+            updated = true;
+          }
+        }
+        // if we don't have an update we just try again
+        if (got_update == false) setTimeout(updateTargets, 200);
+      },
+	  cache: false
+    });
+  }
+  //initial start to look for new updated targets
+  setTimeout(updateTargets, 200);
+}
 
+//everything should go red when it's changed
+$( ".form-control" ).change(function() {
+  $(this).css('color' , "red");
+});
+$( ".form-control").click(function(event){
+  show_easy_numpad($(event.target)[0],null);
+})
+// reset when we leave the page, back to initial value and black
+// this does nothing if we have no initial values;
+function reset_settings(mode){
+    console.log("Resetting settings for ",mode);
+    console.log(initial_targets[mode]);
+    var short_name = short_names[mode];
+    console.log(short_name);
+    for (let j = 0 ; j < settings.length; j++){
+      console.log(short_name + "_setting_"+settings[j]);
+      var element = document.getElementById(short_name + "_setting_"+settings[j]);
+      if (settings[j] in initial_targets[mode] && element){
+        console.log('updating',settings[j]);
+        element.value = initial_targets[mode][settings[j]];
+        element.style.color="black";
+      }
+    
+    }
+  }
 
-//valve_air_controller = new input_controller("valve_air", document.getElementById("valve_air"));
-//valve_o2_controller = new input_controller("valve_o2", document.getElementById("valve_o2"));
-//valve_inhale_controller = new input_controller("valve_inhale", document.getElementById("valve_inhale"));
-//valve_exhale_controller = new input_controller("valve_exhale", document.getElementById("valve_exhale"));
-//peep_controller = new input_controller("peep", document.getElementById("peep"));
-//state_controller = new input_controller("state", document.getElementById("state"));
-//rpm_controller = new input_controller("rpm", document.getElementById("rpm"));
-//inhale_exhale_controller = new input_controller("inhale_exhale", document.getElementById("inhale_exhale"));
-calibration_controller = new input_controller("calibration", document.getElementById("calibration"));
+class simple_controller{
+	constructor(element) {
+		this.element = element;
+	}
 
+  	getName(){ return this.name;}
+  	getValue() {
+	    return this.element.value;
+  	}
 
+  	setValue(val){
+			this.element.style.color="red";
+      this.element.value=val;
+    }
+  getMin(){
+	  if (this.element.min) return this.element.min;
+	  else return null;
+  }
+  getMax(){
+	  if (this.element.max) return this.element.max;
+	  else return null;
+  }
+}
 
 </script>
 

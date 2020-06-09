@@ -52,15 +52,28 @@ function show_easy_numpad(thisElement, controller)
     let easy_numpad = init_easy_numpad();
     document.getElementsByTagName('body')[0].appendChild(easy_numpad);
     _outputID = thisElement.id;
-    _minValue = controller.getMin();
-    _maxValue = controller.getMax();
-    
+    if (controller != null){
+        _minValue = controller.getMin();
+        _maxValue = controller.getMax();
+    }
+    else{
+        if (thisElement.min){
+            _minValue = thisElement.min;
+        }
+        if (thisElement.max){
+            _maxValue = thisElement.max;
+        }
+    }
+    console.log("THIS ELEMENT: ",thisElement);
     let useDefault = document.getElementById(thisElement.id).getAttribute("data-easynumpad-use_default");
     if(useDefault != "false")
     {   
-        console.log("Controller Name: ",controller.getName())
-        console.log("Element Value: ",controller.getValue());
-        document.getElementById("easy-numpad-output").innerText = controller.getValue();
+        if (controller != null){
+            document.getElementById("easy-numpad-output").innerText = controller.getValue();
+        }
+        else {
+            document.getElementById("easy-numpad-output").innerText = thisElement.value;
+        }
     }
     document.getElementById("done").addEventListener("click", function(thisElement){
     if(_isInRange)
@@ -70,7 +83,22 @@ function show_easy_numpad(thisElement, controller)
         {
             easy_numpad_output_val = easy_numpad_output_val.substring(0,easy_numpad_output_val.length - 1);
         }
-        controller.setValue(easy_numpad_output_val);
+        if (controller != null){
+            controller.setValue(easy_numpad_output_val);
+        }
+        else{
+            document.getElementById(_outputID).value = easy_numpad_output_val;
+        }
+
+    	if ("createEvent" in document) {
+    		var evt = document.createEvent("HTMLEvents");
+    		evt.initEvent("change", false, true);
+    		document.getElementById(_outputID).dispatchEvent(evt);
+    	}
+    	else {
+    		document.getElementById(_outputID).fireEvent("onchange");
+    		}
+    
         easy_numpad_done();
     }
     });
