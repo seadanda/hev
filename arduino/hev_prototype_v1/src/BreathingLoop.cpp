@@ -1070,7 +1070,7 @@ void BreathingLoop::inhaleTrigger()
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                //logMsg("   -- INHALE TRIGGER"  +String(millis()));
+                logMsg("   -- INHALE TRIGGER "  +String(millis()) + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
                 result = "   -- INHALE TRIGGER" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
@@ -1081,7 +1081,7 @@ void BreathingLoop::inhaleTrigger()
         } else if (tnow - _fsm_time >= _max_exhale_time){
                 // TRIGGER
                 _apnea_event = true;
-                //logMsg("   -- inhale trigger - max exhale time exceeded");
+                logMsg("   -- inhale trigger - max exhale time exceeded" + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
                 result = "   -- TIME EXCEEDED" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _mandatory_inhale = true;
