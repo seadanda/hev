@@ -91,12 +91,12 @@
       <tr>
         <td></td>
         <td><label class="small">Inhale Volume</label></td>
-        <td><input class="form-control py-1 lockable" id="pcac_setting_inhale_volume" type="number" step = "any" value="" disabled name="Inhale Volume"/></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_volume" type="number" step = "any" value="" disabled name="Inhale Volume"/></td>
       </tr>
       <tr>
         <td></td>
         <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
-        <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="pcac_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+        <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="pcac_setting_inhale_rise_time" step = "any" type="number" value="" disabled /></td>
       </tr>
       <tr>
         <td></td>
@@ -106,7 +106,7 @@
       <tr>
         <td></td>
         <td><label class="small">FIO2 <small>[%]</small></label></td>
-        <td><input class="form-control py-1 lockable" id="pcac_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_fiO2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
       </tr>
     </table>
       <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
@@ -160,7 +160,7 @@
           <tr>
             <td></td>
             <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
-            <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="prvc_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+            <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="prvc_setting_inhale_rise_time" step = "any" type="number" value="" disabled /></td>
           </tr>
           <tr>
             <td></td>
@@ -170,7 +170,7 @@
           <tr>
             <td></td>
             <td><label class="small">FIO2 <small>[%]</small></label></td>
-            <td><input class="form-control py-1 lockable" id="prvc_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_fiO2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
           </tr>
         </table>
           <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
@@ -224,7 +224,7 @@
               <tr>
                 <td></td>
                 <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
-                <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="psv_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+                <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="psv_setting_inhale_rise_time" step = "any" type="number" value="" disabled /></td>
               </tr>
               <tr>
                 <td></td>
@@ -234,7 +234,7 @@
               <tr>
                 <td></td>
                 <td><label class="small">FIO2 <small>[%]</small></label></td>
-                <td><input class="form-control py-1 lockable" id="psv_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
+                <td><input class="form-control py-1 lockable" id="psv_setting_fiO2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
               </tr>
             </table>
               <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
@@ -287,7 +287,7 @@
                   <tr>
                     <td></td>
                     <td><label class="small">Inhale Rise Time <small>[s]</small></label></td>
-                    <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="test_setting_inspiratory_pressure" step = "any" type="number" value="" disabled /></td>
+                    <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="test_setting_inhale_rise_time" step = "any" type="number" value="" disabled /></td>
                   </tr>
                   <tr>
                     <td></td>
@@ -297,7 +297,7 @@
                   <tr>
                     <td></td>
                     <td><label class="small">FIO2 <small>[%]</small></label></td>
-                    <td><input class="form-control py-1 lockable" id="test_setting_fio2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_fiO2_percent" type="number" step = "any" value="" disabled name = "FIO2"/></td>
                   </tr>
                 </table>
                   <input class="form-button py-2 float-bottom-right" type="submit" value="Update Settings">
@@ -557,9 +557,9 @@ function openSetting(el, cityName) {
   }
 }
 
-var settings = ["respiratory_rate", "peep", "ie_ratio", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold","fio2_percent","volume", "inspiratory_pressure"];
+//var settings = ["respiratory_rate", "peep", "ie_ratio", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold","fio2_percent","volume", "inspiratory_pressure"];
 
-//var targets = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure"]
+var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "inhale_rise_time"]
 
 $(document).ready(function(){
   var tablinks = document.getElementsByClassName("tablinks");
@@ -577,8 +577,8 @@ $(document).ready(function(){
 	    {
         for (let i = 0 ; i < data.length; i++){
           var target = data[i];
-          if (target["mode"] == "TEST"){
             console.log("target: ",target);
+          if (target["mode"] == "TEST"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("test_setting_"+settings[j]);
               if (settings[j] in target && element){
@@ -602,7 +602,7 @@ $(document).ready(function(){
               }
             }
           }
-          if (target["mode"] == "PC_AC_PSV"){
+          if (target["mode"] == "PC_PSV"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("psv_setting_"+settings[j]);
               if (settings[j] in target && element){

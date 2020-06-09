@@ -586,7 +586,6 @@ def last_targets():
     list_variables = []
     list_variables.append("created_at")
     list_variables.extend(getList(TargetFormat().getDict()))
-
     united_var = ','.join(list_variables)
 
     fetched_all = []
@@ -595,7 +594,8 @@ def last_targets():
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
         cursor = conn.cursor()
 
-        for mode in ( "PCAP", "TEST" ):
+        for mode in ( "CPAP", "TEST", "PC_AC", "PC_PSV", "PC_AC_PRVC" ):
+        #for mode in ( "PCAP", "TEST" ):
             cursor.execute(" SELECT {var} "
             " FROM {tn} WHERE mode == '{md}' ORDER BY ROWID DESC LIMIT 1 ".format(tn=TARGET_TABLE_NAME, var=united_var, md = mode))
             fetched = cursor.fetchone()
