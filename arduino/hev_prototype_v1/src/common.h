@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xB2
+#define HEV_FORMAT_VERSION 0xB3
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -128,7 +128,7 @@ enum CMD_SET_TARGET : uint8_t {
     INHALE_TIME              = 7,
     INHALE_TRIGGER_THRESHOLD = 8,
     EXHALE_TRIGGER_THRESHOLD = 9,
-    INHALE_RISE_TIME         = 10, 
+    PID_GAIN                 = 10, 
     // for debugging only; not for UIs
     INHALE_TRIGGER_ENABLE    = 11,
     EXHALE_TRIGGER_ENABLE    = 12,
@@ -394,7 +394,7 @@ struct target_data_format{
     float exhale_trigger_threshold ;
     float buffer_upper_pressure = 0.0; 
     float buffer_lower_pressure = 0.0; 
-    uint16_t inhale_rise_time      = 0;  //ms
+    float pid_gain              = 0; 
 };
 #pragma pack()
 
@@ -630,7 +630,7 @@ struct target_variables {
     float exhale_trigger_threshold ;
     float buffer_upper_pressure; 
     float buffer_lower_pressure; 
-    uint16_t inhale_rise_time;  //ms
+    float pid_gain;  //ms
     bool  ie_selected;
 };
 

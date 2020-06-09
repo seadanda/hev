@@ -128,8 +128,8 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
         case CMD_SET_TARGET::EXHALE_TRIGGER_THRESHOLD :
             targets.exhale_trigger_threshold = value;
             break;
-        case CMD_SET_TARGET::INHALE_RISE_TIME: 
-            targets.inhale_rise_time = static_cast<uint16_t>(value);  
+        case CMD_SET_TARGET::PID_GAIN: 
+            targets.pid_gain = value;
 	    break;
     }
 }

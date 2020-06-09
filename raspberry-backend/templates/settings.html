@@ -96,7 +96,7 @@
       <tr>
         <td></td>
         <td><label class="small">Inhale Rise Time</label></td>
-        <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="pcac_setting_inhale_rise_time" step = "any" type="number" value="" disabled />&nbsp; ms</td>
+        <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="pcac_setting_pid_gain" step = "any" type="number" value="" disabled />&nbsp; ms</td>
       </tr>
       <tr>
         <td></td>
@@ -160,7 +160,7 @@
           <tr>
             <td></td>
             <td><label class="small">Inhale Rise Time </label></td>
-            <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="prvc_setting_inhale_rise_time" step = "any" type="number" value="" disabled />&nbsp; ms</td>
+            <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="prvc_setting_pid_gain" step = "any" type="number" value="" disabled />&nbsp; ms</td>
           </tr>
           <tr>
             <td></td>
@@ -224,7 +224,7 @@
               <tr>
                 <td></td>
                 <td><label class="small">Inhale Rise Time </label></td>
-                <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="psv_setting_inhale_rise_time" step = "any" type="number" value="" disabled />&nbsp; ms</td>
+                <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="psv_setting_pid_gain" step = "any" type="number" value="" disabled />&nbsp; ms</td>
               </tr>
               <tr>
                 <td></td>
@@ -287,7 +287,7 @@
                   <tr>
                     <td></td>
                     <td><label class="small">Inhale Rise Time </label></td>
-                    <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="test_setting_inhale_rise_time" step = "any" type="number" value="" disabled />&nbsp; ms</td>
+                    <td><input name="Inhale Rise Time" class="form-control py-1 lockable" id="test_setting_pid_gain" step = "any" type="number" value="" disabled />&nbsp; ms</td>
                   </tr>
                   <tr>
                     <td></td>
@@ -559,7 +559,7 @@ function openSetting(el, cityName) {
 
 //var settings = ["respiratory_rate", "peep", "ie_ratio", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold","fio2_percent","volume", "inspiratory_pressure"];
 
-var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "inhale_rise_time"]
+var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "pid_gain"]
 
 $(document).ready(function(){
   var tablinks = document.getElementsByClassName("tablinks");

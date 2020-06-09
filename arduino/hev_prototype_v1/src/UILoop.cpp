@@ -314,7 +314,7 @@ void UILoop::reportTargetsNow(target_variables &targets)
     _target_data.exhale_trigger_threshold = targets.exhale_trigger_threshold;  
     _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
     _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
-    _target_data.inhale_rise_time      = static_cast<uint16_t>(targets.inhale_rise_time);
+    _target_data.pid_gain              = targets.pid_gain;
     _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
     _comms->writePayload(_pl_send);
 
