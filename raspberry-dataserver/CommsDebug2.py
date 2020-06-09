@@ -54,17 +54,17 @@ class Dependant(object):
             #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
             #   logging.info(f"payload received:  {payload} ")
             #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
-            #    logging.info(f"payload received:  {payload.peep} {fsm}")
-            #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-            #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+            #    logging.info(f"payload received:  {payload} {fsm}")
+            if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+                logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
             #if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
             #   logging.info(f"payload received:  {payload} ")
             #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-            if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-                logging.info(f"TARGET {payload} {fsm}") 
-            if payload.getType() == PAYLOAD_TYPE.CMD.value:
-                logging.info(f"CMD (alarm threshold) {payload} {fsm}") 
+            #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+            #    logging.info(f"TARGET {payload} {fsm}") 
+            #if payload.getType() == PAYLOAD_TYPE.CMD.value:
+            #    logging.info(f"CMD (alarm threshold) {payload} {fsm}") 
             #if hasattr(payload, 'ventilation_mode'):
             #    logging.info(f"payload received: {payload.ventilation_mode}")
             #if hasattr(payload, 'duration_inhale'):
@@ -108,6 +108,9 @@ async def commsDebug():
     await asyncio.sleep(1)
     print('set apnea max 10')
     send_cmd(cmd_type="SET_THRESHOLD_MAX", cmd_code="APNEA", param=10)
+    send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.0015)
+    send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.0016)
+    send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0017)
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)

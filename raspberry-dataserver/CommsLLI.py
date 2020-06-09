@@ -38,7 +38,7 @@ class CommsLLI:
                 pass
 
         # send
-        self._queue_size = 16
+        self._queue_size = 32
         self._alarms   = asyncio.Queue(maxsize=self._queue_size, loop=self._loop)
         self._commands = asyncio.Queue(maxsize=self._queue_size, loop=self._loop)
         self._data     = asyncio.Queue(maxsize=self._queue_size, loop=self._loop)
