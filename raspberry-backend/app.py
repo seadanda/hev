@@ -63,7 +63,6 @@ class WebClient(HEVClient):
         else is blocking. If something more than a one-shot process is needed
         then use async"""
         self.database_setup()
-        super().start_client()
         # call for all the targets and personal details
         # when starting the web app so we always have some in the db
         self.send_cmd("GET_TARGETS","PC_AC")
@@ -71,6 +70,7 @@ class WebClient(HEVClient):
         self.send_cmd("GET_TARGETS","PC_PSV")
         self.send_cmd("GET_TARGETS","TEST")
         self.send_cmd("GENERAL", "GET_PERSONAL")
+        super().start_client()
 
 
     def get_updates(self, payload):
@@ -384,7 +384,7 @@ def target_handler():
     """
     data = request.form
     success = True
-    print("**************************set target test");
+    print("**************************set target test")
     for d,v in data.items():
         print(d,v)
         if 'pcac_setting_' in d:
