@@ -54,14 +54,16 @@ class Dependant(object):
             #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
             #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
             #   logging.info(f"payload received:  {payload} ")
-            #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
-            #    logging.info(f"payload received:  {payload} ")
-            #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-            #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-            if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-                logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-            if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-                logging.info(f"LOGMSG {payload} {fsm}") 
+            if payload.getType() == PAYLOAD_TYPE.READBACK.value:
+                #logging.info(f"payload received:  {payload} ")
+                logging.info(f" READBACK PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
+            if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+                #logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+                logging.info(f" DEBUG PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
+            #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+            #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+            #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+            #    logging.info(f"LOGMSG {payload} {fsm}") 
             #if hasattr(payload, 'ventilation_mode'):
             #    logging.info(f"payload received: {payload.ventilation_mode}")
             #if hasattr(payload, 'duration_inhale'):
@@ -80,13 +82,19 @@ def send_cmd(cmd_type, cmd_code, param=0.0):
 
 # initialise as start command, automatically executes toByteArray()
 async def commsDebug():
-    await asyncio.sleep(1)
+    send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
+    send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
     send_cmd(cmd_type="SET_MODE", cmd_code="TEST", param=0)
 
-    send_cmd(cmd_type="SET_PID", cmd_code="KP", param=1.0*0.001)#
-    send_cmd(cmd_type="SET_PID", cmd_code="KI", param=1.0*0.0005)# 0.0005
-    send_cmd(cmd_type="SET_PID", cmd_code="KD", param=1.0*0.001)# 0.001
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2.5) 
+    #send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.001)#
+    #send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.0003)#5)# 0.0005
+    #send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.)#01)# 0.001
+    #await asyncio.sleep(1)
+    send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.0012)#
+    send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.000333)#5)# 0.0005
+    send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0005)#01)# 0.001
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=1.5) 
+    #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
     send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
     
   #  # Change TIMEOUT of breathing cycle (BUFF-PRE-INHALE)
@@ -99,6 +107,7 @@ async def commsDebug():
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.0005) # 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.25) # 
 
+    #await asyncio.sleep(1)
     send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
 
     ### NOTE : THESE ARE FOR TESTING ONLY, AS THEY OVERRIDE THE VALUES SET BY THE VENTILATION MODE

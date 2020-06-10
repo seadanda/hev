@@ -41,7 +41,60 @@ inputfile = sys.argv[1]
 
 f = open(inputfile, "r")
 
-all_matches = re.findall("(\d+-\d+-\d+ \d+:\d+:\d+),(\d+).+INFO.+PID (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) fsm BL_STATES.(\w+)", f.read())
+#all_matches = re.findall("(\d+-\d+-\d+ \d+:\d+:\d+),(\d+).+INFO.+PID (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) (-?\d+.\d+) fsm BL_STATES.(\w+)", f.read())
+
+"""
+2020-06-09 13:58:03,815 - INFO - payload received: DataFormat(version=179, timestamp=581838, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.CALIBRATION: 2>, pressure_air_supply=17, pressure_air_regulated=485.84765625, pressure_o2_supply=0, pressure_o2_regulated=484.1879577636719, pressure_buffer=5.52685546875, pressure_inhale=41.620601654052734, pressure_patient=64.75927734375, temperature_buffer=659, pressure_diff_patient=6.83561897277832, ambient_pressure=0, ambient_temperature=0, airway_pressure=0.0, flow=0.0, volume=0.0, target_pressure=17.5, process_pressure=41.620601654052734, valve_duty_cycle=0.5779477953910828, proportional=-0.0027507629711180925, integral=0.05069857835769653, derivative=-0.026627620682120323)
+"""
+
+number_pattern = "=(-?\d+.\d+), "
+number_pattern = r"=(-?\d+.?\d*), "
+
+pattern = r"(\d+-\d+-\d+ \d+:\d+:\d+),(\d+).+INFO"
+pattern += r" - payload received: DataFormat\(version=179, "
+
+variable_names = [
+        r"timestamp",
+ r"payload_type",
+ r"fsm_state",
+ r"pressure_air_supply",
+ r"pressure_air_regulated",
+ r"pressure_o2_supply",
+ r"pressure_o2_regulated",
+ r"pressure_buffer",
+ r"pressure_inhale",
+ r"pressure_patient",
+ r"temperature_buffer",
+ r"pressure_diff_patient",
+ r"ambient_pressure",
+ r"ambient_temperature",
+ r"airway_pressure",
+ r"flow",
+ r"volume",
+ r"target_pressure",
+ r"process_pressure",
+ r"valve_duty_cycle",
+ r"proportional",
+ r"integral",
+ r"derivative"]
+
+for v in variable_names:
+    if v == r"payload_type":
+        pattern += v + r"=<PAYLOAD_TYPE.DATA: 1>, "
+    elif v == r"fsm_state":
+        pattern += v + r"=<\w+.\w+:.\d>, "
+    else:
+        pattern += v + number_pattern
+
+pattern = pattern[:-2] + r"\)"
+
+print(pattern)
+
+#pattern = r"volume=(-?\d+.\d+), target_pressure=(-?\d+.\d+), process_pressure=(-?\d+.\d+), valve_duty_cycle=(-?\d+.\d+), proportional=(-?\d+.\d+), integral=(-?\d+.\d+), derivative=(-?\d+.\d+)"
+all_matches = re.findall(pattern, f.read())
+#all_matches = re.findall(r"\d+", f.read())#, re.MULTILINE)
+
+print("All matches: ", all_matches)
 
 
 (datetime, milliseconds, kp, ki, kd, P, I, D, PID_target, pwm_output, process_variable, fsm_state) = ([], [], [], [], [], [], [], [], [], [], [], [])
@@ -67,22 +120,33 @@ for match in all_matches:
 
     #print(match)
 
-    (_datetime, _milliseconds, _kp, _ki, _kd, _P, _I, _D, _pwm_output, _PID_target, _process_variable, _fsm_state) = match
+    #(_datetime, _milliseconds, _kp, _ki, _kd, _P, _I, _D, _pwm_output, _PID_target, _process_variable, _fsm_state) = match
+    print(match)
 
-    data_dict["datetime"].append(_datetime)
+    """
+    2020-06-09 13:58:03,815 - INFO - payload received: DataFormat(version=179, timestamp=581838, payload_type=<PAYLOAD_TYPE.DATA: 1>, fsm_state=<BL_STATES.CALIBRATION: 2>, pressure_air_supply=17, pressure_air_regulated=485.84765625, pressure_o2_supply=0, pressure_o2_regulated=484.1879577636719, pressure_buffer=5.52685546875, pressure_inhale=41.620601654052734, pressure_patient=64.75927734375, temperature_buffer=659, pressure_diff_patient=6.83561897277832, ambient_pressure=0, ambient_temperature=0, airway_pressure=0.0, flow=0.0, volume=0.0, target_pressure=17.5, process_pressure=41.620601654052734, valve_duty_cycle=0.5779477953910828, proportional=-0.0027507629711180925, integral=0.05069857835769653, derivative=-0.026627620682120323)
+    """
+    _D = match[-1]
+    _I = match[-2]
+    _P = match[-3]
+    _pwm_output = match[-4]
+    _process_variable = match[-5]
+    _PID_target = match[-6]
 
-    data_dict["datetime"].append(_datetime)
-    data_dict["milliseconds"].append(_milliseconds)
-    data_dict["kp"].append(float(_kp))
-    data_dict["ki"].append(float(_ki))
-    data_dict["kd"].append(float(_kd))
+    #data_dict["datetime"].append(_datetime)
+
+    #data_dict["datetime"].append(_datetime)
+    #data_dict["milliseconds"].append(_milliseconds)
+    #data_dict["kp"].append(float(_kp))
+    #data_dict["ki"].append(float(_ki))
+    #data_dict["kd"].append(float(_kd))
     data_dict["P"].append(100*float(_P))
     data_dict["I"].append(100*float(_I))
-    data_dict["D"].append(100*float(_D)*float(_kd))
+    data_dict["D"].append(0.001*float(_D))#*float(_kd))
     data_dict["PID_target"].append(float(_PID_target))
     data_dict["pwm_output"].append(100*(float(_pwm_output)-0.53))
     data_dict["process_variable"].append(float(_process_variable))
-    data_dict["fsm_state"].append(_fsm_state)
+    #data_dict["fsm_state"].append(_fsm_state)
 
 plt.plot(data_dict["P"],                label="proportional",     linewidth = 3)
 plt.plot(data_dict["I"],                label="Integral",         linewidth = 3)
@@ -91,7 +155,9 @@ plt.plot(data_dict["PID_target"],       label="PID_target",       linewidth = 3)
 plt.plot(data_dict["pwm_output"],       label="pwm_output",       linewidth = 3)
 plt.plot(data_dict["process_variable"], label="process_variable", linewidth = 3)
 
-plt.title("PID P=%.1e I=%.1e D=%.1e" % (data_dict["kp"][-1], data_dict["ki"][-1], data_dict["kd"][-1] ) )
+#print(data_dict["P"])
+
+#plt.title("PID P=%.1e I=%.1e D=%.1e" % (data_dict["kp"][-1], data_dict["ki"][-1], data_dict["kd"][-1] ) )
 
 plt.legend()
 

@@ -95,7 +95,7 @@ void UILoop::reportFastReadings()
         _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
         _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
 
-        pid_variables pid = _breathing_loop->getPIDVariables();
+        pid_variables &pid = _breathing_loop->getPIDVariables();
         _fast_data.proportional       = pid.proportional;
         _fast_data.integral           = pid.integral;
         _fast_data.derivative         = pid.derivative;
@@ -156,7 +156,7 @@ void UILoop::reportReadbackValues()
         _readback_data.peep = _breathing_loop->getPEEP();
         _readback_data.inhale_exhale_ratio = _breathing_loop->getIERatio();
 
-        pid_variables pid = _breathing_loop->getPIDVariables();
+        pid_variables &pid = _breathing_loop->getPIDVariables();
         _readback_data.kp = pid.Kp;
         _readback_data.ki = pid.Ki;
         _readback_data.kd = pid.Kd;
@@ -265,7 +265,7 @@ void UILoop::reportDebugValues()
     {
 
         _debug_data.timestamp = static_cast<uint32_t>(tnow);
-        pid_variables pid = _breathing_loop->getPIDVariables();
+        pid_variables &pid = _breathing_loop->getPIDVariables();
         _debug_data.kp = pid.Kp;
         _debug_data.ki = pid.Ki;
         _debug_data.kd = pid.Kd;

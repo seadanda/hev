@@ -124,7 +124,7 @@ void loop()
     ui_loop.reportCycleReadings();
     ui_loop.reportAlarms();
     ui_loop.reportIVTReadings();
-    //ui_loop.reportDebugValues();  // data duplicated to fast and readback
+    ui_loop.reportDebugValues();  // data duplicated to fast and readback
     ui_loop.reportTargets();
 
     // per cycle receiver

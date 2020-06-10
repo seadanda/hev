@@ -599,7 +599,7 @@ void BreathingLoop::FSM_breathCycle()
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _fsm_timeout = 1000;
             break;
         default:
@@ -1015,7 +1015,7 @@ void BreathingLoop::doPID(){
     float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
-    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.Kd * _pid.derivative) + minimum_open_frac;
+    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_targets_current->pid_gain * _pid.Kd * _pid.derivative) + minimum_open_frac;
 
     if(_pid.valve_duty_cycle > maximum_open_frac) _pid.valve_duty_cycle = maximum_open_frac;
     if(_pid.valve_duty_cycle < minimum_open_frac) _pid.valve_duty_cycle = minimum_open_frac;
