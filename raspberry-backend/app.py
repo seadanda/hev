@@ -443,11 +443,14 @@ def mode_handler():
     Set mode for the ventilator
     """
     data = request.form
-    data = request.get_json(force=True)
+    for d,v in data.items():
+        print(d,v)
 
-    print(client.send_cmd("SET_MODE", modeSwitchter(data['name'])))
-    print(data)
-    return ('', 204)
+    #success = client.send_cmd("SET_MODE", modeSwitchter(data['name'].upper()))
+    success = client.send_cmd("SET_MODE", data['name'])
+    response = make_response(json.dumps(success))
+    response.content_type = 'application/json'
+    return (response)
 
 @WEBAPP.route('/send_ack', methods=['POST'])
 def send_ack():

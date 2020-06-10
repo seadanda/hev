@@ -143,12 +143,15 @@ function requestData() {
 
 		if (target_point != null){
 		        for (let i = 0 ; i < targets.length; i++){
-		    	    var el = document.getElementById("setting_"+targets[i]);
+                    var el = document.getElementById("setting_"+targets[i]);
 		    	    var val = null;
 		    	    if ( target_point != null && targets[i] in target_point){
 		    		    val = target_point[targets[i]];
 		    	    }
-		    	    if (el && val) el.value = val.toPrecision(4);
+		    	    if (el && val) {
+                        el.classList.remove('text-red');
+                        el.value = val.toPrecision(4);
+                    }
 		        }
 		}
 
@@ -173,6 +176,15 @@ function requestData() {
 			el.innerHTML = name + ", "+age+", "+sex+", "+height+"cm, "+weight+"kg"; 
 		}
 
+        if (readback_point != null);
+            {
+                var vent_mode = document.getElementById("vent_mode");
+        		$('.select-container').removeClass('text-red');
+        		$('.select-container').addClass('text-white');
+                var mode = readback_point['ventilator_mode'];
+                vent_mode.value = mode;
+                pickout.updated('.pickout');
+            }
                 
                 for (let i = 0 ; i < readings.length; i++){
                     var gauge = document.getElementById("gauge_"+readings[i]);

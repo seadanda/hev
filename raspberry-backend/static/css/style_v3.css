@@ -5609,6 +5609,10 @@ l  margin-top: -3rem !important;
 .text-white {
   color: #fff !important;
 }
+.text-red {
+  color:red;
+}
+
 
 .text-primary {
   color: #007bff !important;
