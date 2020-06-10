@@ -1053,11 +1053,16 @@ bool BreathingLoop::inhaleTrigger()
         }
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
-        if((_readings_avgs.pressure_diff_patient > _targets_current->inhale_trigger_threshold) 
+
+        //TODO: calculate expected point here?
+        float expected_flow = _flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
+        // NOTE: _flow should be positive only in this case?
+        if (((_flow - expected_flow) > _targets_current->inhale_trigger_threshold)
+//        if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold)
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                //logMsg("   -- INHALE TRIGGER"  +String(millis()));
+                logMsg("   -- INHALE TRIGGER "  +String(millis()) + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
                 result = "   -- INHALE TRIGGER" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
@@ -1068,7 +1073,7 @@ bool BreathingLoop::inhaleTrigger()
         } else if (tnow - _fsm_time >= _max_exhale_time){
                 // TRIGGER
                 _apnea_event = true;
-                //logMsg("   -- inhale trigger - max exhale time exceeded");
+                logMsg("   -- inhale trigger - max exhale time exceeded" + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
                 result = "   -- TIME EXCEEDED" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = true;
@@ -1124,7 +1129,6 @@ bool BreathingLoop::volumeTrigger()
     return true; //mandatory exhale
 }
 
-
 void BreathingLoop::runningAvgs()
 {
 
@@ -1151,6 +1155,8 @@ void BreathingLoop::runningAvgs()
         uint32_t tnow = static_cast<uint32_t>(millis());
         _valley_flow_time = tnow;
         _valley_flow = _flow;
+
+        _flow_fitter.resetCalculation(tnow);
     }
 
     if(_bl_state == BL_STATES::PAUSE ){
@@ -1176,6 +1182,8 @@ void BreathingLoop::runningAvgs()
 
     _sum_airway_pressure += _readings_avgs.pressure_patient;
     _ap_readings_N++;
+
+    _flow_fitter.appendPoints(millis(), _flow);
 }
 
 void BreathingLoop::tsigReset()
