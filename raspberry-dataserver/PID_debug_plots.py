@@ -142,7 +142,7 @@ for match in all_matches:
     #data_dict["kd"].append(float(_kd))
     data_dict["P"].append(100*float(_P))
     data_dict["I"].append(100*float(_I))
-    data_dict["D"].append(0.001*float(_D))#*float(_kd))
+    data_dict["D"].append(float(_D))#*float(_kd))
     data_dict["PID_target"].append(float(_PID_target))
     data_dict["pwm_output"].append(100*(float(_pwm_output)-0.53))
     data_dict["process_variable"].append(float(_process_variable))
