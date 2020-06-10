@@ -176,6 +176,15 @@ function requestData() {
 			el.innerHTML = name + ", "+age+", "+sex+", "+height+"cm, "+weight+"kg"; 
 		}
 
+        if (readback_point != null);
+            {
+                var vent_mode = document.getElementById("vent_mode");
+        		$('.select-container').removeClass('text-red');
+        		$('.select-container').addClass('text-white');
+                var mode = readback_point['ventilator_mode'];
+                vent_mode.value = mode;
+                pickout.updated('.pickout');
+            }
                 
                 for (let i = 0 ; i < readings.length; i++){
                     var gauge = document.getElementById("gauge_"+readings[i]);

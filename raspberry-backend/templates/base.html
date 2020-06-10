@@ -43,7 +43,8 @@
 			<!--<button class="btn btn-link btn-sm order-1 order-lg-0" id="sidebarToggle" href="#"><svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="bars" class="svg-inline--fa fa-bars fa-w-14 fa-w-16" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="currentColor" class="path-icon" d="M16 132h416c8.837 0 16-7.163 16-16V76c0-8.837-7.163-16-16-16H16C7.163 60 0 67.163 0 76v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16zm0 160h416c8.837 0 16-7.163 16-16v-40c0-8.837-7.163-16-16-16H16c-8.837 0-16 7.163-16 16v40c0 8.837 7.163 16 16 16z"></path></svg></button>-->
 			<!-- STATUS  -->
 				<div class = "select-container lockable medium text-white" disabled>
-					<select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
+					<select class = "input-reading ml-auto mr-auto pickout text-red" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
+							<option value = "" disabled selected>UNKNOWN</option>
 							<option value="PC_AC">PC-A/C</option>
 							<option value="PC_AC_PRVC">PC-A/C-PRVC</option>
 							<option value="PC_PSV">PC-PSV</option>
@@ -379,7 +380,8 @@
 		{% endif %}
 	});
 	$(document).ready( function (){
-		var mode='TEST';
+		//could load a mode here but let's wait for readback for now
+		var mode='';
 		var text = $('#vent_mode option[value="' + mode + '"]').text();
 		$('#vent_mode').val(mode);
 		$('#vent_mode').prop('oldvalue',mode);
@@ -393,6 +395,7 @@
 		this.oldvalue = val;
 	});
 	$('#vent_mode').change( function(){
+
 		// ask for confirmation and then send
 		var selector = this;
 		var oldmode = this.oldvalue;
@@ -419,13 +422,15 @@
 				selector.oldvalue = mode;
 				jsonForm = {};
 				jsonForm['name'] = mode;
+				$('.select-container').addClass('text-red');
+				$('.select-container').removeClass('text-white');
 		        $.ajax({
 		        	url: "/mode_handler",
 		          	type: 'POST',
           			data : jsonForm,
           			success: function(response){
             			if (response == true){
-			              $.dialog('Ventilator Change Accepted');
+						  $.dialog('Ventilator Change Accepted');
 			            }
 			            else{
 			              $.dialog("Problem Updating Ventilator Mode, Please Try again");
