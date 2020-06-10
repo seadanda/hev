@@ -16,29 +16,29 @@
 
 function chartParamLoop(chartName) {
     // values for all plots
-    let gridColor     = "hsla(0, 0%, 75%, 0.4)"; 
-    let zeroGridColor = "hsla(0, 0%, 90%, 1.0)"; 
+    let gridColor     = "hsla(0, 0%, 75%, 0.4)";
+    let zeroGridColor = "hsla(0, 0%, 90%, 1.0)";
 
     // values for specific plots
-    let plotColor;    
+    let plotColor;
     // chosen to have the same saturation and luminosity, tweak to taste
     if( chartName == "inhale" ) plotColor = "hsla(221, 100%, 70%, 1)";
     if( chartName == "exhale" ) plotColor = "hsla(17, 100%, 70%, 1)";
 
     // start with global params for all plots
     let params = {
-	dataset : {
-	    borderColor          : plotColor,
-	    backgroundColor      : plotColor,
-	    borderWidth          : 4,
-	    fill                 : false,
-	    showLine             : true,
-	},
-	gridLines : {
-	    display       : true,
-	    color         : gridColor,
-	    zeroLineColor : zeroGridColor
-	}
+        dataset : {
+            borderColor          : plotColor,
+            backgroundColor      : plotColor,
+            borderWidth          : 4,
+            fill                 : false,
+            showLine             : true,
+        },
+        gridLines : {
+            display       : true,
+            color         : gridColor,
+            zeroLineColor : zeroGridColor
+        }
     };
 
     return params;
@@ -96,161 +96,159 @@ $(document).ready(function() {
     chart_PV = new Chart(ctx_PV, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Inhale",
-			   borderColor         : paramInhale.dataset.borderColor,
-			   backgroundColor     : paramInhale.dataset.backgroundColor,
-			   borderWidth         : paramInhale.dataset.borderWidth,
-			   fill                : paramInhale.dataset.fill,
-			   showLine            : paramInhale.dataset.showLine
-			  },
-			  {data: [],
-			   label: "Exhale : Pressure - Volume",
-			   borderColor         : paramExhale.dataset.borderColor,
-			   backgroundColor     : paramExhale.dataset.backgroundColor,
-			   borderWidth         : paramExhale.dataset.borderWidth,
-			   fill                : paramExhale.dataset.fill,
-			   showLine            : paramExhale.dataset.showLine
-			  }
-			  ]},
-	options: {elements: { point: { radius: 5}},
-		  legend: { display: true, labels: {fontSize: 24, fontColor:"#cccccc" } },
-		  scales: {xAxes: [{display: true,
-				    scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24, fontColor:"#cccccc"},
-                    gridLines : {
-                        display: true,
-                        color: "rgba(255,255,255,0.2)",
-                        zeroLineColor: 'rgba(255,255,255,0.2)',
-                        },
-				    ticks: {min: 0, max: 35,
-					     stepSize: 5, fontSize: 25, fontColor:"#cccccc" }}],
-			   yAxes: [{display: true,
-				    scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24, fontColor:"#cccccc"},
-                    gridLines : {
-                        display: true,
-                        color: "rgba(255,255,255,0.2)",
-                        zeroLineColor: 'rgba(255,255,255,0.2)',
-                        },
-				    ticks: {min: 0, max: 800,
-					    stepSize: 100, fontSize:25, fontColor:"#cccccc" }}]},
-		  tooltips: {
-		      callbacks: {
-			  label: function(tooltipItem) {
-			      //console.info(tooltipItem)
-			      var label = 'Pressure ' + Math.round(tooltipItem.xLabel*10)/10 + ' [mbar]';
-			      label += ' Volume ' + Math.round(tooltipItem.yLabel) + ' [ml]';
-			      return label;
-			  }
-		      },
-		      bodyFontSize: 18
-		  }
-		 }
+                           label: "Inhale",
+                           borderColor         : paramInhale.dataset.borderColor,
+                           backgroundColor     : paramInhale.dataset.backgroundColor,
+                           borderWidth         : paramInhale.dataset.borderWidth,
+                           fill                : paramInhale.dataset.fill,
+                           showLine            : paramInhale.dataset.showLine
+                          },
+                          {data: [],
+                           label: "Exhale : Pressure - Volume",
+                           borderColor         : paramExhale.dataset.borderColor,
+                           backgroundColor     : paramExhale.dataset.backgroundColor,
+                           borderWidth         : paramExhale.dataset.borderWidth,
+                           fill                : paramExhale.dataset.fill,
+                           showLine            : paramExhale.dataset.showLine
+                          }
+                         ]},
+        options: {elements: { point: { radius: 5}},
+                  legend: { display: true, labels: {fontSize: 24, fontColor:"#cccccc" } },
+                  scales: {xAxes: [{display: true,
+                                    scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24, fontColor:"#cccccc"},
+                                    gridLines : {
+                                        display:       paramInhale.gridLines.display,
+                                        color:         paramInhale.gridLines.color,
+                                        zeroLineColor: paramInhale.gridLines.zeroLineColor
+                                    },
+                                    ticks: {min: 0, max: 35,
+                                            stepSize: 5, fontSize: 25, fontColor:"#cccccc" }}],
+                           yAxes: [{display: true,
+                                    scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24, fontColor:"#cccccc"},
+                                    gridLines : {
+                                        display:       paramInhale.gridLines.display,
+                                        color:         paramInhale.gridLines.color,
+                                        zeroLineColor: paramInhale.gridLines.zeroLineColor
+                                    },
+                                    ticks: {min: 0, max: 800,
+                                            stepSize: 100, fontSize:25, fontColor:"#cccccc" }}]},
+                  tooltips: {
+                      callbacks: {
+                          label: function(tooltipItem) {
+                              //console.info(tooltipItem)
+                              var label = 'Pressure ' + Math.round(tooltipItem.xLabel*10)/10 + ' [mbar]';
+                              label += ' Volume ' + Math.round(tooltipItem.yLabel) + ' [ml]';
+                              return label;
+                          }
+                      },
+                      bodyFontSize: 18
+                  }
+                 }
     });
 
     var ctx_VF = document.getElementById('flow_volume_chart');
     chart_VF = new Chart(ctx_VF, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Inhale",
-			   borderColor         : paramInhale.dataset.borderColor,
-			   backgroundColor     : paramInhale.dataset.backgroundColor,
-			   borderWidth         : paramInhale.dataset.borderWidth,
-			   fill                : paramInhale.dataset.fill,
-			   showLine            : paramInhale.dataset.showLine
-			  },
-			  {data: [],
-			   label: "Exhale : Volume - Flow",
-			   borderColor         : paramExhale.dataset.borderColor,
-			   backgroundColor     : paramExhale.dataset.backgroundColor,
-			   borderWidth         : paramExhale.dataset.borderWidth,
-			   fill                : paramExhale.dataset.fill,
-			   showLine            : paramExhale.dataset.showLine
-			  }]}
-	,options: {elements: { point: { radius: 5}},
-		  legend: { display: true, labels: {fontSize: 24 , fontColor:"#cccccc"} },
-		scales: {xAxes: [{display: true,
-				  scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24, fontColor:"#cccccc"},
-                    gridLines : {
-                        display: true,
-                        color: "rgba(255,255,255,0.2)",
-                        zeroLineColor: 'rgba(255,255,255,0.2)',
-                        },
-				  ticks: {min: 0, max: 800,
-					  stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}],
-			    yAxes: [{display: true,
-				     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc"},
-                    gridLines : {
-                        display: true,
-                        color: "rgba(255,255,255,0.2)",
-                        zeroLineColor: 'rgba(255,255,255,0.2)',
-                        },
-				     ticks: {min: -300, max: 300,
-					     stepSize: 100, fontSize: 25 , fontColor:"#cccccc"}}]},
-		   tooltips: {
-		       callbacks: {
-			   label: function(tooltipItem) {
-			       //console.info(tooltipItem)
-			       var label = 'Volume ' + Math.round(tooltipItem.xLabel) + ' [ml]';
-			       label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/h]';
-			       return label;
-			   }
-		       },
-		       bodyFontSize: 18
-		   }
-		  }
+                           label: "Inhale",
+                           borderColor         : paramInhale.dataset.borderColor,
+                           backgroundColor     : paramInhale.dataset.backgroundColor,
+                           borderWidth         : paramInhale.dataset.borderWidth,
+                           fill                : paramInhale.dataset.fill,
+                           showLine            : paramInhale.dataset.showLine
+                          },
+                          {data: [],
+                           label: "Exhale : Volume - Flow",
+                           borderColor         : paramExhale.dataset.borderColor,
+                           backgroundColor     : paramExhale.dataset.backgroundColor,
+                           borderWidth         : paramExhale.dataset.borderWidth,
+                           fill                : paramExhale.dataset.fill,
+                           showLine            : paramExhale.dataset.showLine
+                          }]}
+        ,options: {elements: { point: { radius: 5}},
+                   legend: { display: true, labels: {fontSize: 24 , fontColor:"#cccccc"} },
+                   scales: {xAxes: [{display: true,
+                                     scaleLabel: { display: true, labelString: 'Volume [ml]', fontSize: 24, fontColor:"#cccccc"},
+                                     gridLines : {
+                                         display:       paramInhale.gridLines.display,
+                                         color:         paramInhale.gridLines.color,
+                                         zeroLineColor: paramInhale.gridLines.zeroLineColor
+                                     },
+                                     ticks: {min: 0, max: 800,
+                                             stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}],
+                            yAxes: [{display: true,
+                                     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc"},
+                                     gridLines : {
+                                         display:       paramInhale.gridLines.display,
+                                         color:         paramInhale.gridLines.color,
+                                         zeroLineColor: paramInhale.gridLines.zeroLineColor
+                                     },
+                                     ticks: {min: -300, max: 300,
+                                             stepSize: 100, fontSize: 25 , fontColor:"#cccccc"}}]},
+                   tooltips: {
+                       callbacks: {
+                           label: function(tooltipItem) {
+                               //console.info(tooltipItem)
+                               var label = 'Volume ' + Math.round(tooltipItem.xLabel) + ' [ml]';
+                               label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/h]';
+                               return label;
+                           }
+                       },
+                       bodyFontSize: 18
+                   }
+                  }
     });
 
     var ctx_PF = document.getElementById('pressure_flow_chart');
     chart_PF = new Chart(ctx_PF, {
         type: 'scatter',
         data: {datasets: [{data: [],
-			   label: "Inhale",
-			   borderColor         : paramInhale.dataset.borderColor,
-			   backgroundColor     : paramInhale.dataset.backgroundColor,
-			   borderWidth         : paramInhale.dataset.borderWidth,
-			   fill                : paramInhale.dataset.fill,
-			   showLine            : paramInhale.dataset.showLine
-			  },
-			  {data: [],
-			   label: "Exhale : Pressure - Flow",
-			   borderColor         : paramExhale.dataset.borderColor,
-			   backgroundColor     : paramExhale.dataset.backgroundColor,
-			   borderWidth         : paramExhale.dataset.borderWidth,
-			   fill                : paramExhale.dataset.fill,
-			   showLine            : paramExhale.dataset.showLine
-			  }]}
-	,options: {elements: { point: { radius: 5, fill: true}},
-		  legend: { display: true, labels: {fontSize: 24, fontColor:"#cccccc", } },
-		   scales: {xAxes: [{display: true,
-				     scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24, fontColor:"#cccccc",},
-                    gridLines : {
-                        display: true,
-                        color: "rgba(255,255,255,0.2)",
-                        zeroLineColor: 'rgba(255,255,255,0.2)',
-                        },
-				     ticks: {min: 0, max: 35 ,
-					     stepSize: 5  , fontSize: 25, fontColor:"#cccccc" }}],
-			    yAxes: [{display: true,
-				     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc",},
-                    gridLines : {
-                        display: true,
-                        color: "rgba(255,255,255,0.2)",
-                        zeroLineColor: 'rgba(255,255,255,0.2)',
-                        },
-				     ticks: {min: -300, max: 300,
-					     stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}]},
-		   tooltips: {
-		       callbacks: {
-			   label: function(tooltipItem) {
-			       //console.info(tooltipItem)
-			       var label = 'Pressure ' + Math.round(tooltipItem.xLabel*10)/10 + ' [mbar]';
-			       label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/H]';
-			       return label;
-			   }
-		       },
-		       bodyFontSize: 18
-		   }
-		  }
+                           label: "Inhale",
+                           borderColor         : paramInhale.dataset.borderColor,
+                           backgroundColor     : paramInhale.dataset.backgroundColor,
+                           borderWidth         : paramInhale.dataset.borderWidth,
+                           fill                : paramInhale.dataset.fill,
+                           showLine            : paramInhale.dataset.showLine
+                          },
+                          {data: [],
+                           label: "Exhale : Pressure - Flow",
+                           borderColor         : paramExhale.dataset.borderColor,
+                           backgroundColor     : paramExhale.dataset.backgroundColor,
+                           borderWidth         : paramExhale.dataset.borderWidth,
+                           fill                : paramExhale.dataset.fill,
+                           showLine            : paramExhale.dataset.showLine
+                          }]}
+        ,options: {elements: { point: { radius: 5, fill: true}},
+                   legend: { display: true, labels: {fontSize: 24, fontColor:"#cccccc", } },
+                   scales: {xAxes: [{display: true,
+                                     scaleLabel: { display: true, labelString: 'Pressure [mbar]', fontSize: 24, fontColor:"#cccccc",},
+                                     gridLines : {
+                                         display:       paramInhale.gridLines.display,
+                                         color:         paramInhale.gridLines.color,
+                                         zeroLineColor: paramInhale.gridLines.zeroLineColor
+                                     },
+                                     ticks: {min: 0, max: 35 ,
+                                             stepSize: 5  , fontSize: 25, fontColor:"#cccccc" }}],
+                            yAxes: [{display: true,
+                                     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc",},
+                                     gridLines : {
+                                         display:       paramInhale.gridLines.display,
+                                         color:         paramInhale.gridLines.color,
+                                         zeroLineColor: paramInhale.gridLines.zeroLineColor
+                                     },
+                                     ticks: {min: -300, max: 300,
+                                             stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}]},
+                   tooltips: {
+                       callbacks: {
+                           label: function(tooltipItem) {
+                               //console.info(tooltipItem)
+                               var label = 'Pressure ' + Math.round(tooltipItem.xLabel*10)/10 + ' [mbar]';
+                               label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/H]';
+                               return label;
+                           }
+                       },
+                       bodyFontSize: 18
+                   }
+                  }
     });
 });
-
-
