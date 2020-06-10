@@ -4,7 +4,8 @@ After=multi-user.target
 
 [Service]
 Type=idle
-ExecStart=/usr/bin/env python3 %h/hev-sw/raspberry-dataserver/hevserver.py
+#ExecStart=/usr/bin/env python3 %h/hev-sw/raspberry-dataserver/hevserver.py
+ExecStart=/usr/bin/env python3 /home/pi/hev-sw/raspberry-dataserver/hevserver.py
 Restart=always
 RestartSec=3
 

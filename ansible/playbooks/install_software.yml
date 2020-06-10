@@ -1,5 +1,5 @@
 ---
-- hosts: nuliv
+- hosts: hevpi
   remote_user: pi
   vars:
         download_dir: /home/pi/Downloads
@@ -67,6 +67,12 @@
           pip:
               executable: /usr/bin/pip3
               name: "{{ pip_list }}"  
+
+        - name: pip install packages as root
+          pip:
+              executable: /usr/bin/pip3
+              name: "{{ pip_list }}"  
+          become: yes
         
         - name: check pi version
           shell: "pinout | grep 'BCM2711'"
@@ -111,8 +117,9 @@
         - name: install hevserver systemd service
           copy:
               src: "{{ ansible_env.HOME }}/hev-sw/utils/hevserver.service"
-              dest: "{{ ansible_env.HOME }}/.config/systemd/user/hevserver.service"
+              dest: "/usr/lib/systemd/system/hevserver.service"
               remote_src: yes
+          become: yes
 
         - name: copy hev rules
           copy: 
@@ -124,19 +131,19 @@
               mode: 0644
           become: yes
 
-        #- name: enable systemd service
-        #  systemd:
-        #    enabled: yes
-        #    daemon_reload: yes
-        #    name: hev-display
-        #  become: yes
+        - name: enable hev-display systemd service
+          systemd:
+            enabled: yes
+            daemon_reload: yes
+            name: hev-display
+          become: yes
 
-        #- name: enable systemd service
-        #  systemd:
-        #    enabled: yes
-        #    daemon_reload: yes
-        #    name: hevserver
-        #    user: yes       
+        - name: enable hevserver systemd service
+          systemd:
+            enabled: yes
+            daemon_reload: yes
+            name: hevserver
+          become: yes       
 
         - name: link libts
           file:
