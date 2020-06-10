@@ -1,0 +1,70 @@
+---
+- hosts: allpi
+  remote_user: pi
+  vars:
+        download_dir: /home/pi/Downloads
+        repos: 
+            - hev-sw
+            - hev-display
+
+  tasks: 
+        - name: include vars
+          include_vars: lists.yml
+
+        - name: install software via apt
+          apt: 
+              name: "{{ rpi_swlist }}"  
+              state: latest
+              update_cache: yes
+          become: yes
+
+        - name: pip install packages
+          pip:
+              executable: /usr/bin/pip3
+              name: "{{ pip_list }}"  
+        
+              #        - name: archive old repos
+              #          archive:
+              #              path: "{{ ansible_env.HOME }}/{{ item }}"
+              #              dest: "{{ ansible_env.HOME }}/{{ item }}.{{ '%Y%m%d%H%M%S' | strftime }}.tgz"
+              #          loop: "{{ repos }}"
+              #
+              #        - name: remove old repos
+              #          file:
+              #              path: "{{ ansible_env.HOME }}/{{ item }}/"
+              #              state: absent
+              #          loop: "{{ repos }}"
+              #
+              #        - name: clone git repos
+              #          git: 
+              #              repo: https://gitlab+deploy-token-960:xusyzScX2ZMHzRsMyEey@gitlab.cern.ch/hev-sw/{{ item }}.git
+              #              dest: "{{ ansible_env.HOME }}/{{ item }}"
+              #          loop: "{{ repos }}"
+              #
+              #        - name: reset git users 
+              #          replace: 
+              #              path: "{{ ansible_env.HOME }}/{{ item }}/.git/config"
+              #              regexp: 'url = .*'
+              #              replace: 'url =  https://gitlab.cern.ch/hev-sw/{{ item }}.git'
+              #          loop: "{{ repos }}"
+              #
+        - name: check pi version
+          shell: "pinout | grep 'BCM2711'"
+          register: pi4
+          ignore_errors: True
+
+        - name: install hev-display-pi4 via apt
+          apt: 
+              name: hev-display-pi4
+              state: latest
+              update_cache: yes
+          when: pi4 is succeeded
+          become: yes
+
+        - name: install hev-display-pi1 via apt
+          apt: 
+              name: hev-display-pi1
+              state: latest
+              update_cache: yes
+          when: pi4 is failed
+          become: yes

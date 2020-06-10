@@ -67,6 +67,7 @@ class HEVServer(object):
                 PAYLOAD_TYPE.DEBUG,
                 PAYLOAD_TYPE.IVT,
                 PAYLOAD_TYPE.PERSONAL,
+                PAYLOAD_TYPE.CMD
             ]
             if payload_type in whitelist:
                 # fork data to broadcast threads

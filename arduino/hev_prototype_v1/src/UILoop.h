@@ -22,7 +22,7 @@ public:
     void reportCycleReadings();
     void reportAlarms();
     void reportTargets();
-    void reportTargetsNow(target_variables &targets);
+    void reportTargetsNow(target_variables &targets, VENTILATION_MODE mode = VENTILATION_MODE::UNKNOWN);
     void reportPersonal();
 
     void reportIVTReadings();
@@ -32,7 +32,7 @@ private:
     void cmdGeneral(cmd_format &cf);
     void cmdSetDuration(cmd_format &cf);
     void cmdSetPID(cmd_format &cf);
-    void cmdSetTarget(cmd_format &cf, int8_t mode);
+    void cmdSetTarget(cmd_format &cf, VENTILATION_MODE mode);
     void cmdGetTarget(cmd_format &cf);
     void cmdSetMode(cmd_format &cf);
     void cmdSetThresholdMin(cmd_format &cf);

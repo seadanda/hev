@@ -9,6 +9,9 @@
 #include <Arduino.h>
 #include "common.h"
 #include "ValvesController.h"
+#include "LinearFitter.h"
+
+#include "RingBuf.h"
 
 class BreathingLoop
 {
@@ -172,6 +175,8 @@ private:
     // PID vars
 
     //float _pid_integral;  // moved to pid_variable struct
+
+    LinearFitter _flow_fitter = LinearFitter(100, 10);
     // triggers
     void runningAvgs();
     bool inhaleTrigger();
