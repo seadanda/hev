@@ -257,7 +257,7 @@ struct readback_data_format {
     uint8_t  valve_inhale             = 0;
     uint8_t  valve_exhale             = 0;
     uint8_t  valve_purge              = 0;
-    uint8_t  ventilation_mode         = VENTILATION_MODE::PC_AC;//
+    VENTILATION_MODE  ventilation_mode= VENTILATION_MODE::PC_AC;//
 
     uint8_t valve_inhale_percent      = 0;   // replaced by a min level and a max level; bias inhale level.  very slightly open at "closed" position
     uint8_t valve_exhale_percent      = 0;
@@ -379,7 +379,7 @@ struct target_data_format{
     uint32_t timestamp                  = 0;
     uint8_t  payload_type               = PAYLOAD_TYPE::TARGET;
 
-    uint8_t mode                = 0 ;
+    VENTILATION_MODE mode       = VENTILATION_MODE::UNKNOWN ;
     float inspiratory_pressure  = 0.0; // this is also known as driving pressure.  This is pressure above PEEP.  
     float ie_ratio              = 0.0;
     float volume                = 0.0;
@@ -615,7 +615,7 @@ struct pid_variables {
 };
 
 struct target_variables {
-    uint8_t mode;
+    VENTILATION_MODE mode;
     float inspiratory_pressure; // this is also known as driving pressure.  This is pressure above PEEP.  
     float ie_ratio;
     float volume;

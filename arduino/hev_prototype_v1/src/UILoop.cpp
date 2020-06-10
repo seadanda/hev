@@ -288,18 +288,23 @@ void UILoop::reportTargets()
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _target_report_time >= _target_report_timeout)
     {
-        reportTargetsNow(_breathing_loop->getTargetVariablesCurrent());
+        reportTargetsNow(_breathing_loop->getTargetVariablesCurrent(), VENTILATION_MODE::CURRENT);
         _target_report_time = tnow;
     }
 }
 
-void UILoop::reportTargetsNow(target_variables &targets)
+void UILoop::reportTargetsNow(target_variables &targets, VENTILATION_MODE mode)
 {
 
     uint32_t tnow = static_cast<uint32_t>(millis());
     
     _target_data.timestamp = tnow;
-    _target_data.mode = targets.mode;
+
+    if (mode != VENTILATION_MODE::UNKNOWN) {
+        _target_data.mode = mode;
+    } else {
+        _target_data.mode = targets.mode;
+    }
     _target_data.inspiratory_pressure = targets.inspiratory_pressure;
     _target_data.ie_ratio = targets.ie_ratio;
     _target_data.volume = targets.volume;
@@ -429,7 +434,7 @@ void UILoop::cmdSetPID(cmd_format &cf){
     setPID(static_cast<CMD_SET_PID>(cf.cmd_code), _breathing_loop->getPIDVariables(), cf.param);
 }
 
-void UILoop::cmdSetTarget(cmd_format &cf, int8_t mode){
+void UILoop::cmdSetTarget(cmd_format &cf, VENTILATION_MODE mode){
     switch(mode){
         case VENTILATION_MODE::PC_AC : 
             setTarget(static_cast<CMD_SET_TARGET>(cf.cmd_code), _breathing_loop->getTargetVariablesPC_AC(), cf.param);
