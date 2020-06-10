@@ -10,11 +10,11 @@
     <div class="menu">
       <h1>Select Settings To Edit</h1>
       <!--<button class="tablinks" onclick="openSetting(this, 'mode')">Mode</button>-->
-      <button class="tablinks" onclick="openSetting('personal')">Personal Details</button>
-      <button class="tablinks" onclick="openSetting('pcac')">PC-A/C</button>
-      <button class="tablinks" onclick="openSetting('prvc')">PC-A/C-PRVC</button>
-      <button class="tablinks" onclick="openSetting('psv')">PC-PSV</button>
-      <button class="tablinks" onclick = "openSetting('test')">TEST</options>
+      <button class="tablinks lockable" onclick="openSetting('personal')" disabled>Personal Details</button>
+      <button class="tablinks lockable" onclick="openSetting('pcac')" disabled>PC-A/C</button>
+      <button class="tablinks lockable" onclick="openSetting('prvc')" disabled>PC-A/C-PRVC</button>
+      <button class="tablinks lockable" onclick="openSetting('psv')" disabled>PC-PSV</button>
+      <button class="tablinks lockable" onclick = "openSetting('test')" disabled>TEST</options>
     </div>
   </div>
   <div id="personal" class="tabcontent align-items-center justify-content-center">
@@ -627,7 +627,8 @@ function wait_update(mode){
               var element = document.getElementById(short_name + "_setting_"+settings[j]);
               if (settings[j] in payload && element){
                 element.value = payload[settings[j]].toPrecision(4);
-                element.style.color='black';
+                //remove any red text
+                element.classList.remove('text-red');
               }
             }
             // if we're here we've managed to update
@@ -646,7 +647,8 @@ function wait_update(mode){
 
 //everything should go red when it's changed
 $( ".form-control" ).change(function() {
-  $(this).css('color' , "red");
+  //$(this).css('color' , "red");
+  $(this).addClass('text-red');
 });
 // we shohuld get a number pad when we click on things
 $( ".form-control").click(function(event){
@@ -659,6 +661,8 @@ function reset_settings(mode){
   for (let j = 0 ; j < settings.length; j++){
     var element = document.getElementById(short_name + "_setting_"+settings[j]);
     if (settings[j] in initial_targets[mode] && element){
+      //remove any red text we might have;
+      element.classList.remove('text-red');
       element.value = initial_targets[mode][settings[j]];
       element.style.color="black";
     }

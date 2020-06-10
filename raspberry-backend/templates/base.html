@@ -44,14 +44,11 @@
 			<!-- STATUS  -->
 				<div class = "select-container lockable medium text-white" disabled>
 					<select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
-						<option value = ""></option>
-						<optgroup label = "Pressure Control Modes">
-							<option value="opt1" selected>PC-A/C</option>
-							<option value="opt2">PC-A/C-PRVC</option>
-						</optgroup>
-				  		<optgroup label = "Pressure Support Modes">
-							<option value="opt3">PC-PSV</option>
-							<option value="opt4">CPAP</option>
+							<option value="PC_AC">PC-A/C</option>
+							<option value="PC_AC_PRVC">PC-A/C-PRVC</option>
+							<option value="PC_PSV">PC-PSV</option>
+							<option value="TEST">TEST</option>
+							<option value="CPAP">CPAP</option>
 						</optgroup>
 					</select>
 				</div>
@@ -381,6 +378,71 @@
 		idleTimer = setTimeout( idleRedirect, idleTimeOut );
 		{% endif %}
 	});
+	$(document).ready( function (){
+		var mode='TEST';
+		var text = $('#vent_mode option[value="' + mode + '"]').text();
+		$('#vent_mode').val(mode);
+		$('#vent_mode').prop('oldvalue',mode);
+		pickout.updated('.pickout');
+	});
+	$('#vent_mode').focus( function(){
+		var val = "";
+		$(this).find(":selected").each(function(){
+	      str += $( this ).text() + ", ";
+		});
+		this.oldvalue = val;
+	});
+	$('#vent_mode').change( function(){
+		// ask for confirmation and then send
+		var selector = this;
+		var oldmode = this.oldvalue;
+		var option = $(this).find('option[value="' + oldmode + '"]').text();
+		var message = "Are you sure you want to change the Ventilator Mode from " + option + " to ";
+		
+		var text = "";
+		var mode;
+		$(this).find(":selected").each(function(){
+		  text = $( this ).text();
+		  mode  = $(this).val();
+		  message += text;
+		});
+		if (mode == oldmode){
+			$.dialog('We are already in ' + text + ' mode');
+			return;
+		}
+		message +="?";
+		$.confirm({
+		  	title: 'Confirmation',
+			content: message,
+			buttons: {
+		    confirm: function () {
+				selector.oldvalue = mode;
+				jsonForm = {};
+				jsonForm['name'] = mode;
+		        $.ajax({
+		        	url: "/mode_handler",
+		          	type: 'POST',
+          			data : jsonForm,
+          			success: function(response){
+            			if (response == true){
+			              $.dialog('Ventilator Change Accepted');
+			            }
+			            else{
+			              $.dialog("Problem Updating Ventilator Mode, Please Try again");
+			            }
+					}
+				})
+			},
+		    cancel: function () {
+				selector.value = selector.oldvalue;
+				pickout.updated('.pickout');
+		    	$.dialog('Canceled!');
+			    },
+			}
+		});
+		event.preventDefault();
+	});
+
 pickout.to({
   el:'.pickout',
   theme:'MySelector'

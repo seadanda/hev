@@ -143,12 +143,15 @@ function requestData() {
 
 		if (target_point != null){
 		        for (let i = 0 ; i < targets.length; i++){
-		    	    var el = document.getElementById("setting_"+targets[i]);
+                    var el = document.getElementById("setting_"+targets[i]);
 		    	    var val = null;
 		    	    if ( target_point != null && targets[i] in target_point){
 		    		    val = target_point[targets[i]];
 		    	    }
-		    	    if (el && val) el.value = val.toPrecision(4);
+		    	    if (el && val) {
+                        el.classList.remove('text-red');
+                        el.value = val.toPrecision(4);
+                    }
 		        }
 		}
 

@@ -187,32 +187,6 @@
   function setChartXaxisRange_wrapper(element,min,max){
   if (!element.disabled){ setChartXaxisRange(min,max);  }
   }
-//document.getElementById("gauge-fio-container").doChange = function(value){
-//	setGaugeValue("gauge-fio", value);
-//}
-//document.getElementById("gauge-fio-container").getValue = function(value){
-//	return getGaugeValue("gauge-fio");
-//}
-
-// set up controllers that get and set values for the gauges, names and functions defined in Chart-display.js
-class gauge_controller {
-  constructor(name) {
-    this.name = name;
-  }
-  getName(){ return this.name;}
-  getValue() {
-    return getGaugeValue(this.name);
-  }
-  setValue(val){
-	  setGaugeValue(this.name,val);
-  }
-  getMin(){
-	  return getGaugeMinValue(this.name);
-  }
-  getMax(){
-	  return getGaugeMaxValue(this.name);
-  }
-}
 
 class input_controller{
 	constructor(name, element) {
@@ -241,7 +215,7 @@ class input_controller{
 	    buttons: {
 	        confirm: function () {
 			  element.value = val;
-			  element.style.color="red";
+			  element.classList.add("text-red");
 			  $.ajax({
 			      url: "/current_target_handler",
 			      type: 'POST',
@@ -261,7 +235,6 @@ class input_controller{
 					      	  });
 						}
 						else {
-							element.style.color = colour;
 							element.value = currentval;
 							window.createNotification({
 				    			closeOnClick: 1,
@@ -293,35 +266,6 @@ class input_controller{
 	  else return null;
   }
 }
-
-/*
-
-fio_controller       = new gauge_controller("fio_gauge");
-p_plateau_controller = new gauge_controller("p_plateau_gauge");
-
-var peep_input = document.getElementById("peep");
-peep_controller = new input_controller("peep", peep_input);
-var ie_ratio_input = document.getElementById("inhale_exhale_ratio");
-
-*/
-
-/*
-var gauge_fio_container = document.getElementById("gauge-fio-container");
-Object.defineProperty(gauge_fio_container, 'doChange', {
-  value: function(x){
-	  setGaugeValue("fio_gauge",x);
-	},
-  configurable: true 
-});
-Object.defineProperty(gauge_fio_container, 'getValue', {
-  value: function(){
-	  return getGaugeValue("fio_gauge");
-	},
-  configurable: true 
-});
-*/
-
-
 
 function openTab(el, cityName, force) {
  if (el.disabled && (!force)) return;
