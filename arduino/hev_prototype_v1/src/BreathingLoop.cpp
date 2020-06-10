@@ -561,18 +561,25 @@ void BreathingLoop::FSM_breathCycle()
 
             _inhale_triggered = false; // reset inhale trigger
             _valley_flow = 100000;  // reset valley after exhale
+            _valley_flow_time = millis();  // reset valley after exhale
             
             mand_ex = exhaleTrigger();
-	        mand_vol = volumeTrigger();
-            _mandatory_exhale = mand_ex & mand_vol;
+	    // mand_vol = volumeTrigger();  // disable for now
+            _mandatory_exhale = mand_ex ; // & mand_vol;
+	    //logMsg("inhale "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             break;
         case BL_STATES::PAUSE:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.pause;
+            _valley_flow = 100000;  // reset valley after exhale
+            _valley_flow_time = millis();  // reset valley after exhale
+	    //logMsg("pause "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             _states_durations.exhale = calculateDurationExhale();
+	    //logMsg("pause x "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout +" "+_states_durations.exhale);
             break;
         case BL_STATES::EXHALE:
             _peak_flow = -100000;  // reset peak after inhale
+            _peak_flow_time = millis();  
             _fsm_timeout = _states_durations.exhale;
             // uint32_t tnow = millis();
             // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
@@ -581,6 +588,7 @@ void BreathingLoop::FSM_breathCycle()
             } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
                 _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             }
+	    //logMsg("exhale "+String(_peak_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             measurePEEP();
             _mandatory_inhale = inhaleTrigger();
 		digitalWrite(pin_led_red, LOW);
@@ -767,8 +775,8 @@ uint32_t BreathingLoop::calculateDurationExhale() {
                 - ( _measured_durations.buff_pre_inhale
                   + _measured_durations.inhale
                   + _measured_durations.pause);
-    if (new_exhale < 0)
-        new_exhale = 0;
+    if (new_exhale < _min_exhale_time)
+        new_exhale = _min_exhale_time;
     // logMsg("new exhale " 
     //               + String(total_dur) 
     //               +" "+String( _measured_durations.buff_pre_inhale)
@@ -786,17 +794,6 @@ float    BreathingLoop::getIERatio(){
     return total_inhale_time/total_exhale_time;
 }
 
-//float BreathingLoop::getRespiratoryRate(){
-//    // 60*1000ms / total time for a full cycle
-//    float avg = (_total_cycle_duration[0]+_total_cycle_duration[1]+_total_cycle_duration[2])/3.0;
-//    return 60000.0/avg;
-//}
-//
-// void BreathingLoop::setTargetRespiratoryRate(float rate){
-//     //rate is per min (60*1000ms)
-//     _targets.respiratory_rate = rate;
-//     updateIE();
-// }
 
 // KH 20200518 - TODO; 
 //   - need an update CycleReadings function called from exhale
@@ -811,32 +808,18 @@ void BreathingLoop::updateIE()
     if (_targets_current->ie_selected == true){
 	
 	    uint32_t tot_inh = total_cycle / (1.0 + (1.0/_targets_current->ie_ratio)); 
-	    uint32_t tot_exh = total_cycle / (1.0 + (_targets_current->ie_ratio)); 
+//	    uint32_t tot_exh = total_cycle / (1.0 + (_targets_current->ie_ratio)); 
 
-	    exhale_duration = tot_exh - _states_durations.exhale;
 	    inhale_duration = tot_inh - _states_durations.pause;
-    _targets_current->ie_selected =false;
+	    _targets_current->ie_selected =false;
 	    
-    } else {
-
-	    exhale_duration = total_cycle - _states_durations.inhale - _states_durations.pause;
     }
 
-    int32_t min_inhale = (static_cast<int32_t>(_min_inhale_time - _states_durations.pause) < 0) ? 0 : _min_inhale_time - _states_durations.pause;
-    if (inhale_duration < min_inhale)
-        _states_durations.inhale = min_inhale;
+    if (inhale_duration < _min_inhale_time)
+        _states_durations.inhale = _min_inhale_time;
     else 
         _states_durations.inhale = inhale_duration; 
 
-    int32_t min_exhale = (static_cast<int32_t>(_min_exhale_time - _states_durations.exhale) < 0) ? 0 : _min_exhale_time - _states_durations.exhale;
-    int32_t max_exhale = (static_cast<int32_t>(_max_exhale_time - _states_durations.exhale) < 0) ? 0 : _max_exhale_time - _states_durations.exhale;
-
-    if (exhale_duration < min_exhale)
-        _states_durations.exhale = min_exhale;
-    else if (exhale_duration > max_exhale)
-        _states_durations.exhale = max_exhale;
-    else 
-        _states_durations.exhale = exhale_duration; 
     // TODO - what if exhale time is less than min; raise error?
 }
 
@@ -844,23 +827,9 @@ void BreathingLoop::updateFromTargets()
 {
     _pid.target_final_pressure = _targets_current->inspiratory_pressure ;  //TODO -  should fix this to one variable
     updateIE();
-    //if (_targets.ie_selected == true){
-        //setIERatio();
-   // }
 
 }
 
-void BreathingLoop::setIERatio()
-{
-    //logMsg("targets "+String(_targets.ie_ratio) +" "+String(_targets.ie_selected));
-    int32_t exhale_duration = static_cast<uint32_t>(_states_durations.inhale * _targets_current->ie_ratio)  - _states_durations.exhale ;
-    if (exhale_duration < _min_exhale_time )
-        _states_durations.exhale = _min_exhale_time;
-    else if (exhale_duration > _max_exhale_time )
-        _states_durations.exhale = _max_exhale_time;
-    else 
-        _states_durations.exhale = exhale_duration; 
-}
 
 float BreathingLoop::getTargetRespiratoryRate(){
     return _targets_current->respiratory_rate;
@@ -1057,31 +1026,35 @@ bool BreathingLoop::inhaleTrigger()
         //TODO: calculate expected point here?
         float expected_flow = _flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
         // NOTE: _flow should be positive only in this case?
-        if (((_flow - expected_flow) > _targets_current->inhale_trigger_threshold)
-//        if((_readings_avgs.pressure_diff_patient > _valves_controller.getValveParams().inhale_trigger_threshold)
+        //if (((_flow - expected_flow) > _targets_current->inhale_trigger_threshold)
+        if((_readings_avgs.pressure_diff_patient > _targets_current->inhale_trigger_threshold)
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
-                logMsg("   -- INHALE TRIGGER "  +String(millis()) + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
+                //logMsg("   -- INHALE TRIGGER "  +String(millis()) + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
+                //logMsg("   -- INHALE TRIGGER "  +String(millis()) );//+ String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
                 result = "   -- INHALE TRIGGER" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = false;
                 _inhale_triggered = true;
-                return false;
 		digitalWrite(pin_led_red, HIGH);
+                return false;
             }
+		//logMsg("D " + String(tnow - _fsm_time) +" "+String(_min_exhale_time)+" "+String(_fsm_timeout));
+		//logMsg("D FSM " + String(tnow) + " " + String(_fsm_time)+" "+String(_fsm_timeout));
+		//logMsg("D Valley " + String(_valley_flow_time) + " " + String(_valley_flow));
         } else if (tnow - _fsm_time >= _max_exhale_time){
                 // TRIGGER
                 _apnea_event = true;
-                logMsg("   -- inhale trigger - max exhale time exceeded" + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
+                //logMsg("   -- inhale trigger - max exhale time exceeded");// + String("Exp. Flow: ") + String(expected_flow) + String(" Difference: ") + String(_flow - expected_flow));
                 result = "   -- TIME EXCEEDED" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = true;
+        } else if (tnow - _fsm_time >= _max_exhale_time){
                 return true;
         }
     }
     return true;
-    //logMsg("inhale trig- " + String(_readings_avgs.pressure_diff_patient,6) + " " + String(_valves_controller.getValveParams().inhale_trigger_threshold,6) + " " +result +" "+String(millis()));
 }
 
 bool BreathingLoop::exhaleTrigger()

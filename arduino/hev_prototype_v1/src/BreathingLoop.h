@@ -35,7 +35,6 @@ public:
     // float getRespiratoryRate();
     float getTargetRespiratoryRate();
     float getIERatio();
-    void setIERatio();
     void updateFromTargets();
     void updateIE();
     float getPEEP();
