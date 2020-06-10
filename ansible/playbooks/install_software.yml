@@ -20,7 +20,7 @@
         - name: install software via apt
           apt: 
               name: "{{ rpi_swlist }}"  
-              state: present
+              state: latest
           become: yes
         
         - name: mk sw dir
@@ -76,7 +76,7 @@
         - name: install hev-display-pi4 via apt
           apt: 
               name: hev-display-pi4
-              state: present
+              state: latest
               update_cache: yes
           when: pi4 is succeeded
           become: yes
@@ -84,7 +84,7 @@
         - name: install hev-display-pi1 via apt
           apt: 
               name: hev-display-pi1
-              state: present
+              state: latest
               update_cache: yes
           when: pi4 is failed
           become: yes
