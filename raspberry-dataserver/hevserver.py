@@ -39,7 +39,7 @@ class HEVServer(object):
         self._comms_lli = comms_lli
         self._battery_lli = battery_lli
 
-        self._broadcasts = []
+        self._broadcasts = {}
         self._broadcasting = True
 
     def push_to(self, queue, payload) -> None:
@@ -71,7 +71,7 @@ class HEVServer(object):
             ]
             if payload_type in whitelist:
                 # fork data to broadcast threads
-                for queue in self._broadcasts:
+                for queue in self._broadcasts.values():
                     self.push_to(queue, payload)
 
                 #if payload_type == PAYLOAD_TYPE.PERSONAL : print("PERSONAL")
@@ -94,7 +94,7 @@ class HEVServer(object):
                     raise HEVPacketError("Battery state invalid")
 
                 # fork data to broadcast threads
-                for queue in self._broadcasts:
+                for queue in self._broadcasts.values():
                     self.push_to(queue, payload)
 
                 # send to uC
@@ -199,8 +199,8 @@ class HEVServer(object):
         addr = writer.get_extra_info("peername")
         logging.info(f"Broadcasting to {addr!r}")
 
-        bindex = len(self._broadcasts) # index of current broadcast client's queue in broadcasts
-        self._broadcasts.append(asyncio.Queue(maxsize=16)) # append new queue
+        bindex = str(addr[1])
+        self._broadcasts[bindex] = asyncio.Queue(maxsize=16) # append new queue
 
         while self._broadcasting:
             # wait for data from queue
