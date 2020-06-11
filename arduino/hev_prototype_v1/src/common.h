@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xB3
+#define HEV_FORMAT_VERSION 0xB4
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -386,7 +386,7 @@ struct target_data_format{
     float respiratory_rate      = 0.0;
     float peep                  = 0.0;
     float fiO2_percent          = 0.0; 
-    uint16_t inhale_time        = 0 ; 
+    float inhale_time           = 0 ; 
     uint8_t inhale_trigger_enable = 0;   // params - associated val of peak flow
     uint8_t exhale_trigger_enable = 0;
     uint8_t volume_trigger_enable = 0;

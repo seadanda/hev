@@ -311,12 +311,12 @@ void UILoop::reportTargetsNow(target_variables &targets, VENTILATION_MODE mode)
     _target_data.respiratory_rate = targets.respiratory_rate;
     _target_data.peep = targets.peep;
     _target_data.fiO2_percent = targets.fiO2_percent;
-    _target_data.inhale_time = static_cast<uint16_t>(targets.inhale_time/1000.0);  // stored in ms, report in s
+    _target_data.inhale_time = targets.inhale_time/1000.0;  // stored in ms, report in s
     _target_data.inhale_trigger_enable    = targets.inhale_trigger_enable ;
     _target_data.exhale_trigger_enable    = targets.exhale_trigger_enable ; 
     _target_data.volume_trigger_enable    = targets.volume_trigger_enable ; 
     _target_data.inhale_trigger_threshold = targets.inhale_trigger_threshold; 
-    _target_data.exhale_trigger_threshold = targets.exhale_trigger_threshold;  
+    _target_data.exhale_trigger_threshold = 100.0*targets.exhale_trigger_threshold;  
     _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
     _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
     _target_data.pid_gain              = targets.pid_gain;

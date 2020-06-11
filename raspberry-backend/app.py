@@ -385,9 +385,6 @@ def target_handler():
     data = request.form
     success = True
     print("**************************set target test")
-    payload = { key : 1.1 for key in payload_types['TARGET']['format']}
-    payload['type'] = 'TARGET'
-    print(payload)
     for d,v in data.items():
         print(d,v)
         if 'pcac_setting_' in d:
@@ -406,7 +403,12 @@ def target_handler():
             payload['mode'] = 'TEST'
             success = client.send_cmd("SET_TARGET_TEST", d.replace('test_setting_','').upper(), float(v))
             print(d.replace('test_setting_',''),v)
-    client.monitoring(payload)
+    '''
+    #simulated add to database to test
+    payload = { key : 1.1 for key in payload_types['TARGET']['format']}
+    payload['payload_type'] = 'TARGET'
+    client.monitoring({'type' : 'TARGET', 'TARGET' : payload})
+    '''
     response = make_response(json.dumps(success))
     response.content_type = 'application/json'
     return (response)
@@ -489,8 +491,14 @@ def personal_data_handler():
         print(d,v)
         personal[d.replace('personal_', '')] = v
 
-    print(personal)
     success = client.send_personal(personal=personal )
+    '''
+    #for testing
+    for p in payload_types['PERSONAL']['format']:
+        if p not in personal:
+            personal[p]=''
+    client.monitoring({'type' : 'PERSONAL', 'PERSONAL' : personal})
+    '''
     response = make_response(json.dumps(success))
     response.content_type = 'application/json'
     return (response)
@@ -594,6 +602,7 @@ def last_targets():
     """
 
     list_variables = []
+    list_variables.append('ROWID')
     list_variables.append("created_at")
     list_variables.extend(getList(TargetFormat().getDict()))
     united_var = ','.join(list_variables)
@@ -627,6 +636,8 @@ def last_personal():
 
     list_variables = []
     list_variables.append("created_at")
+    list_variables.append("ROWID")
+
     list_variables.extend(getList(PersonalFormat().getDict()))
 
     united_var = ','.join(list_variables)

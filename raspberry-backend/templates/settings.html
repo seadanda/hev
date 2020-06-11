@@ -326,8 +326,9 @@ function edit_inhale_time(element){
   }
 }
 
-function updateSettings(event, name){
+function updateSettings(event, name, cmd_name){
   var mode = name;
+  var cmd_mode = cmd_name;
   var message = "You are about to update the following settings for "+name+" mode";
   var jsonForm = {};
   $("input[type=number]:enabled", $(event.target)).each(function(index){
@@ -348,7 +349,7 @@ function updateSettings(event, name){
 	  buttons: {
 	    confirm: function () {
         //before confirming we tell the page to await an update
-        wait_update(mode);
+        wait_update(cmd_mode);
         // now send command to change
         $.ajax({
           url: "/target_handler",
@@ -400,6 +401,8 @@ function updatePersonal(event){
 		content: message,
 	  buttons: {
 	    confirm: function () {
+        console.log('about to wait for the personal updates');
+        wait_update_personal();
         $.ajax({
           url: "/personal_data_handler",
           type: 'POST',
@@ -428,16 +431,16 @@ $('#personal-settings-form').submit(event, function(){
   updatePersonal(event);
 });
 $('#pcac-settings-form').submit(event, function(){
-  updateSettings(event,"PC-AC");
+  updateSettings(event,"PC-AC", "PC_AC");
 });
 $('#prvc-settings-form').submit(event, function(){
-  updateSettings(event,"PC-PR/VC");
+  updateSettings(event,"PC-PR/VC", "PC_PRVC");
 });
 $('#psv-settings-form').submit(event, function(){
-  updateSettings(event,"PC-PSV");
+  updateSettings(event,"PC-PSV", "PC_PSV");
 });
 $('#test-settings-form').submit(event, function(){
-  updateSettings(event,"TEST");
+  updateSettings(event,"TEST", "TEST");
 });
 
 // this will open which setting we want
@@ -461,8 +464,9 @@ function openSetting(cityName) {
 }
 
 // these are the settings we want to update
-var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "inhale_rise_time"]
-
+var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "pid_gain"]
+//fill our personals as well
+var personals = ["name", "age", "sex", "height", "weight"];
 
 // the short names used in the div ids
 var short_names = {
@@ -492,8 +496,9 @@ for (let j = 0 ; j < settings.length; j++){
   initial_targets['TEST'][settings[j]] = "";
   initial_targets['PERSONAL'][settings[j]] = "";
 }
-
-var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "pid_gain"];
+for (let j = 0 ; j < personals.length; j++){
+  initial_targets['PERSONAL'][personals[j]] = "";
+}
 
 // fill when we open the page
 $(document).ready(function(){
@@ -515,7 +520,7 @@ $(document).ready(function(){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("test_setting_"+settings[j]);
               if (settings[j] in target && element){
-                initial_targets['TEST'][settings[j]] = target[settings[j]].toPrecision(4);
+                initial_targets['TEST'][settings[j]] = target[settings[j]];
                 element.value = target[settings[j]].toPrecision(4);
               }
             }
@@ -562,8 +567,6 @@ $(document).ready(function(){
     },
 	  cache: false
   });
-  //fill our personals as well
-  var personals = ["name", "age", "sex", "height", "weight"];
   $.ajax({
 	  url: '/last-personal',
 	  success: function(data) {
@@ -576,6 +579,7 @@ $(document).ready(function(){
               var element = document.getElementById("personal_"+personals[j]);
               if (personals[j] in data && element){
                 element.value = data[personals[j]];
+                initial_targets['PERSONAL'][personals[j]] = data[personals[j]];
               }
             }
 			}
@@ -603,14 +607,16 @@ function wait_update(mode){
           if (target["mode"] != mode) continue;
           lastrow = target["rowid"];
         }
-      } 
+      }
     },
 	  cache: false
   });
   // now we define the function used to update
-  function updateTargets(mode){
+  function updateTargets(){
     var short_name = short_names[mode];
     var got_update = false;
+    var targetmode = mode;
+    var row = lastrow;
     // call for last targets and see if they're new
     $.ajax({
   	  url: '/last-targets',
@@ -620,20 +626,21 @@ function wait_update(mode){
           console.log("Got no new targets for upate");
         } else
   	    {
-          console.log("UPDATING TARGETS WITH NEW INFORMATION");
           for (let i = 0 ; i < data.length; i++){
             var target = data[i];
             if (target["mode"] != mode || target['ROWID'] <= lastrow) continue;
+            // if we're here we've managed to update
+            got_update = true;
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById(short_name + "_setting_"+settings[j]);
-              if (settings[j] in payload && element){
-                element.value = payload[settings[j]].toPrecision(4);
+              if (settings[j] in target && element){
+                element.value = target[settings[j]].toPrecision(4);
+                //update our initials if we exit
+                initial_values[mode][settings[j]] = target[settings[j]].toPrecision(4);
                 //remove any red text
                 element.classList.remove('text-red');
               }
             }
-            // if we're here we've managed to update
-            updated = true;
           }
         }
         // if we don't have an update we just try again
@@ -647,6 +654,7 @@ function wait_update(mode){
 }
 //function to wait for the update
 function wait_update_personal(){
+  console.log('in waiting function');
   var updateInterval;
   var lastrow = 0;
   //first get the most recent entry so we can recognise new ones
@@ -667,30 +675,23 @@ function wait_update_personal(){
 	  cache: false
   });
   // now we define the function used to update
-  function updatePersonals(mode){
+  function updatePersonals(){
     var got_update = false;
+    var row = lastrow;
     // call for last targets and see if they're new
     $.ajax({
   	  url: '/last-personal',
-  	  success: function(data) {
-    		if (data.length == 0) {
-          // we've not got any targets
-          console.log("Got no new personals for update");
-        } else
-  	    {
-          for (let i = 0 ; i < data.length; i++){
-            var personal = data[i];
-            if (personal['ROWID'] <= lastrow) continue;
-            for (let j = 0 ; j < personals.length; j++){
-              var element = document.getElementById("personal_"+personals[j]);
-              if (personals[j] in personal && element){
-                element.value = personal[personals[j]];
-                //remove any red text
-                element.classList.remove('text-red');
-              }
+  	  success: function(personal) {
+        if (personal['ROWID'] > row) {
+          got_update = true;
+          for (let j = 0 ; j < personals.length; j++){
+            var element = document.getElementById("personal_"+personals[j]);
+            if (personals[j] in personal && element){
+            element.value = personal[personals[j]];
+            initial_targets['PERSONAL'][personals[j]] = personal[personals[j]];
+            //remove any red text
+            element.classList.remove('text-red');
             }
-            // if we're here we've managed to update
-            updated = true;
           }
         }
         // if we don't have an update we just try again

@@ -206,7 +206,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xB3, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xB4, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -625,7 +625,7 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBffffffHBBBfffff")
+    _dataStruct = Struct("<BIBBfffffffBBBfffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
     mode                     : int   = 0
@@ -635,7 +635,7 @@ class TargetFormat(PayloadFormat):
     respiratory_rate         : float = 0.0
     peep                     : float = 0.0
     fiO2_percent             : float = 0.0
-    inhale_time              : int   = 0 
+    inhale_time              : float = 0 
     inhale_trigger_enable    : int = 0
     exhale_trigger_enable    : int = 0
     volume_trigger_enable    : int = 0
