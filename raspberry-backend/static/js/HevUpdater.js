@@ -148,7 +148,7 @@ function requestData() {
 		    	    if ( target_point != null && targets[i] in target_point){
 		    		    val = target_point[targets[i]];
 		    	    }
-		    	    if (el && val) {
+		    	    if (el && val && (!el.classList.contains('modifying'))) {
                         el.classList.remove('text-red');
                         el.value = val.toPrecision(4);
                     }
@@ -179,11 +179,15 @@ function requestData() {
         if (readback_point != null)
             {
                 var vent_mode = document.getElementById("vent_mode");
-        		$('.select-container').removeClass('text-red');
-        		$('.select-container').addClass('text-white');
-                var mode = readback_point['ventilation_mode'];
-                vent_mode.value = mode;
-                pickout.updated('.pickout');
+                //only update if the user is not modifying
+                if (!vent_mode.classList.contains('modifying')){
+            		$('.select-container').removeClass('text-red');
+            		$('.select-container').addClass('text-white');
+                    var mode = readback_point['ventilation_mode'];
+                    vent_mode.value = mode;
+                    vent_mode.oldvalue = mode;
+                    pickout.updated('.pickout');
+                }
             }
                 
                 for (let i = 0 ; i < readings.length; i++){

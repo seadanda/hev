@@ -1851,9 +1851,9 @@ small,
 .card-body {
   flex: 1 1 auto;
   display:flex;
-  padding: 1.25rem;
   align-items:center;
   justify-content: center;
+  /*border: 1px solid red;*/
 }
 
 .card-title {
@@ -5950,13 +5950,8 @@ sb-topnav {
 .br-red{border: 1px solid #ff0000;}
 
 .reading{font-size:1.7rem;min-width:5rem;display:inline-block;text-align:right;}
-.reading-main, .setting-main{font-size:1.4rem;min-width:4rem;display:inline-block;text-align:right;}
 
-.setting-main{text-align:center;background:transparent;border:0;width:100%}
 .setting-main:disabled{color:black;}
-.input-editable:enabled{border:1;background:white;}
-
-
 
 #logo{ height:var(--top-height); }
 #chart-area{ fill:white; }
@@ -6077,7 +6072,7 @@ z-index:1000;
 .fa-lock{
     width:2rem;height:2rem;
 }
-.col-charts-main, .col-cards-main, .col-settings-main, .card-reading{
+.col-charts-main, .col-cards-main, .col-settings-main{
   position: relative;
   width: 100%;
   padding-right: 0.75rem;
@@ -6115,11 +6110,15 @@ z-index:1000;
     flex-direction:column;
     padding-right: 0.0rem !important;
     padding-left: 0.0rem !important;
+    padding-top:0.0rem;
+    padding-bottom:0.0rem;
     margin-right: 0.05rem !important;
     margin-left: 0.05rem !important;
     /*color: #343a40 !important;*/
     color:white;
-    margin-bottom: 0.5rem !important;
+    /*margin-bottom: 0.5rem !important;*/
+    margin-bottom:0;
+    /*border:1px solid green;*/
 }
 .card-reading-proto{
   flex: 0 0 31.8%;
@@ -6154,14 +6153,18 @@ z-index:1000;
 }
 
 .card-reading {
-    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0 - 0.5rem);
+    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0);
 }
 .card-setting {
-    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0 - 0.5rem);
+    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0);
 }
 .card-reading-proto, .card-input-reading-proto {
-    height:calc((100vh - var(--top-height) -  1.5rem - 1.0rem - 2.0rem)/5.0 - 0.5rem);
+    height:calc((100vh - var(--top-height) -  1.5rem - 1.0rem - 2.0rem)/5.0);
 }
+
+.card-setting input {text-align:center;background:transparent;border:0; font-size:1.4rem;}
+.card-reading span{ font-size: 1.4rem;}
+
 
 .range-button-container{
     height:2.0rem;
@@ -6172,7 +6175,7 @@ z-index:1000;
 .main-chart-container {
     position:relative;
     width:100%;
-    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem)/3.0); // 2.0rem if for the range-button container, 1.5rem for the tab header
+    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem)/3.0); /* 2.0rem if for the range-button container, 1.5rem for the tab header*/
 }
 .main-gauge-container {
     display:flex;
@@ -6193,7 +6196,7 @@ z-index:1000;
 .proto-chart-container {
     position:relative;
     width:100%;
-    height:calc((100vh - var(--top-height) - 0.5rem - 4.0rem)/1.0); // 2.0rem if for the range-button container and another 2.0 for select
+    height:calc((100vh - var(--top-height) - 0.5rem - 4.0rem)/1.0); /* 2.0rem if for the range-button container and another 2.0 for select*/
 }
 .reading-wrapper{
     margin-top:auto;

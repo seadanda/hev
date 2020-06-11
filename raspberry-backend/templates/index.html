@@ -50,29 +50,6 @@
 					</div>
 				 </div>
 				<div class = "row no-gutters">
-			<!-- Mode status
-
-				    <div class="card-reading">
-		            	<div class="card-header d-flex align-items-center justify-content-between py-1 min-height-1b">
-					      <span class="small text-white col-center" href="#">Mode</span>
-			            </div>
-			            <div class="card-body px-1 py-1">
-							<div class = "select-container lockable" disabled>
-							  <select class = "input-reading ml-auto mr-auto pickout" name="VentilatorMode" id="vent_mode" pickouttitle="Select Ventilator Mode" width="10%">
-								  <option value = ""></option>
-								  <optgroup label = "Pressure Control Modes">
-								    <option value="opt1" selected>PC-A/C</option>
-								    <option value="opt2">PC-A/C-PRVC</option>
-								  </optgroup>
-								  <optgroup label = "Pressure Support Modes">
-								    <option value="opt3">PC-PSV</option>
-								    <option value="opt4">CPAP</option>
-								  </optgroup>
-							  </select>
-							</div>
-					      </div>
-						</div>
-            -->  
 				    <div class="card-reading">
 				    	<div class="card-header d-flex align-items-center justify-content-between ">
 							<a class="small text-white col-center" href="#">PEEP<small>[cmH20]</small></a>
@@ -101,13 +78,13 @@
 		            	<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-white col-center" href="#">VTE <small>[mL]</small></a>
 			            </div>
-			            <div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_tidal_volume"></span></div>
+			            <div class="card-body px-1 py-1 tiny"><span id = "exhaled_tidal_volume">0.0</span></div>
 				    </div>
 					<div class="card-reading">
 		            	<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-white col-center" href="#">MVE <small>[L/min]</small></a>
 			            </div>
-		            	<div class="card-body px-1 py-1 tiny"><span class = "reading-main" id = "exhaled_minute_volume"></span></div>
+		            	<div class="card-body px-1 py-1 tiny"><span id = "exhaled_minute_volume">0.0</span></div>
 					</div>
 				</div>
 			</div>
@@ -154,7 +131,7 @@
 						<div class="card-header d-flex align-items-center justify-content-between">
 							<a class="small text-dark col-center" href="#">Inhale Rise Time <small>[s]</small></a>
 						</div>
-						<div class="card-body px-1 py-1 tiny"><input class = "setting-main lockable" id = "setting_pid_gain" value=0.0 onclick="show_easy_numpad(this,new input_controller('PID_GAIN',this))"></div> 
+						<div class="card-body px-1 py-1 tiny"><input class = "lockable" id = "setting_pid_gain" value=0.0 onclick="show_easy_numpad(this,new input_controller('PID_GAIN',this))"></div> 
 					</div>
 					-->
 
@@ -192,7 +169,6 @@
 
 <script src="{{ url_for('static', filename='js/Chart-display.js') }}"></script>
 <script src="{{ url_for('static', filename='js/Chart-displayLoop.js') }}"></script>
-<script src="{{ url_for('static', filename='js/HevUpdater.js') }}"></script>
 
 <script>
   function setChartXaxisRange_wrapper(element,min,max){
@@ -219,6 +195,7 @@ class input_controller{
 		var param = {}
 		param[target] = val;
 
+		this.element.classList.add('modifying');
 	  //var c = confirm(message);
 	  $.confirm({
 		title: 'Confirmation',
@@ -267,6 +244,7 @@ class input_controller{
 	        },
 	    }
 	  });
+		this.element.classList.remove('modifying');
   	}
   getMin(){
 	  if (this.element.min) return this.element.min;

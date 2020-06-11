@@ -530,13 +530,9 @@ var pickout = (function(){
 	*/
 
     function setOptionSimple(select, data, txt){
-		console.log("setting option simple ",data);
-		console.log(select.parentElement.querySelector('.pk-field').innerHTML);
 	if (data.txt != select.parentElement.querySelector('.pk-field').innerHTML){
-		console.log("selecting options",data.txt);
 		_.toArray(select).map(function(option, index){
 		    if (index === data.index) {
-				console.log("index and data.index ",index,data.index);
 			_.attr(option, 'selected', 'selected');
 			return;
 		    }
