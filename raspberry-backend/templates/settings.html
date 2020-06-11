@@ -49,7 +49,7 @@
       <tr>
         <td></td>
         <td><label class="small">Respiratory Rate</label></td>
-        <td><input class="form-control py-1 lockable" id="pcac_setting_respiratory_rate" type="number" step = "any" value=""" name="Respiratory Rate"  disabled/></td>
+        <td><input class="form-control py-1 lockable" id="pcac_setting_respiratory_rate" type="number" step = "any" value=""" name="Respiratory Rate"  disabled/>&nbsp; /min</td>
       </tr>
       <tr>
         <td><input type="radio" name="time_or_ie" id = "pcac_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
@@ -113,7 +113,7 @@
           <tr>
             <td></td>
             <td><label class="small">Respiratory Rate</label></td>
-            <td><input class="form-control py-1 lockable" id="prvc_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+            <td><input class="form-control py-1 lockable" id="prvc_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/>&nbsp; /min</td>
           </tr>
           <tr>
             <td><input type="radio" name="time_or_ie" id = "prvc_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
@@ -177,7 +177,7 @@
               <tr>
                 <td></td>
                 <td><label class="small">Respiratory Rate</label></td>
-                <td><input class="form-control py-1 lockable" id="psv_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+                <td><input class="form-control py-1 lockable" id="psv_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/>&nbsp; /min</td>
               </tr>
               <tr>
                 <td><input type="radio" name="time_or_ie" id = "psv_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
@@ -240,7 +240,7 @@
                   <tr>
                     <td></td>
                     <td><label class="small">Respiratory Rate</label></td>
-                    <td><input class="form-control py-1 lockable" id="test_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/></td>
+                    <td><input class="form-control py-1 lockable" id="test_setting_respiratory_rate" type="number" step = "any" value="" name="Respiratory Rate" disabled/>&nbsp; /min</td>
                   </tr>
                   <tr>
                     <td><input type="radio" name="time_or_ie" id = "test_radio_inhale_time" onclick = "edit_inhale_time(this)" checked></td>
@@ -259,7 +259,7 @@
                   </tr>
                   <tr>
                     <td></td>
-                    <td><label class="small">Exhale Trigger Sensitivity </label></td>
+                    <td><label class="small">Exhale Trigger Sensitivity</label></td>
                     <td><input class="form-control py-1 lockable" id="test_setting_exhale_trigger_threshold" step = "any" type="number" value="" disabled name = "Exhale Trigger Sensitivity" />&nbsp; %</td>
                   </tr>
                   <tr>
@@ -620,6 +620,7 @@ function wait_update(mode){
           console.log("Got no new targets for upate");
         } else
   	    {
+          console.log("UPDATING TARGETS WITH NEW INFORMATION");
           for (let i = 0 ; i < data.length; i++){
             var target = data[i];
             if (target["mode"] != mode || target['ROWID'] <= lastrow) continue;
@@ -644,14 +645,70 @@ function wait_update(mode){
   //initial start to look for new updated targets
   setTimeout(updateTargets, 200);
 }
+//function to wait for the update
+function wait_update_personal(){
+  var updateInterval;
+  var lastrow = 0;
+  //first get the most recent entry so we can recognise new ones
+  $.ajax({
+	  url: '/last-personal',
+	  success: function(data) {
+  		if (data.length == 0) {
+        // we've not got any details
+        console.log("Got no personal details");
+      } else
+	    {
+        for (let i = 0 ; i < data.length; i++){
+          var personal = data[i];
+          lastrow = personal["rowid"];
+        }
+      } 
+    },
+	  cache: false
+  });
+  // now we define the function used to update
+  function updatePersonals(mode){
+    var got_update = false;
+    // call for last targets and see if they're new
+    $.ajax({
+  	  url: '/last-personal',
+  	  success: function(data) {
+    		if (data.length == 0) {
+          // we've not got any targets
+          console.log("Got no new personals for update");
+        } else
+  	    {
+          for (let i = 0 ; i < data.length; i++){
+            var personal = data[i];
+            if (personal['ROWID'] <= lastrow) continue;
+            for (let j = 0 ; j < personals.length; j++){
+              var element = document.getElementById("personal_"+personals[j]);
+              if (personals[j] in personal && element){
+                element.value = personal[personals[j]];
+                //remove any red text
+                element.classList.remove('text-red');
+              }
+            }
+            // if we're here we've managed to update
+            updated = true;
+          }
+        }
+        // if we don't have an update we just try again
+        if (got_update == false) setTimeout(updatePersonals, 200);
+      },
+	  cache: false
+    });
+  }
+  //initial start to look for new updated targets
+  setTimeout(updatePersonals, 200);
+}
 
 //everything should go red when it's changed
 $( ".form-control" ).change(function() {
-  //$(this).css('color' , "red");
   $(this).addClass('text-red');
 });
-// we shohuld get a number pad when we click on things
-$( ".form-control").click(function(event){
+// we should get a number pad when we click on inputs of type number only
+$( "input.form-control[type=number]").click(function(event){
   show_easy_numpad($(event.target)[0],null);
 })
 // reset when we leave the page, back to initial value and black

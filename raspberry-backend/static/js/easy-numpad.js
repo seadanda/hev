@@ -64,7 +64,6 @@ function show_easy_numpad(thisElement, controller)
             _maxValue = thisElement.max;
         }
     }
-    console.log("THIS ELEMENT: ",thisElement);
     let useDefault = document.getElementById(thisElement.id).getAttribute("data-easynumpad-use_default");
     if(useDefault != "false")
     {   

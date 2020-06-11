@@ -143,11 +143,12 @@
         <script src="{{ url_for('static', filename='js/Chart.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/moment.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/Chart.js') }}"></script>
-		<script src="{{ url_for('static', filename='js/Gauge.js') }}"></script>
         <script src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/dataTables.bootstrap4.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/scripts.js') }}"></script>
 		<script src="{{ url_for('static', filename='js/jquery-confirm.min.js') }}"></script>
+		<script src="{{ url_for('static', filename='js/HevUpdater.js') }}"></script>
+
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
@@ -395,7 +396,7 @@
 		this.oldvalue = val;
 	});
 	$('#vent_mode').change( function(){
-
+		$(this).addClass('modifying');
 		// ask for confirmation and then send
 		var selector = this;
 		var oldmode = this.oldvalue;
@@ -446,6 +447,7 @@
 			}
 		});
 		event.preventDefault();
+		$(this).removeClass('modifying');
 	});
 
 pickout.to({
