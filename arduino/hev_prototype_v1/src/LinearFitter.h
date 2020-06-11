@@ -52,25 +52,28 @@ public:
         calculateSums();
     }
 
-    bool linearRegression(float &slope, float &offset) {
-        if (_x.isEmpty() || _y.isEmpty())               return false;
-        if ((_x[_entries - 1] - _x[0]) < _duration )    return false;
-        if ((_entries * _sum_x2) == (_sum_x * _sum_x))  return false;
+    uint8_t linearRegression(float &slope, float &offset) {
+        if (_x.isEmpty() || _y.isEmpty())               return 1;
+        if ((_x[_entries - 1] - _x[0]) < _duration )    return 2;
+        if ((_entries * _sum_x2) == (_sum_x * _sum_x))  return 3;
 
         // results
         slope  = ((_entries * _sum_xy) - (_sum_x * _sum_y)) / ((_entries * _sum_x2) - (_sum_x * _sum_x));
         offset = (_sum_y - (slope * _sum_x)) / _entries;
-        return true;
+        return 0;
     }
     float extrapolate(uint32_t x) {
         x -= _x_zero;
         float slope, offset;
-        if (linearRegression(slope, offset)) {
+	uint8_t linreg = linearRegression(slope, offset);
+        if (0==linreg){
             return (x*slope + offset);
         }
 
-        return std::numeric_limits<float>::max(); // max float value
+        return 0; //std::numeric_limits<float>::max(); // max float value 
     }
+
+    int numEntries(){return _x.size(); }
 
 private:
     uint32_t _x_zero   = 0;

@@ -41,7 +41,7 @@ class Dependant(object):
             #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
             if payload.getType() == PAYLOAD_TYPE.DATA.value:
-            #    logging.info(f"payload received: {payload}")
+                logging.info(f"payload received: {payload}")
                 #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
                 #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
                 #logging.info(f"Fsm state: {payload.fsm_state}")
@@ -104,7 +104,7 @@ async def commsDebug():
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=5.0) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1.0)   # changed to seconds
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=15)#
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.005) # 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_THRESHOLD", param=0.05) # 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=0.25) # 
 
     #await asyncio.sleep(1)
@@ -112,7 +112,7 @@ async def commsDebug():
 
     ### NOTE : THESE ARE FOR TESTING ONLY, AS THEY OVERRIDE THE VALUES SET BY THE VENTILATION MODE
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_ENABLE", param=1) 
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=1) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="VOLUME_TRIGGER_ENABLE", param=0) 
 
     send_cmd(cmd_type="SET_VALVE", cmd_code="AIR_IN_ENABLE", param=1) 

@@ -76,7 +76,7 @@ BreathingLoop::BreathingLoop()
 
     _min_inhale_time = 150;
     _min_exhale_time = 300;
-    _max_exhale_time = 30000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
+    _max_exhale_time = 10000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
 
     initTargets();
     setVentilationMode(_ventilation_mode);
@@ -939,7 +939,8 @@ float BreathingLoop::getVolume()
     if (flow < 0)
 	    vol = vol*1.2;// stupid scale factor
     float fudge_factor3 = 0.75;  // based on test chest flow to vol measurements
-    _volume += fudge_factor3 * vol * nl2l;
+    _volume += fudge_factor3 * vol * nl2l; 
+    //_volume = _flow_fitter.extrapolate(millis()); // will return correct extrapolation of max float value
     //_volume += vol //* nl2l /100;
 
     if (_calibrated == true){
@@ -1033,11 +1034,15 @@ bool BreathingLoop::inhaleTrigger()
         //_fsm_timeout = _max_exhale_time;
         uint32_t tnow = static_cast<uint32_t>(millis());
 
+
         //TODO: calculate expected point here?
-        float expected_flow = _flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
+        float expected_flow = 0;//_flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
+
+	if ((tnow - _fsm_time) % 100 == 0)logMsg("A " + String(expected_flow) +" "+String(_flow));
+
         // NOTE: _flow should be positive only in this case?
-        //if (((_flow - expected_flow) > _targets_current->inhale_trigger_threshold)
-        if((_readings_avgs.pressure_diff_patient > _targets_current->inhale_trigger_threshold)
+        if (((_flow - expected_flow) > _targets_current->inhale_trigger_threshold)
+        //if((_readings_avgs.pressure_diff_patient > _targets_current->inhale_trigger_threshold)
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
@@ -1050,7 +1055,7 @@ bool BreathingLoop::inhaleTrigger()
 		digitalWrite(pin_led_red, HIGH);
                 return false;
             }
-		//logMsg("D " + String(tnow - _fsm_time) +" "+String(_min_exhale_time)+" "+String(_fsm_timeout));
+	//	logMsg("D " + String(expected_flow) +" "+String(_flow));
 		//logMsg("D FSM " + String(tnow) + " " + String(_fsm_time)+" "+String(_fsm_timeout));
 		//logMsg("D Valley " + String(_valley_flow_time) + " " + String(_valley_flow));
         } else if (tnow - _fsm_time >= _max_exhale_time){
@@ -1060,7 +1065,6 @@ bool BreathingLoop::inhaleTrigger()
                 result = "   -- TIME EXCEEDED" ;
                 _fsm_timeout = 0; // go to next state immediately
                 _apnea_event = true;
-        } else if (tnow - _fsm_time >= _max_exhale_time){
                 return true;
         }
     }
