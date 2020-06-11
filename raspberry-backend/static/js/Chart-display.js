@@ -115,7 +115,7 @@ $(document).ready(function() {
                 },
                 title: {
                     display: true,
-                    text: 'Pressure [cm2H2O]',
+                    text: 'Pressure [cmH2O]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
 			fontColor: "#cccccc",
                 },            
