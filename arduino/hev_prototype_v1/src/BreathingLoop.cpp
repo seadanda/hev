@@ -853,10 +853,10 @@ ValvesController* BreathingLoop::getValvesController()
 float BreathingLoop::getFlow(){
     const float temperature = 298.0;
     const float pressure = 1030.0;
-    const float scale = 10.0;
-    float dp_raw = scale*_readings_avgs.pressure_diff_patient;
+    float mbarToPa = 100.0;
+    float dp_raw = mbarToPa*_readings_avgs.pressure_diff_patient;
     //float dp_raw = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
-    float dp;
+    float flowtmp;
     /*
     if (dp_raw > 0) {
 
@@ -866,19 +866,26 @@ float BreathingLoop::getFlow(){
     }
     */
 
-    if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero - line to zero
+    // dp_raw in mbar 
+    //
+    float fudge_factor1 = 1.15;  // we scale to test chest 
+    if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero - draw a line to zero
 	    if (dp_raw > 0) {
-		dp = (43.046+71.576) * dp_raw;
+		flowtmp = (43.046+71.576) * dp_raw;
 	    } else {
-		dp = (39.047+60.471) * dp_raw;
+		flowtmp = (fudge_factor1*39.047+60.471) * dp_raw;
 	    }
     } else if (dp_raw > 0) {
 
-        dp = 43.046 * dp_raw + 71.576;
+        flowtmp = 43.046 * dp_raw + 71.576;
     } else {
-        dp = 39.047 * dp_raw - 60.471;
+        flowtmp = fudge_factor1 * 39.047 * dp_raw - 60.471;  // these are in L/h
     }
-    _flow =  dp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);
+    //_flow =  flowtmp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);  // ml/s
+    //
+    float fudge_factor2 = 0.75;
+    _flow =  fudge_factor2 * flowtmp * temperature *1013.25 / (pressure * 273.15 * 60);  // now expressed in l/min
+    //_flow =  dp_raw ;//* temperature *1013.25 / (pressure * 273.15 * 60);  // now expressed in l/min
     //return flow;  // NL/h
     if (_calibrated == true){
         return _flow;
@@ -925,12 +932,15 @@ float BreathingLoop::getVolume()
     const float pressure = 1030.0;
     // normal litres/h to millilitres
     //  need to get dt - assume dt = 10ms
-    float nl2l = (pressure * 273.15 * 3600)/(temperature *1013.25 * 1000) ; //ml/s
+    float nl2l = (pressure * 273.15 )/(temperature *1013.25) ; 
 
-    float flow = getFlow();
+    float flow = getFlow(); // flow is now in l/min
+    float vol = flow*1000.0 / (60 * 100) ; //1000 l-> ml; 60s ; 100 = 10ms measure -> 1s
     if (flow < 0)
-	    flow = flow *1.2;// stupid scale factor
-    _volume += flow * nl2l /100;
+	    vol = vol*1.2;// stupid scale factor
+    float fudge_factor3 = 0.75;  // based on test chest flow to vol measurements
+    _volume += fudge_factor3 * vol * nl2l;
+    //_volume += vol //* nl2l /100;
 
     if (_calibrated == true){
         return _volume;

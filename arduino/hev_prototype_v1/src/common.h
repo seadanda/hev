@@ -386,7 +386,7 @@ struct target_data_format{
     float respiratory_rate      = 0.0;
     float peep                  = 0.0;
     float fiO2_percent          = 0.0; 
-    float inhale_time           = 0 ; 
+    float inhale_time           = 0.0; 
     uint8_t inhale_trigger_enable = 0;   // params - associated val of peak flow
     uint8_t exhale_trigger_enable = 0;
     uint8_t volume_trigger_enable = 0;

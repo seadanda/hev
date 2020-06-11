@@ -135,7 +135,7 @@ function requestData() {
                 var readings = [ "pressure_buffer", "pressure_inhale","pressure_air_supply",                "pressure_air_regulated",
                             "pressure_o2_supply", "pressure_o2_regulated", "pressure_patient", "pressure_diff_patient", "fsm_state",
                             "fiO2_percent", "inhale_exhale_ratio", "peak_inspiratory_pressure", "plateau_pressure",
-                            "mean_airway_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
+                            "mean_airway_pressure", "plateau_pressure", "peep", "inhaled_tidal_volume", "exhaled_tidal_volume",
                             "inhaled_minute_volume", "exhaled_minute_volume", "flow", "volume", "respiratory_rate"];
                 //var targets = [ "peep", "fiO2_percent"];
 		var targets = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "pid_gain"]

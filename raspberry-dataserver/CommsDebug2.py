@@ -61,8 +61,8 @@ class Dependant(object):
             #   logging.info(f"payload received:  {payload} ")
             #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-            #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-            #    logging.info(f"TARGET {payload} {fsm}") 
+            if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+                logging.info(f"TARGET {payload} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.CMD.value:
             #    logging.info(f"CMD (alarm threshold) {payload} {fsm}") 
             #if hasattr(payload, 'ventilation_mode'):
@@ -116,9 +116,9 @@ async def commsDebug():
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
     #await asyncio.sleep(1)
-    #print('set pcac rr=10, t_inh=1110')
+    print('set pcac t_inh=1110')
     #send_cmd(cmd_type="SET_TARGET_PC_AC", cmd_code="RESPIRATORY_RATE", param=10.0) 
-    #send_cmd(cmd_type="SET_TARGET_PC_AC", cmd_code="INHALE_TIME", param=1110) 
+    send_cmd(cmd_type="SET_TARGET_PC_AC", cmd_code="INHALE_TIME", param=1.110) 
     #print('set curr rr=11 ')
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=11.0) 
 

@@ -6154,7 +6154,7 @@ z-index:1000;
 }
 
 .card-reading {
-    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/5.0 - 0.5rem);
+    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0 - 0.5rem);
 }
 .card-setting {
     height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0 - 0.5rem);
