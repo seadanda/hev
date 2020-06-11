@@ -199,11 +199,12 @@ class HEVServer(object):
         addr = writer.get_extra_info("peername")
         logging.info(f"Broadcasting to {addr!r}")
 
-        self._broadcasts[addr[1]] = asyncio.Queue(maxsize=16) # append new queue
+        bindex = len(self._broadcasts) # index of current broadcast client's queue in broadcasts
+        self._broadcasts.append(asyncio.Queue(maxsize=16)) # append new queue
 
         while self._broadcasting:
             # wait for data from queue
-            payload = await self._broadcasts[addr[1]].get()
+            payload = await self._broadcasts[bindex].get()
             # Alarm is latched until acknowledged in GUI
             if payload.getType() == PAYLOAD_TYPE.ALARM:
                 if payload not in self._alarms:
@@ -221,7 +222,7 @@ class HEVServer(object):
             broadcast_packet[data_type] = payload.getDict()
 
             broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
-            self._broadcasts[addr[1]].task_done()
+            self._broadcasts[bindex].task_done()
 
             logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
             logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
@@ -237,7 +238,7 @@ class HEVServer(object):
 
         self._broadcasting = True
         writer.close()
-        del self._broadcasts[addr[1]]
+        del self._broadcasts[bindex]
 
     async def serve_request(self, ip: str, port: int) -> None:
         server = await asyncio.start_server(
