@@ -1853,7 +1853,7 @@ small,
   display:flex;
   align-items:center;
   justify-content: center;
-  border: 1px solid red;
+  /*border: 1px solid red;*/
 }
 
 .card-title {
@@ -6118,7 +6118,7 @@ z-index:1000;
     color:white;
     /*margin-bottom: 0.5rem !important;*/
     margin-bottom:0;
-    border:1px solid green;
+    /*border:1px solid green;*/
 }
 .card-reading-proto{
   flex: 0 0 31.8%;
