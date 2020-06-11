@@ -636,7 +636,7 @@ function wait_update(mode){
               if (settings[j] in target && element){
                 element.value = target[settings[j]].toPrecision(4);
                 //update our initials if we exit
-                initial_values[mode][settings[j]] = target[settings[j]].toPrecision(4);
+                initial_targets[mode][settings[j]] = target[settings[j]].toPrecision(4);
                 //remove any red text
                 element.classList.remove('text-red');
               }

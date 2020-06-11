@@ -385,30 +385,31 @@ def target_handler():
     data = request.form
     success = True
     print("**************************set target test")
+
+    #simulated payload in case we need for testing
+    payload = { key : 1.1 for key in payload_types['TARGET']['format']}
+    payload['payload_type'] = 'TARGET'
     for d,v in data.items():
-        print(d,v)
         if 'pcac_setting_' in d:
             payload['mode'] = 'PC_AC'
             success = client.send_cmd("SET_TARGET_PC_AC", d.replace('pcac_setting_','').upper(), float(v))
-            print(d.replace('pcac_setting_',''),v)
+            payload[d.replace('pcac_setting_','')] = float(v)
         elif 'prvc_setting_' in d:
             payload['mode'] = 'PC_AC_PRVC'
             success = client.send_cmd("SET_TARGET_PC_AC_PRVC", d.replace('prvc_setting_','').upper(), float(v))
-            print(d.replace('prvc_setting_',''),v)
+            payload[d.replace('prvc_setting_','')] = float(v)
         elif 'psv_setting_' in d:
             payload['mode'] = 'PC_PSV'
             success = client.send_cmd("SET_TARGET_PC_PSV", d.replace('psv_setting_','').upper(), float(v))
-            print(d.replace('psv_setting_',''),v)
+            payload[d.replace('psv_setting_','')] = float(v)
+
         elif 'test_setting_' in d:
             payload['mode'] = 'TEST'
             success = client.send_cmd("SET_TARGET_TEST", d.replace('test_setting_','').upper(), float(v))
-            print(d.replace('test_setting_',''),v)
-    '''
-    #simulated add to database to test
-    payload = { key : 1.1 for key in payload_types['TARGET']['format']}
-    payload['payload_type'] = 'TARGET'
-    client.monitoring({'type' : 'TARGET', 'TARGET' : payload})
-    '''
+            payload[d.replace('test_setting_','')] = float(v)
+    # sent the simulated payload to the db
+    #client.monitoring({'type' : 'TARGET', 'TARGET' : payload})
+    
     response = make_response(json.dumps(success))
     response.content_type = 'application/json'
     return (response)
