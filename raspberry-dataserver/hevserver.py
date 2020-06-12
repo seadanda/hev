@@ -180,7 +180,7 @@ class HEVServer(object):
                     raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
             else:
                 raise HEVPacketError(f"Invalid request type")
-        except (NameError, KeyError, HEVPacketError) as e:
+        except (NameError, KeyError, HEVPacketError, StructError) as e:
             # invalid request: reject immediately
             logging.warning(f"Invalid packet: {e}")
             payload = {"type": "nack"}
