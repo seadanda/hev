@@ -208,7 +208,7 @@ $(document).ready(function() {
 			    var pointFlow = chart_flow.data.datasets[0].data[tooltipItem.index]['y'];
 			    var pointVolume = chart_volume.data.datasets[0].data[tooltipItem.index]['y'];
 			    var label = 'Pres ' + Math.round(pointPressure*10)/10 + ' mbar, '
-			    label += 'Flow ' + Math.round(pointFlow) + ' ml/min, ';
+			    label += 'Flow ' + Math.round(pointFlow) + ' l/min, ';
 			    label += 'Vol ' + Math.round(pointVolume) + ' ml';
 			    return label;
 			}
@@ -248,7 +248,7 @@ $(document).ready(function() {
                         },
         				scaleLabel: {
         					display: false,
-                            labelString: 'Flow [nL/H]'
+                            labelString: 'Flow [l/min]'
         				}
         			}]            
                 },
@@ -315,7 +315,7 @@ $(document).ready(function() {
 			    var pointFlow = chart_flow.data.datasets[0].data[tooltipItem.index]['y'];
 			    var pointVolume = chart_volume.data.datasets[0].data[tooltipItem.index]['y'];
 			    var label = 'Pres ' + Math.round(pointPressure*10)/10 + ' mbar, '
-			    label += 'Flow ' + Math.round(pointFlow) + ' Nl/h, ';
+			    label += 'Flow ' + Math.round(pointFlow) + ' l/min, ';
 			    label += 'Vol ' + Math.round(pointVolume) + ' ml';
 			    return label;
 			}

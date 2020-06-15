@@ -21,7 +21,7 @@ private:
     void calculateSums() {
         resetSums();
         for (uint8_t idx = 0; idx < _x.size(); idx++) {
-            if (_x[idx] - _x[0] >= _duration) {
+            if (_x[idx] - _x[0] > _duration) {
                 break;
             }
             _entries++;
@@ -40,9 +40,9 @@ public:
         x -= _x_zero;
 
         // remove entry if buffer full or if _duration (in ms) longer than defined
-        while ((!_x.isEmpty() && ((x - _x[0]) >= (_duration + _delay)) ) || (_x.isFull() && _y.isFull())) {
+        while ((!_x.isEmpty() && ((x - _x[0]) > (_duration + _delay)) ) || (_x.isFull() && _y.isFull())) {
             uint32_t x_tmp;
-            float    y_tmp;
+            float    y_tmp ;
             _x.pop(x_tmp);
             _y.pop(y_tmp);
         }
@@ -74,6 +74,12 @@ public:
     }
 
     int numEntries(){return _x.size(); }
+    void getLast(uint32_t &x0, uint32_t &xn, float &y, uint8_t &entries){
+    	x0 = _x[0] ;
+    	xn = _x[_entries-1] ;
+	y = _y[_entries-1] ; 
+	entries = _entries;
+    }
 
 private:
     uint32_t _x_zero   = 0;

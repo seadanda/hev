@@ -590,8 +590,8 @@ void BreathingLoop::FSM_breathCycle()
             }
 	    //logMsg("exhale "+String(_peak_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             measurePEEP();
-            _mandatory_inhale = inhaleTrigger();
 		digitalWrite(pin_led_red, LOW);
+            _mandatory_inhale = inhaleTrigger();
             break;
         case BL_STATES::STANDBY:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
@@ -939,7 +939,7 @@ float BreathingLoop::getVolume()
     if (flow < 0)
 	    vol = vol*1.2;// stupid scale factor
     float fudge_factor3 = 0.75;  // based on test chest flow to vol measurements
-    _volume += fudge_factor3 * vol * nl2l; 
+    _volume += fudge_factor3 * vol * nl2l; // real KH
     //_volume = _flow_fitter.extrapolate(millis()); // will return correct extrapolation of max float value
     //_volume += vol //* nl2l /100;
 
@@ -1036,13 +1036,24 @@ bool BreathingLoop::inhaleTrigger()
 
 
         //TODO: calculate expected point here?
-        float expected_flow = 0;//_flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
+        float expected_flow =  _flow_fitter.extrapolate(tnow); // will return correct extrapolation of max float value
 
-	if ((tnow - _fsm_time) % 100 == 0)logMsg("A " + String(expected_flow) +" "+String(_flow));
+	//if ((tnow - _fsm_time) % 100 == 0)logMsg("A " + String(expected_flow) +" "+String(_flow));
+	/*
+	uint32_t x0, xn;
+	float y;
+	uint8_t e; 
+        float extrap = _flow_fitter.extrapolate(millis()); 
+
+	_flow_fitter.getLast(x0, xn,y,e);
+	logMsg("x0 "+String(x0)+ " xn "+String(xn)+" y "+String(y)+" e "+String(e) +" extrap "+extrap);
+	*/
+
 
         // NOTE: _flow should be positive only in this case?
         if (((_flow - expected_flow) > _targets_current->inhale_trigger_threshold)
         //if((_readings_avgs.pressure_diff_patient > _targets_current->inhale_trigger_threshold)
+            && (_flow > _valley_flow*0.1)
             && (tnow - _valley_flow_time >= 100)){  // wait 100ms after the valley
             if (tnow - _fsm_time >= _min_exhale_time ) {
                 // TRIGGER
@@ -1087,8 +1098,8 @@ bool BreathingLoop::exhaleTrigger()
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
-                return false;// not mandatory exhale
 		digitalWrite(pin_led_red , HIGH);
+                return false;// not mandatory exhale
             }
         }
     }
@@ -1108,8 +1119,8 @@ bool BreathingLoop::volumeTrigger()
             if (tnow - _fsm_time >= _min_inhale_time ) {
                 // TRIGGER
                 _fsm_timeout = 0; // go to next state immediately
-                return false;// not mandatory exhale
 		digitalWrite(pin_led_red , HIGH);
+                return false;// not mandatory exhale
             }
         }
     }
@@ -1165,12 +1176,12 @@ void BreathingLoop::runningAvgs()
         //    _peep = _readings_avgs.pressure_patient;
         //}
 	//logMsg(" EXHALE "+String(_volume_exhale));
+	_flow_fitter.appendPoints(millis(), _flow);
     }
 
     _sum_airway_pressure += _readings_avgs.pressure_patient;
     _ap_readings_N++;
 
-    _flow_fitter.appendPoints(millis(), _flow);
 }
 
 void BreathingLoop::tsigReset()

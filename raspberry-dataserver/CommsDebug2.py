@@ -42,7 +42,7 @@ class Dependant(object):
         
             if payload.getType() == PAYLOAD_TYPE.DATA.value:
                 #logging.info(f"payload received: {payload}")
-                #logging.info(f"payload received: {payload.timestamp}") 
+                logging.info(f"payload received: {payload.timestamp} p {payload.pressure_patient:3.2f} f {payload.flow:3.3f} base {payload.volume:3.3f} d {payload.flow - payload.volume:3.3f} {payload.fsm_state}") 
                 #logging.info(f"Fsm state: {payload.fsm_state}")
                 fsm = payload.fsm_state
             #if payload.getType() == PAYLOAD_TYPE.IVT.value:
@@ -55,14 +55,14 @@ class Dependant(object):
             #   logging.info(f"payload received:  {payload} ")
             #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
             #    logging.info(f"payload received:  {payload} {fsm}")
-            if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
-                logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
+            #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+            #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
             #if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
             #   logging.info(f"payload received:  {payload} ")
             #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
-            if payload.getType() == PAYLOAD_TYPE.TARGET.value:
-                logging.info(f"TARGET {payload} {fsm}") 
+            #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
+            #    logging.info(f"TARGET {payload} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.CMD.value:
             #    logging.info(f"CMD (alarm threshold) {payload} {fsm}") 
             #if hasattr(payload, 'ventilation_mode'):
@@ -104,24 +104,28 @@ async def commsDebug():
     #print('send personal info')
     #send_personal("Jessica Jones", 29, 'F', 175, 58)
 
-    send_cmd(cmd_type="GET_THRESHOLD_MAX", cmd_code="APNEA")
-    await asyncio.sleep(1)
-    print('set apnea max 10')
-    send_cmd(cmd_type="SET_THRESHOLD_MAX", cmd_code="APNEA", param=10)
-    send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.0015)
-    send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.0016)
-    send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0017)
+    #send_cmd(cmd_type="GET_THRESHOLD_MAX", cmd_code="APNEA")
+    #await asyncio.sleep(1)
+    #print('set apnea max 10')
+    #send_cmd(cmd_type="SET_THRESHOLD_MAX", cmd_code="APNEA", param=10)
+    #send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.0015)
+    #send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.0016)
+    #send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.0017)
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
     #await asyncio.sleep(1)
-    print('set pcac t_inh=1110')
+    #print('set pcac t_inh=1110')
     #send_cmd(cmd_type="SET_TARGET_PC_AC", cmd_code="RESPIRATORY_RATE", param=10.0) 
-    send_cmd(cmd_type="SET_TARGET_PC_AC", cmd_code="INHALE_TIME", param=1.110) 
+    #send_cmd(cmd_type="SET_TARGET_PC_AC", cmd_code="INHALE_TIME", param=1.110) 
     #print('set curr rr=11 ')
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=11.0) 
 
+    send_cmd(cmd_type="SET_MODE", cmd_code="PC_PSV", param=1) 
+    send_cmd(cmd_type="SET_TARGET_PC_PSV", cmd_code="INHALE_TRIGGER_THRESHOLD", param=1) 
+    send_cmd(cmd_type="SET_TARGET_PC_PSV", cmd_code="EXHALE_TRIGGER_THRESHOLD", param=25) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="RESPIRATORY_RATE", param=5.0) 
     #await asyncio.sleep(1)
     #print('get targets pcac, current')
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
@@ -138,7 +142,7 @@ async def commsDebug():
 
     await asyncio.sleep(1)
 
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2.3) 
+    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=1) 
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TIME", param=1.220) 
     #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INSPIRATORY_PRESSURE", param=25)
     #await asyncio.sleep(1)
@@ -149,22 +153,22 @@ async def commsDebug():
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
-    ##cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0) 
-    #print('send start')
+    cmd = send_cmd(cmd_type="GENERAL", cmd_code="START", param=0) 
+    print('send start')
     #print('sent inhale + exhale trigger -> 1')
     while True:
         await asyncio.sleep(1)
-        print("get targets")
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
-        send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
+        #print("get targets")
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_PSV", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="PC_AC_PRVC", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="CPAP", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
+        #send_cmd(cmd_type="GET_TARGETS", cmd_code="CURRENT", param=0)
 
-        #send_cmd(cmd_type="GENERAL", cmd_code="STANDBY", param=0)
+        ##send_cmd(cmd_type="GENERAL", cmd_code="STANDBY", param=0)
 
-        print('sent cmd get targets')
+        #print('sent cmd get targets')
 
 try:
     # setup serial device and init server

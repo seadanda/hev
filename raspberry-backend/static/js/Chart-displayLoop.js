@@ -177,20 +177,20 @@ $(document).ready(function() {
                                      ticks: {min: 0, max: 800,
                                              stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}],
                             yAxes: [{display: true,
-                                     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc"},
+                                     scaleLabel: { display: true, labelString: 'Flow [l/min]', fontSize: 24, fontColor:"#cccccc"},
                                      gridLines : {
                                          display:       paramInhale.gridLines.display,
                                          color:         paramInhale.gridLines.color,
                                          zeroLineColor: paramInhale.gridLines.zeroLineColor
                                      },
-                                     ticks: {min: -300, max: 300,
-                                             stepSize: 100, fontSize: 25 , fontColor:"#cccccc"}}]},
+                                     ticks: {min: -100, max: 100,
+                                             stepSize: 25, fontSize: 25 , fontColor:"#cccccc"}}]},
                    tooltips: {
                        callbacks: {
                            label: function(tooltipItem) {
                                //console.info(tooltipItem)
                                var label = 'Volume ' + Math.round(tooltipItem.xLabel) + ' [ml]';
-                               label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/h]';
+                               label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [l/min]';
                                return label;
                            }
                        },
@@ -230,20 +230,20 @@ $(document).ready(function() {
                                      ticks: {min: 0, max: 35 ,
                                              stepSize: 5  , fontSize: 25, fontColor:"#cccccc" }}],
                             yAxes: [{display: true,
-                                     scaleLabel: { display: true, labelString: 'Flow [nL/H]', fontSize: 24, fontColor:"#cccccc",},
+                                     scaleLabel: { display: true, labelString: 'Flow [l/min]', fontSize: 24, fontColor:"#cccccc",},
                                      gridLines : {
                                          display:       paramInhale.gridLines.display,
                                          color:         paramInhale.gridLines.color,
                                          zeroLineColor: paramInhale.gridLines.zeroLineColor
                                      },
-                                     ticks: {min: -300, max: 300,
-                                             stepSize: 100, fontSize: 25, fontColor:"#cccccc" }}]},
+                                     ticks: {min: -100, max: 100,
+                                             stepSize: 25, fontSize: 25, fontColor:"#cccccc" }}]},
                    tooltips: {
                        callbacks: {
                            label: function(tooltipItem) {
                                //console.info(tooltipItem)
                                var label = 'Pressure ' + Math.round(tooltipItem.xLabel*10)/10 + ' [mbar]';
-                               label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [nL/H]';
+                               label += ' Flow ' + Math.round(tooltipItem.yLabel) + ' [l/min]';
                                return label;
                            }
                        },
