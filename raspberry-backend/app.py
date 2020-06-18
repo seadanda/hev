@@ -310,18 +310,15 @@ def send_cmd():
     Send command to the data server
     """
     web_form = request.form
-    if web_form.get('start') == "START":
-        print(client.send_cmd("GENERAL", "START"))
-    elif web_form.get('stop') == "STOP":
-        print(client.send_cmd("GENERAL", "STOP"))
-    elif web_form.get('standby') == "STANDBY":
-        print(client.send_cmd("GENERAL", "STANDBY"))
-    #elif web_form.get('reset') == "RESET":
-    #    print(client.send_cmd("GENERAL", "RESET"))
-    elif web_form.get('export') == "EXPORT":
+    success = True
+    if 'cmd' in web_form.keys() and web_form.get('cmd') in [ 'START', 'STOP', 'STANDBY']:
+        success=client.send_cmd("GENERAL", web_form.get('cmd'))
+    elif 'export' in web_form.keys():
         downloadCSV()
-    #return render_template('index.html', result=live_data())
-    return ('', 204)
+
+    response = make_response(json.dumps(success))
+    response.content_type = 'application/json'
+    return (response)
 
 
 @WEBAPP.route('/set_alarm_threshold', methods=['POST'])

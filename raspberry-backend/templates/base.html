@@ -115,13 +115,11 @@
 			  
 			</div>
 
-            <form action="{{ url_for('send_cmd') }}" method="post">
 		    <div class = "controls py-1 ml-auto mr-auto">
-		    <input type="submit" name="start" value="START" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
-			<input type="submit" name="stop" value="STOP" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
-			<input type="submit" name="standby" value="STANDBY" onclick="cmdNotification(this)" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+		    <input type="submit" name="start" value="START" id="start_ventilator" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+			<input type="submit" name="stop" value="STOP" id = "stop_ventilator" class="lockable sb-nav-button py-1 mb-1" disabled></input>
+			<input type="submit" name="standby" value="STANDBY" id="standby_ventilator" class="lockable sb-nav-button py-1 mb-1" disabled></input>
 			</div>
-			</form>
 
 
 		  </div>
@@ -449,6 +447,102 @@
 		event.preventDefault();
 		$(this).removeClass('modifying');
 	});
+	$('#start_ventilator').click( function(){
+		// ask for confirmation and then send
+		var message = "Please confirm you want to start the ventilator";
+		$.confirm({
+		  	title: 'Confirmation',
+			content: message,
+			buttons: {
+		    confirm: function () {
+				jsonForm = {};
+				jsonForm['cmd'] = 'START';
+		        $.ajax({
+		        	url: "/send_cmd",
+		          	type: 'POST',
+          			data : jsonForm,
+          			success: function(response){
+            			if (response == true){
+						  $.dialog('Ventilator Starting');
+			            }
+			            else{
+			              $.dialog("Problem Starting Ventilator Mode, Please Try again");
+			            }
+					}
+				})
+			},
+		    cancel: function () {
+		    	$.dialog('Canceled!');
+			    },
+			}
+		});
+		event.preventDefault();
+	});
+	$('#stop_ventilator').click( function(){
+		// ask for confirmation and then send
+		var message = "Please confirm you want to stop the ventilator";
+		$.confirm({
+		  	title: 'Confirmation',
+			content: message,
+			buttons: {
+		    confirm: function () {
+				jsonForm = {};
+				jsonForm['cmd'] = 'STOP';
+		        $.ajax({
+		        	url: "/send_cmd",
+		          	type: 'POST',
+          			data : jsonForm,
+          			success: function(response){
+            			if (response == true){
+						  $.dialog('Issued Command to Stop Ventilator');
+			            }
+			            else{
+			              $.dialog("Problem Issuing Command to Ventilator, Please Try again");
+			            }
+					}
+				})
+			},
+		    cancel: function () {
+		    	$.dialog('Canceled!');
+			    },
+			}
+		});
+		event.preventDefault();
+	});
+	$('#standby_ventilator').click( function(){
+		// ask for confirmation and then send
+		var message = "Please confirm you want to put the ventilator into standby mode";
+		$.confirm({
+		  	title: 'Confirmation',
+			content: message,
+			buttons: {
+		    confirm: function () {
+				jsonForm = {};
+				jsonForm['cmd'] = 'STANDBY';
+		        $.ajax({
+		        	url: "/send_cmd",
+		          	type: 'POST',
+          			data : jsonForm,
+          			success: function(response){
+            			if (response == true){
+						  $.dialog('Issued Command to Put the Ventilator into standby mode');
+			            }
+			            else{
+			              $.dialog("Problem Issuing Command to Ventilator, Please Try again");
+			            }
+					}
+				})
+			},
+		    cancel: function () {
+		    	$.dialog('Canceled!');
+			    },
+			}
+		});
+		event.preventDefault();
+	});
+
+
+
 
 pickout.to({
   el:'.pickout',
