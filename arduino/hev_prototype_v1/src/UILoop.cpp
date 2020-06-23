@@ -54,6 +54,7 @@ void UILoop::receiveCommands()
                 personal_data_format pers;
                 _pl_receive.getPayload(reinterpret_cast<void*>(&pers));
                 strcpy(_personal.name, pers.name);
+                strcpy(_personal.patient_id, pers.patient_id);
                 _personal.age = pers.age;
                 _personal.sex = pers.sex;
                 _personal.height = pers.height;
@@ -333,6 +334,7 @@ void UILoop::reportPersonal()
         _personal_data.timestamp = static_cast<uint32_t>(tnow);
 
         strcpy(_personal_data.name, _personal.name);
+        strcpy(_personal_data.patient_id, _personal.patient_id);
         _personal_data.age    = _personal.age   ;
         _personal_data.sex    = _personal.sex   ;
         _personal_data.height = _personal.height;
