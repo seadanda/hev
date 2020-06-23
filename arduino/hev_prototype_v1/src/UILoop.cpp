@@ -191,7 +191,7 @@ void UILoop::reportCycleReadings()
         _cycle_data.peak_inspiratory_pressure = cr.peak_inspiratory_pressure;
         _cycle_data.plateau_pressure          = cr.plateau_pressure;
         _cycle_data.mean_airway_pressure      = cr.mean_airway_pressure;
-        _cycle_data.fiO2_percent              = cr.fiO2_percent;
+        _cycle_data.fiO2_percent              = 21.0; // cr.fiO2_percent;
         _cycle_data.apnea_index               = cr.apnea_index;
         _cycle_data.apnea_time                = cr.apnea_time;
         _cycle_data.mandatory_breath          = cr.mandatory_breath;
