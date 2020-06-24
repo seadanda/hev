@@ -146,11 +146,12 @@ class HEVServer(object):
             elif reqtype == "PERSONAL":
                 # ignore for the minute
                 name   = request["name"].encode()
+                patient_id = request["patient_id"].encode()
                 age    = int(request["age"])
                 sex    = request["sex"].encode()
                 height = int(request["height"])
                 weight = int(request["weight"])
-                pfmt = PersonalFormat(name=name, age=age, sex=sex, height=height, weight=weight)
+                pfmt = PersonalFormat(name=name, patient_id=patient_id, age=age, sex=sex, height=height, weight=weight)
                 self._comms_lli.writePayload(pfmt)
                 payload = {"type": "ack"}
                 pass
