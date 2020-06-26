@@ -1853,6 +1853,7 @@ small,
   display:flex;
   align-items:center;
   justify-content: center;
+  min-height:1.4rem;
   /*border: 1px solid red;*/
 }
 
@@ -1898,7 +1899,8 @@ small,
 }
 
 .card-footer {
-  padding: 0.75rem 1.25rem;
+  /*padding: 0.75rem 1.25rem;*/
+  padding: 0;
   background-color: rgba(0, 0, 0, 0.03);
   border-top: 1px solid rgba(0, 0, 0, 0.125);
 }
@@ -6083,6 +6085,11 @@ z-index:1000;
   max-width: 58.3333333333%;
 
 }
+.col-charts-main{
+  flex: 0 0 78.3333333333%;
+  max-width: 78.3333333333%;
+
+}
 .col-cards-main {
     flex: 0 0 20.8333333333%;
     max-width: 20.8333333333%;
@@ -6095,11 +6102,19 @@ z-index:1000;
   flex: 0 0 20.8333333333%;
   max-width: 20.8333333333%;
 }
-.col-settings-main{
+.col-settings-row {
+  flex: 0 0 100%;
+  max-width:100%;
+  display:flex;
+  flex-flow: row wrap;
+  justify-content:center;
+  height:4.0rem;
+}
+.col-settings-main {
   background-color: white;
 }
 
-.card-reading, .card-setting, .card-reading-proto, .card-input-reading-proto{
+.card-reading, .card-reading-proto, .card-input-reading-proto{
     position: relative;
     min-width: 0;
     word-wrap: break-word;
@@ -6120,6 +6135,31 @@ z-index:1000;
     margin-bottom:0;
     /*border:1px solid green;*/
 }
+
+
+.card-setting{
+    position: relative;
+    min-width: 0;
+    word-wrap: break-word;
+    background-clip: border-box;
+    border: 1px solid rgba(0, 0, 0, 0.0);
+    border-radius: 0.25rem;
+    display:flex;
+    flex-direction:column;
+    padding-right: 0.0rem !important;
+    padding-left: 0.0rem !important;
+    padding-top:0.0rem;
+    padding-bottom:0.0rem;
+    margin-right: 0.05rem !important;
+    margin-left: 0.05rem !important;
+    /*color: #343a40 !important;*/
+    color:white;
+    /*margin-bottom: 0.5rem !important;*/
+    margin-bottom:0;
+    /*border:1px solid green;*/
+
+}
+
 .card-reading-proto{
   flex: 0 0 31.8%;
   max-width: 31.8%;
@@ -6129,10 +6169,18 @@ z-index:1000;
     flex: 0 0 48.0%;
     max-width: 48.0%;
 }
-.card-setting, .card-reading{
+.card-reading{
   flex: 0 0 98.0%;
   max-width: 98.0%;
 }
+
+.card-setting{
+  flex: 0 0 15.0%;
+  max-width:15%;
+  background:white;
+}
+
+
 .card-header {
   color:white;
 }
@@ -6153,10 +6201,10 @@ z-index:1000;
 }
 
 .card-reading {
-    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0);
+    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem)/6.0);
 }
 .card-setting {
-    height:calc((100vh - var(--top-height) - 1.0rem - 1.5rem - 2.0rem)/6.0);
+    height:100%;
 }
 .card-reading-proto, .card-input-reading-proto {
     height:calc((100vh - var(--top-height) -  1.5rem - 1.0rem - 2.0rem)/5.0);
@@ -6175,7 +6223,7 @@ z-index:1000;
 .main-chart-container {
     position:relative;
     width:100%;
-    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem)/3.0); /* 2.0rem if for the range-button container, 1.5rem for the tab header*/
+    height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem - 4.0rem)/3.0); /* 2.0rem if for the range-button container, 1.5rem for the tab header*/
 }
 .main-gauge-container {
     display:flex;
