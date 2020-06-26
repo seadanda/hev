@@ -35,6 +35,8 @@ BreathingLoop::BreathingLoop()
     _pid.Kp = 0.004; // proportional factor
     _pid.Ki = 0.0010;   // integral factor
     _pid.Kd = 0.;   // derivative factor
+    _pid.pid_gain = 1;
+    _pid.max_patient_pressure = 45; 
 
     _pid.integral   = 0.;
     _pid.derivative = 0.;
@@ -100,7 +102,7 @@ void BreathingLoop::initTargets()
 
     _targets_pcac.buffer_lower_pressure = 285.0;
     _targets_pcac.buffer_upper_pressure = 300.0;
-    _targets_pcac.pid_gain = 1;  // not yet doing anything
+    // _targets_pcac.pid_gain = 1;  // not yet doing anything
 
     // copy all from PCAC
     _targets_pcac_prvc = _targets_pcac;
@@ -677,9 +679,9 @@ void BreathingLoop::safetyCheck()
 {
     // based on averages or instantaneous values?
     if (_calibrated){
-        if (_readings_avgs.pressure_inhale > MAX_PATIENT_PRESSURE)
+        if (_readings_avgs.pressure_inhale > _pid.max_patient_pressure)
             _safe = false;
-        else if (_readings_avgs.pressure_patient > MAX_PATIENT_PRESSURE)
+        else if (_readings_avgs.pressure_patient > _pid.max_patient_pressure)
             _safe = false;
         else 
             _safe = true;
@@ -981,9 +983,11 @@ void BreathingLoop::doPID(){
     //Calculate the PID error based on the pid set point
     float error = _pid.target_pressure - _pid.process_pressure;
 
-    _pid.proportional       = _targets_current->pid_gain * _pid.Kp*error;
-    _pid.integral          += _targets_current->pid_gain * _pid.Ki*error;
+    //_pid.proportional       = _targets_current->pid_gain * _pid.Kp*error;
+    //_pid.integral          += _targets_current->pid_gain * _pid.Ki*error;
 
+    _pid.proportional       = _pid.pid_gain * _pid.Kp*error;
+    _pid.integral          += _pid.pid_gain * _pid.Ki*error;
     //Derivative calculation
 
     float _derivative = _pid.previous_process_pressure - _pid.process_pressure ;
@@ -995,7 +999,8 @@ void BreathingLoop::doPID(){
     float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
-    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_targets_current->pid_gain * _pid.Kd * _pid.derivative) + minimum_open_frac;
+    //_pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_targets_current->pid_gain * _pid.Kd * _pid.derivative) + minimum_open_frac;
+    _pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_pid.pid_gain * _pid.Kd * _pid.derivative) + minimum_open_frac;
 
     if(_pid.valve_duty_cycle > maximum_open_frac) _pid.valve_duty_cycle = maximum_open_frac;
     if(_pid.valve_duty_cycle < minimum_open_frac) _pid.valve_duty_cycle = minimum_open_frac;

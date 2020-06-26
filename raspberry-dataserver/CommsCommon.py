@@ -85,8 +85,10 @@ class CMD_SET_PID(Enum):
     KP = 1
     KI = 2
     KD = 3
-    TARGET_FINAL_PRESSURE = 4
-    NSTEPS = 5
+    PID_GAIN = 4
+    TARGET_FINAL_PRESSURE = 5
+    NSTEPS = 6
+    MAX_PATIENT_PRESSURE = 7
 
 @unique
 class CMD_SET_TARGET(Enum):
@@ -99,7 +101,7 @@ class CMD_SET_TARGET(Enum):
     INHALE_TIME              = 7
     INHALE_TRIGGER_THRESHOLD = 8
     EXHALE_TRIGGER_THRESHOLD = 9
-    PID_GAIN                 = 10
+    #PID_GAIN                 = 10
     # for debugging only; not for UIs
     INHALE_TRIGGER_ENABLE    = 11
     EXHALE_TRIGGER_ENABLE    = 12
@@ -206,7 +208,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xB5, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xB6, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -346,7 +348,7 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBfffff")
+    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBffffffB")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
 
 
@@ -380,6 +382,8 @@ class ReadbackFormat(PayloadFormat):
     kp              : float = 0.0
     ki              : float = 0.0
     kd              : float = 0.0
+    pid_gain        : float = 0.0
+    max_patient_pressure : int = 0
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
     def fromByteArray(self, byteArray):
@@ -417,6 +421,8 @@ class ReadbackFormat(PayloadFormat):
         self.kp              , 
         self.ki              ,
         self.kd              ,
+        self.pid_gain        ,    
+        self.max_patient_pressure
         ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
@@ -625,7 +631,7 @@ class IVTFormat(PayloadFormat):
 # =======================================
 @dataclass
 class TargetFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBBfffffffBBBfffff")
+    _dataStruct = Struct("<BIBBfffffffBBBffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.TARGET
 
     mode                     : int   = 0
@@ -643,7 +649,7 @@ class TargetFormat(PayloadFormat):
     exhale_trigger_threshold : float = 0.0
     buffer_upper_pressure    : float = 0.0
     buffer_lower_pressure    : float = 0.0 
-    pid_gain                 : float = 0.0
+    #pid_gain                 : float = 0.0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -669,8 +675,9 @@ class TargetFormat(PayloadFormat):
         self.inhale_trigger_threshold ,
         self.exhale_trigger_threshold ,
         self.buffer_upper_pressure,
-        self.buffer_lower_pressure,
-        self.pid_gain             ) = self._dataStruct.unpack(byteArray) 
+        self.buffer_lower_pressure
+        #self.pid_gain             
+        ) = self._dataStruct.unpack(byteArray) 
 
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)

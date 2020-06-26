@@ -161,6 +161,8 @@ void UILoop::reportReadbackValues()
         _readback_data.kp = pid.Kp;
         _readback_data.ki = pid.Ki;
         _readback_data.kd = pid.Kd;
+        _readback_data.pid_gain = pid.pid_gain;
+        _readback_data.max_patient_pressure = pid.max_patient_pressure;
 
         _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_readback_data), sizeof(_readback_data));
         _comms->writePayload(_pl_send);
@@ -320,7 +322,7 @@ void UILoop::reportTargetsNow(target_variables &targets, VENTILATION_MODE mode)
     _target_data.exhale_trigger_threshold = 100.0*targets.exhale_trigger_threshold;  
     _target_data.buffer_lower_pressure = targets.buffer_lower_pressure;
     _target_data.buffer_upper_pressure = targets.buffer_upper_pressure;
-    _target_data.pid_gain              = targets.pid_gain;
+    //_target_data.pid_gain              = targets.pid_gain;
     _pl_send.setPayload(PRIORITY::CMD_ADDR, reinterpret_cast<void *>(&_target_data), sizeof(_target_data));
     _comms->writePayload(_pl_send);
 
