@@ -54,6 +54,7 @@ void UILoop::receiveCommands()
                 personal_data_format pers;
                 _pl_receive.getPayload(reinterpret_cast<void*>(&pers));
                 strcpy(_personal.name, pers.name);
+                strcpy(_personal.patient_id, pers.patient_id);
                 _personal.age = pers.age;
                 _personal.sex = pers.sex;
                 _personal.height = pers.height;
@@ -190,7 +191,7 @@ void UILoop::reportCycleReadings()
         _cycle_data.peak_inspiratory_pressure = cr.peak_inspiratory_pressure;
         _cycle_data.plateau_pressure          = cr.plateau_pressure;
         _cycle_data.mean_airway_pressure      = cr.mean_airway_pressure;
-        _cycle_data.fiO2_percent              = cr.fiO2_percent;
+        _cycle_data.fiO2_percent              = 21.0; // cr.fiO2_percent;
         _cycle_data.apnea_index               = cr.apnea_index;
         _cycle_data.apnea_time                = cr.apnea_time;
         _cycle_data.mandatory_breath          = cr.mandatory_breath;
@@ -333,6 +334,7 @@ void UILoop::reportPersonal()
         _personal_data.timestamp = static_cast<uint32_t>(tnow);
 
         strcpy(_personal_data.name, _personal.name);
+        strcpy(_personal_data.patient_id, _personal.patient_id);
         _personal_data.age    = _personal.age   ;
         _personal_data.sex    = _personal.sex   ;
         _personal_data.height = _personal.height;

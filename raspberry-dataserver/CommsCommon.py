@@ -206,7 +206,7 @@ class HEVVersionError(Exception):
 @dataclass
 class PayloadFormat():
     # class variables excluded from init args and output dict
-    _RPI_VERSION: ClassVar[int]       = field(default=0xB4, init=False, repr=False)
+    _RPI_VERSION: ClassVar[int]       = field(default=0xB5, init=False, repr=False)
     _dataStruct:  ClassVar[Any]       = field(default=Struct("<BIB"), init=False, repr=False)
     _byteArray:   ClassVar[bytearray] = field(default=None, init=False, repr=False)
 
@@ -682,14 +682,15 @@ class TargetFormat(PayloadFormat):
 # =======================================
 @dataclass
 class PersonalFormat(PayloadFormat):
-    _dataStruct = Struct("<BIB60sBcBB")
+    _dataStruct = Struct("<BIB60s20sBcBB")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.PERSONAL
 
-    name    : str = ""
-    age     : int = 0
-    sex     : str = ""
-    height  : int = 0
-    weight  : int = 0
+    name       : str = ""
+    patient_id : str = ""
+    age        : int = 0
+    sex        : str = ""
+    height     : int = 0
+    weight     : int = 0
 
     # for receiving DataFormat from microcontroller
     # fill the struct from a byteArray, 
@@ -698,11 +699,13 @@ class PersonalFormat(PayloadFormat):
         #logging.info(binascii.hexlify(byteArray))
         tmp_payload_type = 0
         tmp_name = None
+        tmp_id = None
         tmp_sex = None
         (self.version,
         self.timestamp,
         tmp_payload_type,
         tmp_name,
+        tmp_id,
         self.age,
         tmp_sex,
         self.height,
@@ -711,6 +714,7 @@ class PersonalFormat(PayloadFormat):
         self.checkVersion()
         self.payload_type = PAYLOAD_TYPE(tmp_payload_type)
         self.name         = tmp_name.decode().rstrip('\0')
+        self.patient_id   = tmp_id.decode().rstrip('\0')
         self.sex          = tmp_sex.decode()
         self._byteArray = byteArray
 # =======================================

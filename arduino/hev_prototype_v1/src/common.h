@@ -21,7 +21,7 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xB4
+#define HEV_FORMAT_VERSION 0xB5
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
@@ -433,6 +433,7 @@ struct personal_data_format {
     uint8_t  payload_type               = PAYLOAD_TYPE::PERSONAL;
 
     char    name[60];
+    char    patient_id[20];
     uint8_t age;
     char    sex;
     uint8_t height;
@@ -715,6 +716,7 @@ struct cycle_readings{
 
 struct personal_details{
     char name[60];
+    char patient_id[20];
     uint8_t age;
     char    sex;
     uint8_t height;
