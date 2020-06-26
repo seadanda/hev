@@ -21,11 +21,11 @@
 #include <Arduino_Due_pinout.h>
 #endif
 
-#define HEV_FORMAT_VERSION 0xB5
+#define HEV_FORMAT_VERSION 0xB6
 
 // 
 const float MAX_VALVE_FRAC_OPEN = 0.74;
-const uint8_t MAX_PATIENT_PRESSURE = 45; //mbar
+//const uint8_t MAX_PATIENT_PRESSURE = 45; //mbar
 const uint8_t RUNNING_AVG_READINGS = 3;
 const uint8_t CYCLE_AVG_READINGS = 3;
 
@@ -114,8 +114,10 @@ enum CMD_SET_PID : uint8_t {
     KP = 1,
     KI = 2,
     KD = 3,
-    TARGET_FINAL_PRESSURE = 4,
-    NSTEPS = 5
+    PID_GAIN = 4,
+    TARGET_FINAL_PRESSURE = 5,
+    NSTEPS = 6,
+    MAX_PATIENT_PRESSURE = 7
 };
 
 enum CMD_SET_TARGET : uint8_t {
@@ -128,7 +130,7 @@ enum CMD_SET_TARGET : uint8_t {
     INHALE_TIME              = 7,
     INHALE_TRIGGER_THRESHOLD = 8,
     EXHALE_TRIGGER_THRESHOLD = 9,
-    PID_GAIN                 = 10, 
+    //PID_GAIN                 = 10, 
     // for debugging only; not for UIs
     INHALE_TRIGGER_ENABLE    = 11,
     EXHALE_TRIGGER_ENABLE    = 12,
@@ -271,6 +273,8 @@ struct readback_data_format {
     float kp = 0.0;
     float ki = 0.0;
     float kd = 0.0;
+    float pid_gain = 0.0;
+    uint8_t max_patient_pressure = 0;
 };
 #pragma pack()
 
@@ -394,7 +398,7 @@ struct target_data_format{
     float exhale_trigger_threshold ;
     float buffer_upper_pressure = 0.0; 
     float buffer_lower_pressure = 0.0; 
-    float pid_gain              = 0; 
+    //float pid_gain              = 0; 
 };
 #pragma pack()
 
@@ -602,6 +606,8 @@ struct pid_variables {
     float Kp; // proportional factor
     float Ki; // integral factor
     float Kd; // derivative factor
+    float pid_gain;
+    uint8_t max_patient_pressure;
     // results of calculation
     float target_pressure  ; 
     float process_pressure ; 
@@ -631,7 +637,7 @@ struct target_variables {
     float exhale_trigger_threshold ;
     float buffer_upper_pressure; 
     float buffer_lower_pressure; 
-    float pid_gain;  //ms
+    /*float pid_gain;  //ms*/
     bool  ie_selected;
 };
 

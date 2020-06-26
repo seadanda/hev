@@ -81,6 +81,12 @@ void setPID(CMD_SET_PID cmd, pid_variables &pid, float value)
         case CMD_SET_PID::NSTEPS:
             pid.nsteps = value;
             break;
+        case CMD_SET_PID::PID_GAIN:
+            pid.pid_gain= value;
+            break;
+        case CMD_SET_PID::MAX_PATIENT_PRESSURE:
+            pid.max_patient_pressure = static_cast<uint8_t>(value);
+            break;
         default:
             break;
     }
@@ -128,8 +134,8 @@ void setTarget(CMD_SET_TARGET cmd, target_variables &targets, float value)
         case CMD_SET_TARGET::EXHALE_TRIGGER_THRESHOLD :
             targets.exhale_trigger_threshold = value/100.0;
             break;
-        case CMD_SET_TARGET::PID_GAIN: 
-            targets.pid_gain = value;
+        //case CMD_SET_TARGET::PID_GAIN: 
+        //    targets.pid_gain = value;
 	    break;
     }
 }
