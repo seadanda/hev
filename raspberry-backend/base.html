@@ -262,6 +262,7 @@
 	function update_alarms() {
       $.getJSON("live-alarms", function (data) {
 	     if (data.alarm_type == 'PRIORITY_HIGH') {
+                console.log("benzinaaa");
 	        document.getElementById("alarms").innerHTML = "High priority: " + data.alarm_code;               
 	        var el = document.getElementById("alarm_ul");
 	        el.classList.add("alarm-red");
@@ -281,13 +282,16 @@
 	        el.classList.add("alarm-red");
 	        var el2 = document.getElementById("path-alarm");
 	        el2.classList.add("path-icon-alarm");
-          } else {  
+          } 
+         
+          if (data == null) {  
 	         document.getElementById("alarms").innerHTML = 'No alarms'
 			 var el = document.getElementById("alarms");
 	         el.classList.remove("alarm-red");
 	         var el2 = document.getElementById("path-alarm");
 	         el2.classList.remove("path-icon-alarm");
 	      }    
+         
 	  });
 	}
 	var alarmInterval = setInterval('update_alarms()', 1000);
@@ -414,51 +418,33 @@
 		}
 		message +="?";
 		$.confirm({
-		  	title: 'Confirm Change of Mode',
+		  	title: 'Confirmation',
 			content: message,
 			buttons: {
-			    confirm: function () {
-					var message2 = "<table>\n";
-					for (let i = 0 ; i < settings.length; i++){
-						message2+= "<tr><td>"+settings[i]+"</td><td>"+initial_targets[mode][settings[i]]+"</td></tr>\n";
+		    confirm: function () {
+				selector.oldvalue = mode;
+				jsonForm = {};
+				jsonForm['name'] = mode;
+				$('.select-container').addClass('text-red');
+				$('.select-container').removeClass('text-white');
+		        $.ajax({
+		        	url: "/mode_handler",
+		          	type: 'POST',
+          			data : jsonForm,
+          			success: function(response){
+            			if (response == true){
+						  $.dialog('Ventilator Change Accepted');
+			            }
+			            else{
+			              $.dialog("Problem Updating Ventilator Mode, Please Try again");
+			            }
 					}
-					message2+="</table>";
-					$.confirm({
-						title : 'Confirm '+text+' Settings',
-						content: message2,
-						buttons:{
-							confirm: function(){
-								selector.oldvalue = mode;
-								jsonForm = {};
-								jsonForm['name'] = mode;
-								$('.select-container').addClass('text-red');
-								$('.select-container').removeClass('text-white');
-						        $.ajax({
-						        	url: "/mode_handler",
-						          	type: 'POST',
-				          			data : jsonForm,
-				          			success: function(response){
-				            			if (response == true){
-										  $.dialog('Ventilator Change Accepted');
-							            }
-							            else{
-							              $.dialog("Problem Updating Ventilator Mode, Please Try again");
-							            }
-									}
-								})
-							},
-							cancel: function(){
-								selector.value = selector.oldvalue;
-								pickout.updated('.pickout');
-						    	$.dialog('Canceled!');
-							}
-						}
-					})
-				},
-			    cancel: function () {
-					selector.value = selector.oldvalue;
-					pickout.updated('.pickout');
-			    	$.dialog('Canceled!');
+				})
+			},
+		    cancel: function () {
+				selector.value = selector.oldvalue;
+				pickout.updated('.pickout');
+		    	$.dialog('Canceled!');
 			    },
 			}
 		});

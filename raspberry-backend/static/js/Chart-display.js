@@ -64,12 +64,36 @@ function getGaugeMaxValue(name){
     return obj[name].data.datasets[0].gaugeLimits[obj[name].data.datasets[0].gaugeLimits.length-1];
 }
 
+
+// Store the original Draw function
+var originalLineDraw = Chart.controllers.scatter.prototype.draw;
+var originalElementsDraw = Chart.controllers.scatter.prototype.addElements;
+var originalElementResetDraw = Chart.controllers.scatter.prototype.addElementAndReset;
+// extend the new type
+Chart.helpers.extend(Chart.controllers.scatter.prototype, {
+    addElements: function() {
+        var xaxis = this['chart'].scales['x-axis-0'];
+        var yaxis = this['chart'].scales['y-axis-0'];
+    
+        originalElementsDraw.apply(this,arguments);
+    },
+    addElementAndReset: function() {
+        originalElementResetDraw.apply(this,arguments);
+    },
+
+    draw: function () {
+    // use the base draw function
+    originalLineDraw.apply(this, arguments);
+    // draw the line
+    }
+});
+
+
 $(document).ready(function() {
     var ctx_pressure = document.getElementById('pressure_chart');
     if ( ctx_pressure ) {
 	let params = chartParam("pressure");
-        chart_pressure = new Chart(ctx_pressure, {
-            type: 'scatter',
+        chart_pressure = new Chart.Scatter(ctx_pressure, {
             data: {
                 datasets: [{
                     data: [],
@@ -127,6 +151,7 @@ $(document).ready(function() {
                             zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
+                            display:true,
             		        maxTicksLimit: 13,
                 		    maxRotation: 0,
                             min: -60,
@@ -136,13 +161,13 @@ $(document).ready(function() {
                         gridLines : {
                             display:       params.gridLines.display,
                             color:         params.gridLines.color,
-                            zeroLineColor: params.gridLines.zeroLineColor
+                            zeroLineColor: params.gridLines.zeroLineColor,
                         },
                         ticks: {
                             beginAtZero: true,
                             suggestedMax: 25,
             	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
-                		    maxTicksLimit: 8,
+                            maxTicksLimit: 8,
                         },
         				scaleLabel: {
     					display: false,
@@ -166,12 +191,12 @@ $(document).ready(function() {
     }
 });
 
+
 $(document).ready(function() {
     var ctx_flow = document.getElementById('flow_chart');
     if (ctx_flow) {
 	let params = chartParam("flow");
-        chart_flow = new Chart(ctx_flow, {
-            type: 'scatter',
+        chart_flow = new Chart.Scatter(ctx_flow, {
             data: {
                 //labels: initial_xaxis,
                 datasets: [{
@@ -229,6 +254,7 @@ $(document).ready(function() {
                             zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
+                            display:true,
             		        maxTicksLimit: 13,
                 		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
                 		    maxRotation: 0,
@@ -244,7 +270,7 @@ $(document).ready(function() {
                         ticks: {
                             beginAtZero: true,
                             maxTicksLimit: 8,
-                		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
+                            fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
                         },
         				scaleLabel: {
         					display: false,
@@ -276,8 +302,7 @@ $(document).ready(function() {
     var ctx_volume = document.getElementById('volume_chart');
     if (ctx_volume) {
 	let params = chartParam("volume");
-        chart_volume = new Chart(ctx_volume, {
-            type: 'scatter',
+        chart_volume = new Chart.Scatter(ctx_volume, {
             data: {
                 datasets: [{
                     data: [],
@@ -336,6 +361,7 @@ $(document).ready(function() {
                             zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
+                            display:true,
                 		    maxTicksLimit: 13,
                 		    maxRotation: 0,
                             min: -60,
