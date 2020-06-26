@@ -417,30 +417,43 @@
 		  	title: 'Confirmation',
 			content: message,
 			buttons: {
-		    confirm: function () {
-				selector.oldvalue = mode;
-				jsonForm = {};
-				jsonForm['name'] = mode;
-				$('.select-container').addClass('text-red');
-				$('.select-container').removeClass('text-white');
-		        $.ajax({
-		        	url: "/mode_handler",
-		          	type: 'POST',
-          			data : jsonForm,
-          			success: function(response){
-            			if (response == true){
-						  $.dialog('Ventilator Change Accepted');
-			            }
-			            else{
-			              $.dialog("Problem Updating Ventilator Mode, Please Try again");
-			            }
-					}
-				})
-			},
-		    cancel: function () {
-				selector.value = selector.oldvalue;
-				pickout.updated('.pickout');
-		    	$.dialog('Canceled!');
+			    confirm: function () {
+					$.confirm({
+						title : 'Confirmation 2',
+						content: "message2",
+						buttons:{
+							confirm: function(){
+								selector.oldvalue = mode;
+								jsonForm = {};
+								jsonForm['name'] = mode;
+								$('.select-container').addClass('text-red');
+								$('.select-container').removeClass('text-white');
+						        $.ajax({
+						        	url: "/mode_handler",
+						          	type: 'POST',
+				          			data : jsonForm,
+				          			success: function(response){
+				            			if (response == true){
+										  $.dialog('Ventilator Change Accepted');
+							            }
+							            else{
+							              $.dialog("Problem Updating Ventilator Mode, Please Try again");
+							            }
+									}
+								})
+							},
+							cancel: function(){
+								selector.value = selector.oldvalue;
+								pickout.updated('.pickout');
+						    	$.dialog('Canceled!');
+							}
+						}
+					})
+				},
+			    cancel: function () {
+					selector.value = selector.oldvalue;
+					pickout.updated('.pickout');
+			    	$.dialog('Canceled!');
 			    },
 			}
 		});
