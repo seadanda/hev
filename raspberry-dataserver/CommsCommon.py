@@ -47,15 +47,16 @@ class CMD_GENERAL(Enum):
 # Taken from the FSM doc. Correct as of 1400 on 20200417
 @unique
 class CMD_SET_DURATION(Enum):
-    CALIBRATION     =  1
-    BUFF_PURGE      =  2
-    BUFF_FLUSH      =  3
-    BUFF_PREFILL    =  4
-    BUFF_FILL       =  5
-    BUFF_PRE_INHALE =  6
-    INHALE          =  7
-    PAUSE           =  8
-    EXHALE          =  9
+    PRE_CALIBRATION =  1
+    CALIBRATION     =  2
+    BUFF_PURGE      =  3
+    BUFF_FLUSH      =  4
+    BUFF_PREFILL    =  5
+    BUFF_FILL       =  6
+    BUFF_PRE_INHALE =  7
+    INHALE          =  8
+    PAUSE           =  9
+    EXHALE          =  10
 
 @unique
 class VENTILATION_MODE(Enum):
@@ -173,17 +174,18 @@ class CMD_MAP(Enum):
 class BL_STATES(Enum):
     UNKNOWN         =  0
     IDLE            =  1
-    CALIBRATION     =  2
-    BUFF_PREFILL    =  3
-    BUFF_FILL       =  4
-    BUFF_PRE_INHALE =  5
-    INHALE          =  6
-    PAUSE           =  7
-    EXHALE          =  8
-    STOP            =  9
-    BUFF_PURGE      = 10
-    BUFF_FLUSH      = 11
-    STANDBY         = 12
+    PRE_CALIBRATION =  2
+    CALIBRATION     =  3
+    BUFF_PREFILL    =  4
+    BUFF_FILL       =  5
+    BUFF_PRE_INHALE =  6
+    INHALE          =  7
+    PAUSE           =  8
+    EXHALE          =  9
+    STOP            = 10
+    BUFF_PURGE      = 11
+    BUFF_FLUSH      = 12
+    STANDBY         = 13
 
 @unique
 class PAYLOAD_TYPE(IntEnum):
@@ -348,10 +350,11 @@ class DataFormat(PayloadFormat):
 # =======================================
 @dataclass
 class ReadbackFormat(PayloadFormat):
-    _dataStruct = Struct("<BIBHHHHHHHHHffBBBBBBBBBBBffffffB")
+    _dataStruct = Struct("<BIBHHHHHHHHHHffBBBBBBBBBBBffffffB")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.READBACK
 
 
+    duration_pre_calibration: int = 0
     duration_calibration: int     = 0
     duration_buff_purge: int      = 0
     duration_buff_flush: int      = 0
@@ -394,6 +397,7 @@ class ReadbackFormat(PayloadFormat):
         (self.version,
         self.timestamp,
         tmp_payload_type,
+        self.duration_pre_calibration,
         self.duration_calibration,
         self.duration_buff_purge,
         self.duration_buff_flush,

@@ -69,17 +69,18 @@ public:
     enum BL_STATES : uint8_t {
             UNKNOWN         =  0,
             IDLE            =  1,
-            CALIBRATION     =  2,
-            BUFF_PREFILL    =  3,
-            BUFF_FILL       =  4,
-            BUFF_PRE_INHALE =  5,
-            INHALE          =  6,
-            PAUSE           =  7,
-            EXHALE          =  8,
-            STOP            =  9,
-            BUFF_PURGE      = 10,
-            BUFF_FLUSH      = 11,
-            STANDBY         = 12
+            PRE_CALIBRATION =  2,
+            CALIBRATION     =  3,
+            BUFF_PREFILL    =  4,
+            BUFF_FILL       =  5,
+            BUFF_PRE_INHALE =  6,
+            INHALE          =  7,
+            PAUSE           =  8,
+            EXHALE          =  9,
+            STOP            = 10,
+            BUFF_PURGE      = 11,
+            BUFF_FLUSH      = 12,
+            STANDBY         = 13
     };
 
 
@@ -111,8 +112,8 @@ private:
 
     // timeouts
     uint32_t calculateDurationExhale();
-    //durations = 			 {calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_pre_inhale, inhale, pause, exhale}
-    states_durations _states_durations = {10000, 	600, 		600, 		100, 600, 0, 1200, 10, 1800 };
+    //durations = 			 {pre_calibration, calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_pre_inhale, inhale, pause, exhale}
+    states_durations _states_durations = {6000, 4000,	600, 		600, 		100, 600, 0, 1200, 10, 1800 };
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0};
     void measureDurations();
     void measurePEEP();

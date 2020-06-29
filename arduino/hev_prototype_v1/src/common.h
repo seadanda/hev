@@ -78,15 +78,16 @@ enum CMD_GENERAL : uint8_t {
 
 // Taken from the FSM doc. Correct as of 1400 on 20200417
 enum CMD_SET_DURATION : uint8_t {
-    CALIBRATION     =  1,
-    BUFF_PURGE      =  2,
-    BUFF_FLUSH      =  3,
-    BUFF_PREFILL    =  4,
-    BUFF_FILL       =  5,
-    BUFF_PRE_INHALE =  6,
-    INHALE          =  7,
-    PAUSE           =  8,
-    EXHALE          =  9
+    PRE_CALIBRATION =  1,
+    CALIBRATION     =  2,
+    BUFF_PURGE      =  3,
+    BUFF_FLUSH      =  4,
+    BUFF_PREFILL    =  5,
+    BUFF_FILL       =  6,
+    BUFF_PRE_INHALE =  7,
+    INHALE          =  8,
+    PAUSE           =  9,
+    EXHALE          =  10
 };
 
 enum VENTILATION_MODE : uint8_t {
@@ -244,6 +245,7 @@ struct readback_data_format {
     uint8_t  version                  = HEV_FORMAT_VERSION;
     uint32_t timestamp                = 0;
     uint8_t  payload_type             = PAYLOAD_TYPE::READBACK;
+    uint16_t duration_pre_calibration = 0;
     uint16_t duration_calibration     = 0;
     uint16_t duration_buff_purge      = 0;//
     uint16_t duration_buff_flush      = 0;
@@ -446,6 +448,7 @@ struct personal_data_format {
 #pragma pack()
 
 struct states_durations {
+    uint32_t pre_calibration;
     uint32_t calibration;
     uint32_t buff_purge;
     uint32_t buff_flush;

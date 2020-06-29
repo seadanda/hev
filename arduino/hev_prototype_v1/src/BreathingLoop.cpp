@@ -402,11 +402,14 @@ void BreathingLoop::FSM_assignment() {
         case BL_STATES::IDLE:
             if (_running == true) {
                 // FSM_time = millis();
-                next_state = BL_STATES::CALIBRATION;
+                next_state = BL_STATES::PRE_CALIBRATION;
             } else {
                 next_state = BL_STATES::IDLE;
             }
             _reset = false;
+            break;
+        case BL_STATES::PRE_CALIBRATION:
+            next_state = BL_STATES::CALIBRATION;
             break;
         case BL_STATES::CALIBRATION:
             next_state = BL_STATES::BUFF_PREFILL;
@@ -512,8 +515,12 @@ void BreathingLoop::FSM_breathCycle()
 #endif
             initCalib();
             break;
-        case BL_STATES::CALIBRATION : 
+        case BL_STATES::PRE_CALIBRATION : 
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            _fsm_timeout = _states_durations.pre_calibration;
+            break;
+        case BL_STATES::CALIBRATION : 
+            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             calibrate();
             _fsm_timeout = _states_durations.calibration;
             break;
@@ -629,6 +636,9 @@ void BreathingLoop::measureDurations( ) {
         uint32_t tdiff = tnow - _lasttime;
         switch (_bl_laststate)
         {
+        case BL_STATES::PRE_CALIBRATION:
+            _measured_durations.pre_calibration = tdiff;
+            break;
         case BL_STATES::CALIBRATION:
             _measured_durations.calibration = tdiff;
             break;
@@ -731,7 +741,7 @@ void BreathingLoop::calibrate()
         _calib_avgs.pressure_buffer  = static_cast<float>(_calib_sums.pressure_buffer/ _calib_N);
         _calib_sums.pressure_inhale += static_cast<float>(analogRead(pin_pressure_inhale));
         _calib_avgs.pressure_inhale  = static_cast<float>(_calib_sums.pressure_inhale/ _calib_N);
-        _calib_sums.pressure_patient += static_cast<float>(analogRead(pin_pressure_patient));
+        _calib_sums.pressure_patient += static_cast<float>(analogRead(pin_pressure_patient));   
         _calib_avgs.pressure_patient = static_cast<float>(_calib_sums.pressure_patient/ _calib_N);
         _calib_sums.pressure_diff_patient += static_cast<float>(analogRead(pin_pressure_diff_patient));
         _calib_avgs.pressure_diff_patient = static_cast<float>(_calib_sums.pressure_diff_patient/ _calib_N);

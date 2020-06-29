@@ -5,6 +5,9 @@ SystemUtils* global_sys_utils;
 
 void setDuration(CMD_SET_DURATION cmd, states_durations &durations, float value) {
     switch (cmd) {
+        case CMD_SET_DURATION::PRE_CALIBRATION:
+            durations.pre_calibration = static_cast<uint32_t>(value);
+            break;
         case CMD_SET_DURATION::CALIBRATION:
             durations.calibration     = static_cast<uint32_t>(value);
             break;

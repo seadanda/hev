@@ -127,6 +127,7 @@ void UILoop::reportReadbackValues()
 
         _readback_data.timestamp = static_cast<uint32_t>(tnow);
         states_durations durations = _breathing_loop->getDurations();
+        _readback_data.duration_pre_calibration = durations.pre_calibration;
         _readback_data.duration_calibration = durations.calibration;
         _readback_data.duration_buff_purge  = durations.buff_purge;
         _readback_data.duration_buff_flush  = durations.buff_flush;
