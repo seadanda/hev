@@ -13,7 +13,7 @@ public:
     ~AlarmLoop();
 
     void fireAlarms();
-    void updateValues(readings<float> fast_data);
+    void updateValues(readings<float> fast_data, cycle_readings cr);
 
     float *getValues       () { return _alarms.values        ; }
     float *getThresholdsMin() { return _alarms.thresholds_min; }

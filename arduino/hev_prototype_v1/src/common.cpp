@@ -224,7 +224,7 @@ float adcToO2PercentFloat(float adc, float offset)
     
     float o2pc = 100.0 * PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); 
 
-    return o2pc;
+    return 21; // FIXME
 }
 
 void logMsg(String s)

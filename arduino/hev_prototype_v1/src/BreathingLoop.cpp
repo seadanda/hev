@@ -13,7 +13,7 @@ BreathingLoop::BreathingLoop()
     _tsig_time = tnow;
     _tsig_timeout = 100;
 
-    _ventilation_mode = VENTILATION_MODE::TEST;
+    _ventilation_mode = VENTILATION_MODE::PC_AC;
     _bl_state = BL_STATES::IDLE;
     _bl_laststate = BL_STATES::IDLE;
     _running = false;
@@ -251,7 +251,7 @@ void BreathingLoop::updateCycleReadings()
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
 
             _cycle_readings.timestamp = tnow;
-            _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// 21;
+            _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// FIXME
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
 	    //logMsg(" I, E "+String(_volume_inhale)+ " "+String(_volume_exhale));
