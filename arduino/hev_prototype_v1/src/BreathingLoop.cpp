@@ -555,6 +555,8 @@ void BreathingLoop::FSM_breathCycle()
 	    _pid.target_pressure = 0.; // Resets the target pressure for the PID target profile 
 	    _pid.derivative = 0.; // Resets the derivative for Inhale PID
 	    _pid.istep = 0;
+
+            _peep = _running_avg_peep;
         
             break;
         case BL_STATES::INHALE:
@@ -670,7 +672,6 @@ void BreathingLoop::measurePEEP()
 
         _running_index_peep = (_running_index_peep == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index_peep+1;
 
-        _peep = _running_avg_peep;
     }
 	
 }
