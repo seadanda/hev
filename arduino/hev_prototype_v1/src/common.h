@@ -547,57 +547,57 @@ struct alarms {
     };
     float       thresholds_min [ALARM_CODES::ALARMS_COUNT] = {
         std::numeric_limits<float>::lowest(),    // TEMPORARY VALUE DUE TO START FROM 1
-        std::numeric_limits<float>::lowest(),    // APNEA
+        -1,    // APNEA
         std::numeric_limits<float>::lowest(),    // CHECK_VALVE_EXHALE
         std::numeric_limits<float>::lowest(),    // CHECK_P_PATIENT
         std::numeric_limits<float>::lowest(),    // EXPIRATION_SENSE_FAULT_OR_LEAK
         std::numeric_limits<float>::lowest(),    // EXPIRATION_VALVE_Leak
-        std::numeric_limits<float>::lowest(),    // HIGH_FIO2
-        std::numeric_limits<float>::lowest(),    // HIGH_PRESSURE
-        std::numeric_limits<float>::lowest(),    // HIGH_RR
-        std::numeric_limits<float>::lowest(),    // HIGH_VTE
-        std::numeric_limits<float>::lowest(),    // LOW_VTE
-        std::numeric_limits<float>::lowest(),    // HIGH_VTI
-        std::numeric_limits<float>::lowest(),    // LOW_VTI
+        0,    // HIGH_FIO2
+        0,    // HIGH_PRESSURE
+        0,    // HIGH_RR
+        0,    // HIGH_VTE
+        300,    // LOW_VTE
+        0,    // HIGH_VTI
+        300,    // LOW_VTI
         std::numeric_limits<float>::lowest(),    // INTENTIONAL_STOP
-        std::numeric_limits<float>::lowest(),    // LOW_BATTERY
-        std::numeric_limits<float>::lowest(),    // LOW_FIO2
+        -1.0,    // LOW_BATTERY
+        19.5,    // LOW_FIO2  // 19.5 %
         std::numeric_limits<float>::lowest(),    // OCCLUSION
-        std::numeric_limits<float>::lowest(),    // HIGH_PEEP
-        std::numeric_limits<float>::lowest(),    // LOW_PEEP
-        std::numeric_limits<float>::lowest(),    // AC_POWER_DISCONNECTION
-        std::numeric_limits<float>::lowest(),    // BATTERY_FAULT_SRVC
-        std::numeric_limits<float>::lowest(),    // BATTERY_CHARGE
-        std::numeric_limits<float>::lowest(),    // AIR_FAIL
-        std::numeric_limits<float>::lowest(),    // O2_FAIL
-        std::numeric_limits<float>::lowest(),    // PRESSURE_SENSOR_FAULT
+        0,    // HIGH_PEEP
+        0,    // LOW_PEEP
+        -1.0,    // AC_POWER_DISCONNECTION
+        -1.0,    // BATTERY_FAULT_SRVC
+        -1.0,    // BATTERY_CHARGE
+        400,    // AIR_FAIL
+        400,    // O2_FAIL
+        -0.5,    // PRESSURE_SENSOR_FAULT
         std::numeric_limits<float>::lowest()     // ARDUINO_FAIL
     };
     float       thresholds_max [ALARM_CODES::ALARMS_COUNT] = {
         std::numeric_limits<float>::max()   ,    // TEMPORARY VALUE DUE TO START FROM 1
-        std::numeric_limits<float>::max()   ,    // APNEA
+        3,    // APNEA
         std::numeric_limits<float>::max()   ,    // CHECK_VALVE_EXHALE
         std::numeric_limits<float>::max()   ,    // CHECK_P_PATIENT
         std::numeric_limits<float>::max()   ,    // EXPIRATION_SENSE_FAULT_OR_LEAK
         std::numeric_limits<float>::max()   ,    // EXPIRATION_VALVE_Leak
-        std::numeric_limits<float>::max()   ,    // HIGH_FIO2
-        std::numeric_limits<float>::max()   ,    // HIGH_PRESSURE
-        std::numeric_limits<float>::max()   ,    // HIGH_RR
-        std::numeric_limits<float>::max()   ,    // HIGH_VTE
-        std::numeric_limits<float>::max()   ,    // LOW_VTE
-        std::numeric_limits<float>::max()   ,    // HIGH_VTI
-        std::numeric_limits<float>::max()   ,    // LOW_VTI
+        90.0,    // HIGH_FIO2  // 90%
+        45,    // HIGH_PRESSURE
+        30,    // HIGH_RR
+        700,    // HIGH_VTE
+        0,    // LOW_VTE
+        700,    // HIGH_VTI
+        0,    // LOW_VTI
         std::numeric_limits<float>::max()   ,    // INTENTIONAL_STOP
-        std::numeric_limits<float>::max()   ,    // LOW_BATTERY
-        std::numeric_limits<float>::max()   ,    // LOW_FIO2
+        0.5,    // LOW_BATTERY
+        100,    // LOW_FIO2
         std::numeric_limits<float>::max()   ,    // OCCLUSION
-        std::numeric_limits<float>::max()   ,    // HIGH_PEEP
-        std::numeric_limits<float>::max()   ,    // LOW_PEEP
-        std::numeric_limits<float>::max()   ,    // AC_POWER_DISCONNECTION
-        std::numeric_limits<float>::max()   ,    // BATTERY_FAULT_SRVC
-        std::numeric_limits<float>::max()   ,    // BATTERY_CHARGE
-        std::numeric_limits<float>::max()   ,    // AIR_FAIL
-        std::numeric_limits<float>::max()   ,    // O2_FAIL
+        15,     // HIGH_PEEP
+        0,    // LOW_PEEP
+        0.5,    // AC_POWER_DISCONNECTION
+        0.5,    // BATTERY_FAULT_SRVC
+        0.5,    // BATTERY_CHARGE
+        550,    // AIR_FAIL
+        550,    // O2_FAIL
         std::numeric_limits<float>::max()   ,    // PRESSURE_SENSOR_FAULT
         std::numeric_limits<float>::max()        // ARDUINO_FAIL
     };

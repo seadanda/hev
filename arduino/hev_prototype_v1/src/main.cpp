@@ -140,7 +140,7 @@ void loop()
     breathing_loop.updateCycleReadings();
     // update alarm values
     // TODO assign more values
-    alarm_loop.updateValues(breathing_loop.getReadingAverages());
+    alarm_loop.updateValues(breathing_loop.getReadingAverages(), breathing_loop.getCycleReadings());
 
     // check uC performance of past N cycles
     uint32_t duration = micros() - loop_start;

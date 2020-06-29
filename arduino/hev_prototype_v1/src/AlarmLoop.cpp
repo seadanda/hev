@@ -46,8 +46,19 @@ void AlarmLoop::fireAlarms() {
     _av_controller.update();
 }
 
-void AlarmLoop::updateValues(readings<float> fast_data) {
+void AlarmLoop::updateValues(readings<float> fast_data, cycle_readings cr) {
     _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = static_cast<float>(fast_data.pressure_patient);
+    _alarms.values[ALARM_CODES::LOW_FIO2] = static_cast<float>(cr.fiO2_percent);
+    _alarms.values[ALARM_CODES::HIGH_FIO2] = static_cast<float>(cr.fiO2_percent);
+    _alarms.values[ALARM_CODES::APNEA] = static_cast<float>(cr.apnea_index);
+    _alarms.values[ALARM_CODES::HIGH_PRESSURE] = static_cast<float>(fast_data.pressure_patient);
+    _alarms.values[ALARM_CODES::HIGH_RR] = static_cast<float>(cr.respiratory_rate);
+    _alarms.values[ALARM_CODES::HIGH_VTE] = static_cast<float>(cr.exhaled_tidal_volume);
+    _alarms.values[ALARM_CODES::HIGH_VTI] = static_cast<float>(cr.inhaled_tidal_volume);
+    _alarms.values[ALARM_CODES::LOW_VTE] = static_cast<float>(cr.exhaled_tidal_volume);
+    _alarms.values[ALARM_CODES::LOW_VTI] = static_cast<float>(cr.inhaled_tidal_volume);
+    _alarms.values[ALARM_CODES::AIR_FAIL] = static_cast<float>(fast_data.pressure_air_regulated);
+    _alarms.values[ALARM_CODES::O2_FAIL] = static_cast<float>(fast_data.pressure_o2_regulated);
 }
 
 void AlarmLoop::setBatteryThresholds()
