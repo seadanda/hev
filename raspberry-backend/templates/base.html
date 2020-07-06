@@ -150,7 +150,7 @@
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
-
+		console.log(initial_targets);
 	  var lockTimeOut = 200000; // 20 seconds lock time out ( * 10 for development)
 	  var idleTimeOut = 600000; // one minute idle time out ( * 10 for development)
 	  
@@ -166,26 +166,6 @@
 
 	  //our default is locked, but if we load and the unlock is set, unlock page
 	  window.onload = function(){
-		$.ajax({
-	        url: '/last-personal',
-	        success: function(data) {
-				if (Object.keys(data).length == 0) {
-                // we're not getting any new data from the hevserver
-                console.log("Got no new personal details");
-	            } else
-	            {
-					console.log(data);
-					var name = data["name"];
-					var age = data["age"];
-					var sex = data["sex"];
-					var height = data["height"];
-					var weight = data["weight"];
-			    	var el = document.getElementById("patient_info_top");
-					if (el) el.innerHTML = name + ", "+age+", "+sex+", "+height+"cm, "+weight+"kg"; 
-				}
-			},
-	        cache: false
-	    });
 		if (unlocked) {
 			unlock();
 		}
@@ -412,6 +392,7 @@
 			$.dialog('We are already in ' + text + ' mode');
 			return;
 		}
+		
 		message +="?";
 		$.confirm({
 		  	title: 'Confirm Change of Mode',
@@ -419,9 +400,12 @@
 			buttons: {
 			    confirm: function () {
 					var message2 = "<table>\n";
-					for (let i = 0 ; i < settings.length; i++){
-						message2+= "<tr><td>"+settings[i]+"</td><td>"+initial_targets[mode][settings[i]]+"</td></tr>\n";
-					}
+					Object.keys(message_settings).forEach(function(key) {
+						var oldval = initial_targets[oldmode][key];
+						var newval = initial_targets[mode][key];
+						if (oldval == newval) message2+= "<tr><td>"+message_settings[key]+"</td><td>"+initial_targets[oldmode][key]+"</td><td>"+initial_targets[mode][key]+"</td></tr>\n";
+						else message2+= "<tr><td>"+message_settings[key]+"</td><td>"+initial_targets[oldmode][key]+"</td><td><span class='text-red'>"+initial_targets[mode][key]+"</span></td></tr>\n";
+					});
 					message2+="</table>";
 					$.confirm({
 						title : 'Confirm '+text+' Settings',
