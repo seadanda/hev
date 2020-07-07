@@ -7,6 +7,17 @@ var paused_volume_data = Array(0);
 
 // these are the settings we want to update
 var settings = ["mode", "inspiratory_pressure", "ie_ratio", "volume", "respiratory_rate", "peep", "fiO2_percent", "inhale_time", "inhale_trigger_threshold", "exhale_trigger_threshold", "buffer_upper_pressure", "buffer_lower_pressure", "pid_gain"]
+
+//we use this dict to display warnings on mode change
+var message_settings = {
+  "mode" : "Mode",
+  "inspiratory_pressure": "Inspiratory Pressure",
+  "ie_ratio" : "I:E Ratio",
+  "peep" : "PEEP",
+  "respiratory_rate": "RR",
+  "volume" : "Volume"
+}
+
 //fill our personals as well
 var personals = ["name", "age", "sex", "height", "weight"];
 
@@ -57,45 +68,45 @@ $(document).ready(function(){
           if (target["mode"] == "TEST"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("test_setting_"+settings[j]);
-              if (settings[j] in target && element){
+              if (settings[j] in target ){
                 initial_targets['TEST'][settings[j]] = target[settings[j]];
-                element.value = target[settings[j]].toPrecision(4);
+                if (element) element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
           if (target["mode"] == "PC_AC"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("pcac_setting_"+settings[j]);
-              if (settings[j] in target && element){
+              if (settings[j] in target ){
                 initial_targets['PC_AC'][settings[j]] = target[settings[j]];
-                element.value = target[settings[j]].toPrecision(4);
+                if (element) element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
           if (target["mode"] == "PC_AC_PRVC"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("prvc_setting_"+settings[j]);
-              if (settings[j] in target && element){
+              if (settings[j] in target ){
                 initial_targets['PC_AC_PRVC'][settings[j]] = target[settings[j]];
-                element.value = target[settings[j]].toPrecision(4);
+                if (element) element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
           if (target["mode"] == "PC_PSV"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("psv_setting_"+settings[j]);
-              if (settings[j] in target && element){
+              if (settings[j] in target ){
                 initial_targets['PC_PSV'][settings[j]] = target[settings[j]];
-                element.value = target[settings[j]].toPrecision(4);
+                if (element) element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
           if (target["mode"] == "CPAP"){
             for (let j = 0 ; j < settings.length; j++){
               var element = document.getElementById("cpap_setting_"+settings[j]);
-              if (settings[j] in target && element){
+              if (settings[j] in target ){
                 initial_targets['CPAP'][settings[j]] = target[settings[j]];
-                element.value = target[settings[j]].toPrecision(4);
+                if (element) element.value = target[settings[j]].toPrecision(4);
               }
             }
           }
@@ -108,7 +119,7 @@ $(document).ready(function(){
   $.ajax({
 	  url: '/last-personal',
 	  success: function(data) {
-		  if (data.length == 0) {
+      if (Object.keys(data).length == 0) {
       // we're not getting any new data from the hevserver
       console.log("Got no new personal details");
 	    } else
@@ -120,10 +131,17 @@ $(document).ready(function(){
                 initial_targets['PERSONAL'][personals[j]] = data[personals[j]];
               }
             }
+					var name = data["name"];
+					var age = data["age"];
+					var sex = data["sex"];
+					var height = data["height"];
+					var weight = data["weight"];
+			    var el = document.getElementById("patient_info_top");
+					if (el) el.innerHTML = name + ", "+age+", "+sex+", "+height+"cm, "+weight+"kg";
 			}
 		},
 	  cache: false
-	});
+  });
 });
 
 
@@ -371,7 +389,7 @@ function requestData() {
                 
 		// captive function to update either chart or paused data
 		function updateChartData(pressure_data, flow_data, volume_data, diff, data, last_timestamp){
-            console.time('Updating Chart');
+            //console.time('Updating Chart');
 		    for ( let i = 0 ; i < pressure_data.length; i++){
                         pressure_data[i]['x'] -= diff;
                         flow_data[i]['x'] -= diff;
@@ -401,7 +419,7 @@ function requestData() {
 			flow_data.shift();
 			volume_data.shift();
 		    }
-            console.timeEnd('Updating Chart');
+            //console.timeEnd('Updating Chart');
 		    return;
 		}
 

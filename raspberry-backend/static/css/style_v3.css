@@ -5951,9 +5951,6 @@ sb-topnav {
 }
 .br-red{border: 1px solid #ff0000;}
 
-.reading{font-size:1.7rem;min-width:5rem;display:inline-block;text-align:right;}
-
-.setting-main:disabled{color:black;}
 
 #logo{ height:var(--top-height); }
 #chart-area{ fill:white; }
@@ -6114,7 +6111,7 @@ z-index:1000;
   background-color: white;
 }
 
-.card-reading, .card-reading-proto, .card-input-reading-proto{
+.card-reading, .card-reading-proto, .card-input-reading-proto, .card-setting {
     position: relative;
     min-width: 0;
     word-wrap: break-word;
@@ -6130,34 +6127,13 @@ z-index:1000;
     margin-right: 0.05rem !important;
     margin-left: 0.05rem !important;
     /*color: #343a40 !important;*/
-    color:white;
     /*margin-bottom: 0.5rem !important;*/
     margin-bottom:0;
     /*border:1px solid green;*/
 }
 
-
-.card-setting{
-    position: relative;
-    min-width: 0;
-    word-wrap: break-word;
-    background-clip: border-box;
-    border: 1px solid rgba(0, 0, 0, 0.0);
-    border-radius: 0.25rem;
-    display:flex;
-    flex-direction:column;
-    padding-right: 0.0rem !important;
-    padding-left: 0.0rem !important;
-    padding-top:0.0rem;
-    padding-bottom:0.0rem;
-    margin-right: 0.05rem !important;
-    margin-left: 0.05rem !important;
-    /*color: #343a40 !important;*/
-    color:white;
-    /*margin-bottom: 0.5rem !important;*/
-    margin-bottom:0;
-    /*border:1px solid green;*/
-
+.card-reading a, .card-setting a{
+  color:inherit;
 }
 
 .card-reading-proto{
@@ -6172,32 +6148,18 @@ z-index:1000;
 .card-reading{
   flex: 0 0 98.0%;
   max-width: 98.0%;
+  background:white;
 }
 
 .card-setting{
   flex: 0 0 15.0%;
   max-width:15%;
-  background:white;
 }
-
-
-.card-header {
-  color:white;
-}
-/*
-.card-setting{
-  background-color:white;
-  box-shadow:
-      inset 0 0 2px 0 rgba(255,255,255,.4),
-      inset 0 0 3px 0 rgba(0,0,0,.4),
-      inset 0 0 3px 5px rgba(0,0,0,.05),
-      2px 2px 4px 0 rgba(0,0,0,.25);
-  border-radius: 4px;    
-}
-*/
-.card-setting .card-header{
+.card-reading .card-header{
   background-color: rgba(0,0,0, 0.13);
-
+}
+.card-setting .card-footer{
+  background-color: rgba(255,255,255, 0.13);
 }
 
 .card-reading {
@@ -6205,14 +6167,15 @@ z-index:1000;
 }
 .card-setting {
     height:100%;
+    border:1px solid rgba(255,255,255,0.13);
 }
 .card-reading-proto, .card-input-reading-proto {
     height:calc((100vh - var(--top-height) -  1.5rem - 1.0rem - 2.0rem)/5.0);
 }
 
-.card-setting input {text-align:center;background:transparent;border:0; font-size:1.4rem;}
+.card-setting{color:white;}
+.card-setting input {text-align:center;background:transparent;border:0; font-size:1.4rem;color:inherit;}
 .card-reading span{ font-size: 1.4rem;}
-
 
 .range-button-container{
     height:2.0rem;
@@ -6234,12 +6197,6 @@ z-index:1000;
   justify-content: center;
 }
 
-.main-header {
-  width:100%;
-  height:2.0rem;
-  color:white;
-  text-align:center;
-}
 
 .proto-chart-container {
     position:relative;
