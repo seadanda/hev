@@ -53,7 +53,7 @@ class CommsLLI:
         self._acklist  = {0xC0: self._dv_alarms, 0x80: self._dv_commands, 0x40: self._dv_data}
         
         # receive
-        self._payloadrecv = asyncio.Queue()
+        self._payloadrecv = asyncio.Queue(maxsize=5)
         # for reducing the rate for use in the lab
         self._packet_count = 0
         self._throttle = throttle

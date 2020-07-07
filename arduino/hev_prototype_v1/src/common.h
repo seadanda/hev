@@ -548,58 +548,58 @@ struct alarms {
     float       thresholds_min [ALARM_CODES::ALARMS_COUNT] = {
         std::numeric_limits<float>::lowest(),    // TEMPORARY VALUE DUE TO START FROM 1
         -1,    // APNEA
-        std::numeric_limits<float>::lowest(),    // CHECK_VALVE_EXHALE
-        std::numeric_limits<float>::lowest(),    // CHECK_P_PATIENT
-        std::numeric_limits<float>::lowest(),    // EXPIRATION_SENSE_FAULT_OR_LEAK
-        std::numeric_limits<float>::lowest(),    // EXPIRATION_VALVE_Leak
-        0,    // HIGH_FIO2
-        0,    // HIGH_PRESSURE
-        0,    // HIGH_RR
-        0,    // HIGH_VTE
+        -1000,    // CHECK_VALVE_EXHALE
+        0,    // CHECK_P_PATIENT
+        -1000,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        -1000,    // EXPIRATION_VALVE_Leak
+        -1000,    // HIGH_FIO2
+        -1000,    // HIGH_PRESSURE
+        -1000,    // HIGH_RR
+        -1000,    // HIGH_VTE
         300,    // LOW_VTE
-        0,    // HIGH_VTI
+        -1000,    // HIGH_VTI
         300,    // LOW_VTI
-        std::numeric_limits<float>::lowest(),    // INTENTIONAL_STOP
+        -1,    // INTENTIONAL_STOP
         -1.0,    // LOW_BATTERY
         19.5,    // LOW_FIO2  // 19.5 %
-        std::numeric_limits<float>::lowest(),    // OCCLUSION
-        0,    // HIGH_PEEP
+        -1000,    // OCCLUSION
+        -1000,    // HIGH_PEEP
         0,    // LOW_PEEP
         -1.0,    // AC_POWER_DISCONNECTION
         -1.0,    // BATTERY_FAULT_SRVC
         -1.0,    // BATTERY_CHARGE
-        400,    // AIR_FAIL
+        -1000,    // AIR_FAIL
         400,    // O2_FAIL
-        -0.5,    // PRESSURE_SENSOR_FAULT
-        std::numeric_limits<float>::lowest()     // ARDUINO_FAIL
+        -1000,    // PRESSURE_SENSOR_FAULT
+        -1000   // ARDUINO_FAIL
     };
     float       thresholds_max [ALARM_CODES::ALARMS_COUNT] = {
         std::numeric_limits<float>::max()   ,    // TEMPORARY VALUE DUE TO START FROM 1
         3,    // APNEA
-        std::numeric_limits<float>::max()   ,    // CHECK_VALVE_EXHALE
-        std::numeric_limits<float>::max()   ,    // CHECK_P_PATIENT
-        std::numeric_limits<float>::max()   ,    // EXPIRATION_SENSE_FAULT_OR_LEAK
-        std::numeric_limits<float>::max()   ,    // EXPIRATION_VALVE_Leak
+        1000,    // CHECK_VALVE_EXHALE
+        45,    // CHECK_P_PATIENT
+        1000,    // EXPIRATION_SENSE_FAULT_OR_LEAK
+        1000,    // EXPIRATION_VALVE_Leak
         90.0,    // HIGH_FIO2  // 90%
         45,    // HIGH_PRESSURE
         30,    // HIGH_RR
         700,    // HIGH_VTE
-        0,    // LOW_VTE
+        10000,    // LOW_VTE
         700,    // HIGH_VTI
-        0,    // LOW_VTI
-        std::numeric_limits<float>::max()   ,    // INTENTIONAL_STOP
+        10000,  // LOW_VTI 
+        1,    // INTENTIONAL_STOP
         0.5,    // LOW_BATTERY
         100,    // LOW_FIO2
-        std::numeric_limits<float>::max()   ,    // OCCLUSION
+        1000,    // OCCLUSION
         15,     // HIGH_PEEP
-        0,    // LOW_PEEP
+        -1000,    // LOW_PEEP
         0.5,    // AC_POWER_DISCONNECTION
         0.5,    // BATTERY_FAULT_SRVC
         0.5,    // BATTERY_CHARGE
-        550,    // AIR_FAIL
-        550,    // O2_FAIL
-        std::numeric_limits<float>::max()   ,    // PRESSURE_SENSOR_FAULT
-        std::numeric_limits<float>::max()        // ARDUINO_FAIL
+        10000,    // AIR_FAIL
+        650,    // O2_FAIL
+        1000   ,    // PRESSURE_SENSOR_FAULT
+        1000,      // ARDUINO_FAIL
     };
     float       values         [ALARM_CODES::ALARMS_COUNT];
 };

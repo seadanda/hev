@@ -57,6 +57,7 @@ void AlarmLoop::updateValues(readings<float> fast_data, cycle_readings cr) {
     _alarms.values[ALARM_CODES::HIGH_VTI] = static_cast<float>(cr.inhaled_tidal_volume);
     _alarms.values[ALARM_CODES::LOW_VTE] = static_cast<float>(cr.exhaled_tidal_volume);
     _alarms.values[ALARM_CODES::LOW_VTI] = static_cast<float>(cr.inhaled_tidal_volume);
+//    _alarms.values[ALARM_CODES::LOW_PEEP] = static_cast<float>(cr.peep);
     _alarms.values[ALARM_CODES::AIR_FAIL] = static_cast<float>(fast_data.pressure_air_regulated);
     _alarms.values[ALARM_CODES::O2_FAIL] = static_cast<float>(fast_data.pressure_o2_regulated);
 }

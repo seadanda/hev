@@ -32,10 +32,10 @@ BreathingLoop::BreathingLoop()
     _mandatory_inhale = false;
     _mandatory_exhale = false;
 
-    _pid.Kp = 0.004; // proportional factor
-    _pid.Ki = 0.0010;   // integral factor
-    _pid.Kd = 0.;   // derivative factor
-    _pid.pid_gain = 1;
+    _pid.Kp = 0.001; // proportional factor
+    _pid.Ki = 0.0005;   // integral factor
+    _pid.Kd = 0.001;   // derivative factor
+    _pid.pid_gain = 2;
     _pid.max_patient_pressure = 45; 
 
     _pid.integral   = 0.;
@@ -88,16 +88,16 @@ BreathingLoop::BreathingLoop()
 void BreathingLoop::initTargets()
 {
 
-    _targets_pcac.respiratory_rate = 20.0;
+    _targets_pcac.respiratory_rate = 15.0;
     _targets_pcac.ie_ratio = 0.5;
     _targets_pcac.ie_selected = false;
-    _targets_pcac.inspiratory_pressure = 15;
+    _targets_pcac.inspiratory_pressure = 17;
     _targets_pcac.volume = 400;
     _targets_pcac.inhale_time= 1000;
     _targets_pcac.peep = 5;
     _targets_pcac.fiO2_percent = 21;
 
-    _targets_pcac.inhale_trigger_threshold     = 0.0005;   // abs flow ? unit / 
+    _targets_pcac.inhale_trigger_threshold     = 1;   // abs flow ? unit / 
     _targets_pcac.exhale_trigger_threshold     = 0.25;  // 25% of the peak flow
 
     _targets_pcac.buffer_lower_pressure = 285.0;
@@ -670,7 +670,7 @@ void BreathingLoop::measureDurations( ) {
 
 void BreathingLoop::measurePEEP()
 {
-    if(fabs(_flow) < 0.1){
+    if(fabs(_flow) < 1){
         //    _peep = _readings_avgs.pressure_patient;
         float sum_peep = 0;
         _running_peep[_running_index_peep] = _readings_avgs.pressure_patient;
@@ -678,11 +678,13 @@ void BreathingLoop::measurePEEP()
         for(int i=0; i<RUNNING_AVG_READINGS-1; i++){
             sum_peep += static_cast<float>(fabs(_running_peep[i]));
         }
-        _running_avg_peep = sum_peep/RUNNING_AVG_READINGS;
+        //_running_avg_peep = sum_peep/RUNNING_AVG_READINGS;
 
         _running_index_peep = (_running_index_peep == RUNNING_AVG_READINGS-1 ) ? 0 : _running_index_peep+1;
 
     }
+    //KH
+        _running_avg_peep = _readings_avgs.pressure_patient;
 	
 }
 
