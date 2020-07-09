@@ -225,9 +225,9 @@ float adcToO2PercentFloat(float adc, float offset)
     float Sensor_Gain		= 100./10000.	; // the sensor gain is 100 % / 10000 mVolts
     float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
     
-    float o2pc = 100.0 * PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); 
+    float o2pc = PCB_Gain * Sensor_Gain * ADC_to_Voltage_Gain * (adc - offset); 
 
-    return 21; // FIXME
+    return o2pc;
 }
 
 void logMsg(String s)

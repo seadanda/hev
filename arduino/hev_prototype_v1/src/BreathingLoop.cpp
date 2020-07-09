@@ -390,6 +390,7 @@ void BreathingLoop::resetReadingSums()
     _readings_sums.pressure_o2_supply       = 0;
     _readings_sums.pressure_o2_regulated    = 0;
     _readings_sums.pressure_diff_patient    = 0;
+    _readings_sums.o2_percent               = 0;
 }
 
 //This is used to assign the transitions of the fsm
@@ -818,22 +819,33 @@ void BreathingLoop::updateIE()
 {
 
     uint32_t total_cycle = static_cast<uint32_t>(60*1000/_targets_current->respiratory_rate);
-    int32_t exhale_duration;
     int32_t inhale_duration = _targets_current->inhale_time;
+
     if (_targets_current->ie_selected == true){
 	
 	    uint32_t tot_inh = total_cycle / (1.0 + (1.0/_targets_current->ie_ratio)); 
 //	    uint32_t tot_exh = total_cycle / (1.0 + (_targets_current->ie_ratio)); 
 
 	    inhale_duration = tot_inh - _states_durations.pause;
-	    _targets_current->ie_selected =false;
+	    //_targets_current->ie_selected =false;
+        if (inhale_duration < _min_inhale_time){
+            _states_durations.inhale = _min_inhale_time;
+        } else {
+            _states_durations.inhale = inhale_duration; 
+        }
+        _targets_current->inhale_time = _states_durations.inhale;
 	    
+    } else {
+        if (inhale_duration < _min_inhale_time){
+            _states_durations.inhale = _min_inhale_time;
+        } else {
+            _states_durations.inhale = inhale_duration; 
+        }
+        float tot_inh = _states_durations.inhale + _states_durations.pause;
+        float exhale_duration = total_cycle - tot_inh;
+        _targets_current->ie_ratio = tot_inh / exhale_duration;
     }
 
-    if (inhale_duration < _min_inhale_time)
-        _states_durations.inhale = _min_inhale_time;
-    else 
-        _states_durations.inhale = inhale_duration; 
 
     // TODO - what if exhale time is less than min; raise error?
 }
