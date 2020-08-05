@@ -64,7 +64,7 @@ function getGaugeMaxValue(name){
     return obj[name].data.datasets[0].gaugeLimits[obj[name].data.datasets[0].gaugeLimits.length-1];
 }
 
-
+/*
 // Store the original Draw function
 var originalLineDraw = Chart.controllers.scatter.prototype.draw;
 var originalElementsDraw = Chart.controllers.scatter.prototype.addElements;
@@ -72,9 +72,6 @@ var originalElementResetDraw = Chart.controllers.scatter.prototype.addElementAnd
 // extend the new type
 Chart.helpers.extend(Chart.controllers.scatter.prototype, {
     addElements: function() {
-        var xaxis = this['chart'].scales['x-axis-0'];
-        var yaxis = this['chart'].scales['y-axis-0'];
-    
         originalElementsDraw.apply(this,arguments);
     },
     addElementAndReset: function() {
@@ -87,7 +84,58 @@ Chart.helpers.extend(Chart.controllers.scatter.prototype, {
     // draw the line
     }
 });
+*/
 
+//User defined scale, using afterFit callbacks instead
+/*
+
+
+var UserDefinedScaleDefaults = Chart.scaleService.getScaleDefaults("linear");
+var MyScale = Chart.scaleService.getScaleConstructor("linear").extend({
+    
+    initialize: function() {
+      Chart.Scale.prototype.initialize.call(this);
+    },
+    
+    fit: function(){
+     Chart.Scale.prototype.fit.call(this,arguments);
+     //Chart.scaleService.getScaleConstructor("linear").fit.call(this,arguments);
+     //originalFit.apply(this,arguments)
+     this.margins.left = 500000;
+     this.margins.right = 500000;
+     console.log(this.margins);
+     console.log(this);
+    },
+    
+    // Determines the data limits. Should set this.min and this.max to be the data max/min
+    determineDataLimits: function() { Chart.Scale.prototype.determineDataLimits.call(this,arguments);},
+    // Generate tick marks. this.chart is the chart instance. The data object can be accessed as this.chart.data
+    // buildTicks() should create a ticks array on the axis instance, if you intend to use any of the implementations from the base class
+    buildTicks: function() {Chart.Scale.prototype.buildTicks.call(this,arguments);},
+
+    // Get the value to show for the data at the given index of the the given dataset, ie this.chart.data.datasets[datasetIndex].data[index]
+    getLabelForIndex: function(index, datasetIndex) { Chart.Scale.prototype.getLabelForIndex.call(index,datasetIndex);},
+
+    // Get the pixel (x coordinate for horizontal axis, y coordinate for vertical axis) for a given value
+    // @param index: index into the ticks array
+    getPixelForTick: function(index) { Chart.Scale.prototype.getPixelForTick.call(index);},
+
+    // Get the pixel (x coordinate for horizontal axis, y coordinate for vertical axis) for a given value
+    // @param value : the value to get the pixel for
+    // @param index : index into the data array of the value
+    // @param datasetIndex : index of the dataset the value comes from
+    getPixelForValue: function(value, index, datasetIndex) { Chart.Scale.prototype.getPixelForValue.call(value,index,datasetIndex);},
+
+    // Get the value for a given pixel (x coordinate for horizontal axis, y coordinate for vertical axis)
+    // @param pixel : pixel value
+    getValueForPixel: function(pixel) { Chart.Scale.prototype.getValueForPixel.call(pixel); }
+
+
+    
+});
+
+Chart.scaleService.registerScaleType('myScale', MyScale, UserDefinedScaleDefaults);
+*/
 
 $(document).ready(function() {
     var ctx_pressure = document.getElementById('pressure_chart');
@@ -107,6 +155,15 @@ $(document).ready(function() {
                 ]
             },
             options: {
+                layout: {
+                    padding:{
+                        top:0,
+                        bottom:0,
+                        //padding of slightly less (trial and error) than half of our tick font size added to top and middle charts
+                        // to make up for extra padding added by displaying x ticks in bottom plot
+                        right:0.6*parseFloat(getComputedStyle(document.documentElement).fontSize)*0.455,
+                    }
+                },
                 elements: {
                     point: { 
                         radius: 0
@@ -138,7 +195,7 @@ $(document).ready(function() {
 		    bodyFontSize: 18
                 },
                 title: {
-                    display: true,
+                    display: false,
                     text: 'Pressure [cmH2O]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
 			fontColor: "#cccccc",
@@ -151,13 +208,14 @@ $(document).ready(function() {
                             zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
-                            display:true,
+                            display:false,
             		        maxTicksLimit: 13,
                 		    maxRotation: 0,
                             min: -60,
                             max: 0,
             	    	    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc"}}],
             		yAxes: [{
+                        /*type: "myScale",*/
                         gridLines : {
                             display:       params.gridLines.display,
                             color:         params.gridLines.color,
@@ -170,9 +228,14 @@ $(document).ready(function() {
                             maxTicksLimit: 8,
                         },
         				scaleLabel: {
-    					display: false,
-                        labelString: 'Pressure [mbar]'
-        				}
+    					display: true,
+                        labelString: 'Pressure [mbar]',
+                        fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+                        fontColor: "#cccccc",
+        				},
+                        afterFit : function(axis){
+                            axis.width = 70.0;
+                            },
 		        	}]            
                 },
                 legend : {
@@ -210,6 +273,16 @@ $(document).ready(function() {
                 }]
             },
             options: {
+
+                layout: {
+                    padding:{
+                        top:0,
+                        bottom:0,
+                        //padding of slightly less (trial and error) than half of our tick font size added to top and middle charts
+                        // to make up for extra padding added by displaying x ticks in bottom plot
+                        right:0.6*parseFloat(getComputedStyle(document.documentElement).fontSize)*0.455,
+                    }
+                },
                 elements: {
                     point: { 
                         radius: 0
@@ -236,12 +309,12 @@ $(document).ready(function() {
 			    label += 'Flow ' + Math.round(pointFlow) + ' l/min, ';
 			    label += 'Vol ' + Math.round(pointVolume) + ' ml';
 			    return label;
-			}
+            }
 		    },
 		    bodyFontSize: 18
                 },
                 title: {
-                  display: true,
+                  display: false,
             		text: 'Flow [l/min]',
             		fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
 			fontColor: "#cccccc",
@@ -254,16 +327,15 @@ $(document).ready(function() {
                             zeroLineColor: params.gridLines.zeroLineColor
                         },
                         ticks: {
-                            display:true,
+                            display:false,
             		        maxTicksLimit: 13,
-                		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
                 		    maxRotation: 0,
                             min: -60,
                             max: 0,
-                    		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",}}],
+                    		fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",}},],
         			yAxes: [{
                         gridLines : {
-			    display:       params.gridLines.display,
+            			    display:       params.gridLines.display,
                             color:         params.gridLines.color,
                             zeroLineColor: params.gridLines.zeroLineColor
                         },
@@ -273,10 +345,16 @@ $(document).ready(function() {
                             fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
                         },
         				scaleLabel: {
-        					display: false,
-                            labelString: 'Flow [l/min]'
-        				}
-        			}]            
+        					display: true,
+                            labelString: 'Flow [l/min]',
+                            fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+                            fontColor: "#cccccc",
+        				},
+                        afterFit : function(axis){
+                            axis.width = 70.0;
+                            },
+                        },
+                ]            
                 },
                 legend : {
                     display: false
@@ -316,6 +394,13 @@ $(document).ready(function() {
             },
 	
             options: {
+
+                layout: {
+                    padding:{
+                        top:0,
+                        bottom:0,
+                    }
+                },
                 elements: {
                     point: { 
                         radius: 0
@@ -348,7 +433,7 @@ $(document).ready(function() {
 		    bodyFontSize: 18
                 },
                 title: {
-                    display: true,
+                    display: false,
                     text: 'Volume [mL]',
 	            	fontSize: 0.7*parseFloat(getComputedStyle(document.documentElement).fontSize),
 			fontColor: "#cccccc",
@@ -367,7 +452,7 @@ $(document).ready(function() {
                             min: -60,
                             max: 0,
                             fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
-                        }
+                        },
                     }],
                             
             		yAxes: [{
@@ -383,13 +468,19 @@ $(document).ready(function() {
                 		    fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),fontColor: "#cccccc",
 		                },
 		        		scaleLabel: {
-        					display: false,
-                            labelString: 'Volume [mL]'
-        				}
+        					display: true,
+                            labelString: 'Volume [mL]',
+                            fontSize: 0.6*parseFloat(getComputedStyle(document.documentElement).fontSize),
+                            fontColor: "#cccccc",
+        				},
+                        afterFit : function(axis){
+                            axis.width = 70.0;
+                            },
         			}]            
                 },
                 legend : {
-                    display: false
+                    display: false,
+                    position: "right",
                 }
             },
             plugins: {
@@ -402,7 +493,6 @@ $(document).ready(function() {
         });
     }
 });
-
 var obj = {};
 function create_gauge_chart(var_name, setvalue, limits) {
     if (document.getElementById("gauge_"+var_name)){

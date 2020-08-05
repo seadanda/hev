@@ -150,7 +150,6 @@
 	{% block body_scripts %}
 	{% endblock %}
 	<script>
-		console.log(initial_targets);
 	  var lockTimeOut = 200000; // 20 seconds lock time out ( * 10 for development)
 	  var idleTimeOut = 600000; // one minute idle time out ( * 10 for development)
 	  
@@ -401,10 +400,11 @@
 			    confirm: function () {
 					var message2 = "<table>\n";
 					Object.keys(message_settings).forEach(function(key) {
-						var oldval = initial_targets[oldmode][key];
+						var oldval = "-";
+						if (oldmode in initial_targets) oldval = initial_targets[oldmode][key];
 						var newval = initial_targets[mode][key];
-						if (oldval == newval) message2+= "<tr><td>"+message_settings[key]+"</td><td>"+initial_targets[oldmode][key]+"</td><td>"+initial_targets[mode][key]+"</td></tr>\n";
-						else message2+= "<tr><td>"+message_settings[key]+"</td><td>"+initial_targets[oldmode][key]+"</td><td><span class='text-red'>"+initial_targets[mode][key]+"</span></td></tr>\n";
+						if (oldval == newval) message2+= "<tr><td>"+message_settings[key]+"</td><td>"+oldval+"</td><td>"+newval+"</td></tr>\n";
+						else message2+= "<tr><td>"+message_settings[key]+"</td><td>"+oldval+"</td><td><span class='text-red'>"+newval+"</span></td></tr>\n";
 					});
 					message2+="</table>";
 					$.confirm({

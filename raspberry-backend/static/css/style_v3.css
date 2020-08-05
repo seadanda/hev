@@ -6183,6 +6183,19 @@ z-index:1000;
     margin-right:auto;
 }
 
+.main-chart-container-noaxis {
+  position:relative;
+  width:100%;
+  height:calc((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem - 4.0rem - 40px)/3.0); /* 2.0rem if for the range-button container, 1.5rem for the tab header*/
+  padding:0;
+}
+.main-chart-container-withaxis {
+  position:relative;
+  width:100%;
+  height:calc(40px + ((100vh - var(--top-height) - 0.5rem - 2.0rem - 1.5rem - 4.0rem - 40px)/3.0)); /* 2.0rem if for the range-button container, 1.5rem for the tab header*/
+  padding:0;
+}
+
 .main-chart-container {
     position:relative;
     width:100%;
