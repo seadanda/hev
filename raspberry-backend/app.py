@@ -110,7 +110,8 @@ class WebClient(HEVClient):
                 exec_string = "created_at  INTEGER  NOT NULL"
                 for var in payload['format']:
                    exec_string += ", " + var + "  FLOAT  NOT NULL"
-                #exec_string += "alarms  STRING  NOT NULL "
+                if payload_type == "ALARM":
+                    exec_string += ", start_timestamp  INT  NOT NULL "
 
                 conn.execute('''CREATE TABLE IF NOT EXISTS {tn} ({ex_str});'''
                 .format(tn=payload['table_name'], ex_str=exec_string))
@@ -160,28 +161,51 @@ class WebClient(HEVClient):
         # Computing the time in seconds since the epoch because easier to manipulate.
         timestamp = (current_time -epoch).total_seconds() * 1000
 
+        #this flag can be set to true for alarms, where we update a live alarm entry
+
         if payload != None and payload['type'] in payload_types:
+            add_to_existing = False
             payload_type = payload['type']
             data_packet = { el : payload[payload_type][el] for el in payload_types[payload_type]['format']}
             data_packet.update({"DB_time" : timestamp})
+            if payload_type == 'ALARM':
+                data_packet.update({'start_timestamp' : payload['ALARM']['timestamp']})
             logging.debug("Writing to data database ...")
             try:
                 exec_string = "( :DB_time"
                 for el in payload_types[payload_type]['format']:
                     exec_string += ", :" + el
+                if payload_type == 'ALARM':
+                    exec_string += ", :start_timestamp"
                 exec_string += ") "
 
-                cursor.execute(
-                        'INSERT INTO {tn} VALUES {ex_str} '
-                        .format(tn=payload_types[payload_type]['table_name'], ex_str=exec_string), data_packet
-                )
-                conn.commit()
-                payload_id = cursor.lastrowid
-                columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
-                cursor.execute(
-                    'INSERT INTO {tn} ({pid}) VALUES ( {pl} )'.format(pid = payload_types[payload_type]['id'], tn = MASTER_TABLE_NAME, pl = payload_id )
-                )
-                conn.commit()
+
+                if payload_type == 'ALARM':
+                    existing_alarm_id = -1
+                    #if it's an alarm, we check if it needs to be appended to an existing alarm or a new one added
+                    cursor.execute(" SELECT ROWID,alarm_type,alarm_code,param,timestamp FROM {tn} WHERE timestamp > {tm} ORDER BY ROWID DESC".format(tn=ALARM_TABLE_NAME,tm = payload[payload_type]['timestamp'] - 1000))
+                    fetched = cursor.fetchall()
+
+                    for entry in fetched:
+                        print(entry,payload[payload_type])
+                        if entry[2] == payload[payload_type]['alarm_code'] and entry[1] == payload[payload_type]['alarm_type'] and entry[3] == payload[payload_type]['param']:
+                            existing_alarm_id = entry[0]
+                            add_to_existing = True
+                    if add_to_existing and existing_alarm_id > 0:
+                        cursor.execute(" UPDATE {tn} SET timestamp = {tm} WHERE ROWID == {rowid}".format(tn=ALARM_TABLE_NAME, tm = payload[payload_type]['timestamp'], rowid = existing_alarm_id))
+                        conn.commit()
+                if not add_to_existing:
+                    cursor.execute(
+                            'INSERT INTO {tn} VALUES {ex_str} '
+                            .format(tn=payload_types[payload_type]['table_name'], ex_str=exec_string), data_packet
+                    )
+                    conn.commit()
+                    payload_id = cursor.lastrowid
+                    columns = conn.execute("PRAGMA table_info({tn})".format(tn=MASTER_TABLE_NAME))
+                    cursor.execute(
+                        'INSERT INTO {tn} ({pid}) VALUES ( {pl} )'.format(pid = payload_types[payload_type]['id'], tn = MASTER_TABLE_NAME, pl = payload_id )
+                    )
+                    conn.commit()
             except sqlite3.Error as err:
                 conn.close()
                 raise Exception("sqlite3 error. Insert into database failed: {}".format(str(err)))
@@ -357,7 +381,6 @@ def current_target_handler():
     data = request.form
     success = True
     for d,v in data.items():
-        print("SET_TARGET_CURRENT", d, v,type(d),type(v))
         success = client.send_cmd("SET_TARGET_CURRENT", d, float(v))
     
     response = make_response(json.dumps(success))
@@ -517,8 +540,6 @@ def last_data(rowid):
     Query the sqlite3 table for variables
     Output in json format
     """
-
-
     fetched_all = []
     if client.check_table(MASTER_TABLE_NAME) and client.number_rows(MASTER_TABLE_NAME) > 0:
         conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
@@ -736,6 +757,7 @@ def last_N_alarms():
     alarm_variables.append("ROWID")
     alarm_variables.append("created_at")
     alarm_variables.extend(getList(AlarmFormat().getDict()))
+    alarm_variables.append("start_timestamp")
 
     alarm_united_var = ','.join(alarm_variables)
     fetched = []
@@ -752,6 +774,79 @@ def last_N_alarms():
     response.content_type = 'application/json'
     return response
 
+@WEBAPP.route('/log-alarms/<rowid>', methods=['GET'])
+def log_alarms(rowid = 0):
+    """
+    Query the sqlite3 table for the last N alarms
+    Output in json format
+    """
+
+    alarm_variables = []
+    alarm_variables.append("ROWID")
+    alarm_variables.extend(getList(AlarmFormat().getDict()))
+    alarm_variables.append("start_timestamp")
+
+    alarm_united_var = ','.join(alarm_variables)
+    fetched_all = []
+    if client.check_table(ALARM_TABLE_NAME):
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
+        cursor.execute("SELECT {var} "
+        "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=DATA_TABLE_NAME, size=1, var ='ROWID, timestamp'))
+        fetched = cursor.fetchone()
+        timestamp = fetched[1]
+        cursor.execute("SELECT {var} "
+        "FROM {tn} WHERE timestamp < {tm} AND ROWID > {rowid} ORDER BY ROWID DESC LIMIT {size}".format(tn=ALARM_TABLE_NAME, size=100, var =alarm_united_var, tm = timestamp - 1000, rowid=rowid))
+        fetched = cursor.fetchall()
+        for f in fetched:
+            data = {}
+            for index, item in enumerate(alarm_variables):
+                data[item] = f[index]
+            fetched_all += [ data ]
+        conn.close()
+
+
+    response = make_response(json.dumps(fetched_all).encode('utf-8') )
+    response.content_type = 'application/json'
+    return response
+
+
+@WEBAPP.route('/active-alarms', methods=['GET'])
+def active_alarms():
+    """
+    Query the sqlite3 table for the last N alarms
+    Output in json format
+    """
+
+    alarm_variables = []
+    alarm_variables.append("ROWID")
+    #alarm_variables.append("created_at")
+    alarm_variables.extend(getList(AlarmFormat().getDict()))
+    alarm_variables.append("start_timestamp")
+
+    alarm_united_var = ','.join(alarm_variables)
+    fetched_all = []
+    if client.check_table(ALARM_TABLE_NAME):
+        conn = sqlite3.connect(SQLITE_FILE, check_same_thread = False, uri = True)
+        cursor = conn.cursor()
+        cursor.execute("SELECT {var} "
+        "FROM {tn} ORDER BY ROWID DESC LIMIT {size}".format(tn=DATA_TABLE_NAME, size=1, var ='ROWID, timestamp'))
+        fetched = cursor.fetchone()
+        timestamp = fetched[1]
+        cursor.execute("SELECT {var} "
+        "FROM {tn} WHERE timestamp > {tm} ORDER BY ROWID DESC".format(tn=ALARM_TABLE_NAME, size=N, var =alarm_united_var, tm = timestamp - 1000))
+        fetched = cursor.fetchall()
+        for f in fetched:
+            data = {}
+            for index, item in enumerate(alarm_variables):
+                data[item] = f[index]
+            fetched_all += [ data ]
+        conn.close()
+
+
+    response = make_response(json.dumps(fetched_all).encode('utf-8') )
+    response.content_type = 'application/json'
+    return response
 
 
 

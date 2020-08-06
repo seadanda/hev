@@ -239,34 +239,36 @@
 	
 	
 	function update_alarms() {
-      $.getJSON("live-alarms", function (data) {
-	     if (data.alarm_type == 'PRIORITY_HIGH') {
-	        document.getElementById("alarms").innerHTML = "High priority: " + data.alarm_code;               
+      $.getJSON("active-alarms", function (data) {
+		  for (let i = 0 ; i < data.length; i++){
+	     if (data[i].alarm_type == 'PRIORITY_HIGH') {
+	        document.getElementById("alarms").text = "High priority: " + data[i].alarm_code;               
 	        var el = document.getElementById("alarm_ul");
 	        el.classList.add("alarm-red");
 	        var el2 = document.getElementById("path-alarm");
 	        el2.classList.add("path-icon-alarm");
 		  } 
-		  if (data.alarm_type == 'PRIORITY_MEDIUM') {
-	        document.getElementById("alarms").innerHTML = "Medium priority: " + data.alarm_code;
+		  else if (data[i].alarm_type == 'PRIORITY_MEDIUM') {
+	        document.getElementById("alarms").text = "Medium priority:" + data[i].alarm_code;
 	        var el = document.getElementById("alarm_ul");
 	        el.classList.add("alarm-red");
 	        var el2 = document.getElementById("path-alarm");
 	        el2.classList.add("path-icon-alarm");
           }		  
-		  if (data.alarm_type == 'PRIORITY_LOW') {
-	        document.getElementById("alarms").innerHTML = "Low priority: " + data.alarm_code;
+		  else if (data[i].alarm_type == 'PRIORITY_LOW') {
+	        document.getElementById("alarms").text = "Low priority:" + data[i].alarm_code;
 	        var el = document.getElementById("alarm_ul");
 	        el.classList.add("alarm-red");
 	        var el2 = document.getElementById("path-alarm");
 	        el2.classList.add("path-icon-alarm");
           } else {  
-	         document.getElementById("alarms").innerHTML = 'No alarms'
+	         document.getElementById("alarms").text = 'No alarms'
 			 var el = document.getElementById("alarms");
 	         el.classList.remove("alarm-red");
 	         var el2 = document.getElementById("path-alarm");
 	         el2.classList.remove("path-icon-alarm");
-	      }    
+		  }    
+		}
 	  });
 	}
 	var alarmInterval = setInterval('update_alarms()', 1000);

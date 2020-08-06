@@ -208,6 +208,7 @@ function getGaugeMaxValue(name){
 }
 
 var rowid = 0;
+
 function requestData() {
     $.ajax({
         url: '/last-data/'+rowid,
