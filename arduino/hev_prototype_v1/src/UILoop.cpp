@@ -81,7 +81,7 @@ void UILoop::reportFastReadings()
 
 	    // TO SWITCH BETWEEN RAW AND MILLIBAR DATA UNCOMMENT BELOW
         readings<float> readings = _breathing_loop->getReadingAverages();
-        //readings<int16_t> readings = _breathing_loop->getRawReadings();
+        //readings<float> readings = _breathing_loop->getRawReadings();
 
         _fast_data.timestamp = static_cast<uint32_t>(readings.timestamp);
         _fast_data.fsm_state = _breathing_loop->getFsmState();
@@ -93,7 +93,8 @@ void UILoop::reportFastReadings()
         _fast_data.pressure_patient       = readings.pressure_patient;
         _fast_data.temperature_buffer     = readings.temperature_buffer;
         _fast_data.pressure_o2_supply     = readings.pressure_o2_supply;
-        _fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
+        //_fast_data.pressure_o2_regulated  = readings.pressure_o2_regulated;
+        _fast_data.pressure_o2_regulated  = readings.o2_percent;
         _fast_data.pressure_diff_patient  = readings.pressure_diff_patient;
 
         pid_variables &pid = _breathing_loop->getPIDVariables();
