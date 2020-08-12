@@ -319,7 +319,7 @@ void BreathingLoop::updateCalculations() {
     uint32_t tnow = static_cast<uint32_t>(millis());
 
     _calculations.flow              = getFlow();
-    _calculations.flow_calc         = calculateFlow(tnow, _readings_raw.pressure_patient, _readings_raw.pressure_buffer);
+    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
     _calculations.volume            = getVolume();
     _calculations.pressure_airway   = getAirwayPressure();
 }

@@ -143,6 +143,8 @@ class ClientPlots(QtWidgets.QMainWindow):
                             pass
                         elif brtype == "BATTERY":
                             pass
+                        elif brtype == "CMD":
+                            pass
                         else:
                             raise KeyError
 
