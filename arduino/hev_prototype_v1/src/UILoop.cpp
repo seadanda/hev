@@ -150,7 +150,7 @@ void UILoop::reportReadbackValues()
         _readback_data.valve_exhale = vexhale;
         _readback_data.valve_purge = vpurge;
 
-        _readback_data.ventilation_mode = static_cast<uint8_t>(_breathing_loop->getVentilationMode());
+        _readback_data.ventilation_mode = _breathing_loop->getVentilationMode();
 
         _readback_data.valve_inhale_percent  = 0;
         _readback_data.valve_exhale_percent  = 0;

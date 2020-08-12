@@ -296,8 +296,8 @@ class DataFormat(PayloadFormat):
     ambient_temperature: int      = 0
     airway_pressure: float        = 0.0
     flow: float                   = 0.0
-    flow_calc       : float       = 0.0
-    volume          : float       = 0.0
+    flow_calc       : float = 0.0
+    volume          : float = 0.0
     target_pressure : float = 0.0 ##
     process_pressure: float = 0.0 
     valve_duty_cycle: float = 0.0 
@@ -331,6 +331,7 @@ class DataFormat(PayloadFormat):
         self.ambient_temperature,
         self.airway_pressure,
         self.flow,
+        self.flow_calc,
         self.volume,
         self.target_pressure ,
         self.process_pressure,
