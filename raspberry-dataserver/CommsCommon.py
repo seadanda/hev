@@ -279,7 +279,7 @@ class PayloadFormat():
 @dataclass
 class DataFormat(PayloadFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHfHffffHfHHfffffffff")
+    _dataStruct = Struct("<BIBBHfHffffHfHHffffffffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
     # subclass member variables
     fsm_state: BL_STATES          = BL_STATES.IDLE
@@ -296,7 +296,8 @@ class DataFormat(PayloadFormat):
     ambient_temperature: int      = 0
     airway_pressure: float        = 0.0
     flow: float                   = 0.0
-    volume: float                 = 0.0
+    flow_calc       : float       = 0.0
+    volume          : float       = 0.0
     target_pressure : float = 0.0 ##
     process_pressure: float = 0.0 
     valve_duty_cycle: float = 0.0 

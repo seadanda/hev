@@ -105,9 +105,12 @@ void UILoop::reportFastReadings()
         _fast_data.process_pressure   = pid.process_pressure;
         _fast_data.valve_duty_cycle   = pid.valve_duty_cycle;
 
-        _fast_data.flow = _breathing_loop->getFlow();
-        _fast_data.volume= _breathing_loop->getVolume();
-        _fast_data.airway_pressure= _breathing_loop->getAirwayPressure();
+
+        calculations<float> calc = _breathing_loop->getCalculations();
+        _fast_data.flow            = calc.flow;
+        _fast_data.flow_calc       = calc.flow_calc;
+        _fast_data.volume          = calc.volume;
+        _fast_data.airway_pressure = calc.pressure_airway;
 
         _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_pl_send);

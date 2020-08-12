@@ -229,6 +229,7 @@ struct fast_data_format {
     uint16_t ambient_temperature    = 0;
     float airway_pressure           = 0.0;
     float flow                      = 0.0;
+    float flow_calc                 = 0.0;
     float volume                    = 0.0;
     float target_pressure  = 0.0; //
     float process_pressure = 0.0; 
@@ -662,6 +663,15 @@ template <typename T> struct readings{
     T pressure_o2_regulated  = 0;
     T pressure_diff_patient  = 0;
     T o2_percent             = 0;
+};
+
+template <typename T> struct calculations {
+    uint32_t timestamp  = 0;
+    T flow              = 0;
+    T flow_calc         = 0;
+    T volume            = 0;
+
+    T pressure_airway   = 0;
 };
 
 template <typename T> struct IV_readings{

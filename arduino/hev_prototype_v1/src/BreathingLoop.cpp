@@ -315,6 +315,15 @@ void BreathingLoop::updateCycleReadings()
 
 }
 
+void BreathingLoop::updateCalculations() {
+    uint32_t tnow = static_cast<uint32_t>(millis());
+
+    _calculations.flow              = getFlow();
+    _calculations.flow_calc         = calculateFlow(tnow, _readings_raw.pressure_patient, _readings_raw.pressure_buffer);
+    _calculations.volume            = getVolume();
+    _calculations.pressure_airway   = getAirwayPressure();
+}
+
 void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
 {
     _ventilation_mode = mode;
@@ -358,7 +367,7 @@ VENTILATION_MODE BreathingLoop::getVentilationMode() { return _ventilation_mode;
 readings<float> BreathingLoop::getReadingAverages() { return _readings_avgs; }
 readings<float> BreathingLoop::getRawReadings() { return _readings_raw; }
 
-
+calculations<float> BreathingLoop::getCalculations() { return _calculations; }
 
 float BreathingLoop::getPEEP()
 {
@@ -877,6 +886,19 @@ ValvesController* BreathingLoop::getValvesController()
 //     }
 //     _total_cycle_duration[N-1] = newtotal;
 // }
+
+float BreathingLoop::calculateFlow(const uint32_t &current_time, const float &pressure_patient, const float &pressure_buffer, float volume_tube, float volume_buffer) {
+    float dp_tube, dp_buffer, offset;
+    uint8_t linreg;
+
+    _pressure_buffer_fitter .appendPoints(current_time, pressure_buffer  + 1013.);
+    _pressure_patient_fitter.appendPoints(current_time, pressure_patient + 1013.);
+
+    linreg = _pressure_buffer_fitter .linearRegression(dp_buffer, offset);
+    linreg = _pressure_patient_fitter.linearRegression(dp_tube  , offset);
+
+    return (((-1./pressure_patient) * ((dp_tube * volume_tube) + (dp_buffer * volume_buffer))) - (1. * 4 * dp_tube));
+}
 
 float BreathingLoop::getFlow(){
     const float temperature = 298.0;

@@ -65,7 +65,7 @@ public:
     float extrapolate(uint32_t x) {
         x -= _x_zero;
         float slope, offset;
-	uint8_t linreg = linearRegression(slope, offset);
+        uint8_t linreg = linearRegression(slope, offset);
         if (0==linreg){
             return (x*slope + offset);
         }

@@ -138,6 +138,7 @@ void loop()
     breathing_loop.updateReadings();
     breathing_loop.updateRawReadings();
     breathing_loop.updateCycleReadings();
+    breathing_loop.updateCalculations();
     // update alarm values
     // TODO assign more values
     alarm_loop.updateValues(breathing_loop.getReadingAverages(), breathing_loop.getCycleReadings());

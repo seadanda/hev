@@ -30,8 +30,10 @@ public:
     void updateReadings();
     void updateRawReadings();
     void updateCycleReadings();
+    void updateCalculations();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
+    calculations<float> getCalculations();
     // float getRespiratoryRate();
     float getTargetRespiratoryRate();
     float getIERatio();
@@ -50,6 +52,7 @@ public:
     void    setVentilationMode(VENTILATION_MODE mode);
     VENTILATION_MODE getVentilationMode();
 
+    float calculateFlow(const uint32_t &current_time, const float &pressure_patient, const float &pressure_buffer, float volume_tube = 1600, float volume_buffer = 10000);
     float getFlow();
     float getVolume(); 
     float getAirwayPressure();
@@ -130,6 +133,7 @@ private:
     readings<float> _readings_sums; // 32 bit due to possible analog read overflow
     readings<float> _readings_avgs;
     readings<float> _readings_raw;
+    calculations<float> _calculations;
     bool     _readings_reset;
     uint32_t _readings_N;
     uint32_t _readings_time;
@@ -177,6 +181,8 @@ private:
     //float _pid_integral;  // moved to pid_variable struct
 
     LinearFitter _flow_fitter = LinearFitter(300, 100);
+    LinearFitter _pressure_buffer_fitter  = LinearFitter(20,0);
+    LinearFitter _pressure_patient_fitter = LinearFitter(20,0);
     // triggers
     void runningAvgs();
     bool inhaleTrigger();
