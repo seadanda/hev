@@ -21,6 +21,7 @@ class ClientPlots(QtWidgets.QMainWindow):
         super(ClientPlots, self).__init__(*args, **kwargs)
 
         self.history_length = 300
+        self.current_length = 0
         self.xrange = 300
         self.port = port
 
@@ -38,9 +39,15 @@ class ClientPlots(QtWidgets.QMainWindow):
 
         self.timestamp = list(el*(-1) for el in range(self.history_length))[::-1]
         self.PID_P = list(0 for _ in range(self.history_length))
-        self.flow_calc = list(0 for _ in range(self.history_length))
         self.PID_I = list(0 for _ in range(self.history_length))
         self.PID_D = list(0 for _ in range(self.history_length))
+        
+        self.names1 = ["flow", "flow_calc"]
+        self.names2 = ["volume"]
+        self.names3 = ["pressure_patient", "pressure_buffer", "target_pressure"]
+        self.data1 = {name:list(0 for _ in range(self.history_length)) for name in self.names1}
+        self.data2 = {name:list(0 for _ in range(self.history_length)) for name in self.names2}
+        self.data3 = {name:list(0 for _ in range(self.history_length)) for name in self.names3}
 
         if light:
             # light theme
@@ -61,10 +68,9 @@ class ClientPlots(QtWidgets.QMainWindow):
         self.volumePlot.enableAutoRange('y', True)
         self.pressurePlot.enableAutoRange('y', True)
         # Plot styles
-        self.line1 = self.plot(self.flowPlot, self.timestamp, self.PID_D, "Flow", "00F")
-        self.line1b = self.plot(self.flowPlot, self.timestamp, self.PID_D, "Flow Calculated", "F00")
-        self.line2 = self.plot(self.volumePlot, self.timestamp, self.PID_I, "Volume", "707")
-        self.line3 = self.plot(self.pressurePlot, self.timestamp, self.PID_P, "Airway Pressure", "077")
+        self.line1 = {name:self.plot(self.flowPlot    , self.timestamp, self.data1[name], name, "00F") for name in self.names1}
+        self.line2 = {name:self.plot(self.volumePlot  , self.timestamp, self.data2[name], name, "707") for name in self.names2}
+        self.line3 = {name:self.plot(self.pressurePlot, self.timestamp, self.data3[name], name, "077") for name in self.names3}
 
         # get data in another thread
         self.worker = threading.Thread(target=self.polling, daemon=True)
@@ -111,19 +117,20 @@ class ClientPlots(QtWidgets.QMainWindow):
                         if brtype == "DATA":
                             self.statusBar().showMessage(f"Got data for timestamp {payload['timestamp']}")
                             logging.info("data acquired")
-                            self.PID_D.append(payload["flow"])
-                            self.flow_calc.append(payload["flow_calc"])
-                            self.PID_I.append(payload["volume"])
-                            self.PID_P.append(payload["pressure_patient"])
-                            if len(self.PID_D) > self.history_length:
-                                self.PID_D = self.PID_D[1:]
-                                self.flow_calc = self.flow_calc[1:]
-                                self.PID_I = self.PID_I[1:]
-                                self.PID_P = self.PID_P[1:]
-                            self.line1.setData(self.timestamp, self.PID_D)
-                            self.line1b.setData(self.timestamp, self.flow_calc)
-                            self.line2.setData(self.timestamp, self.PID_I)
-                            self.line3.setData(self.timestamp, self.PID_P)
+                            idx = 0
+                            if self.current_length >= self.history_length:
+                                idx = 1
+                                self.current_length = self.history_length
+                            for name in self.names1:
+                                self.data1[name] = self.data1[name].append(payload[name])[idx:]
+                                self.line1[name].setData(self.timestamp, self.data1[name])
+                            for name in self.names2:
+                                self.data2[name] = self.data2[name].append(payload[name])[idx:]
+                                self.line2[name].setData(self.timestamp, self.data2[name])
+                            for name in self.names3:
+                                self.data3[name] = self.data3[name].append(payload[name])[idx:]
+                                self.line3[name].setData(self.timestamp, self.data3[name])                            
+                            self.current_length += 1
                         elif brtype == "READBACK":
                             pass
                         elif brtype == "CYCLE":
