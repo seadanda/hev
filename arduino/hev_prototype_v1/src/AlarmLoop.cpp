@@ -47,19 +47,32 @@ void AlarmLoop::fireAlarms() {
 }
 
 void AlarmLoop::updateValues(readings<float> fast_data, cycle_readings cr) {
-    _alarms.values[ALARM_CODES::CHECK_P_PATIENT] = static_cast<float>(fast_data.pressure_patient);
-    _alarms.values[ALARM_CODES::LOW_FIO2] = static_cast<float>(cr.fiO2_percent);
-    _alarms.values[ALARM_CODES::HIGH_FIO2] = static_cast<float>(cr.fiO2_percent);
-    _alarms.values[ALARM_CODES::APNEA] = static_cast<float>(cr.apnea_index);
-    _alarms.values[ALARM_CODES::HIGH_PRESSURE] = static_cast<float>(fast_data.pressure_patient);
-    _alarms.values[ALARM_CODES::HIGH_RR] = static_cast<float>(cr.respiratory_rate);
-    _alarms.values[ALARM_CODES::HIGH_VTE] = static_cast<float>(cr.exhaled_tidal_volume);
-    _alarms.values[ALARM_CODES::HIGH_VTI] = static_cast<float>(cr.inhaled_tidal_volume);
-    _alarms.values[ALARM_CODES::LOW_VTE] = static_cast<float>(cr.exhaled_tidal_volume);
-    _alarms.values[ALARM_CODES::LOW_VTI] = static_cast<float>(cr.inhaled_tidal_volume);
-//    _alarms.values[ALARM_CODES::LOW_PEEP] = static_cast<float>(cr.peep);
-    _alarms.values[ALARM_CODES::AIR_FAIL] = static_cast<float>(fast_data.pressure_air_regulated);
-    _alarms.values[ALARM_CODES::O2_FAIL] = static_cast<float>(fast_data.pressure_o2_regulated);
+//     ALARM_CODES::ALARM_CODE_UNKNOWN
+     setAlarm<float>(ALARM_CODES::APNEA                         , _alarms.values, static_cast<float>(cr.apnea_index));
+//     setAlarm<float>(ALARM_CODES::CHECK_VALVE_EXHALE            , _alarms.values, );
+     setAlarm<float>(ALARM_CODES::CHECK_P_PATIENT               , _alarms.values, static_cast<float>(fast_data.pressure_patient));
+//     setAlarm<float>(ALARM_CODES::EXPIRATION_SENSE_FAULT_OR_LEAK, _alarms.values, );
+//     setAlarm<float>(ALARM_CODES::EXPIRATION_VALVE_Leak         , _alarms.values, );
+     setAlarm<float>(ALARM_CODES::HIGH_FIO2                     , _alarms.values, static_cast<float>(cr.fiO2_percent));
+     setAlarm<float>(ALARM_CODES::HIGH_PRESSURE                 , _alarms.values, static_cast<float>(fast_data.pressure_patient));
+     setAlarm<float>(ALARM_CODES::HIGH_RR                       , _alarms.values, static_cast<float>(cr.respiratory_rate));
+     setAlarm<float>(ALARM_CODES::HIGH_VTE                      , _alarms.values, static_cast<float>(cr.exhaled_tidal_volume));
+     setAlarm<float>(ALARM_CODES::LOW_VTE                       , _alarms.values, static_cast<float>(cr.exhaled_tidal_volume));
+     setAlarm<float>(ALARM_CODES::HIGH_VTI                      , _alarms.values, static_cast<float>(cr.inhaled_tidal_volume));
+     setAlarm<float>(ALARM_CODES::LOW_VTI                       , _alarms.values, static_cast<float>(cr.inhaled_tidal_volume));
+//     setAlarm<float>(ALARM_CODES::INTENTIONAL_STOP              , _alarms.values, );
+//     ALARM_CODES::LOW_BATTERY
+     setAlarm<float>(ALARM_CODES::LOW_FIO2                      , _alarms.values, static_cast<float>(cr.fiO2_percent));
+//     setAlarm<float>(ALARM_CODES::OCCLUSION                     , _alarms.values, );
+//     setAlarm<float>(ALARM_CODES::HIGH_PEEP                     , _alarms.values, );
+//     setAlarm<float>(ALARM_CODES::LOW_PEEP                      , _alarms.values, static_cast<float>(cr.peep);
+//     ALARM_CODES::AC_POWER_DISCONNECTION
+//     ALARM_CODES::BATTERY_FAULT_SRVC
+//     ALARM_CODES::BATTERY_CHARGE
+     setAlarm<float>(ALARM_CODES::AIR_FAIL                      , _alarms.values, static_cast<float>(fast_data.pressure_air_regulated));
+     setAlarm<float>(ALARM_CODES::O2_FAIL                       , _alarms.values, static_cast<float>(fast_data.pressure_o2_regulated));
+//     setAlarm<float>(ALARM_CODES::PRESSURE_SENSOR_FAULT         , _alarms.values, );
+//     setAlarm<float>(ALARM_CODES::ARDUINO_FAIL                  , _alarms.values, );
 }
 
 void AlarmLoop::setBatteryThresholds()
