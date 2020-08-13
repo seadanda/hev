@@ -24,6 +24,7 @@ class HEVPacketError(Exception):
 
 class HEVClient(object):
     def __init__(self, polling=True):
+        super(HEVClient, self).__init__()
         self._alarms = []  # db for alarms
         self._personal = None # db for personal data
         self._fastdata = None  # db for sensor values
