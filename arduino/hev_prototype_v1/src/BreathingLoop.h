@@ -144,6 +144,8 @@ private:
     uint32_t _readings_cycle_timeout;
     uint32_t _tsig_time;
     uint32_t _tsig_timeout;
+    uint32_t _calculations_time;
+    uint32_t _calculations_timeout;
     void tsigReset();
 
  
@@ -181,8 +183,8 @@ private:
     //float _pid_integral;  // moved to pid_variable struct
 
     LinearFitter _flow_fitter = LinearFitter(300, 100);
-    LinearFitter _pressure_buffer_fitter  = LinearFitter(20,0);
-    LinearFitter _pressure_patient_fitter = LinearFitter(20,0);
+    LinearFitter _pressure_buffer_fitter  = LinearFitter(100,0);
+    LinearFitter _pressure_patient_fitter = LinearFitter(100,0);
     // triggers
     void runningAvgs();
     bool inhaleTrigger();

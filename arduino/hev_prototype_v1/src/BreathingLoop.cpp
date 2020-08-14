@@ -12,6 +12,8 @@ BreathingLoop::BreathingLoop()
     _fsm_timeout = 1000;
     _tsig_time = tnow;
     _tsig_timeout = 100;
+    _calculations_time = tnow;
+    _calculations_timeout = 13;
 
     _ventilation_mode = VENTILATION_MODE::PC_AC;
     _bl_state = BL_STATES::IDLE;
@@ -318,8 +320,13 @@ void BreathingLoop::updateCycleReadings()
 void BreathingLoop::updateCalculations() {
     uint32_t tnow = static_cast<uint32_t>(millis());
 
-    _calculations.flow              = getFlow();
-    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
+    _calculations.flow              = getFlow(); // TODO: can be run every 1 ms instead of every arduino cycle
+    if (tnow - _calculations_time >= _calculations_timeout) {
+    //_calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
+    _calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
+    _calculations_time = tnow;
+    }
+//    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
     _calculations.volume            = getVolume();
     _calculations.pressure_airway   = getAirwayPressure();
 }
@@ -614,6 +621,8 @@ void BreathingLoop::FSM_breathCycle()
             measurePEEP();
 		digitalWrite(pin_led_red, LOW);
             _mandatory_inhale = inhaleTrigger();
+	    _pressure_buffer_fitter.resetCalculation(_peak_flow_time);
+	    _pressure_patient_fitter.resetCalculation(_peak_flow_time);
             break;
         case BL_STATES::STANDBY:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
@@ -890,14 +899,18 @@ ValvesController* BreathingLoop::getValvesController()
 float BreathingLoop::calculateFlow(const uint32_t &current_time, const float &pressure_patient, const float &pressure_buffer, float volume_tube, float volume_buffer) {
     float dp_tube, dp_buffer, offset;
     uint8_t linreg;
+    float const_pressure = 1013.; //mbar
 
-    _pressure_buffer_fitter .appendPoints(current_time, pressure_buffer  + 1013.);
-    _pressure_patient_fitter.appendPoints(current_time, pressure_patient + 1013.);
+    _pressure_buffer_fitter .appendPoints(current_time, pressure_buffer  + const_pressure);
+    _pressure_patient_fitter.appendPoints(current_time, pressure_patient + const_pressure);
 
     linreg = _pressure_buffer_fitter .linearRegression(dp_buffer, offset);
-    linreg = _pressure_patient_fitter.linearRegression(dp_tube  , offset);
+    linreg += _pressure_patient_fitter.linearRegression(dp_tube  , offset);
 
-    return (((-1./pressure_patient) * ((dp_tube * volume_tube) + (dp_buffer * volume_buffer))) - (1. * 4 * dp_tube));
+    if (linreg == 0) return (((-1./(pressure_patient + const_pressure)) * ((dp_tube * volume_tube) + (dp_buffer * volume_buffer))));// - (1. * 4 * dp_tube));
+    //if (linreg == 0) return _pressure_buffer_fitter.GetSumX2(); //(((-1./(pressure_patient + const_pressure)) * ((dp_tube * volume_tube) + (dp_buffer * volume_buffer))));// - (1. * 4 * dp_tube));
+    else return 0;
+    //return dp_buffer;
 }
 
 float BreathingLoop::getFlow(){

@@ -54,7 +54,7 @@ public:
 
     uint8_t linearRegression(float &slope, float &offset) {
         if (_x.isEmpty() || _y.isEmpty())               return 1;
-        if ((_x[_entries - 1] - _x[0]) < _duration )    return 2;
+        //if ((_x[_entries - 1] - _x[0]) < _duration )    return 2;
         if ((_entries * _sum_x2) == (_sum_x * _sum_x))  return 3;
 
         // results
@@ -80,10 +80,16 @@ public:
 	y = _y[_entries-1] ; 
 	entries = _entries;
     }
+    uint16_t GetEntries(){
+	    return _entries;
+    }
+    float GetSumX2(){
+	    return _sum_x2;
+    }
 
 private:
     uint32_t _x_zero   = 0;
-    uint8_t  _entries  = 0;
+    uint16_t  _entries  = 0;
     uint32_t _duration = 0;
     uint32_t _delay    = 0;
 

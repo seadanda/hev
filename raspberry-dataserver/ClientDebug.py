@@ -20,8 +20,8 @@ class ClientPlots(QtWidgets.QMainWindow):
     def __init__(self, light=False, port=54322, *args, **kwargs):
         super(ClientPlots, self).__init__(*args, **kwargs)
 
-        self.history_length = 300
-        self.xrange = 300
+        self.history_length = 1000
+        self.xrange = 1000
         self.port = port
 
         self.setWindowTitle("HEV socket debug")

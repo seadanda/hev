@@ -42,10 +42,10 @@ class Dependant(object):
         
             if payload.getType() == PAYLOAD_TYPE.DATA.value:
                 logging.info(f"payload received: {payload}")
-                #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-                #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
-                #logging.info(f"Fsm state: {payload.fsm_state}")
-                fsm = payload.fsm_state
+            #    #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
+            #    #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
+            #    #logging.info(f"Fsm state: {payload.fsm_state}")
+            #    fsm = payload.fsm_state
             #if payload.getType() == PAYLOAD_TYPE.IVT.value:
             #    logging.info(f"payload received:  {payload} ")
                 #logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
@@ -54,14 +54,16 @@ class Dependant(object):
             #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
             #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
             #   logging.info(f"payload received:  {payload} ")
-            if payload.getType() == PAYLOAD_TYPE.READBACK.value:
-                #logging.info(f"payload received:  {payload} ")
-                logging.info(f" READBACK PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
-            if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+            #if payload.getType() == PAYLOAD_TYPE.LOOP_STATUS.value:
+            #   logging.info(f"payload received:  {payload} ")
+            #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
+            #    #logging.info(f"payload received:  {payload} ")
+            #    logging.info(f" READBACK PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
+            #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
                 #logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-                logging.info(f" DEBUG PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
-            if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-                logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+            #    logging.info(f" DEBUG PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
+            #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+            #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
             #    logging.info(f"LOGMSG {payload} {fsm}") 
             #if hasattr(payload, 'ventilation_mode'):
@@ -93,7 +95,7 @@ async def commsDebug():
     send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.001)#
     send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.0005)#5)# 0.0005
     send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.001)#01)# 0.001
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2) 
+    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2) 
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
     send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
     
@@ -111,8 +113,8 @@ async def commsDebug():
     send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
 
     ### NOTE : THESE ARE FOR TESTING ONLY, AS THEY OVERRIDE THE VALUES SET BY THE VENTILATION MODE
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_ENABLE", param=1) 
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=1) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="VOLUME_TRIGGER_ENABLE", param=0) 
 
     send_cmd(cmd_type="SET_VALVE", cmd_code="AIR_IN_ENABLE", param=1) 
