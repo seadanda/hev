@@ -120,6 +120,9 @@ private:
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0};
     void measureDurations();
     void measurePEEP();
+
+    float o2ValveFrac(float desired_fiO2);
+    bool doExhalePurge();
     // targets
     void initTargets();
     target_variables _targets_pcac; 

@@ -79,8 +79,9 @@ BreathingLoop::BreathingLoop()
     _cycle_index = 0;
 
     _min_inhale_time = 150;
-    _min_exhale_time = 300;
+    _min_exhale_time = 800;
     _max_exhale_time = 10000;  // for mandatory cycle - changed to 30s for the sponteneous breath testing
+
 
     initTargets();
     setVentilationMode(_ventilation_mode);
@@ -99,7 +100,7 @@ void BreathingLoop::initTargets()
     _targets_pcac.peep = 5;
     _targets_pcac.fiO2_percent = 21;
 
-    _targets_pcac.inhale_trigger_threshold     = 1;   // abs flow ? unit / 
+    _targets_pcac.inhale_trigger_threshold     = 5;   // abs flow ? unit / 
     _targets_pcac.exhale_trigger_threshold     = 0.25;  // 25% of the peak flow
 
     _targets_pcac.buffer_lower_pressure = 285.0;
@@ -445,7 +446,7 @@ void BreathingLoop::FSM_assignment() {
             next_state = BL_STATES::PAUSE;
             break;
         case BL_STATES::PAUSE:
-            next_state = BL_STATES::EXHALE;
+	    next_state = BL_STATES::EXHALE;
             break;
         case BL_STATES::EXHALE:
             if (_running == false) {
@@ -610,9 +611,11 @@ void BreathingLoop::FSM_breathCycle()
             _peak_flow = -100000;  // reset peak after inhale
             _peak_flow_time = millis();  
             _fsm_timeout = _states_durations.exhale;
-            // uint32_t tnow = millis();
+
+	    if(doExhalePurge()){
+		_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
-            if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
+	    } else if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
                 _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
@@ -1259,3 +1262,25 @@ void BreathingLoop::tsigReset()
 	}
 }
 
+
+
+float BreathingLoop::o2ValveFrac(float desired_fiO2)
+{
+	// airValveFrac = 1.0 - O2ValveFrac
+	return (desired_fiO2-0.21)/0.79;
+}
+
+bool BreathingLoop::doExhalePurge()
+{
+	// do nothing for now
+	return false;
+	uint32_t tnow = millis();
+	// purge-to-fill ratio  = 0.66 => spend 66% time purging 33% filling buffer
+	
+        if (tnow - _fsm_time >= static_cast<uint32_t>(0.66*_min_exhale_time) ) {
+		if (fabs(_targets_current->fiO2_percent - _readings_avgs.o2_percent) < 1){
+			return true;
+		}
+	}
+	return false;
+}
