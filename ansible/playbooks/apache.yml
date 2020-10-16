@@ -1,5 +1,5 @@
 ---
-- hosts: hevpi
+- hosts: hevpi1
   remote_user: pi
   vars:
         download_dir: /home/pi/Downloads

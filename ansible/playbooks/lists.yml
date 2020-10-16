@@ -26,6 +26,7 @@ rpi_swlist:
   - python3-pyqt5
   - python3-pyqtgraph
   - lxappearance
+  - qml-module-qtquick-virtualkeyboard
 
 pip_list: 
   - libscrc
