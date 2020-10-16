@@ -86,6 +86,10 @@ BreathingLoop::BreathingLoop()
     initTargets();
     setVentilationMode(_ventilation_mode);
 
+    _o2_valve_frac = 0;
+    _expected_fiO2 = 0.21;
+    _new_expected_fiO2 = 0.21;
+
 }
 
 void BreathingLoop::initTargets()
@@ -516,6 +520,8 @@ void BreathingLoop::FSM_breathCycle()
     bool mand_ex = false;
     bool mand_vol = false;
 
+    float o2_frac_pressure = _o2_valve_frac * _targets_current->buffer_upper_pressure;
+
     // basic cycle for testing hardware
     switch (_bl_state) {
         case BL_STATES::IDLE:
@@ -606,19 +612,29 @@ void BreathingLoop::FSM_breathCycle()
 	    //logMsg("pause "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             _states_durations.exhale = calculateDurationExhale();
 	    //logMsg("pause x "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout +" "+_states_durations.exhale);
+            doO2ValveFrac(_targets_current->fiO2_percent, _targets_current->buffer_upper_pressure);  
             break;
         case BL_STATES::EXHALE:
             _peak_flow = -100000;  // reset peak after inhale
             _peak_flow_time = millis();  
             _fsm_timeout = _states_durations.exhale;
 
+            _expected_fiO2 = _new_expected_fiO2;
+
+        
 	    if(doExhalePurge()){
-		_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+		    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
 	    } else if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
-                _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+	            if(_readings_avgs.pressure_buffer <= o2_frac_pressure ) {
+                    // fill O2
+                    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                } else {
+                    // fill AIR
+                    _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                }
             }
 	    //logMsg("exhale "+String(_peak_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             measurePEEP();
@@ -1264,10 +1280,26 @@ void BreathingLoop::tsigReset()
 
 
 
-float BreathingLoop::o2ValveFrac(float desired_fiO2)
+void BreathingLoop::doO2ValveFrac(float desired_fiO2, float pressure_change)
 {
+    // this assumes o2 and air valves fill at same rates, AND that we fill sequentially - o2, then air.
+
+    // pressure_change is proportional to the amount of volume exhanged in a cycle
+    // I think this equals tidal inhale volume
+    
+    // we calculate amount of o2 : air to input
+    // if we have to fill 300 mbar, we fill up to (o2_frac * 300) mbar of o2, then (1-o2_frac)*300 mbar air
+
+    float o2change = (desired_fiO2*(1000+pressure_change) - _expected_fiO2 *1000 -0.21*pressure_change)/(0.79*pressure_change);
+    if (o2change > 1){
+        o2change = 1;
+    } else if (o2change < 0){
+        o2change = 0;
+    }
+    _new_expected_fiO2 = _expected_fiO2*1000 + o2change*pressure_change + 0.21*(1-o2change)*pressure_change;
+    _o2_valve_frac = o2change;
+
 	// airValveFrac = 1.0 - O2ValveFrac
-	return (desired_fiO2-0.21)/0.79;
 }
 
 bool BreathingLoop::doExhalePurge()
@@ -1278,9 +1310,9 @@ bool BreathingLoop::doExhalePurge()
 	// purge-to-fill ratio  = 0.66 => spend 66% time purging 33% filling buffer
 	
         if (tnow - _fsm_time >= static_cast<uint32_t>(0.66*_min_exhale_time) ) {
-		if (fabs(_targets_current->fiO2_percent - _readings_avgs.o2_percent) < 1){
-			return true;
-		}
-	}
+            if (fabs(_targets_current->fiO2_percent - _readings_avgs.o2_percent) < 1) {   // 1% tolerance
+                return true;
+            }
+    }
 	return false;
 }

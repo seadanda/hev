@@ -121,7 +121,7 @@ private:
     void measureDurations();
     void measurePEEP();
 
-    float o2ValveFrac(float desired_fiO2);
+    void doO2ValveFrac(float desired_fiO2, float pressure_change);
     bool doExhalePurge();
     // targets
     void initTargets();
@@ -216,6 +216,10 @@ private:
     uint32_t _min_inhale_time;
     uint32_t _min_exhale_time;
     uint32_t _max_exhale_time;
+
+    float _o2_valve_frac;
+    float _expected_fiO2;
+    float _new_expected_fiO2;
 
 };
 
