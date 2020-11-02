@@ -1290,6 +1290,9 @@ void BreathingLoop::doO2ValveFrac(float desired_fiO2, float pressure_change)
     // we calculate amount of o2 : air to input
     // if we have to fill 300 mbar, we fill up to (o2_frac * 300) mbar of o2, then (1-o2_frac)*300 mbar air
 
+    // we estimate the current o2 fraction, rather than wait for o2 sensor
+    // we should have an alarm if o2 sensor and o2 expectation is wrong after 1 min
+
     float o2change = (desired_fiO2*(1000+pressure_change) - _expected_fiO2 *1000 -0.21*pressure_change)/(0.79*pressure_change);
     if (o2change > 1){
         o2change = 1;
