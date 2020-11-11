@@ -15,7 +15,7 @@ build:raspi4-qmake:
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
     paths:
-      - hev-display
+      - hev/hev-display
 
 build:raspi4-cmake:
   stage: build
@@ -27,7 +27,7 @@ build:raspi4-cmake:
     - cmake --config Release
        -DCMAKE_TOOLCHAIN_FILE=/raspi/gcc-linaro-arm-linux-gnueabihf-raspbian-x64.cmake
        -DCPACK_PACKAGE_SUFFIX=-pi4 -DCPACK_SYSTEM_NAME=raspbian10 -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=armhf
-       "${CI_PROJECT_DIR}"
+       "${CI_PROJECT_DIR}/hev-display"
     - make
     - cpack -G DEB && cp -v *.deb "${CI_PROJECT_DIR}/binaries"
   artifacts:
@@ -44,7 +44,7 @@ build:raspi1-qmake:
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
     paths:
-      - hev-display
+      - hev/hev-display
 
 build:raspi1-cmake:
   stage: build
@@ -56,7 +56,7 @@ build:raspi1-cmake:
     - cmake --config Release
        -DCMAKE_TOOLCHAIN_FILE=/raspi/gcc-linaro-arm-linux-gnueabihf-raspbian-x64.cmake
        -DCPACK_PACKAGE_SUFFIX=-pi1 -DCPACK_SYSTEM_NAME=raspbian10 -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=armhf
-       "${CI_PROJECT_DIR}"
+       "${CI_PROJECT_DIR}/hev-display"
     - make
     - cpack -G DEB && cp -v *.deb "${CI_PROJECT_DIR}/binaries"
   artifacts:
@@ -67,6 +67,6 @@ build:raspi1-cmake:
 trigger:downstream:
   stage: trigger
   only:
-    - wip
+    - master
   dependencies: []
   extends: .theca-trigger-downstream
