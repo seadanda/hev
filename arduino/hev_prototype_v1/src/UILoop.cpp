@@ -1,3 +1,26 @@
+// © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+// All rights not expressly granted are reserved. 
+// 
+// This file is part of hev-sw.
+// 
+// hev-sw is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public Licence as published by the Free
+// Software Foundation, either version 3 of the Licence, or (at your option)
+// any later version.
+// 
+// hev-sw is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+// for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+// 
+// The authors would like to acknowledge the much appreciated support
+// of all those involved with the High Energy Ventilator project
+// (https://hev.web.cern.ch/).
+
+
 #include "UILoop.h"
 
 UILoop::UILoop(BreathingLoop *bl, AlarmLoop *al, CommsControl *comms)
@@ -105,9 +128,12 @@ void UILoop::reportFastReadings()
         _fast_data.process_pressure   = pid.process_pressure;
         _fast_data.valve_duty_cycle   = pid.valve_duty_cycle;
 
-        _fast_data.flow = _breathing_loop->getFlow();
-        _fast_data.volume= _breathing_loop->getVolume();
-        _fast_data.airway_pressure= _breathing_loop->getAirwayPressure();
+
+        calculations<float> calc = _breathing_loop->getCalculations();
+        _fast_data.flow            = calc.flow;
+        _fast_data.flow_calc       = calc.flow_calc;
+        _fast_data.volume          = calc.volume;
+        _fast_data.airway_pressure = calc.pressure_airway;
 
         _pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&_fast_data), sizeof(_fast_data));
         _comms->writePayload(_pl_send);
@@ -147,7 +173,7 @@ void UILoop::reportReadbackValues()
         _readback_data.valve_exhale = vexhale;
         _readback_data.valve_purge = vpurge;
 
-        _readback_data.ventilation_mode = static_cast<uint8_t>(_breathing_loop->getVentilationMode());
+        _readback_data.ventilation_mode = _breathing_loop->getVentilationMode();
 
         _readback_data.valve_inhale_percent  = 0;
         _readback_data.valve_exhale_percent  = 0;

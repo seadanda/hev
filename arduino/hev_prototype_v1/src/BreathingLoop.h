@@ -1,3 +1,26 @@
+// © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+// All rights not expressly granted are reserved. 
+// 
+// This file is part of hev-sw.
+// 
+// hev-sw is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public Licence as published by the Free
+// Software Foundation, either version 3 of the Licence, or (at your option)
+// any later version.
+// 
+// hev-sw is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+// for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+// 
+// The authors would like to acknowledge the much appreciated support
+// of all those involved with the High Energy Ventilator project
+// (https://hev.web.cern.ch/).
+
+
 #ifndef BREATHING_LOOP_H
 #define BREATHING_LOOP_H
 
@@ -30,8 +53,10 @@ public:
     void updateReadings();
     void updateRawReadings();
     void updateCycleReadings();
+    void updateCalculations();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
+    calculations<float> getCalculations();
     // float getRespiratoryRate();
     float getTargetRespiratoryRate();
     float getIERatio();
@@ -50,6 +75,7 @@ public:
     void    setVentilationMode(VENTILATION_MODE mode);
     VENTILATION_MODE getVentilationMode();
 
+    float calculateFlow(const uint32_t &current_time, const float &pressure_patient, const float &pressure_buffer, float volume_tube = 1600, float volume_buffer = 10000);
     float getFlow();
     float getVolume(); 
     float getAirwayPressure();
@@ -117,6 +143,9 @@ private:
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0};
     void measureDurations();
     void measurePEEP();
+
+    void doO2ValveFrac(float desired_fiO2, float pressure_change);
+    bool doExhalePurge();
     // targets
     void initTargets();
     target_variables _targets_pcac; 
@@ -130,6 +159,7 @@ private:
     readings<float> _readings_sums; // 32 bit due to possible analog read overflow
     readings<float> _readings_avgs;
     readings<float> _readings_raw;
+    calculations<float> _calculations;
     bool     _readings_reset;
     uint32_t _readings_N;
     uint32_t _readings_time;
@@ -140,6 +170,8 @@ private:
     uint32_t _readings_cycle_timeout;
     uint32_t _tsig_time;
     uint32_t _tsig_timeout;
+    uint32_t _calculations_time;
+    uint32_t _calculations_timeout;
     void tsigReset();
 
  
@@ -177,6 +209,8 @@ private:
     //float _pid_integral;  // moved to pid_variable struct
 
     LinearFitter _flow_fitter = LinearFitter(300, 100);
+    LinearFitter _pressure_buffer_fitter  = LinearFitter(100,0);
+    LinearFitter _pressure_patient_fitter = LinearFitter(100,0);
     // triggers
     void runningAvgs();
     bool inhaleTrigger();
@@ -205,6 +239,10 @@ private:
     uint32_t _min_inhale_time;
     uint32_t _min_exhale_time;
     uint32_t _max_exhale_time;
+
+    float _o2_valve_frac;
+    float _expected_fiO2;
+    float _new_expected_fiO2;
 
 };
 

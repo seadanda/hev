@@ -1,4 +1,27 @@
 #!/usr/bin/env python3
+# © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+# All rights not expressly granted are reserved. 
+# 
+# This file is part of hev-sw.
+# 
+# hev-sw is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public Licence as published by the Free
+# Software Foundation, either version 3 of the Licence, or (at your option)
+# any later version.
+# 
+# hev-sw is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+# for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+# 
+# The authors would like to acknowledge the much appreciated support
+# of all those involved with the High Energy Ventilator project
+# (https://hev.web.cern.ch/).
+
+
 import asyncio
 import logging
 logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -20,8 +43,8 @@ class ClientPlots(QtWidgets.QMainWindow):
     def __init__(self, light=False, port=54322, *args, **kwargs):
         super(ClientPlots, self).__init__(*args, **kwargs)
 
-        self.history_length = 300
-        self.xrange = 300
+        self.history_length = 1000
+        self.xrange = 1000
         self.port = port
 
         self.setWindowTitle("HEV socket debug")
@@ -37,9 +60,14 @@ class ClientPlots(QtWidgets.QMainWindow):
         self.graphWidget.nextRow()
 
         self.timestamp = list(el*(-1) for el in range(self.history_length))[::-1]
-        self.PID_P = list(0 for _ in range(self.history_length))
-        self.PID_I = list(0 for _ in range(self.history_length))
-        self.PID_D = list(0 for _ in range(self.history_length))
+        
+        # define plots here
+        self.names1 = ["flow", "flow_calc"]
+        self.names2 = ["volume"]
+        self.names3 = ["pressure_patient", "pressure_buffer"]
+        self.data1 = {name:list(0 for _ in range(self.history_length)) for name in self.names1}
+        self.data2 = {name:list(0 for _ in range(self.history_length)) for name in self.names2}
+        self.data3 = {name:list(0 for _ in range(self.history_length)) for name in self.names3}
 
         if light:
             # light theme
@@ -48,6 +76,10 @@ class ClientPlots(QtWidgets.QMainWindow):
             # dark theme
             self.graphWidget.setBackground(mkColor(30,30,30))
 
+        # Add legend
+        self.flowPlot.addLegend()
+        self.volumePlot.addLegend()
+        self.pressurePlot.addLegend()
         # Add grid
         self.flowPlot.showGrid(x=True, y=True)
         self.volumePlot.showGrid(x=True, y=True)
@@ -60,9 +92,9 @@ class ClientPlots(QtWidgets.QMainWindow):
         self.volumePlot.enableAutoRange('y', True)
         self.pressurePlot.enableAutoRange('y', True)
         # Plot styles
-        self.line1 = self.plot(self.flowPlot, self.timestamp, self.PID_D, "Flow", "00F")
-        self.line2 = self.plot(self.volumePlot, self.timestamp, self.PID_I, "Volume", "707")
-        self.line3 = self.plot(self.pressurePlot, self.timestamp, self.PID_P, "Airway Pressure", "077")
+        self.line1 = {self.names1[idx]:self.plot(self.flowPlot    , self.timestamp, self.data1[self.names1[idx]], self.names1[idx], "00F", idx) for idx  in range(len(self.names1))}
+        self.line2 = {self.names2[idx]:self.plot(self.volumePlot  , self.timestamp, self.data2[self.names2[idx]], self.names2[idx], "707", idx) for idx  in range(len(self.names2))}
+        self.line3 = {self.names3[idx]:self.plot(self.pressurePlot, self.timestamp, self.data3[self.names3[idx]], self.names3[idx], "077", idx) for idx  in range(len(self.names3))}
 
         # get data in another thread
         self.worker = threading.Thread(target=self.polling, daemon=True)
@@ -86,9 +118,10 @@ class ClientPlots(QtWidgets.QMainWindow):
         finally:
             loop.close()
 
-    def plot(self, canvas, x, y, plotname, color):
-           pen = pg.mkPen(color=color, width=3)
-           return canvas.plot(x, y, name=plotname, pen=pen)
+    def plot(self, canvas, x, y, plotname, color, idx = 0):
+        styles = [QtCore.Qt.SolidLine, QtCore.Qt.DashLine, QtCore.Qt.DotLine]
+        pen = pg.mkPen(color=color, width=3, style=styles[idx%3])
+        return canvas.plot(x, y, name=plotname, pen=pen)
 
     async def redraw(self):
         while True:
@@ -109,16 +142,18 @@ class ClientPlots(QtWidgets.QMainWindow):
                         if brtype == "DATA":
                             self.statusBar().showMessage(f"Got data for timestamp {payload['timestamp']}")
                             logging.info("data acquired")
-                            self.PID_D.append(payload["flow"])
-                            self.PID_I.append(payload["volume"])
-                            self.PID_P.append(payload["pressure_patient"])
-                            if len(self.PID_D) > self.history_length:
-                                self.PID_D = self.PID_D[1:]
-                                self.PID_I = self.PID_I[1:]
-                                self.PID_P = self.PID_P[1:]
-                            self.line1.setData(self.timestamp, self.PID_D)
-                            self.line2.setData(self.timestamp, self.PID_I)
-                            self.line3.setData(self.timestamp, self.PID_P)
+                            for name in self.names1:
+                                self.data1[name].append(payload[name])
+                                self.data1[name] = self.data1[name][1:]
+                                self.line1[name].setData(self.timestamp, self.data1[name])
+                            for name in self.names2:
+                                self.data2[name].append(payload[name])
+                                self.data2[name] = self.data2[name][1:]
+                                self.line2[name].setData(self.timestamp, self.data2[name])
+                            for name in self.names3:
+                                self.data3[name].append(payload[name])
+                                self.data3[name] = self.data3[name][1:]
+                                self.line3[name].setData(self.timestamp, self.data3[name])                            
                         elif brtype == "READBACK":
                             pass
                         elif brtype == "CYCLE":
@@ -131,10 +166,14 @@ class ClientPlots(QtWidgets.QMainWindow):
                             logging.info("personal data acquired")
                             pass
                         elif brtype == "ALARM":
-                            logging.error(f"received ALARM {payload}")
+                            logging.debug(f"received ALARM {payload}")
                         elif brtype == "IVT":
                             pass
                         elif brtype == "DEBUG":
+                            pass
+                        elif brtype == "BATTERY":
+                            pass
+                        elif brtype == "CMD":
                             pass
                         else:
                             raise KeyError

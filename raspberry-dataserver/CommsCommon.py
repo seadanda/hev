@@ -1,3 +1,26 @@
+# © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+# All rights not expressly granted are reserved. 
+# 
+# This file is part of hev-sw.
+# 
+# hev-sw is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public Licence as published by the Free
+# Software Foundation, either version 3 of the Licence, or (at your option)
+# any later version.
+# 
+# hev-sw is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+# for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+# 
+# The authors would like to acknowledge the much appreciated support
+# of all those involved with the High Energy Ventilator project
+# (https://hev.web.cern.ch/).
+
+
 from struct import Struct
 from enum import Enum, IntEnum, auto, unique
 from dataclasses import dataclass, asdict, field, fields
@@ -279,7 +302,7 @@ class PayloadFormat():
 @dataclass
 class DataFormat(PayloadFormat):
     # subclass dataformat
-    _dataStruct = Struct("<BIBBHfHffffHfHHfffffffff")
+    _dataStruct = Struct("<BIBBHfHffffHfHHffffffffff")
     payload_type: PAYLOAD_TYPE = PAYLOAD_TYPE.DATA
     # subclass member variables
     fsm_state: BL_STATES          = BL_STATES.IDLE
@@ -296,7 +319,8 @@ class DataFormat(PayloadFormat):
     ambient_temperature: int      = 0
     airway_pressure: float        = 0.0
     flow: float                   = 0.0
-    volume: float                 = 0.0
+    flow_calc       : float = 0.0
+    volume          : float = 0.0
     target_pressure : float = 0.0 ##
     process_pressure: float = 0.0 
     valve_duty_cycle: float = 0.0 
@@ -330,6 +354,7 @@ class DataFormat(PayloadFormat):
         self.ambient_temperature,
         self.airway_pressure,
         self.flow,
+        self.flow_calc,
         self.volume,
         self.target_pressure ,
         self.process_pressure,

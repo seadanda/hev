@@ -1,4 +1,27 @@
 #!/usr/bin/env python3
+# © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+# All rights not expressly granted are reserved. 
+# 
+# This file is part of hev-sw.
+# 
+# hev-sw is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public Licence as published by the Free
+# Software Foundation, either version 3 of the Licence, or (at your option)
+# any later version.
+# 
+# hev-sw is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+# for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+# 
+# The authors would like to acknowledge the much appreciated support
+# of all those involved with the High Energy Ventilator project
+# (https://hev.web.cern.ch/).
+
+
 from CommsLLI import CommsLLI
 from CommsCommon import *
 import asyncio
@@ -41,11 +64,12 @@ class Dependant(object):
             #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
             if payload.getType() == PAYLOAD_TYPE.DATA.value:
-                logging.info(f"payload received: {payload}")
-                #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
-                #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
-                #logging.info(f"Fsm state: {payload.fsm_state}")
-                fsm = payload.fsm_state
+                #logging.info(f"payload received: {payload}")
+                logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.flow_calc:3.6f} fsm {payload.fsm_state}")
+            #    #logging.info(f"payload received: {payload.timestamp} pc {payload.flow:3.6f} dc {payload.volume:3.6f} fsm {payload.fsm_state}")
+            #    #logging.info(f"payload received: {payload.pressure_buffer:3.6f}  fsm {payload.fsm_state}")
+            #    #logging.info(f"Fsm state: {payload.fsm_state}")
+            #    fsm = payload.fsm_state
             #if payload.getType() == PAYLOAD_TYPE.IVT.value:
             #    logging.info(f"payload received:  {payload} ")
                 #logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
@@ -54,14 +78,16 @@ class Dependant(object):
             #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
             #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
             #   logging.info(f"payload received:  {payload} ")
-            if payload.getType() == PAYLOAD_TYPE.READBACK.value:
-                #logging.info(f"payload received:  {payload} ")
-                logging.info(f" READBACK PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
-            if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
+            #if payload.getType() == PAYLOAD_TYPE.LOOP_STATUS.value:
+            #   logging.info(f"payload received:  {payload} ")
+            #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
+            #    #logging.info(f"payload received:  {payload} ")
+            #    logging.info(f" READBACK PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
+            #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
                 #logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-                logging.info(f" DEBUG PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
-            if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-                logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+            #    logging.info(f" DEBUG PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} ")
+            #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+            #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
             #    logging.info(f"LOGMSG {payload} {fsm}") 
             #if hasattr(payload, 'ventilation_mode'):
@@ -93,7 +119,7 @@ async def commsDebug():
     send_cmd(cmd_type="SET_PID", cmd_code="KP", param=0.001)#
     send_cmd(cmd_type="SET_PID", cmd_code="KI", param=0.0005)#5)# 0.0005
     send_cmd(cmd_type="SET_PID", cmd_code="KD", param=0.001)#01)# 0.001
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2) 
+    #send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="PID_GAIN", param=2) 
     #send_cmd(cmd_type="GET_TARGETS", cmd_code="TEST", param=0)
     send_cmd(cmd_type="SET_PID", cmd_code="NSTEPS", param=3) # 
     
@@ -111,8 +137,8 @@ async def commsDebug():
     send_cmd(cmd_type="SET_VALVE", cmd_code="INHALE_OPEN_MIN", param=0.53) 
 
     ### NOTE : THESE ARE FOR TESTING ONLY, AS THEY OVERRIDE THE VALUES SET BY THE VENTILATION MODE
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_ENABLE", param=1) 
-    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=1) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="INHALE_TRIGGER_ENABLE", param=0) 
+    send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="EXHALE_TRIGGER_ENABLE", param=0) 
     send_cmd(cmd_type="SET_TARGET_CURRENT", cmd_code="VOLUME_TRIGGER_ENABLE", param=0) 
 
     send_cmd(cmd_type="SET_VALVE", cmd_code="AIR_IN_ENABLE", param=1) 

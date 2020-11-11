@@ -1,4 +1,27 @@
 #!/usr/bin/env python3
+# © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+# All rights not expressly granted are reserved. 
+# 
+# This file is part of hev-sw.
+# 
+# hev-sw is free software: you can redistribute it and/or modify it under
+# the terms of the GNU General Public Licence as published by the Free
+# Software Foundation, either version 3 of the Licence, or (at your option)
+# any later version.
+# 
+# hev-sw is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+# for more details.
+# 
+# You should have received a copy of the GNU General Public License along
+# with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+# 
+# The authors would like to acknowledge the much appreciated support
+# of all those involved with the High Energy Ventilator project
+# (https://hev.web.cern.ch/).
+
+
 from CommsLLI import CommsLLI
 from CommsCommon import *
 import asyncio
@@ -42,23 +65,25 @@ class Dependant(object):
         
             if payload.getType() == PAYLOAD_TYPE.DATA.value:
                 #logging.info(f"payload received: {payload}")
-                #logging.info(f"payload received: {payload.timestamp} p {payload.pressure_patient:3.2f} f {payload.flow:3.3f} base {payload.volume:3.3f} d {payload.flow - payload.volume:3.3f} {payload.fsm_state}") 
+                #logging.info(f"payload received: {payload.pressure_o2_regulated}")
+                logging.info(f"payload received: {payload.timestamp} p {payload.pressure_patient:3.2f} dp {payload.pressure_diff_patient:3.3f} f {payload.flow:3.3f} base {payload.volume:3.3f} d {payload.flow - payload.volume:3.3f} {payload.fsm_state}") 
                 #logging.info(f"Fsm state: {payload.fsm_state}")
-                fsm = payload.fsm_state
+                #fsm = payload.fsm_state
             #if payload.getType() == PAYLOAD_TYPE.IVT.value:
-            #    logging.info(f"payload received:  {payload} ")
+                #logging.info(f"payload received:  {payload} ")
                 #logging.info(f"IV: air {payload.air_in_current:.3f} o2 {payload.o2_in_current:.3f} purge {payload.purge_current:.3f} inhale {payload.inhale_current:.3f} exhale {payload.exhale_current:.3f} fsm {fsm} ")
             #logging.info(f"payload received: {payload}")
             #if hasattr(payload, 'inhale_exhale_ratio'):
             #    logging.info(f"payload received: inhale exhale ratio = {payload.inhale_exhale_ratio} ")
             #if payload.getType() == PAYLOAD_TYPE.CYCLE.value:
-            #   logging.info(f"payload received:  {payload} ")
+                #logging.info(f"payload received:  {payload} ")
+                #logging.info(f"payload received:  {payload.fiO2_percent:3.9f} ")
             #if payload.getType() == PAYLOAD_TYPE.READBACK.value:
             #    logging.info(f"payload received:  {payload} {fsm}")
             #if payload.getType() == PAYLOAD_TYPE.DEBUG.value:
             #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
-            if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
-               logging.info(f"payload received:  {payload} ")
+            #if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
+            #   logging.info(f"payload received:  {payload} ")
             #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
             #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
@@ -102,7 +127,7 @@ async def commsDebug():
 
     #await asyncio.sleep(10)
     #print('send personal info')
-    send_personal("Jessica Jones", 'abc1234', 29, 'F', 175, 58)
+    #send_personal("Jessica Jones", 'abc1234', 29, 'F', 175, 58)
 
     #send_cmd(cmd_type="GET_THRESHOLD_MAX", cmd_code="APNEA")
     #await asyncio.sleep(1)

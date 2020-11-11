@@ -1,3 +1,26 @@
+// © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+// All rights not expressly granted are reserved. 
+// 
+// This file is part of hev-sw.
+// 
+// hev-sw is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public Licence as published by the Free
+// Software Foundation, either version 3 of the Licence, or (at your option)
+// any later version.
+// 
+// hev-sw is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+// for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+// 
+// The authors would like to acknowledge the much appreciated support
+// of all those involved with the High Energy Ventilator project
+// (https://hev.web.cern.ch/).
+
+
 #ifndef LINEARFITTER_H
 #define LINEARFITTER_H
 
@@ -54,7 +77,7 @@ public:
 
     uint8_t linearRegression(float &slope, float &offset) {
         if (_x.isEmpty() || _y.isEmpty())               return 1;
-        if ((_x[_entries - 1] - _x[0]) < _duration )    return 2;
+        //if ((_x[_entries - 1] - _x[0]) < _duration )    return 2;
         if ((_entries * _sum_x2) == (_sum_x * _sum_x))  return 3;
 
         // results
@@ -65,7 +88,7 @@ public:
     float extrapolate(uint32_t x) {
         x -= _x_zero;
         float slope, offset;
-	uint8_t linreg = linearRegression(slope, offset);
+        uint8_t linreg = linearRegression(slope, offset);
         if (0==linreg){
             return (x*slope + offset);
         }
@@ -80,10 +103,16 @@ public:
 	y = _y[_entries-1] ; 
 	entries = _entries;
     }
+    uint16_t GetEntries(){
+	    return _entries;
+    }
+    float GetSumX2(){
+	    return _sum_x2;
+    }
 
 private:
     uint32_t _x_zero   = 0;
-    uint8_t  _entries  = 0;
+    uint16_t  _entries  = 0;
     uint32_t _duration = 0;
     uint32_t _delay    = 0;
 

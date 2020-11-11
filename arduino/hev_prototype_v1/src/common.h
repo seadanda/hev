@@ -1,3 +1,26 @@
+// © Copyright CERN, Riga Technical University and University of Liverpool 2020.
+// All rights not expressly granted are reserved. 
+// 
+// This file is part of hev-sw.
+// 
+// hev-sw is free software: you can redistribute it and/or modify it under
+// the terms of the GNU General Public Licence as published by the Free
+// Software Foundation, either version 3 of the Licence, or (at your option)
+// any later version.
+// 
+// hev-sw is distributed in the hope that it will be useful, but WITHOUT
+// ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+// FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
+// for more details.
+// 
+// You should have received a copy of the GNU General Public License along
+// with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+// 
+// The authors would like to acknowledge the much appreciated support
+// of all those involved with the High Energy Ventilator project
+// (https://hev.web.cern.ch/).
+
+
 #ifndef COMMON_H
 #define COMMON_H
 #include <Arduino.h>
@@ -229,6 +252,7 @@ struct fast_data_format {
     uint16_t ambient_temperature    = 0;
     float airway_pressure           = 0.0;
     float flow                      = 0.0;
+    float flow_calc                 = 0.0;
     float volume                    = 0.0;
     float target_pressure  = 0.0; //
     float process_pressure = 0.0; 
@@ -662,6 +686,15 @@ template <typename T> struct readings{
     T pressure_o2_regulated  = 0;
     T pressure_diff_patient  = 0;
     T o2_percent             = 0;
+};
+
+template <typename T> struct calculations {
+    uint32_t timestamp  = 0;
+    T flow              = 0;
+    T flow_calc         = 0;
+    T volume            = 0;
+
+    T pressure_airway   = 0;
 };
 
 template <typename T> struct IV_readings{
