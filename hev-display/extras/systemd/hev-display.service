@@ -1,0 +1,29 @@
+# In order to run hev-display as a service, copy this file to /lib/systemd/system/, then:
+# sudo systemctl daemon-reload
+# sudo systemctl enable hev-display
+# sudo systemctl start hev-display
+
+# If Qt says it is unable to query your physical screen size, you will need to add the following variables
+# to the Environment= to display with accurate DPI settings:
+# QT_QPA_EGLFS_PHYSICAL_WIDTH and QT_QPA_EGLFS_PHYSICAL_HEIGHT (in millimeters).
+# The Environment= settings to enable touch might be different depending on your touchscreen.
+
+# For this unit so start successfully at boot, no window manager must be running on the HDMI output.
+# To force the operating system to boot in console mode, do the following:
+# systemctl set-default multi-user.target
+# ln -fs /lib/systemd/system/getty@.service /etc/systemd/system/getty.target.wants/getty@tty1.service
+# rm /etc/systemd/system/getty@tty1.service.d/autologin.conf
+
+[Unit]
+Description=HEV display
+After=multi-user.target
+
+[Service]
+Type=idle
+ExecStart=hev-display
+Environment=QT_QPA_FONTDIR=/usr/share/fonts/truetype/open-sans/
+Environment=QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS=rotate=270
+Environment=QT_QPA_FB_TSLIB=1
+
+[Install]
+WantedBy=multi-user.target
