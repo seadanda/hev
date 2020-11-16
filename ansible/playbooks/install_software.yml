@@ -28,7 +28,6 @@
         download_dir: /home/pi/Downloads
         repos: 
             - hev-sw
-            - hev-display
 
   tasks: 
         - name: include vars
@@ -70,18 +69,10 @@
           become: yes
           become_user: root
         
-        - name: clone git repos
+        - name: clone git repo
           git: 
-              repo: https://gitlab+deploy-token-960:xusyzScX2ZMHzRsMyEey@gitlab.cern.ch/hev-sw/{{ item }}.git
-              dest: "{{ ansible_env.HOME }}/{{ item }}"
-          loop: "{{ repos }}"
-        
-        - name: reset git users 
-          replace: 
-              path: "{{ ansible_env.HOME }}/{{ item }}/.git/config"
-              regexp: 'url = .*'
-              replace: 'url =  https://gitlab.cern.ch/hev-sw/{{ item }}.git'
-          loop: "{{ repos }}"
+          repo: https://ohwr.org/project/hev.git
+              dest: "{{ ansible_env.HOME }}/hev"
         
         - name: install platformio
           command: "{{ download_dir }}/platform-io.sh"
