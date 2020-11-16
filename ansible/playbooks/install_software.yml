@@ -27,7 +27,7 @@
   vars:
         download_dir: /home/pi/Downloads
         repos: 
-            - hev-sw
+            - hev
 
   tasks: 
         - name: include vars
@@ -71,7 +71,7 @@
         
         - name: clone git repo
           git: 
-          repo: https://ohwr.org/project/hev.git
+              repo: https://ohwr.org/project/hev.git
               dest: "{{ ansible_env.HOME }}/hev"
         
         - name: install platformio
@@ -116,12 +116,12 @@
               state: link
           become: yes
         
-        - name: install hev-display systemd service
-          copy:
-              src: "{{ ansible_env.HOME }}/hev-display/extras/systemd/hev-display.service"
-              dest: "/usr/lib/systemd/system/hev-display.service"
-              remote_src: yes
-          become: yes
+#        - name: install hev-display systemd service
+#          copy:
+#              src: "{{ ansible_env.HOME }}/hev/hev-display/extras/systemd/hev-display.service"
+#              dest: "/usr/lib/systemd/system/hev-display.service"
+#              remote_src: yes
+#          become: yes
 
         - name: mk user systemd dir
           file:
@@ -130,14 +130,14 @@
 
         - name: install hevserver systemd service
           copy:
-              src: "{{ ansible_env.HOME }}/hev-sw/utils/hevserver.service"
+              src: "{{ ansible_env.HOME }}/hev/utils/hevserver.service"
               dest: "/usr/lib/systemd/system/hevserver.service"
               remote_src: yes
           become: yes
 
         - name: copy hev rules
           copy: 
-              src: "{{ ansible_env.HOME }}/hev-sw/utils/hev.rules"
+              src: "{{ ansible_env.HOME }}/hev/utils/hev.rules"
               dest: "/etc/udev/rules.d/88-hev.rules"
               remote_src: yes
               owner: root 
@@ -175,7 +175,7 @@
 
         - name: install hevconf into apache 
           copy:
-              src: "{{ ansible_env.HOME }}/hev-sw/raspberry-backend/share/hev.conf" 
+              src: "{{ ansible_env.HOME }}/hev/raspberry-backend/share/hev.conf" 
               dest: "/etc/apache2/sites-available/hev.conf"
               remote_src: yes
           become: yes
