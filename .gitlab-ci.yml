@@ -15,7 +15,7 @@ build:raspi4-qmake:
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
     paths:
-      - hev/hev-display
+      - hev-display
 
 build:raspi4-cmake:
   stage: build
@@ -44,7 +44,7 @@ build:raspi1-qmake:
   artifacts:
     name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
     paths:
-      - hev/hev-display
+      - hev-display
 
 build:raspi1-cmake:
   stage: build
