@@ -48,7 +48,7 @@ class NativeUI(HEVClient, QMainWindow):
             if (payload["type"] == "DATA"):
                 self.data = payload["DATA"]
                 # remove first entry and append plot data to end
-                self.plots = np.append(np.delete(self.plots, 0, 0), [[self.data["timestamp"], self.data["pressure_patient"], 0, 0]], axis=0)
+                self.plots = np.append(np.delete(self.plots, 0, 0), [[self.data["timestamp"], self.data["pressure_patient"], self.data["flow"], self.data["volume"]]], axis=0)
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 
