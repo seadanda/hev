@@ -36,7 +36,7 @@ BreathingLoop::BreathingLoop()
     _tsig_time = tnow;
     _tsig_timeout = 100;
     _calculations_time = tnow;
-    _calculations_timeout = 13;
+    _calculations_timeout = 10;
 
     _ventilation_mode = VENTILATION_MODE::PC_AC;
     _bl_state = BL_STATES::IDLE;
@@ -277,6 +277,7 @@ void BreathingLoop::updateCycleReadings()
 
     if (_bl_state == BL_STATES::BUFF_PRE_INHALE){
         if(_cycle_done == false){
+    logMsg("hello\n");
             uint32_t tnow = static_cast<uint32_t>(millis());
 
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
@@ -348,15 +349,15 @@ void BreathingLoop::updateCycleReadings()
 void BreathingLoop::updateCalculations() {
     uint32_t tnow = static_cast<uint32_t>(millis());
 
-    _calculations.flow              = getFlow(); // TODO: can be run every 1 ms instead of every arduino cycle
     if (tnow - _calculations_time >= _calculations_timeout) {
+    _calculations.flow              = getFlow(); // TODO: can be run every 1 ms instead of every arduino cycle
     //_calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
     _calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
     _calculations_time = tnow;
-    }
-//    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
     _calculations.volume            = getVolume();
+    }
     _calculations.pressure_airway   = getAirwayPressure();
+//    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
 }
 
 void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
@@ -974,21 +975,24 @@ float BreathingLoop::getFlow(){
     // dp_raw in mbar 
     //
     float fudge_factor1 = 1.15;  // we scale to test chest 
-    if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero - draw a line to zero
-	    if (dp_raw > 0) {
-		flowtmp = (43.046+71.576) * dp_raw;
-	    } else {
-		flowtmp = (fudge_factor1*39.047+60.471) * dp_raw;
-	    }
-    } else if (dp_raw > 0) {
+    //if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero - draw a line to zero
+	    //if (dp_raw > 0) {
+		//flowtmp = (43.046+71.576) * dp_raw;
+	    //} else {
+		//flowtmp = (fudge_factor1*39.047+60.471) * dp_raw;
+	    //}
+    //} else if (dp_raw > 0) {
+    //if (dp_raw > 0) {
 
-        flowtmp = 43.046 * dp_raw + 71.576;
-    } else {
-        flowtmp = fudge_factor1 * 39.047 * dp_raw - 60.471;  // these are in L/h
-    }
+    //    flowtmp = 43.046 * dp_raw + 71.576;
+    //} else {
+    //    flowtmp = 39.047 * dp_raw - 60.471;  // these are in L/h
+    //    //flowtmp = fudge_factor1 * 39.047 * dp_raw - 60.471;  // these are in L/h
+    //}
+    flowtmp = 40 * dp_raw;  // these are in L/h
     //_flow =  flowtmp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);  // ml/s
     //
-    float fudge_factor2 = 0.75;
+    float fudge_factor2 = 1.0;  //0.75;  // global factor
     _flow =  fudge_factor2 * flowtmp * temperature *1013.25 / (pressure * 273.15 * 60);  // now expressed in l/min
     //_flow =  dp_raw ;//* temperature *1013.25 / (pressure * 273.15 * 60);  // now expressed in l/min
     //return flow;  // NL/h
@@ -1039,12 +1043,12 @@ float BreathingLoop::getVolume()
     //  need to get dt - assume dt = 10ms
     float nl2l = (pressure * 273.15 )/(temperature *1013.25) ; 
 
-    float flow = getFlow(); // flow is now in l/min
+    float flow = _calculations.flow; //getFlow(); // flow is now in l/min
     float vol = flow*1000.0 / (60 * 100) ; //1000 l-> ml; 60s ; 100 = 10ms measure -> 1s
-    if (flow < 0)
-	    vol = vol*1.2;// stupid scale factor
     float fudge_factor3 = 0.75;  // based on test chest flow to vol measurements
-    _volume += fudge_factor3 * vol * nl2l; // real KH
+
+    _volume += vol * nl2l; // real KH
+    //_volume += fudge_factor3 * vol * nl2l; // real KH
     //_volume = _flow_fitter.extrapolate(millis()); // will return correct extrapolation of max float value
     //_volume += vol //* nl2l /100;
 
@@ -1276,10 +1280,10 @@ void BreathingLoop::runningAvgs()
 
     
     if((_bl_state == BL_STATES::INHALE) || (_bl_state == BL_STATES::BUFF_PRE_INHALE) || (_bl_state == BL_STATES::PAUSE)){
-        _volume_inhale = getVolume();
+        _volume_inhale = _volume; //getVolume();
 	//logMsg("INHALE "+String(_volume_inhale));
     } else if (_bl_state == BL_STATES::EXHALE){
-        _volume_exhale = _volume_inhale - getVolume();
+        _volume_exhale = _volume_inhale - _volume; //getVolume();
         //if(fabs(_flow) < 0.02){
         //    _peep = _readings_avgs.pressure_patient;
         //}
