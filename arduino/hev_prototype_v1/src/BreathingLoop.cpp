@@ -959,43 +959,17 @@ float BreathingLoop::calculateFlow(const uint32_t &current_time, const float &pr
 float BreathingLoop::getFlow(){
     const float temperature = 298.0;
     const float pressure = 1030.0;
-    float mbarToPa = 100.0;
-    float dp_raw = mbarToPa*_readings_avgs.pressure_diff_patient;
-    //float dp_raw = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient    / _readings_N),_calib_avgs.pressure_diff_patient) ;
+    float l2nl = (temperature *1013.25)/(pressure * 273.15 ) ; 
+    float dp_raw = _readings_avgs.pressure_diff_patient;
+    
     float flowtmp;
-    /*
-    if (dp_raw > 0) {
 
-        dp = 43.046 * dp_raw;
-    } else {
-        dp = 39.047 * dp_raw;
-    }
-    */
-
-    // dp_raw in mbar 
-    //
     float fudge_factor1 = 1.15;  // we scale to test chest 
-    //if(fabs(dp_raw) < 1.0){ //kh  - if dp is close to zero - draw a line to zero
-	    //if (dp_raw > 0) {
-		//flowtmp = (43.046+71.576) * dp_raw;
-	    //} else {
-		//flowtmp = (fudge_factor1*39.047+60.471) * dp_raw;
-	    //}
-    //} else if (dp_raw > 0) {
-    //if (dp_raw > 0) {
 
-    //    flowtmp = 43.046 * dp_raw + 71.576;
-    //} else {
-    //    flowtmp = 39.047 * dp_raw - 60.471;  // these are in L/h
-    //    //flowtmp = fudge_factor1 * 39.047 * dp_raw - 60.471;  // these are in L/h
-    //}
-    flowtmp = 40 * dp_raw;  // these are in L/h
-    //_flow =  flowtmp * temperature *1013.25 * 1000 / (pressure * 273.15 * 3600);  // ml/s
-    //
-    float fudge_factor2 = 1.0;  //0.75;  // global factor
-    _flow =  fudge_factor2 * flowtmp * temperature *1013.25 / (pressure * 273.15 * 60);  // now expressed in l/min
-    //_flow =  dp_raw ;//* temperature *1013.25 / (pressure * 273.15 * 60);  // now expressed in l/min
-    //return flow;  // NL/h
+    flowtmp = pow(dp_raw,3)*0.1512-3.3422*pow(dp_raw,2)+dp_raw*41.657;  // this is in slm (standard liter per minute)
+
+    _flow =  flowtmp * l2nl;  // now expressed in l/min
+
     if (_calibrated == true){
         return _flow;
     }

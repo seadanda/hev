@@ -54,6 +54,7 @@ class HEVClient(object):
         self._readback = None  # db for sensor values
         self._cycle = None  # db for sensor values
         self._target = None  # db for sensor values
+        self._logmsg = None  # db for sensor values
         self._thresholds = None  # db for sensor values
         self._thresholds = []  # db for threshold settings
         self._polling = polling  # keep reading data into db
@@ -119,6 +120,9 @@ class HEVClient(object):
                         elif payload["type"] == "PERSONAL":
                             with self._lock:
                                 self._personal = payload["PERSONAL"]
+                        elif payload["type"] == "LOGMSG":
+                            with self._lock:
+                                self._logmsg = payload["LOGMSG"]
                         elif payload["type"] == "THRESHOLDS":
                             with self._lock:
                                 self._thresholds = payload["THRESHOLDS"]
@@ -237,6 +241,10 @@ class HEVClient(object):
     def get_personal(self) -> Dict:
         # get personal data from db
         return self._personal
+
+    def get_logmsg(self) -> Dict:
+        # get logmsg data from db
+        return self._logmsg
 
     def get_target(self) -> Dict:
         # get target data from db

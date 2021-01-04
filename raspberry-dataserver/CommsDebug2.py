@@ -63,10 +63,10 @@ class Dependant(object):
             #if payload.getType() == PAYLOAD_TYPE.ALARM.value:
             #    logging.info(f"Alarm: {payload.alarm_code} of priority: {payload.alarm_type}")
         
-            if payload.getType() == PAYLOAD_TYPE.DATA.value:
+            #if payload.getType() == PAYLOAD_TYPE.DATA.value:
                 #logging.info(f"payload received: {payload}")
                 #logging.info(f"payload received: {payload.pressure_o2_regulated}")
-                logging.info(f"payload received: {payload.timestamp} p {payload.pressure_patient:3.2f} dp {payload.pressure_diff_patient:3.3f} f {payload.flow:3.3f} base {payload.volume:3.3f} d {payload.flow - payload.volume:3.3f} {payload.fsm_state}") 
+                #logging.info(f"payload received: {payload.timestamp} p {payload.pressure_patient:3.2f} dp {payload.pressure_diff_patient:3.3f} f {payload.flow:3.3f} base {payload.volume:3.3f} d {payload.flow - payload.volume:3.3f} {payload.fsm_state}") 
                 #logging.info(f"Fsm state: {payload.fsm_state}")
                 #fsm = payload.fsm_state
             #if payload.getType() == PAYLOAD_TYPE.IVT.value:
@@ -84,8 +84,8 @@ class Dependant(object):
             #    logging.info(f" PID {payload.kp:3.6f} {payload.ki:3.6f} {payload.kd:3.6f} {payload.proportional:3.6f} {payload.integral:3.6f} {payload.derivative:3.6f} {payload.valve_duty_cycle:3.6f} {payload.target_pressure:3.6f} {payload.process_pressure:3.6f} fsm {fsm}")
             #if payload.getType() == PAYLOAD_TYPE.PERSONAL.value:
             #   logging.info(f"payload received:  {payload} ")
-            #if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
-            #    logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
+            if payload.getType() == PAYLOAD_TYPE.LOGMSG.value:
+                logging.info(f"LOGMSG {payload.timestamp}:{payload.message} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.TARGET.value:
             #    logging.info(f"TARGET {payload} {fsm}") 
             #if payload.getType() == PAYLOAD_TYPE.CMD.value:
