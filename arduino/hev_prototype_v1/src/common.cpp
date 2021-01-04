@@ -261,7 +261,9 @@ void logMsg(String s)
         CommsControl *comms = getGlobalComms();
         Payload pl_send;
 
+        uint32_t tnow = static_cast<uint32_t>(millis());
         logmsg_data_format log;
+        log.timestamp                = tnow;
         sprintf(log.message, "%50s", "");
         sprintf(log.message, "%s", s.c_str() );
         pl_send.setPayload(PRIORITY::DATA_ADDR, reinterpret_cast<void *>(&log), sizeof(log));
