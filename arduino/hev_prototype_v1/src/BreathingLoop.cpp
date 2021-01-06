@@ -329,7 +329,7 @@ void BreathingLoop::updateCycleReadings()
             _ap_readings_N = 0;
             _volume_inhale = 0;
             _volume_exhale = 0;
-            _volume = 0;
+	    _volume = 0;
 
             //reset
             _cycle_done = true;
@@ -353,8 +353,8 @@ void BreathingLoop::updateCalculations() {
     _calculations.flow              = getFlow(); // TODO: can be run every 1 ms instead of every arduino cycle
     //_calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
     _calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
-    _calculations_time = tnow;
     _calculations.volume            = getVolume();
+    _calculations_time = tnow;
     }
     _calculations.pressure_airway   = getAirwayPressure();
 //    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
