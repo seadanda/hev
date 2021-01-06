@@ -143,12 +143,12 @@ void loop()
     alarm_loop.fireAlarms();
 
     ui_loop.reportFastReadings();
-    // ui_loop.reportReadbackValues();
-    // ui_loop.reportCycleReadings();
-    // ui_loop.reportAlarms();
-    // ui_loop.reportIVTReadings();
-    // ui_loop.reportDebugValues();  // data duplicated to fast and readback
-    // ui_loop.reportTargets();
+    ui_loop.reportReadbackValues();
+    ui_loop.reportCycleReadings();
+    ui_loop.reportAlarms();
+    ui_loop.reportIVTReadings();
+    ui_loop.reportDebugValues();  // data duplicated to fast and readback
+    ui_loop.reportTargets();
 
     // per cycle receiver
     comms.receiver();
