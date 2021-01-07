@@ -64,6 +64,8 @@ public:
                    uint8_t vexhale, bool vpurge);
     void getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
                    uint8_t &vexhale, bool &vpurge);
+    void setFillValves(bool vin_air, bool vin_o2, bool vpurge);
+
     uint32_t calcValveDutyCycle(uint32_t pwm_resolution, float frac_open);
 
     valve_params& getValveParams();

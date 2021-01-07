@@ -243,6 +243,18 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
     _purge.state  = vpurge;
 }
 
+void ValvesController::setFillValves(bool vin_air, bool vin_o2,  bool vpurge)
+{
+    digitalWrite(_air_in.pin, vin_air * _valve_params.valve_air_in_enable);
+    digitalWrite(_o2_in.pin, vin_o2 * _valve_params.valve_o2_in_enable);
+    digitalWrite(_purge.pin, vpurge * _valve_params.valve_purge_enable);
+
+    // save the state 
+    _air_in.state = vin_air;
+    _o2_in.state  = vin_o2;
+    _purge.state  = vpurge;
+}
+
 void ValvesController::getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale, 
                uint8_t &vexhale, bool &vpurge)
 {

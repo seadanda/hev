@@ -45,6 +45,9 @@ public:
     uint8_t getFsmState();
     void FSM_assignment();
     void FSM_breathCycle();
+    uint8_t getFillFsmState();
+    void FillFSMAssignment();
+    void FillFSMCycle();
     void doStart();
     void doStop();
     void doReset();
@@ -110,6 +113,12 @@ public:
     };
 
 
+    // states
+    enum FILL_STATES : uint8_t {
+            UNKNOWN         =  0,
+            IDLE            =  1,
+            AIR_FILL        =  2
+    };
 
 
 private:
@@ -118,6 +127,7 @@ private:
     uint32_t            _fsm_timeout;
     VENTILATION_MODE        _ventilation_mode;
     BL_STATES           _bl_state, _bl_laststate;
+    FILL_STATES         _fill_state, _fill_laststate;
 
     uint32_t            _lasttime;
     bool                _running;

@@ -41,6 +41,10 @@ BreathingLoop::BreathingLoop()
     _ventilation_mode = VENTILATION_MODE::PC_AC;
     _bl_state = BL_STATES::IDLE;
     _bl_laststate = BL_STATES::IDLE;
+    
+    _fill_state = FILL_STATES::IDLE;
+    _fill_laststate = FILL_STATES::IDLE;
+
     _running = false;
     _reset = false;
     _standby = false;
@@ -175,6 +179,12 @@ uint8_t BreathingLoop::getFsmState()
 {
     return static_cast<uint8_t>(_bl_state);
 }
+
+uint8_t BreathingLoop::getFillFsmState()
+{
+    return static_cast<uint8_t>(_fill_state);
+}
+
 
 void BreathingLoop::updateReadings()
 {
@@ -645,27 +655,29 @@ void BreathingLoop::FSM_breathCycle()
 
             _expected_fiO2 = _new_expected_fiO2;
 
-        
-	    if(doExhalePurge()){
-		    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
-            // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
-	    } else if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
-                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
-	            if(_readings_avgs.pressure_buffer <= o2_frac_pressure ) {
-                    // fill O2
-                    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-                } else {
-                    // fill AIR
-                    _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+        /* This is merged into new state machine FillFSM. Keep it for now, but remove it after system has been tested.
+            if(doExhalePurge()){
+                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+                // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
+            } else if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
+                    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
+                    if(_readings_avgs.pressure_buffer <= o2_frac_pressure ) {
+                        // fill O2
+                        _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                    } else {
+                        // fill AIR
+                        _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                    }
                 }
-            }
-	    //logMsg("exhale "+String(_peak_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
+
+                 */
+            //logMsg("exhale "+String(_peak_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             measurePEEP();
-		digitalWrite(pin_led_red, LOW);
+            digitalWrite(pin_led_red, LOW);
             _mandatory_inhale = inhaleTrigger();
-	    _pressure_buffer_fitter.resetCalculation(_peak_flow_time);
-	    _pressure_patient_fitter.resetCalculation(_peak_flow_time);
+            _pressure_buffer_fitter.resetCalculation(_peak_flow_time);
+            _pressure_patient_fitter.resetCalculation(_peak_flow_time);
             break;
         case BL_STATES::STANDBY:
             _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
@@ -691,6 +703,40 @@ void BreathingLoop::FSM_breathCycle()
     //logMsg("fsm timeout " + String(_fsm_timeout) + " state "+String(_bl_state));;
     safetyCheck();
     measureDurations();
+}
+
+void BreathingLoop::FillFSMAssignment()
+{
+    if(_bl_state == BL_STATES::EXHALE){
+        _fill_state = FILL_STATES::AIR_FILL;
+    }else{
+        _fill_state = FILL_STATES::IDLE;
+    }
+}
+
+void BreathingLoop::FillFSMCycle()
+{
+    switch (_fill_state) {
+        case FILL_STATES::IDLE:
+            // do nothing. the BL_FSM closes O2, air and purge valve when not exhaling
+            break;
+        case FILL_STATES::AIR_FILL:
+            if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
+                    _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+                } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
+                    if(_readings_avgs.pressure_buffer <= o2_frac_pressure ) {
+                        // fill O2
+                        _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                    } else {
+                        // fill AIR
+                        _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+                    }
+                }
+            break;
+        default:
+            // TODO - shouldn't get here: raise alarm
+            break;
+    }
 }
 
 void BreathingLoop::measureDurations( ) {

@@ -139,6 +139,8 @@ void loop()
 {
     breathing_loop.FSM_assignment();
     breathing_loop.FSM_breathCycle();
+    breathing_loop.FillFSMAssignment();
+    breathing_loop.FillFSMCycle();
 
     alarm_loop.fireAlarms();
 
