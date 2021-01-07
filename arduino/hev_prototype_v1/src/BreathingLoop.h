@@ -116,7 +116,8 @@ public:
     // states
     enum FILL_STATES : uint8_t {
             VALVES_CLOSED   =  0,
-            AIR_FILL        =  1
+            AIR_FILL        =  1,
+            PURGE           =  2
     };
 
 

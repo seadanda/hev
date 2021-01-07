@@ -243,6 +243,64 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
     _purge.state  = vpurge;
 }
 
+void ValvesController::setBreatheValves(uint8_t vinhale, uint8_t vexhale)
+{
+    switch(vinhale){
+        case VALVE_STATE::FULLY_CLOSED:
+            setPWMValve(_inhale.pin, 0.0);
+            break;
+        case VALVE_STATE::FULLY_OPEN:
+            setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
+            break;
+        case VALVE_STATE::OPEN:
+            setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
+            break;
+        case VALVE_STATE::CALIB_OPEN:
+            setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
+            break;
+        case VALVE_STATE::CLOSED:
+            setPWMValve(_inhale.pin, _valve_params.inhale_open_min); 
+            break;
+        case VALVE_STATE::PID:
+            setPWMValve(_inhale.pin, _PID_output);
+            break;
+        default:
+            break;
+    }
+
+    if(_exhale.proportional == true){
+	    switch(vexhale){
+		    case VALVE_STATE::FULLY_CLOSED:
+			    setPWMValve(_exhale.pin, 0);
+			    break;
+		    case VALVE_STATE::FULLY_OPEN:
+			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
+			    break;
+		    case VALVE_STATE::CALIB_OPEN:
+			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
+			    break;
+		    case VALVE_STATE::OPEN:
+			    setPWMValve(_exhale.pin, _valve_params.inhale_open_max); 
+			    break;
+		    case VALVE_STATE::CLOSED:
+			    setPWMValve(_exhale.pin, 0); 
+			    break;
+		    default:
+			    //doPID(_exhale.pin);
+			    break;
+	    }
+    } else if(_exhale.proportional == false){
+        if (vexhale == VALVE_STATE::OPEN)
+            digitalWrite(_exhale.pin, VALVE_STATE::CLOSED); //inverted logic; normally open;
+        else
+            digitalWrite(_exhale.pin, VALVE_STATE::OPEN); //inverted logic; normally open;
+    }
+
+    // save the state 
+    _inhale.state = vinhale;
+    _exhale.state = vexhale;
+}
+
 void ValvesController::setFillValves(bool vin_air, bool vin_o2,  bool vpurge)
 {
     digitalWrite(_air_in.pin, vin_air * _valve_params.valve_air_in_enable);

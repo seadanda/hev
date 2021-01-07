@@ -242,7 +242,8 @@ void BreathingLoop::updateReadings()
                 doPID();
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
-                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+                // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+                _valves_controller.setBreatheValves(VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED);
 
         }
         runningAvgs();
@@ -567,31 +568,37 @@ void BreathingLoop::FSM_breathCycle()
             }
 #ifdef EXHALE_VALVE_PROPORTIONAL	    
 	    // proportional valve normally closed
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::FULLY_CLOSED, VALVE_STATE::FULLY_CLOSED);
 #else
 	    // digital valve normally open
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN);
 #endif
             initCalib();
             break;
         case BL_STATES::PRE_CALIBRATION : 
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.pre_calibration;
             break;
         case BL_STATES::CALIBRATION : 
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            _valves_controller.setBreatheValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             calibrate();
             _fsm_timeout = _states_durations.calibration;
             break;
         case BL_STATES::BUFF_PREFILL:
             // TODO - exhale settable; timeout expert settable
             _calibrated = true;
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_prefill;
             break;
         case BL_STATES::BUFF_FILL:
             // TODO - exhale settable; timeout settable
-            _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_fill;
             break;
         case BL_STATES::BUFF_PRE_INHALE:
@@ -602,7 +609,8 @@ void BreathingLoop::FSM_breathCycle()
                 // P_patient and p_diff_patient
                 // P_patient or p_diff_patient
                 // with thresholds on each
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             switch (_ventilation_mode)
             {
                 case FLUSH:
@@ -639,7 +647,8 @@ void BreathingLoop::FSM_breathCycle()
 	    //logMsg("inhale "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             break;
         case BL_STATES::PAUSE:
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.pause;
             _valley_flow = 100000;  // reset valley after exhale
             _valley_flow_time = millis();  // reset valley after exhale
@@ -680,20 +689,24 @@ void BreathingLoop::FSM_breathCycle()
             _pressure_patient_fitter.resetCalculation(_peak_flow_time);
             break;
         case BL_STATES::STANDBY:
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = 1000;
             break;
         case BL_STATES::BUFF_PURGE:
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_purge;
             break;
         case BL_STATES::BUFF_FLUSH:
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_flush;
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
-            _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+            _valves_controller.setBreatheValves(VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = 1000;
             break;
         default:
@@ -707,10 +720,23 @@ void BreathingLoop::FSM_breathCycle()
 
 void BreathingLoop::FillFSMAssignment()
 {
-    if(_bl_state == BL_STATES::EXHALE){
-        _fill_state = FILL_STATES::AIR_FILL;
-    }else{
-        _fill_state = FILL_STATES::VALVES_CLOSED;
+    switch(_bl_state){
+        case BL_STATES::EXHALE:
+            _fill_state = FILL_STATES::AIR_FILL;
+            break;
+        case BL_STATES::BUFF_FILL:
+            _fill_state = FILL_STATES::AIR_FILL;
+        case BL_STATES::PRE_CALIBRATION:
+            _fill_state = FILL_STATES::PURGE;
+            break;
+        case BL_STATES::CALIBRATION:
+            _fill_state = FILL_STATES::PURGE;
+            break;
+        case BL_STATES::BUFF_PURGE:
+            _fill_state = FILL_STATES::PURGE;
+            break;
+        default:
+            _fill_state = FILL_STATES::VALVES_CLOSED;
     }
 }
 
@@ -718,15 +744,18 @@ void BreathingLoop::FillFSMCycle()
 {
     switch (_fill_state) {
         case FILL_STATES::VALVES_CLOSED:
-            // do nothing. the BL_FSM closes O2, air and purge valve when not exhaling
+            _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             break;
         case FILL_STATES::AIR_FILL:
             if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
                     _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-                }else{ 
+                } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
                     // fill AIR
                     _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
                 }
+            break;
+        case FILL_STATES::PURGE:
+            _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             break;
         default:
             // TODO - shouldn't get here: raise alarm
