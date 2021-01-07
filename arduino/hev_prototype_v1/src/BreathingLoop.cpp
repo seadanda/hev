@@ -42,8 +42,8 @@ BreathingLoop::BreathingLoop()
     _bl_state = BL_STATES::IDLE;
     _bl_laststate = BL_STATES::IDLE;
     
-    _fill_state = FILL_STATES::IDLE;
-    _fill_laststate = FILL_STATES::IDLE;
+    _fill_state = FILL_STATES::VALVES_CLOSED;
+    _fill_laststate = FILL_STATES::VALVES_CLOSED;
 
     _running = false;
     _reset = false;
@@ -710,27 +710,22 @@ void BreathingLoop::FillFSMAssignment()
     if(_bl_state == BL_STATES::EXHALE){
         _fill_state = FILL_STATES::AIR_FILL;
     }else{
-        _fill_state = FILL_STATES::IDLE;
+        _fill_state = FILL_STATES::VALVES_CLOSED;
     }
 }
 
 void BreathingLoop::FillFSMCycle()
 {
     switch (_fill_state) {
-        case FILL_STATES::IDLE:
+        case FILL_STATES::VALVES_CLOSED:
             // do nothing. the BL_FSM closes O2, air and purge valve when not exhaling
             break;
         case FILL_STATES::AIR_FILL:
             if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
                     _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-                } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
-                    if(_readings_avgs.pressure_buffer <= o2_frac_pressure ) {
-                        // fill O2
-                        _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-                    } else {
-                        // fill AIR
-                        _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-                    }
+                }else{ 
+                    // fill AIR
+                    _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
                 }
             break;
         default:

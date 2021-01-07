@@ -115,9 +115,8 @@ public:
 
     // states
     enum FILL_STATES : uint8_t {
-            UNKNOWN         =  0,
-            IDLE            =  1,
-            AIR_FILL        =  2
+            VALVES_CLOSED   =  0,
+            AIR_FILL        =  1
     };
 
 
