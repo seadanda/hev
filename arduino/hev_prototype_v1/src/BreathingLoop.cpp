@@ -663,7 +663,7 @@ void BreathingLoop::FSM_breathCycle()
             _fsm_timeout = _states_durations.exhale;
 
             _expected_fiO2 = _new_expected_fiO2;
-
+            _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
         /* This is merged into new state machine FillFSM. Keep it for now, but remove it after system has been tested.
             if(doExhalePurge()){
                 _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
@@ -726,6 +726,7 @@ void BreathingLoop::FillFSMAssignment()
             break;
         case BL_STATES::BUFF_FILL:
             _fill_state = FILL_STATES::AIR_FILL;
+            break;
         case BL_STATES::PRE_CALIBRATION:
             _fill_state = FILL_STATES::PURGE;
             break;
