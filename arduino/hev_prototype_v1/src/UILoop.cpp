@@ -107,7 +107,7 @@ void UILoop::reportFastReadings()
         //readings<float> readings = _breathing_loop->getRawReadings();
 
         _fast_data.timestamp = static_cast<uint32_t>(readings.timestamp);
-        _fast_data.fsm_state = _breathing_loop->getFsmState();
+        _fast_data.fsm_state = _breathing_loop->getBreatheFSMState();
 
         _fast_data.pressure_air_supply    = readings.pressure_air_supply;
         _fast_data.pressure_air_regulated = readings.pressure_air_regulated;

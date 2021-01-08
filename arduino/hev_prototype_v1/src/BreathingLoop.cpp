@@ -175,12 +175,12 @@ BreathingLoop::~BreathingLoop()
 ;
 }
 
-uint8_t BreathingLoop::getFsmState()
+uint8_t BreathingLoop::getBreatheFSMState()
 {
     return static_cast<uint8_t>(_bl_state);
 }
 
-uint8_t BreathingLoop::getFillFsmState()
+uint8_t BreathingLoop::getFillFSMState()
 {
     return static_cast<uint8_t>(_fill_state);
 }
@@ -235,16 +235,13 @@ void BreathingLoop::updateReadings()
 
 
         // add Oscar code here:
-        if (getFsmState() == BL_STATES::INHALE){
-
+        if (getBreatheFSMState() == BL_STATES::INHALE){
                 //TODO
 
                 doPID();
 
                 _valves_controller.setPIDoutput(_pid.valve_duty_cycle);
-                // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
                 _valves_controller.setBreatheValves(VALVE_STATE::PID, VALVE_STATE::FULLY_CLOSED);
-
         }
         runningAvgs();
 
@@ -297,7 +294,6 @@ void BreathingLoop::updateCycleReadings()
             _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// FIXME
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
-	    //logMsg(" I, E "+String(_volume_inhale)+ " "+String(_volume_exhale));
             _total_cycle_duration[_cycle_index] = (
                        _measured_durations.buff_pre_inhale
                        +_measured_durations.inhale
@@ -362,13 +358,11 @@ void BreathingLoop::updateCalculations() {
 
     if (tnow - _calculations_time >= _calculations_timeout) {
     _calculations.flow              = getFlow(); // TODO: can be run every 1 ms instead of every arduino cycle
-    //_calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
     _calculations.flow_calc         = calculateFlow(_readings_avgs.timestamp, _readings_avgs.pressure_patient, _readings_avgs.pressure_buffer);
     _calculations.volume            = getVolume();
     _calculations_time = tnow;
     }
     _calculations.pressure_airway   = getAirwayPressure();
-//    _calculations.flow_calc         = calculateFlow(tnow, adcToMillibarFloat(_readings_raw.pressure_patient, _calib_avgs.pressure_patient), adcToMillibarFloat(_readings_raw.pressure_buffer, _calib_avgs.pressure_buffer));
 }
 
 void BreathingLoop::setVentilationMode(VENTILATION_MODE mode)
@@ -451,7 +445,7 @@ void BreathingLoop::resetReadingSums()
 }
 
 //This is used to assign the transitions of the fsm
-void BreathingLoop::FSM_assignment() {
+void BreathingLoop::assignBreatheFSM() {
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _fsm_time >= _fsm_timeout) {
         BL_STATES next_state;
@@ -548,7 +542,7 @@ void BreathingLoop::FSM_assignment() {
     }
 }
 
-void BreathingLoop::FSM_breathCycle()
+void BreathingLoop::doBreatheFSM()
 {
     //bool en1 = _valves_controller.getValveParams().exhale_trigger_enable;
     //bool en2 = _valves_controller.getValveParams().inhale_trigger_enable;
@@ -568,22 +562,18 @@ void BreathingLoop::FSM_breathCycle()
             }
 #ifdef EXHALE_VALVE_PROPORTIONAL	    
 	    // proportional valve normally closed
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::FULLY_CLOSED, VALVE_STATE::FULLY_CLOSED);
 #else
 	    // digital valve normally open
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN);
 #endif
             initCalib();
             break;
         case BL_STATES::PRE_CALIBRATION : 
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.pre_calibration;
             break;
         case BL_STATES::CALIBRATION : 
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             _valves_controller.setBreatheValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             calibrate();
             _fsm_timeout = _states_durations.calibration;
@@ -591,13 +581,11 @@ void BreathingLoop::FSM_breathCycle()
         case BL_STATES::BUFF_PREFILL:
             // TODO - exhale settable; timeout expert settable
             _calibrated = true;
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_prefill;
             break;
         case BL_STATES::BUFF_FILL:
             // TODO - exhale settable; timeout settable
-            // _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_fill;
             break;
@@ -609,7 +597,6 @@ void BreathingLoop::FSM_breathCycle()
                 // P_patient and p_diff_patient
                 // P_patient or p_diff_patient
                 // with thresholds on each
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             switch (_ventilation_mode)
             {
@@ -634,7 +621,7 @@ void BreathingLoop::FSM_breathCycle()
         
             break;
         case BL_STATES::INHALE:
-            //_valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);//Comment this line for the PID control during inhale
+            // The inhale valve will be opened in the updateReadings function (PID)
             _fsm_timeout = _states_durations.inhale;
 
             _inhale_triggered = false; // reset inhale trigger
@@ -644,17 +631,14 @@ void BreathingLoop::FSM_breathCycle()
             mand_ex = exhaleTrigger();
 	    // mand_vol = volumeTrigger();  // disable for now
             _mandatory_exhale = mand_ex ; // & mand_vol;
-	    //logMsg("inhale "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             break;
         case BL_STATES::PAUSE:
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             _fsm_timeout = _states_durations.pause;
             _valley_flow = 100000;  // reset valley after exhale
             _valley_flow_time = millis();  // reset valley after exhale
-	    //logMsg("pause "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
+
             _states_durations.exhale = calculateDurationExhale();
-	    //logMsg("pause x "+String(_valley_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout +" "+_states_durations.exhale);
             doO2ValveFrac(_targets_current->fiO2_percent, _targets_current->buffer_upper_pressure);  
             break;
         case BL_STATES::EXHALE:
@@ -664,24 +648,7 @@ void BreathingLoop::FSM_breathCycle()
 
             _expected_fiO2 = _new_expected_fiO2;
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
-        /* This is merged into new state machine FillFSM. Keep it for now, but remove it after system has been tested.
-            if(doExhalePurge()){
-                _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
-                // fill buffer to required pressure or timeout ; close valves 10ms before timeout.
-            } else if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure) || (millis() - _fsm_time >= (_fsm_timeout - 10))){
-                    _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-                } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
-                    if(_readings_avgs.pressure_buffer <= o2_frac_pressure ) {
-                        // fill O2
-                        _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-                    } else {
-                        // fill AIR
-                        _valves_controller.setValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-                    }
-                }
 
-                 */
-            //logMsg("exhale "+String(_peak_flow_time)+" "+_measured_durations.inhale+ " "+_measured_durations.exhale+" " +_fsm_timeout);
             measurePEEP();
             digitalWrite(pin_led_red, LOW);
             _mandatory_inhale = inhaleTrigger();
@@ -689,23 +656,19 @@ void BreathingLoop::FSM_breathCycle()
             _pressure_patient_fitter.resetCalculation(_peak_flow_time);
             break;
         case BL_STATES::STANDBY:
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = 1000;
             break;
         case BL_STATES::BUFF_PURGE:
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::OPEN);
             _valves_controller.setBreatheValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_purge;
             break;
         case BL_STATES::BUFF_FLUSH:
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::FULLY_OPEN, VALVE_STATE::OPEN);
             _fsm_timeout = _states_durations.buff_flush;
             break;
         case BL_STATES::STOP: 
             // TODO : require a reset command to go back to idle
-            // _valves_controller.setValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
             _valves_controller.setBreatheValves(VALVE_STATE::FULLY_CLOSED, VALVE_STATE::OPEN);
             _fsm_timeout = 1000;
             break;
@@ -713,12 +676,11 @@ void BreathingLoop::FSM_breathCycle()
             // TODO - shouldn't get here: raise alarm
             break;
     }
-    //logMsg("fsm timeout " + String(_fsm_timeout) + " state "+String(_bl_state));;
     safetyCheck();
     measureDurations();
 }
 
-void BreathingLoop::FillFSMAssignment()
+void BreathingLoop::assignFillFSM()
 {
     switch(_bl_state){
         case BL_STATES::EXHALE:
@@ -741,7 +703,7 @@ void BreathingLoop::FillFSMAssignment()
     }
 }
 
-void BreathingLoop::FillFSMCycle()
+void BreathingLoop::doFillFSM()
 {
     switch (_fill_state) {
         case FILL_STATES::VALVES_CLOSED:
@@ -1090,12 +1052,8 @@ float BreathingLoop::getVolume()
 
     float flow = _calculations.flow; //getFlow(); // flow is now in l/min
     float vol = flow*1000.0 / (60 * 100) ; //1000 l-> ml; 60s ; 100 = 10ms measure -> 1s
-    float fudge_factor3 = 0.75;  // based on test chest flow to vol measurements
 
     _volume += vol * nl2l; // real KH
-    //_volume += fudge_factor3 * vol * nl2l; // real KH
-    //_volume = _flow_fitter.extrapolate(millis()); // will return correct extrapolation of max float value
-    //_volume += vol //* nl2l /100;
 
     if (_calibrated == true){
         return _volume;

@@ -137,10 +137,10 @@ void setup()
 
 void loop()
 {
-    breathing_loop.FSM_assignment();
-    breathing_loop.FSM_breathCycle();
-    breathing_loop.FillFSMAssignment();
-    breathing_loop.FillFSMCycle();
+    breathing_loop.assignBreatheFSM();
+    breathing_loop.doBreatheFSM();
+    breathing_loop.assignFillFSM();
+    breathing_loop.doFillFSM();
 
     alarm_loop.fireAlarms();
 

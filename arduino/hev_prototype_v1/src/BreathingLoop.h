@@ -42,12 +42,12 @@ class BreathingLoop
 public:
     BreathingLoop();
     ~BreathingLoop();
-    uint8_t getFsmState();
-    void FSM_assignment();
-    void FSM_breathCycle();
-    uint8_t getFillFsmState();
-    void FillFSMAssignment();
-    void FillFSMCycle();
+    uint8_t getBreatheFSMState();
+    void assignBreatheFSM();
+    void doBreatheFSM();
+    uint8_t getFillFSMState();
+    void assignFillFSM();
+    void doFillFSM();
     void doStart();
     void doStop();
     void doReset();

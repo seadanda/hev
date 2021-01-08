@@ -60,8 +60,7 @@ public:
     ~ValvesController();
     void setupINA(INA_Class *ina, uint8_t num_devices);
     void setPWMValve(int pin, float frac_open);
-    void setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
-                   uint8_t vexhale, bool vpurge);
+
     void getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
                    uint8_t &vexhale, bool &vpurge);
 
