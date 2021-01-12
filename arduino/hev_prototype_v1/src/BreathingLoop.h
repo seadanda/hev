@@ -117,7 +117,9 @@ public:
     enum FILL_STATES : uint8_t {
             VALVES_CLOSED   =  0,
             AIR_FILL        =  1,
-            PURGE           =  2
+            PURGE           =  2,
+            MAINTAIN_O2     =  3,
+            INCREASE_O2     =  4
     };
 
 
@@ -254,6 +256,12 @@ private:
     float _expected_fiO2;
     float _new_expected_fiO2;
 
+    float _fiO2_est;
+    float _fiO2_est_new;
+    float _o2_frac_pressure;
+    float _p_to_purge; 
+    float _t_max_purge;
+    float _t_start_purge;
 };
 
 
