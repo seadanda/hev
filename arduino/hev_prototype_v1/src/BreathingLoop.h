@@ -120,7 +120,8 @@ public:
             AIR_FILL        =  1,
             PURGE           =  2,
             MAINTAIN_O2     =  3,
-            INCREASE_O2     =  4
+            INCREASE_O2     =  4,
+	    DECREASE_O2
     };
 
 
@@ -262,8 +263,8 @@ private:
     float _p_to_purge; 
     float _t_max_purge;
     float _t_start_purge;
-    float _valve_air_last_state;
-    float _valve_O2_last_state;
+    bool  _valve_air_last_state;
+    bool  _valve_O2_last_state;
     float _pressure_before_filling;
 };
 

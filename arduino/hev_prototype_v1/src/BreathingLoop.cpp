@@ -692,11 +692,11 @@ void BreathingLoop::assignFillFSM()
                     float p_buff_now    = _readings_avgs.pressure_buffer;
                     float p_buff_upper  = _targets_current->buffer_upper_pressure;
                     float fiO2_desired  = _targets_current->fiO2_percent / 100;
+                    float p_atm = 1013.15; // [mbar]
+                    float p_max_purge = 150;
                 if (fiO2_desired < 0.22){
                     _fill_state = FILL_STATES::AIR_FILL;
-                }else if (fabs(fiO2_desired - _fiO2_est) > 0.025){      // tolerance of 2.5%
-                    float p_atm = 1013.15; // [mbar]
-                    float p_max_purge = p_atm + 100;
+                }else if (fiO2_desired - _fiO2_est > 0.025){      // tolerance of 2.5%
                     float dp_purge = (p_atm + p_buff_upper)*(fiO2_desired - _fiO2_est)/(1 - _fiO2_est);
                     if (dp_purge < p_buff_upper){
                         _p_to_purge = p_buff_upper - dp_purge;
@@ -706,7 +706,17 @@ void BreathingLoop::assignFillFSM()
                     _t_max_purge = 0.6 * _states_durations.exhale;
                     _t_start_purge = millis();
                     _fill_state = FILL_STATES::INCREASE_O2;
-                }else{
+                }else if (fiO2_desired - _fiO2_est < -0.1){      // tolerance of 10%
+                    float dp_purge = (p_atm + p_buff_upper)*(_fiO2_est - fiO2_desired)/( _fiO2_est);
+                    if (dp_purge < p_buff_upper){
+                        _p_to_purge = p_buff_upper - dp_purge;
+                    }else{
+                        _p_to_purge = p_max_purge;
+                    }
+                    _t_max_purge = 0.6 * _states_durations.exhale;
+                    _t_start_purge = millis();
+                    _fill_state = FILL_STATES::DECREASE_O2;
+		}else{
                     _o2_frac_pressure = p_buff_now + fiO2_desired *(p_buff_upper - p_buff_now); 
                     // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
                     _o2_frac_pressure = _o2_frac_pressure > _targets_current->buffer_lower_pressure ? p_buff_upper : _o2_frac_pressure;
@@ -758,8 +768,22 @@ void BreathingLoop::doFillFSM()
                     _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
                 }else{
                     _p_to_purge = _targets_current->buffer_upper_pressure; //do this to avoid getting into if clause again
-                    // fill air
+                    // fill o2
                     _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
+                }
+            }
+            break;
+        case FILL_STATES::DECREASE_O2:
+            if(_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
+                _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
+                if ((_readings_avgs.pressure_buffer > _p_to_purge) && (millis() - _t_start_purge < _t_max_purge)){
+                    // purge
+                    _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
+                }else{
+                    _p_to_purge = _targets_current->buffer_upper_pressure; //do this to avoid getting into if clause again
+                    // fill air
+                    _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
                 }
             }
             break;
@@ -1445,12 +1469,12 @@ void BreathingLoop::updateO2Concentration()
             if (delta_p < 0){
                 _fill_state = FILL_STATES::AIR_FILL;
             }else{
-            _   fiO2_est = 1 - (delta_p * 0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
+                _fiO2_est = 1 - (delta_p * 0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
             }
         }
     }
-    vin_o2  = _valve_O2_last_state;
-    vin_air = _valve_air_last_state;
+    _valve_O2_last_state = vin_o2;
+    _valve_air_last_state = vin_air;
     if(_fiO2_est < 0.21 || _fiO2_est > 1){
         // something went wrong, raise error
 
