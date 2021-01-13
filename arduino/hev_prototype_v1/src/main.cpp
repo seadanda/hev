@@ -139,7 +139,6 @@ void loop()
 {
     breathing_loop.assignBreatheFSM();
     breathing_loop.doBreatheFSM();
-    breathing_loop.assignFillFSM();
     breathing_loop.doFillFSM();
 
     alarm_loop.fireAlarms();

@@ -229,7 +229,7 @@ void BreathingLoop::updateReadings()
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
         _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient  / _readings_N),_calib_avgs.pressure_diff_patient) ;
         //_readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
-        _readings_avgs.o2_percent               =  adcToO2PercentFloat(static_cast<float>(analogRead(pin_o2_sensor)));
+        //_readings_avgs.o2_percent               =  adcToO2PercentFloat(static_cast<float>(analogRead(pin_o2_sensor)));
 #endif
 
 	_pid.process_pressure = _readings_avgs.pressure_inhale; // Update the process pressure independent of the system state
@@ -678,6 +678,7 @@ void BreathingLoop::doBreatheFSM()
             break;
     }
     safetyCheck();
+    assignFillFSM();
     measureDurations();
 }
 
@@ -685,7 +686,7 @@ void BreathingLoop::assignFillFSM()
 {
     if (_bl_state != _bl_laststate) {
         switch(_bl_state){
-            case BL_STATES::EXHALE:
+            case BL_STATES::EXHALE:{
                     float p_buff_now    = _readings_avgs.pressure_buffer;
                     float p_buff_upper  = _targets_current->buffer_upper_pressure;
                     float fiO2_desired  = _targets_current->fiO2_percent / 100;
@@ -709,6 +710,7 @@ void BreathingLoop::assignFillFSM()
                     _o2_frac_pressure = _o2_frac_pressure > _targets_current->buffer_lower_pressure ? p_buff_upper : _o2_frac_pressure;
                     _fill_state = FILL_STATES::MAINTAIN_O2;
                 }
+		}
                 break;
             case BL_STATES::BUFF_FILL:
                 _fill_state = FILL_STATES::AIR_FILL;
@@ -1439,4 +1441,5 @@ void BreathingLoop::updateO2Concentration()
     }
     vin_o2  = _valve_O2_last_state;
     vin_air = _valve_air_last_state;
+    _readings_avgs.o2_percent = _fiO2_est * 100;
 }
