@@ -684,9 +684,11 @@ void BreathingLoop::doBreatheFSM()
 
 void BreathingLoop::assignFillFSM()
 {
-    if (_bl_state != _bl_laststate) {
-        switch(_bl_state){
-            case BL_STATES::EXHALE:{
+    switch(_bl_state){
+        case BL_STATES::EXHALE:
+            // do these calculations only once (i.e., only when bl_states changed)
+            // other option would be to create a switch case for BL_STATES::PAUSE 
+            if (_bl_laststate != BL_STATES::EXHALE){
                     float p_buff_now    = _readings_avgs.pressure_buffer;
                     float p_buff_upper  = _targets_current->buffer_upper_pressure;
                     float fiO2_desired  = _targets_current->fiO2_percent / 100;
@@ -710,23 +712,22 @@ void BreathingLoop::assignFillFSM()
                     _o2_frac_pressure = _o2_frac_pressure > _targets_current->buffer_lower_pressure ? p_buff_upper : _o2_frac_pressure;
                     _fill_state = FILL_STATES::MAINTAIN_O2;
                 }
-		}
-                break;
-            case BL_STATES::BUFF_FILL:
-                _fill_state = FILL_STATES::AIR_FILL;
-                break;
-            case BL_STATES::PRE_CALIBRATION:
-                _fill_state = FILL_STATES::PURGE;
-                break;
-            case BL_STATES::CALIBRATION:
-                _fill_state = FILL_STATES::PURGE;
-                break;
-            case BL_STATES::BUFF_PURGE:
-                _fill_state = FILL_STATES::PURGE;
-                break;
-            default:
-                _fill_state = FILL_STATES::VALVES_CLOSED;
-        }
+            }
+            break;
+        case BL_STATES::BUFF_FILL:
+            _fill_state = FILL_STATES::AIR_FILL;
+            break;
+        case BL_STATES::PRE_CALIBRATION:
+            _fill_state = FILL_STATES::PURGE;
+            break;
+        case BL_STATES::CALIBRATION:
+            _fill_state = FILL_STATES::PURGE;
+            break;
+        case BL_STATES::BUFF_PURGE:
+            _fill_state = FILL_STATES::PURGE;
+            break;
+        default:
+            _fill_state = FILL_STATES::VALVES_CLOSED;
     }
 }
 
@@ -1410,8 +1411,9 @@ void BreathingLoop::updateO2Concentration()
     // Check for valves state
     bool vin_air, vin_o2, vpurge;
     uint8_t vinhale, vexhale;
-    float p_atm = 1013.15; // [mbar]
-    float p_buff_now = _readings_avgs.pressure_buffer + p_atm;
+    float p_atm         = 1013.15; // [mbar]
+    float p_buff_now    = _readings_avgs.pressure_buffer + p_atm;
+    float delta_p       = p_buff_now - _pressure_before_filling;
     _valves_controller.getValves(vin_air, vin_o2, vinhale, vexhale, vpurge); // TODO create function to only read air_in and O2_in
 
     // check if state changed
@@ -1427,7 +1429,11 @@ void BreathingLoop::updateO2Concentration()
             _pressure_before_filling = p_buff_now;
         }else{
             // O2 valve from open->closed
-            _fiO2_est = (p_buff_now - _pressure_before_filling + _fiO2_est * _pressure_before_filling) / p_buff_now;
+            if (delta_p < 0){
+                _fill_state = FILL_STATES::AIR_FILL;
+            }else{
+                _fiO2_est = (delta_p + _fiO2_est * _pressure_before_filling) / p_buff_now;
+            }   
         }
     }else if (vin_air != _valve_air_last_state){
         if(vin_air){
@@ -1436,10 +1442,18 @@ void BreathingLoop::updateO2Concentration()
         }else{
             // air valve from open->closed
             // TODO check this calculation
-            _fiO2_est = 1 - ((p_buff_now - _pressure_before_filling)*0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
+            if (delta_p < 0){
+                _fill_state = FILL_STATES::AIR_FILL;
+            }else{
+            _   fiO2_est = 1 - (delta_p * 0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
+            }
         }
     }
     vin_o2  = _valve_O2_last_state;
     vin_air = _valve_air_last_state;
+    if(_fiO2_est < 0.21 || _fiO2_est > 1){
+        // something went wrong, raise error
+
+    }
     _readings_avgs.o2_percent = _fiO2_est * 100;
 }
