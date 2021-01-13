@@ -706,7 +706,7 @@ void BreathingLoop::assignFillFSM()
                 }else{
                     _o2_frac_pressure = p_buff_now + fiO2_desired *(p_buff_upper - p_buff_now); 
                     // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
-                    _o2_frac_pressure = _o2_frac_pressure > __targets_current->buffer_lower_pressure ? p_buff_upper : _o2_frac_pressure;
+                    _o2_frac_pressure = _o2_frac_pressure > _targets_current->buffer_lower_pressure ? p_buff_upper : _o2_frac_pressure;
                     _fill_state = FILL_STATES::MAINTAIN_O2;
                 }
                 break;
@@ -747,7 +747,7 @@ void BreathingLoop::doFillFSM()
             _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             break;
         case FILL_STATES::INCREASE_O2:
-            if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
+            if(_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
                 _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
                 if ((_readings_avgs.pressure_buffer > _p_to_purge) && (millis() - _t_start_purge < _t_max_purge)){
@@ -761,7 +761,7 @@ void BreathingLoop::doFillFSM()
             }
             break;
         case FILL_STATES::MAINTAIN_O2:
-            if((_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
+            if(_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
                 _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
             } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
                 if (_readings_avgs.pressure_buffer < _o2_frac_pressure){
@@ -1403,14 +1403,14 @@ bool BreathingLoop::doExhalePurge()
 	return false;
 }
 
-bool BreathingLoop::updateO2Concentration()
+void BreathingLoop::updateO2Concentration()
 {
     // Check for valves state
     bool vin_air, vin_o2, vpurge;
     uint8_t vinhale, vexhale;
     float p_atm = 1013.15; // [mbar]
     float p_buff_now = _readings_avgs.pressure_buffer + p_atm;
-    _valves_controller->getValves(vin_air, vin_o2, vinhale, vexhale, vpurge); // TODO create function to only read air_in and O2_in
+    _valves_controller.getValves(vin_air, vin_o2, vinhale, vexhale, vpurge); // TODO create function to only read air_in and O2_in
 
     // check if state changed
     if(vin_air == _valve_air_last_state && vin_o2 == _valve_O2_last_state)
