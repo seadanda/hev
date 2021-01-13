@@ -118,7 +118,6 @@ BreathingLoop::BreathingLoop()
     _new_expected_fiO2 = 0.21;
     _o2_frac_pressure = 0.;
     _fiO2_est = 0.21;
-    _fiO2_est_new = 0.21;
 }
 
 void BreathingLoop::initTargets()
@@ -641,7 +640,7 @@ void BreathingLoop::doBreatheFSM()
             _valley_flow_time = millis();  // reset valley after exhale
 
             _states_durations.exhale = calculateDurationExhale();
-            doO2ValveFrac(_targets_current->fiO2_percent, _targets_current->buffer_upper_pressure);  
+            // doO2ValveFrac(_targets_current->fiO2_percent, _targets_current->buffer_upper_pressure);  
             break;
         case BL_STATES::EXHALE:
             _peak_flow = -100000;  // reset peak after inhale
@@ -693,7 +692,7 @@ void BreathingLoop::assignFillFSM()
                 if (fiO2_desired < 0.22){
                     _fill_state = FILL_STATES::AIR_FILL;
                 }else if (fabs(fiO2_desired - _fiO2_est) > 0.025){      // tolerance of 2.5%
-                    float p_atm = _calib_avgs.pressure_buffer;
+                    float p_atm = 1013.15; // [mbar]
                     float p_max_purge = p_atm + 100;
                     float dp_purge = (p_atm + p_buff_upper)*(fiO2_desired - _fiO2_est)/(1 - _fiO2_est);
                     if (dp_purge < p_buff_upper){
@@ -1364,30 +1363,30 @@ void BreathingLoop::tsigReset()
 
 
 
-void BreathingLoop::doO2ValveFrac(float desired_fiO2, float pressure_change)
-{
-    // this assumes o2 and air valves fill at same rates, AND that we fill sequentially - o2, then air.
+// void BreathingLoop::doO2ValveFrac(float desired_fiO2, float pressure_change)
+// {
+//     // this assumes o2 and air valves fill at same rates, AND that we fill sequentially - o2, then air.
 
-    // pressure_change is proportional to the amount of volume exhanged in a cycle
-    // I think this equals tidal inhale volume
+//     // pressure_change is proportional to the amount of volume exhanged in a cycle
+//     // I think this equals tidal inhale volume
     
-    // we calculate amount of o2 : air to input
-    // if we have to fill 300 mbar, we fill up to (o2_frac * 300) mbar of o2, then (1-o2_frac)*300 mbar air
+//     // we calculate amount of o2 : air to input
+//     // if we have to fill 300 mbar, we fill up to (o2_frac * 300) mbar of o2, then (1-o2_frac)*300 mbar air
 
-    // we estimate the current o2 fraction, rather than wait for o2 sensor
-    // we should have an alarm if o2 sensor and o2 expectation is wrong after 1 min
+//     // we estimate the current o2 fraction, rather than wait for o2 sensor
+//     // we should have an alarm if o2 sensor and o2 expectation is wrong after 1 min
 
-    float o2change = (desired_fiO2*(1000+pressure_change) - _expected_fiO2 *1000 -0.21*pressure_change)/(0.79*pressure_change);
-    if (o2change > 1){
-        o2change = 1;
-    } else if (o2change < 0){
-        o2change = 0;
-    }
-    _new_expected_fiO2 = _expected_fiO2*1000 + o2change*pressure_change + 0.21*(1-o2change)*pressure_change;
-    _o2_valve_frac = o2change;
+//     float o2change = (desired_fiO2*(1000+pressure_change) - _expected_fiO2 *1000 -0.21*pressure_change)/(0.79*pressure_change);
+//     if (o2change > 1){
+//         o2change = 1;
+//     } else if (o2change < 0){
+//         o2change = 0;
+//     }
+//     _new_expected_fiO2 = _expected_fiO2*1000 + o2change*pressure_change + 0.21*(1-o2change)*pressure_change;
+//     _o2_valve_frac = o2change;
 
-	// airValveFrac = 1.0 - O2ValveFrac
-}
+// 	// airValveFrac = 1.0 - O2ValveFrac
+// }
 
 bool BreathingLoop::doExhalePurge()
 {
@@ -1402,4 +1401,42 @@ bool BreathingLoop::doExhalePurge()
             }
     }
 	return false;
+}
+
+bool BreathingLoop::updateO2Concentration()
+{
+    // Check for valves state
+    bool vin_air, vin_o2, vpurge;
+    uint8_t vinhale, vexhale;
+    float p_atm = 1013.15; // [mbar]
+    float p_buff_now = _readings_avgs.pressure_buffer + p_atm;
+    _valves_controller->getValves(vin_air, vin_o2, vinhale, vexhale, vpurge); // TODO create function to only read air_in and O2_in
+
+    // check if state changed
+    if(vin_air == _valve_air_last_state && vin_o2 == _valve_O2_last_state)
+    {
+        // states did not change -> do nothing
+    }else if (vin_air != _valve_air_last_state && vin_o2 != _valve_O2_last_state)
+    {
+        // should not happen - raise alarm. For now do nothing
+    }else if (vin_o2 != _valve_O2_last_state){
+        if(vin_o2){
+            // O2 valve from closed->open
+            _pressure_before_filling = p_buff_now;
+        }else{
+            // O2 valve from open->closed
+            _fiO2_est = (p_buff_now - _pressure_before_filling + _fiO2_est * _pressure_before_filling) / p_buff_now;
+        }
+    }else if (vin_air != _valve_air_last_state){
+        if(vin_air){
+            // air valve from closed->open
+            _pressure_before_filling = p_buff_now;
+        }else{
+            // air valve from open->closed
+            // TODO check this calculation
+            _fiO2_est = 1 - ((p_buff_now - _pressure_before_filling)*0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
+        }
+    }
+    vin_o2  = _valve_O2_last_state;
+    vin_air = _valve_air_last_state;
 }

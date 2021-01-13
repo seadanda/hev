@@ -57,6 +57,7 @@ public:
     void updateRawReadings();
     void updateCycleReadings();
     void updateCalculations();
+    void updateO2Concentration();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     calculations<float> getCalculations();
@@ -257,11 +258,13 @@ private:
     float _new_expected_fiO2;
 
     float _fiO2_est;
-    float _fiO2_est_new;
     float _o2_frac_pressure;
     float _p_to_purge; 
     float _t_max_purge;
     float _t_start_purge;
+    float _valve_air_last_state;
+    float _valve_O2_last_state;
+    float _pressure_before_filling;
 };
 
 
