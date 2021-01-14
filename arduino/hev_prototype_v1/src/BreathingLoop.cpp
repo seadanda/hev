@@ -686,43 +686,9 @@ void BreathingLoop::assignFillFSM()
 {
     switch(_bl_state){
         case BL_STATES::EXHALE:
-            // do these calculations only once (i.e., only when bl_states changed)
-            // other option would be to create a switch case for BL_STATES::PAUSE 
             if (_bl_laststate != BL_STATES::EXHALE){
-                    float p_buff_now    = _readings_avgs.pressure_buffer;
-                    float p_buff_upper  = _targets_current->buffer_upper_pressure;
-                    float fiO2_desired  = _targets_current->fiO2_percent / 100;
-                    float p_atm = 1013.15; // [mbar]
-                    float p_max_purge = 150;
-                if (fiO2_desired < 0.22){
-                    _fill_state = FILL_STATES::AIR_FILL;
-                }else if (fiO2_desired - _fiO2_est > 0.025){      // tolerance of 2.5%
-                    float dp_purge = (p_atm + p_buff_upper)*(fiO2_desired - _fiO2_est)/(1 - _fiO2_est);
-                    if (dp_purge < p_buff_upper){
-                        _p_to_purge = p_buff_upper - dp_purge;
-                    }else{
-                        _p_to_purge = p_max_purge;
-                    }
-                    _t_max_purge = 0.6 * _states_durations.exhale;
-                    _t_start_purge = millis();
-                    _fill_state = FILL_STATES::INCREASE_O2;
-                }else if (fiO2_desired - _fiO2_est < -0.1){      // tolerance of 10%
-                    float dp_purge = (p_atm + p_buff_upper)*(_fiO2_est - fiO2_desired)/( _fiO2_est);
-                    if (dp_purge < p_buff_upper){
-                        _p_to_purge = p_buff_upper - dp_purge;
-                    }else{
-                        _p_to_purge = p_max_purge;
-                    }
-                    _t_max_purge = 0.6 * _states_durations.exhale;
-                    _t_start_purge = millis();
-                    _fill_state = FILL_STATES::DECREASE_O2;
-		}else{
-                    _o2_frac_pressure = p_buff_now + fiO2_desired *(p_buff_upper - p_buff_now); 
-                    // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
-                    _o2_frac_pressure = _o2_frac_pressure > _targets_current->buffer_lower_pressure ? p_buff_upper : _o2_frac_pressure;
-                    _fill_state = FILL_STATES::MAINTAIN_O2;
-                }
-            }
+                _fill_state = determineFillMode();
+	    }
             break;
         case BL_STATES::BUFF_FILL:
             _fill_state = FILL_STATES::AIR_FILL;
@@ -907,6 +873,7 @@ bool BreathingLoop::getRunning()
 
 void BreathingLoop::calibrate()
 {
+	_fiO2_est = 0.21; // reset (as of now, always start with pure air in buffer)
     // get pressure_air_regulated over last sec of 10s calc mean
     uint32_t tnow = static_cast<uint32_t>(millis());
     if (tnow - _calib_time >= _calib_timeout ) {
@@ -1480,4 +1447,55 @@ void BreathingLoop::updateO2Concentration()
 
     }
     _readings_avgs.o2_percent = _fiO2_est * 100;
+}
+
+uint8_t BreathingLoop::determineFillMode()
+{
+    /*
+     * The derivation of this control can be found in oxygen_control_analytics.pdf
+     * TODO find atmospheric pressure during calibration
+     *
+     */	
+    float p_buff_now    = _readings_avgs.pressure_buffer;
+    float p_buff_upper  = _targets_current->buffer_upper_pressure;
+    float fiO2_desired  = _targets_current->fiO2_percent / 100;
+    float p_atm = 997; // [mbar]
+    float p_max_purge = 150;
+    float delta_fiO2	= fiO2_desired - _fiO2_est;
+    uint8_t next_fill_state;
+
+    if (fiO2_desired < 0.22 && delta_fiO2 > -0.1){
+        next_fill_state = FILL_STATES::AIR_FILL;
+    }else if (delta_fiO2 > 0.025){      // tolerance of 2.5%
+        float dp_purge = (p_atm + p_buff_upper) * delta_fiO2 / (1 - _fiO2_est);
+        if (dp_purge < (p_buff_upper - p_max_purge)){
+            _p_to_purge = p_buff_upper - dp_purge;
+        }else{
+            _p_to_purge = p_max_purge;
+        }
+        _t_max_purge = 0.5 *  _states_durations.exhale;
+        _t_start_purge = millis();
+        next_fill_state = FILL_STATES::INCREASE_O2;
+    }else if (delta_fiO2 < -0.1){      // tolerance of 10%
+        float dp_purge = (p_atm + p_buff_upper) * -1 * delta_fiO2 / _fiO2_est;
+        if (dp_purge < (p_buff_upper - p_max_purge)){
+            _p_to_purge = p_buff_upper - dp_purge;
+        }else{
+            _p_to_purge = p_max_purge;
+        }
+        _t_max_purge = 0.5 * _states_durations.exhale;
+        _t_start_purge = millis();
+        next_fill_state = FILL_STATES::DECREASE_O2;
+    }else{
+        _o2_frac_pressure = p_buff_now + (_fiO2_est - 0.21) * (p_buff_upper - p_buff_now) / 0.79; 
+        // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
+	if (_o2_frac_pressure > _targets_current->buffer_lower_pressure){
+	    _o2_frac_pressure =  p_buff_upper;
+	    }	
+        next_fill_state = FILL_STATES::MAINTAIN_O2;
+    }
+    
+    logMsg("delta_fiO2= " + String(delta_fiO2) + " FillState: " + String(next_fill_state));
+    
+    return next_fill_state;
 }

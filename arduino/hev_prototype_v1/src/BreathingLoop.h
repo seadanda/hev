@@ -76,6 +76,7 @@ public:
     uint8_t valvePurgeEnabled();
     uint8_t inhaleTriggerEnabled();
     uint8_t exhaleTriggerEnabled();
+    uint8_t determineFillMode();
     void    setVentilationMode(VENTILATION_MODE mode);
     VENTILATION_MODE getVentilationMode();
 
