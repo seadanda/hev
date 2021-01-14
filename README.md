@@ -6,4 +6,3 @@ Disclaimer
 See LICENCE file
 
 Test - moved to CERN gitlab
-BM - testing that local repo is set up correctly
