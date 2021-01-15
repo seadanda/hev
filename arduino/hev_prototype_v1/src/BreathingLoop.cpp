@@ -1476,7 +1476,7 @@ uint8_t BreathingLoop::determineFillMode()
     if (fiO2_desired < 0.22 && delta_fiO2 > -0.1){
         // If fiO2_est is below 32% fill with air without purging
 	next_fill_state = FILL_STATES::AIR_FILL;
-    }else if (delta_fiO2 > -0.025){      // overshoot when increasing 
+    }else if (delta_fiO2 > 0.){      // overshoot when increasing 
         float dp_purge = (p_atm + p_buff_upper) * delta_fiO2 / (1 - _fiO2_est);
         if (dp_purge < (p_buff_upper - p_max_purge)){
             _p_to_purge = p_buff_upper - dp_purge;
@@ -1497,7 +1497,7 @@ uint8_t BreathingLoop::determineFillMode()
         _t_start_purge = millis();
         next_fill_state = FILL_STATES::DECREASE_O2;
     }else{
-        _o2_frac_pressure = p_buff_now + (_fiO2_est - 0.21) * (p_buff_upper - p_buff_now) / 0.79; 
+        _o2_frac_pressure = p_buff_now + (fiO2_desired - 0.21) * (p_buff_upper - p_buff_now) / 0.79; 
         // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
         _finished_filling = false;
 	next_fill_state = FILL_STATES::MAINTAIN_O2;
