@@ -122,7 +122,8 @@ public:
             PURGE           =  2,
             MAINTAIN_O2     =  3,
             INCREASE_O2     =  4,
-	    DECREASE_O2
+	    DECREASE_O2     =  5,
+	    O2_FILL	    =  6
     };
 
 
@@ -267,6 +268,8 @@ private:
     bool  _valve_air_last_state;
     bool  _valve_O2_last_state;
     float _pressure_before_filling;
+    float _time_valve_closure;
+    float _finished_filling;
 };
 
 

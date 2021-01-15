@@ -118,6 +118,7 @@ BreathingLoop::BreathingLoop()
     _new_expected_fiO2 = 0.21;
     _o2_frac_pressure = 0.;
     _fiO2_est = 0.21;
+    _time_valve_closure = millis();
 }
 
 void BreathingLoop::initTargets()
@@ -723,7 +724,8 @@ void BreathingLoop::doFillFSM()
                 }
             break;
         case FILL_STATES::PURGE:
-            _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
+            //purge
+	    _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::OPEN);
             break;
         case FILL_STATES::INCREASE_O2:
             if(_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
@@ -756,11 +758,15 @@ void BreathingLoop::doFillFSM()
         case FILL_STATES::MAINTAIN_O2:
             if(_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
                 _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure){
+		_finished_filling = true;
+            } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure || !_finished_filling){
                 if (_readings_avgs.pressure_buffer < _o2_frac_pressure){
                     // fill O2
                     _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
-                }else{
+                }else if(_valves_controller.getO2Valve()){
+		    // close O2 valve before opening air valve
+		    _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+		}else if (millis() - _time_valve_closure > 20){
                     // fill air
                     _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
                 }
@@ -1413,14 +1419,16 @@ void BreathingLoop::updateO2Concentration()
         // states did not change -> do nothing
     }else if (vin_air != _valve_air_last_state && vin_o2 != _valve_O2_last_state)
     {
-        // should not happen - raise alarm. For now do nothing
+        logMsg("Both valves changed state");
+	    // should not happen - raise alarm. For now do nothing
     }else if (vin_o2 != _valve_O2_last_state){
         if(vin_o2){
             // O2 valve from closed->open
             _pressure_before_filling = p_buff_now;
         }else{
             // O2 valve from open->closed
-            if (delta_p < 0){
+            _time_valve_closure = millis();
+	    if (delta_p < 0){
                 _fill_state = FILL_STATES::AIR_FILL;
             }else{
                 _fiO2_est = (delta_p + _fiO2_est * _pressure_before_filling) / p_buff_now;
@@ -1432,7 +1440,8 @@ void BreathingLoop::updateO2Concentration()
             _pressure_before_filling = p_buff_now;
         }else{
             // air valve from open->closed
-            // TODO check this calculation
+            _time_valve_closure = millis();
+	    // TODO check this calculation
             if (delta_p < 0){
                 _fill_state = FILL_STATES::AIR_FILL;
             }else{
@@ -1465,8 +1474,9 @@ uint8_t BreathingLoop::determineFillMode()
     uint8_t next_fill_state;
 
     if (fiO2_desired < 0.22 && delta_fiO2 > -0.1){
-        next_fill_state = FILL_STATES::AIR_FILL;
-    }else if (delta_fiO2 > 0.025){      // tolerance of 2.5%
+        // If fiO2_est is below 32% fill with air without purging
+	next_fill_state = FILL_STATES::AIR_FILL;
+    }else if (delta_fiO2 > -0.025){      // overshoot when increasing 
         float dp_purge = (p_atm + p_buff_upper) * delta_fiO2 / (1 - _fiO2_est);
         if (dp_purge < (p_buff_upper - p_max_purge)){
             _p_to_purge = p_buff_upper - dp_purge;
@@ -1476,7 +1486,7 @@ uint8_t BreathingLoop::determineFillMode()
         _t_max_purge = 0.5 *  _states_durations.exhale;
         _t_start_purge = millis();
         next_fill_state = FILL_STATES::INCREASE_O2;
-    }else if (delta_fiO2 < -0.1){      // tolerance of 10%
+    }else if (delta_fiO2 < -0.05){      // tolerance of 5%
         float dp_purge = (p_atm + p_buff_upper) * -1 * delta_fiO2 / _fiO2_est;
         if (dp_purge < (p_buff_upper - p_max_purge)){
             _p_to_purge = p_buff_upper - dp_purge;
@@ -1489,10 +1499,8 @@ uint8_t BreathingLoop::determineFillMode()
     }else{
         _o2_frac_pressure = p_buff_now + (_fiO2_est - 0.21) * (p_buff_upper - p_buff_now) / 0.79; 
         // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
-	if (_o2_frac_pressure > _targets_current->buffer_lower_pressure){
-	    _o2_frac_pressure =  p_buff_upper;
-	    }	
-        next_fill_state = FILL_STATES::MAINTAIN_O2;
+        _finished_filling = false;
+	next_fill_state = FILL_STATES::MAINTAIN_O2;
     }
     
     logMsg("delta_fiO2= " + String(delta_fiO2) + " FillState: " + String(next_fill_state));

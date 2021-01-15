@@ -77,7 +77,8 @@ public:
     void setInhaleDutyCycle(float value);
     void setInhaleOpenMin(float value);
     void setInhaleOpenMax(float value);
-
+    
+    bool getO2Valve();
     void updateIV(valve &v);
     void updateAllIV();
     IV_readings<float>* getIVReadings();

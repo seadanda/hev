@@ -250,6 +250,10 @@ void ValvesController::getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
     vpurge  = _purge.state ;
 }
 
+bool ValvesController::getO2Valve()
+{
+    return _o2_in.state;
+}
 
 void ValvesController::enableO2InValve(bool en)
 {
