@@ -229,7 +229,7 @@ void BreathingLoop::updateReadings()
         _readings_avgs.pressure_o2_supply       = adcToMillibarFloat((_readings_sums.pressure_o2_supply       / _readings_N));
         _readings_avgs.pressure_o2_regulated    = adcToMillibarFloat((_readings_sums.pressure_o2_regulated    / _readings_N));
         _readings_avgs.pressure_diff_patient    = adcToMillibarDPFloat((_readings_sums.pressure_diff_patient  / _readings_N),_calib_avgs.pressure_diff_patient) ;
-        //_readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
+        _readings_avgs.o2_percent               = adcToO2PercentFloat((_readings_sums.o2_percent              / _readings_N));
         //_readings_avgs.o2_percent               =  adcToO2PercentFloat(static_cast<float>(analogRead(pin_o2_sensor)));
 #endif
 
@@ -952,10 +952,12 @@ uint32_t BreathingLoop::calculateDurationExhale() {
 }
 
 float    BreathingLoop::getIERatio(){
-    // TODO : check with Oscar/Xavier
-    float total_inhale_time = _states_durations.inhale + _states_durations.pause;
-    float total_exhale_time = _states_durations.exhale;
-    return total_inhale_time/total_exhale_time;
+    // TODO : check with Oscar/Xavier 
+    // commented to display fiO2_est
+    // float total_inhale_time = _states_durations.inhale + _states_durations.pause;
+    // float total_exhale_time = _states_durations.exhale;
+    // return total_inhale_time/total_exhale_time;
+    return _fiO2_est *100;
 }
 
 
@@ -1455,7 +1457,7 @@ void BreathingLoop::updateO2Concentration()
         // something went wrong, raise error
 
     }
-    _readings_avgs.o2_percent = _fiO2_est * 100;
+    // _readings_avgs.o2_percent = _fiO2_est * 100;
 }
 
 uint8_t BreathingLoop::determineFillMode()
