@@ -3,19 +3,27 @@ import logging
 import argparse
 import sys
 import numpy as np
-from PySide2.QtCore import Slot
+from PySide2.QtCore import Slot, QUrl
 from PySide2.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout
 from hevclient import HEVClient
 from hev_main import MainView
+from hev_settings import SettingsView
+from main_widgets.alarmPopup import alarmPopup
 
-logging.basicConfig(level=logging.WARNING, format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(
+    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+
 
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
+
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
         self.main_view = MainView()
+        self.settings_view = SettingsView()
         self.setCentralWidget(self.main_view)
         self.statusBar().showMessage("Waiting for data")
         self.data = {}
@@ -23,8 +31,12 @@ class NativeUI(HEVClient, QMainWindow):
         self.readback = {}
         self.cycle = {}
         self.battery = {}
-        self.plots = np.zeros((500, 4))
-        self.plots[:, 0] = np.arange(500) # fill timestamp with 0-499
+        self.plots = np.zeros((500, 5))
+        self.plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
+        self.setStyleSheet("background-color: black")
+        self.alarms = []
+        self.targets = "empty"
+        # self.main_view.alarmHandler.show()
 
     def start_client(self):
         """runs in other thread - works as long as super goes last and nothing
@@ -44,11 +56,36 @@ class NativeUI(HEVClient, QMainWindow):
         """callback from the polling function, payload is data from socket """
         # Store data in dictionary of lists
         self.statusBar().showMessage(f"{payload}")
+        print(payload["type"])
         try:
-            if (payload["type"] == "DATA"):
+            if payload["type"] == "DATA":
                 self.data = payload["DATA"]
                 # remove first entry and append plot data to end
-                self.plots = np.append(np.delete(self.plots, 0, 0), [[self.data["timestamp"], self.data["pressure_patient"], 0, 0]], axis=0)
+                self.plots = np.append(
+                    np.delete(self.plots, 0, 0),
+                    [
+                        [
+                            self.data["timestamp"],
+                            self.data["pressure_patient"],
+                            self.data["flow"],
+                            self.data["volume"],
+                            self.data["volume"],
+                        ]
+                    ],
+                    axis=0,
+                )
+            if payload["type"] == "ALARM":
+                self.data = payload["ALARM"]
+                self.alarms = self.data
+            if payload["type"] == "TARGET":
+                self.data = payload["TARGET"]
+                self.targets = self.data
+                print(self.targets)
+            if payload["type"] == "PERSONAL":
+                self.data = payload["PERSONAL"]
+                self.targets = self.data
+                print(self.targets)
+
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 
@@ -68,10 +105,16 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_personal(personal=personal)
 
 
+# from PySide2.QtQml import QQmlApplicationEngine
+
 if __name__ == "__main__":
     # parse args and setup logging
-    parser = argparse.ArgumentParser(description='Plotting script for the HEV lab setup')
-    parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
+    parser = argparse.ArgumentParser(
+        description="Plotting script for the HEV lab setup"
+    )
+    parser.add_argument(
+        "-d", "--debug", action="count", default=0, help="Show debug output"
+    )
 
     args = parser.parse_args()
     if args.debug == 0:
@@ -83,6 +126,8 @@ if __name__ == "__main__":
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
+    # engine = QQmlApplicationEngine()
+    # engine.load(QUrl('hev-display/assets/Cell.qml'))
     dep = NativeUI()
     dep.show()
     app.exec_()
