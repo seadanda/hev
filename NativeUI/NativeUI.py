@@ -1,15 +1,16 @@
 #!/usr/bin/env python3
-import logging
 import argparse
+import logging
 import sys
+
 import numpy as np
-from PySide2.QtCore import Slot, QUrl
-from PySide2.QtWidgets import QMainWindow, QApplication, QHBoxLayout, QVBoxLayout
-from hevclient import HEVClient
 from hev_main import MainView
 from hev_settings import SettingsView
+from hevclient import HEVClient
 from main_widgets.alarmPopup import alarmPopup
-
+from PySide2.QtCore import QUrl, Slot
+from PySide2.QtGui import QColor, QPalette
+from PySide2.QtWidgets import QApplication, QMainWindow
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -22,10 +23,17 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
+
+        # Views
         self.main_view = MainView()
         self.settings_view = SettingsView()
         self.setCentralWidget(self.main_view)
+
+        # Statusbar
         self.statusBar().showMessage("Waiting for data")
+        self.statusBar().setStyleSheet("color: white")
+
+        # database
         self.data = {}
         self.target = {}
         self.readback = {}
@@ -33,9 +41,15 @@ class NativeUI(HEVClient, QMainWindow):
         self.battery = {}
         self.plots = np.zeros((500, 5))
         self.plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
-        self.setStyleSheet("background-color: black")
         self.alarms = []
         self.targets = "empty"
+
+        # Appearance
+        palette = self.palette()
+        palette.setColor(QPalette.Window, QColor(30, 30, 30))
+        self.setPalette(palette)
+        self.setAutoFillBackground(True)
+
         # self.main_view.alarmHandler.show()
 
     def start_client(self):
@@ -86,7 +100,18 @@ class NativeUI(HEVClient, QMainWindow):
                 self.targets = self.data
                 print(self.targets)
 
-                self.plots = np.append(np.delete(self.plots, 0, 0), [[self.data["timestamp"], self.data["pressure_patient"], self.data["flow"], self.data["volume"]]], axis=0)
+                self.plots = np.append(
+                    np.delete(self.plots, 0, 0),
+                    [
+                        [
+                            self.data["timestamp"],
+                            self.data["pressure_patient"],
+                            self.data["flow"],
+                            self.data["volume"],
+                        ]
+                    ],
+                    axis=0,
+                )
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 

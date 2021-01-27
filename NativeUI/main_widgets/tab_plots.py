@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import logging
 import os
-import pyqtgraph as pg
+
 import numpy as np
-from PySide2 import QtWidgets, QtCore
-from pyqtgraph import PlotWidget, plot, mkColor
+import pyqtgraph as pg
 from hevclient import HEVClient
+from pyqtgraph import PlotWidget, mkColor, plot
+from PySide2 import QtCore, QtWidgets
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -30,8 +31,6 @@ class TabPlots(QtWidgets.QWidget):
         self.graphWidget.nextRow()
         self.volumePlot = self.graphWidget.addPlot(title="Volume")
         self.graphWidget.nextRow()
-        self.testPlot = self.graphWidget.addPlot(title="Test")
-        self.graphWidget.nextRow()
 
         self.timestamp = list(el * (-1) for el in range(self.history_length))[::-1]
         self.PID_P = list(0 for _ in range(self.history_length))
@@ -44,17 +43,14 @@ class TabPlots(QtWidgets.QWidget):
         self.flowPlot.showGrid(x=True, y=True)
         self.volumePlot.showGrid(x=True, y=True)
         self.pressurePlot.showGrid(x=True, y=True)
-        self.testPlot.showGrid(x=True, y=True)
 
         # Set Range
         self.flowPlot.setXRange(self.time_range * (-1), 0, padding=0)
         self.volumePlot.setXRange(self.time_range * (-1), 0, padding=0)
         self.pressurePlot.setXRange(self.time_range * (-1), 0, padding=0)
-        self.testPlot.setXRange(self.time_range * (-1), 0, padding=0)
         self.flowPlot.enableAutoRange("y", True)
         self.volumePlot.enableAutoRange("y", True)
         self.pressurePlot.enableAutoRange("y", True)
-        self.testPlot.showGrid(x=True, y=True)
 
         # Plot styles
         self.line1 = self.plot(
@@ -64,15 +60,12 @@ class TabPlots(QtWidgets.QWidget):
         self.line3 = self.plot(
             self.volumePlot, self.timestamp, self.PID_I, "Volume", "707"
         )
-        self.line4 = self.plot(self.testPlot, self.timestamp, self.PID_I, "Test", "500")
 
         self.setLayout(layout)
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(
-            self.update_plot_data
-        )  # updates without checking if new data arrived?
+        self.timer.timeout.connect(self.update_plot_data)
         self.timer.start()
 
     def plot(self, canvas, x, y, plotname, color):
@@ -92,4 +85,3 @@ class TabPlots(QtWidgets.QWidget):
         self.line3.setData(
             timestamp, self.parent().parent().plots[:, 3]
         )  # this is the plots array in Native UI
-        self.line4.setData(timestamp, self.parent().parent().plots[:, 4])

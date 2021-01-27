@@ -18,8 +18,12 @@ class TabMeasurements(QtWidgets.QWidget):
         )
         self.RR_widget = MeasurementWidget("RR", "_readback", "inhale_exhale_ratio")
         self.FIO2_widget = MeasurementWidget("FIO2 [%]", "_cycle", "fiO2_percent")
-        self.VTE_widget = MeasurementWidget("VTE [mL]", None, None)
-        self.MVE_widget = MeasurementWidget("MVE [L/min]", None, None)
+        self.VTE_widget = MeasurementWidget(
+            "VTE [mL]", "_cycle", "exhaled_tidal_volume"
+        )
+        self.MVE_widget = MeasurementWidget(
+            "MVE [L/min]", "_cycle", "exhaled_minute_volume"
+        )
         self.PEEP_widget = MeasurementWidget("PEEP [cmH2O]", "_readback", "peep")
 
         widget_list = [
@@ -31,7 +35,11 @@ class TabMeasurements(QtWidgets.QWidget):
             self.PEEP_widget,
         ]
 
-        layout.addWidget(QtWidgets.QLabel("MEASUREMENTS"))
+        label = QtWidgets.QLabel("Measurements")
+        label.setAlignment(QtCore.Qt.AlignCenter)
+        label.setStyleSheet("color: grey; font-size: 15px")
+        layout.addWidget(label)
+
         for widget in widget_list:
             layout.addWidget(widget)
 
