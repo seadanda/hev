@@ -89,6 +89,7 @@ class HEVServer(object):
                 PAYLOAD_TYPE.ALARM,
                 PAYLOAD_TYPE.DEBUG,
                 PAYLOAD_TYPE.IVT,
+                #PAYLOAD_TYPE.LOGMSG,
                 PAYLOAD_TYPE.PERSONAL,
                 PAYLOAD_TYPE.CMD
             ]
@@ -163,6 +164,9 @@ class HEVServer(object):
             elif reqtype == "CYCLE":
                 # ignore for the minute
                 pass
+            #elif reqtype == "LOGSMG":
+            #    # ignore for the minute
+            #    pass
             elif reqtype == "TARGET":
                 # ignore for the minute
                 pass

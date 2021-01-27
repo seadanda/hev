@@ -86,6 +86,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.targets = self.data
                 print(self.targets)
 
+                self.plots = np.append(np.delete(self.plots, 0, 0), [[self.data["timestamp"], self.data["pressure_patient"], self.data["flow"], self.data["volume"]]], axis=0)
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 

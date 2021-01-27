@@ -139,7 +139,7 @@ private:
     // timeouts
     uint32_t calculateDurationExhale();
     //durations = 			 {pre_calibration, calibration,	buff_purge, 	buff_flush,	buff_prefill, buff_fill, buff_pre_inhale, inhale, pause, exhale}
-    states_durations _states_durations = {6000, 4000,	600, 		600, 		100, 600, 0, 1200, 10, 1800 };
+    states_durations _states_durations = {6000, 8000,	600, 		600, 		100, 600, 0, 1200, 10, 1800 };
     states_durations _measured_durations = {0,0,0,0,0,0,0,0,0};
     void measureDurations();
     void measurePEEP();

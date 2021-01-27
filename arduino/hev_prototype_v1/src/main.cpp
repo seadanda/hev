@@ -129,7 +129,7 @@ void setup()
         INA.setShuntConversion(8500);          // Maximum conversion time 8.244ms
         INA.setAveraging(128);                 // Average each reading n-times
         INA.setMode(INA_MODE_CONTINUOUS_BOTH); // Bus/shunt measured continuously
-        INA.AlertOnBusOverVoltage(true, 5000); // Trigger alert if over 5V on bus
+        //INA.AlertOnBusOverVoltage(true, 5000); // Trigger alert if over 5V on bus
         breathing_loop.getValvesController()->setupINA(&INA, devicesFound);
     }
     loop_start = loop_start_sum = micros();
