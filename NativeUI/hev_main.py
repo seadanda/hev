@@ -33,8 +33,6 @@ class MainView(QWidget):
         # hlayout.addWidget(self.tab_label)
         # #self.setLayout(hlayout)
 
-        self.alarmHandler = alarmPopup(self)
-        self.alarmHandler.show()
         # self.setStyleSheet('background-color: black')
         left_vlayout = QVBoxLayout()
         center_vlayout = QVBoxLayout()
@@ -42,12 +40,12 @@ class MainView(QWidget):
 
         # Set up the widget tabs
         self.tab_plots = TabPlots()
-        self.page_buttons = TabPageButtons()
+        # self.page_buttons = TabPageButtons()
         self.start_stop_standby_buttons = TabStartStopStandbyButtons()
         self.measurements = TabMeasurements()
 
         # left column - page buttons and start/stop/standby
-        left_vlayout.addWidget(self.page_buttons)
+        # left_vlayout.addWidget(self.page_buttons)
         left_vlayout.addWidget(self.start_stop_standby_buttons)
         hlayout.addLayout(left_vlayout)
 

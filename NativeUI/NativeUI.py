@@ -7,10 +7,20 @@ import numpy as np
 from hev_main import MainView
 from hev_settings import SettingsView
 from hevclient import HEVClient
+from main_widgets.tab_personal import TabPersonal
+from main_widgets.tab_page_buttons import TabPageButtons
 from main_widgets.alarmPopup import alarmPopup
 from PySide2.QtCore import QUrl, Slot
 from PySide2.QtGui import QColor, QPalette
-from PySide2.QtWidgets import QApplication, QMainWindow
+from PySide2.QtWidgets import (
+    QStackedWidget,
+    QWidget,
+    QApplication,
+    QMainWindow,
+    QToolBar,
+    QVBoxLayout,
+    QHBoxLayout,
+)
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -24,12 +34,47 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
-        # Views
-        self.main_view = MainView()
-        self.settings_view = SettingsView()
-        self.setCentralWidget(self.main_view)
+        # bars
+        self.personInfoBar = TabPersonal()
+        self.buttonBar = TabPageButtons()
 
+        # Views
+        self.stack = QStackedWidget(self)
+        self.main_view = MainView()
+        self.stack.addWidget(self.main_view)
+        self.settings_view = SettingsView()
+        self.stack.addWidget(self.settings_view)
+        self.stack.setCurrentWidget(self.main_view)
+        self.menu_bar = TabPageButtons()
+
+        # Layout
+        hlayout = QHBoxLayout()
+        hlayout.addWidget(self.buttonBar)
+        hlayout.addWidget(self.stack)
+
+        vlayout = QVBoxLayout()
+        vlayout.addWidget(self.personInfoBar)
+        vlayout.addLayout(hlayout)
+
+        # Set Central
+        self.centralWidget = QWidget(self)
+        self.centralWidget.setLayout(vlayout)
+        self.setCentralWidget(self.centralWidget)
+
+        self.alarmHandler = alarmPopup(self)
+        self.alarmHandler.show()
+        # self.setLayout(vlayout)
+        # self.main_view.show()
+        # self.central_layout = vlayout
+        # self.setCentralWidget(self.main_view)
+        # self.setMenuWidget(self.menu_bar)
+        # self.tool_bar = QToolBar(TabPageButtons())
+        # self.tool_bar.setAllowedAreas(1)
+        # self.addToolBar(self.tool_bar)
+        # add buttons
         # Statusbar
+        # central_widget = centralWidget()
+        # self.setCentralWidget(central_widget)
         self.statusBar().showMessage("Waiting for data")
         self.statusBar().setStyleSheet("color: white")
 
@@ -89,12 +134,12 @@ class NativeUI(HEVClient, QMainWindow):
                     axis=0,
                 )
             if payload["type"] == "ALARM":
-                self.data = payload["ALARM"]
-                self.alarms = self.data
+                self.alarms = payload["ALARM"]
             if payload["type"] == "TARGET":
-                self.data = payload["TARGET"]
-                self.targets = self.data
-                print(self.targets)
+                self.targets = payload["TARGET"]
+            if payload["type"] == "READBACK":
+                self.readback = payload["READBACK"]
+                print(self.readback)
             if payload["type"] == "PERSONAL":
                 self.data = payload["PERSONAL"]
                 self.targets = self.data

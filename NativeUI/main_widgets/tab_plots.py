@@ -76,12 +76,17 @@ class TabPlots(QtWidgets.QWidget):
         # subtract latest timestamp and scale to seconds
         timestamp = np.true_divide(
             np.subtract(
-                self.parent().parent().plots[:, 0], self.parent().parent().plots[-1, 0]
+                self.parent().parent().parent().parent().plots[:, 0],
+                self.parent().parent().parent().parent().plots[-1, 0],
             ),
             1000,
         )  # this reaches for the plots arrays in NativeUI.py
-        self.line1.setData(timestamp, self.parent().parent().plots[:, 1])
-        self.line2.setData(timestamp, self.parent().parent().plots[:, 2])
+        self.line1.setData(
+            timestamp, self.parent().parent().parent().parent().plots[:, 1]
+        )
+        self.line2.setData(
+            timestamp, self.parent().parent().parent().parent().plots[:, 2]
+        )
         self.line3.setData(
-            timestamp, self.parent().parent().plots[:, 3]
+            timestamp, self.parent().parent().parent().parent().plots[:, 3]
         )  # this is the plots array in Native UI

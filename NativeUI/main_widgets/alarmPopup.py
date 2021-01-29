@@ -47,7 +47,7 @@ class alarmPopup(
         self.existingAlarms = []
 
     def updateAlarms(self):
-        newAlarm = self.parent().parent().alarms
+        newAlarm = self.parent().alarms
         if newAlarm == []:
             return
         if newAlarm["alarm_code"] in self.existingAlarms:

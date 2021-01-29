@@ -3,23 +3,19 @@ import sys
 
 
 class simpleSpin(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, label, units, *args, **kwargs):
         super(simpleSpin, self).__init__(*args, **kwargs)
 
         layout = QtWidgets.QHBoxLayout()
 
         textStyle = "color:white; font: 16pt"
 
-        self.nameLabel = QtWidgets.QLabel("Calibration")
+        self.nameLabel = QtWidgets.QLabel(label)
         self.nameLabel.setStyleSheet(textStyle)
         self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
         layout.addWidget(self.nameLabel)
 
         self.simpleSpin = QtWidgets.QSpinBox()
-        # self.simpleSpin.setStyleSheet("""QSpinBox{background-color:white}
-        #                               QSpinBox::up-button{backgroudfnd-color:white}
-        #                              QSpinBox::down-button{backgroudfnd-color:white}
-        #                             """)
         self.simpleSpin.setStyleSheet(
             """QSpinBox{background-color:white; width:100px; font:16pt}
                                         QSpinBox[colour="0"]{color:black}
@@ -35,7 +31,7 @@ class simpleSpin(QtWidgets.QWidget):
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
         layout.addWidget(self.simpleSpin)
 
-        self.unitLabel = QtWidgets.QLabel("ms")
+        self.unitLabel = QtWidgets.QLabel(units)
         self.unitLabel.setStyleSheet(textStyle)
         self.unitLabel.setAlignment(QtCore.Qt.AlignLeft)
         layout.addWidget(self.unitLabel)
@@ -46,26 +42,34 @@ class simpleSpin(QtWidgets.QWidget):
 class labelTab(
     QtWidgets.QWidget
 ):  # chose QWidget over QDialog family because easier to modify
-    def __init__(self, *args, **kwargs):
+    def __init__(self, controlDict, *args, **kwargs):
         super(labelTab, self).__init__(*args, **kwargs)
 
         grid = QtWidgets.QGridLayout()
+        self.spinDict = {}
+        i = 0
+        for section in controlDict.keys():
 
-        self.titleLabel = QtWidgets.QLabel("Buffers")
-        self.titleLabel.setStyleSheet("background-color:white")
-        self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
-        grid.addWidget(self.titleLabel, 0, 0, 1, 3)
+            self.titleLabel = QtWidgets.QLabel(section)
+            self.titleLabel.setStyleSheet("background-color:white")
+            self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
+            grid.addWidget(self.titleLabel, i, 0, 1, 3)
+            j = -1
+            for boxInfo in controlDict[section].keys():
+                j = j + 1
+                label, units = boxInfo, controlDict[section][boxInfo]
+                self.spinDict[boxInfo] = simpleSpin(label, units)
+                grid.addWidget(self.spinDict[boxInfo], i + 1 + int(j / 3), j % 3)
 
-        self.calibWidg = simpleSpin()
-        grid.addWidget(self.calibWidg, 1, 0)
+            i = i + 1 + int(j / 3) + 1
 
-        self.purgeWidg = simpleSpin()
-        grid.addWidget(self.purgeWidg, 1, 1)
+        # self.purgeWidg = simpleSpin()
+        # grid.addWidget(self.purgeWidg, 1, 1)
 
-        self.flushWidg = simpleSpin()
-        grid.addWidget(self.flushWidg, 1, 2)
+        # self.flushWidg = simpleSpin()
+        # grid.addWidget(self.flushWidg, 1, 2)
 
-        self.preFillWidg = simpleSpin()
-        grid.addWidget(self.preFillWidg, 2, 0)
+        # self.preFillWidg = simpleSpin()
+        # grid.addWidget(self.preFillWidg, 2, 0)
 
         self.setLayout(grid)

@@ -59,9 +59,6 @@ class customButton(QtWidgets.QFrame):
                             color:red;
                         }
                         """
-        # height:""" + boxHeight + """px;
-        # width:""" + boxWidth + """px;
-        # }""" # mistakes here can crash the RPi
 
         upButtonStyleString = """QDoubleSpinBox::up-button{
             height:30;
@@ -119,11 +116,11 @@ class customButton(QtWidgets.QFrame):
         self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
         self.popUp.close()
 
-    def setTextRed(self):
+    def setTextColour(self, option):
         # self.doubleSpin.setStyleSheet(self.boxStyleString + self.upArrowStyleString + self.downArrowStyleString + self.upArrowPressedStyleString + self.downArrowPressedStyleString)
         self.doubleSpin.style().unpolish(self.doubleSpin)
         self.doubleSpin.style().polish(self.doubleSpin)
-        self.doubleSpin.setProperty("colour", "0")
+        self.doubleSpin.setProperty("colour", option)
 
     def setTextWhite(self):
         # self.doubleSpin.setStyleSheet(boxStyleString + upArrowStyleString + downArrowStyleString + upArrowPressedStyleString + downArrowPressedStyleString)
@@ -145,30 +142,32 @@ class spinRow(QtWidgets.QWidget):
         self.layout.setSpacing(5)
 
         self.spinInsp = customButton()
-        self.layout.addWidget(self.spinInsp)
         self.spinRR = customButton()
-        self.layout.addWidget(self.spinRR)
         self.spinFIo2 = customButton()
-        self.layout.addWidget(self.spinFIo2)
         self.spinInhaleT = customButton()
-        self.layout.addWidget(self.spinInhaleT)
+
+        self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
+        self.__labels = [
+            "inspiratory_pressure",
+            "respiratory_rate",
+            "fiO2_percent",
+            "inhale_time",
+        ]
+        for spin in self.__spins:
+            self.layout.addWidget(spin)
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
         self.okButton = QtWidgets.QPushButton()
-        # self.okButton.setFixedWidth(100)
-        # self.okButton.setFixedHeight(40)
         self.okButton.setStyleSheet(
             "height:50; width:40;background-image:url('buttonIcons/settings1.jpeg')"
         )
         self.buttonLayout.addWidget(self.okButton)
+
         self.cancelButton = QtWidgets.QPushButton()
-        # self.cancelButton.setFixedWidth(100)
-        # self.cancelButton.setFixedHeight(40)
         self.cancelButton.setStyleSheet(
             "height:50; width:40;background-image:url('buttonIcons/settings1.jpeg')"
         )
-        # self.setIcon
         self.buttonLayout.addWidget(self.cancelButton)
 
         self.layout.addLayout(self.buttonLayout)
@@ -184,27 +183,11 @@ class spinRow(QtWidgets.QWidget):
         self.existingAlarms = []
 
     def updateTargets(self):
-        targets = self.parent().parent().targets
+        targets = self.parent().parent().parent().parent().targets
         if targets == "empty":
             return
-        if self.spinInsp.doubleSpin.value() != float(targets["inspiratory_pressure"]):
-            self.spinInsp.setTextRed()
-            # self.spinInsp.popUp.setTextRed()
-        else:
-            self.spinInsp.setTextWhite()
-            # self.spinInsp.popUp.setTextWhite()
-
-        if self.spinRR.doubleSpin.value() != float(targets["respiratory_rate"]):
-            self.spinRR.setTextRed()
-        else:
-            self.spinRR.setTextWhite()
-
-        if self.spinFIo2.doubleSpin.value() != float(targets["fiO2_percent"]):
-            self.spinFIo2.setTextRed()
-        else:
-            self.spinFIo2.setTextWhite()
-
-        if self.spinInhaleT.doubleSpin.value() != float(targets["inhale_time"]):
-            self.spinInhaleT.setTextRed()
-        else:
-            self.spinInhaleT.setTextWhite()
+        for spin, label in zip(self.__spins, self.__labels):
+            if spin.doubleSpin.value() != float(targets[label]):
+                spin.setTextColour("0")
+            else:
+                spin.setTextColour("2")

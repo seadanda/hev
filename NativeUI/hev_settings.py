@@ -16,7 +16,25 @@ class SettingsView(QtWidgets.QWidget):
 
         hlayout = QtWidgets.QHBoxLayout()
         # self.buttons = QtWidgets.QPushButton()
-        self.test = labelTab()
+        controlDict = {
+            "Buffers": {
+                "Calibration": "ms",
+                "Purge": "ms",
+                "Flush": "ms",
+                "Pre-fill": "ms",
+                "Fill": "ms",
+                "Pre-inhale": "ms",
+            },
+            "PID": {"KP": "", "KI": "", "KD": "", "PID Gain": ""},
+            "Valves": {"Air in": "", "O2 in": "", "Inhale": ""},
+            "Breathing": {
+                "Inhale": "ms",
+                "Pause": "ms",
+                "Exhale fill": "ms",
+                "Exhale": "ms",
+            },
+        }
+        self.test = labelTab(controlDict)
         # self.buttons = TabButtons()
         hlayout.addWidget(self.test)
         # vlayout = QVBoxLayout()
