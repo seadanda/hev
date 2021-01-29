@@ -6,6 +6,7 @@ build:raspi4-qmake:
   stage: build
   image: etalian/qt-raspi4
   script:
+    - cd "${CI_PROJECT_DIR}/hev-display"
     - /raspi/qt5/bin/qmake
     - make
   artifacts:
@@ -23,35 +24,6 @@ build:raspi4-cmake:
     - cmake --config Release
        -DCMAKE_TOOLCHAIN_FILE=/raspi/gcc-linaro-arm-linux-gnueabihf-raspbian-x64.cmake
        -DCPACK_PACKAGE_SUFFIX=-pi4 -DCPACK_SYSTEM_NAME=raspbian10 -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=armhf
-       "${CI_PROJECT_DIR}/hev-display"
-    - make
-    - cpack -G DEB && cp -v *.deb "${CI_PROJECT_DIR}/binaries"
-  artifacts:
-    name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - binaries/
-
-build:raspi1-qmake:
-  stage: build
-  image: etalian/qt-raspi1
-  script:
-    - /raspi/qt5/bin/qmake
-    - make
-  artifacts:
-    name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - hev-display
-
-build:raspi1-cmake:
-  stage: release
-  image: etalian/qt-raspi1
-  before_script:
-    - mkdir -p "${CI_PROJECT_DIR}/binaries"
-  script:
-    - mkdir /tmp/${CI_PROJECT_NAME} && cd "$_"
-    - cmake --config Release
-       -DCMAKE_TOOLCHAIN_FILE=/raspi/gcc-linaro-arm-linux-gnueabihf-raspbian-x64.cmake
-       -DCPACK_PACKAGE_SUFFIX=-pi1 -DCPACK_SYSTEM_NAME=raspbian10 -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=armhf
        "${CI_PROJECT_DIR}/hev-display"
     - make
     - cpack -G DEB && cp -v *.deb "${CI_PROJECT_DIR}/binaries"
