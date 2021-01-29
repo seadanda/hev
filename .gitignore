@@ -11,3 +11,8 @@ __pycache__
 *.sqlite
 *.csv
 raspberry-dataserver/foo
+env/
+BM_SCRATCH
+.cache
+.pylintrc
+.pre-commit-config.yaml
