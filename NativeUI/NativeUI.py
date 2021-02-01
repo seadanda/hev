@@ -9,7 +9,7 @@ from hev_settings import SettingsView
 from hevclient import HEVClient
 from main_widgets.tab_personal import TabPersonal
 from main_widgets.tab_page_buttons import TabPageButtons
-from main_widgets.alarmPopup import alarmPopup
+from alarm_widgets.tab_alarms import TabAlarm
 from PySide2.QtCore import QUrl, Slot
 from PySide2.QtGui import QColor, QPalette
 from PySide2.QtWidgets import (
@@ -44,7 +44,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.main_view)
         self.settings_view = SettingsView()
         self.stack.addWidget(self.settings_view)
-        self.stack.setCurrentWidget(self.main_view)
+        self.alarms_view = TabAlarm()
+        self.stack.addWidget(self.alarms_view)
+        self.stack.setCurrentWidget(self.alarms_view)
         self.menu_bar = TabPageButtons()
 
         # Layout
@@ -61,8 +63,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.centralWidget.setLayout(vlayout)
         self.setCentralWidget(self.centralWidget)
 
-        self.alarmHandler = alarmPopup(self)
-        self.alarmHandler.show()
+
         # self.setLayout(vlayout)
         # self.main_view.show()
         # self.central_layout = vlayout

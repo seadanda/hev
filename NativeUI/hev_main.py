@@ -3,7 +3,7 @@ import logging
 import sys
 
 from hevclient import HEVClient
-from main_widgets.alarmPopup import alarmPopup
+#from main_widgets.alarmPopup import alarmPopup
 from main_widgets.customButton import customButton, spinRow
 from main_widgets.tab_buttons import TabButtons
 from main_widgets.tab_measurements import TabMeasurements
