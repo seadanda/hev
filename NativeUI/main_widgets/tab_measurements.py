@@ -13,26 +13,13 @@ class TabMeasurements(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.P_plateau_widget = MeasurementWidget(
-            "P_plateau [cmH2O]", "_cycle", "plateau_pressure"
-        )
-        self.RR_widget = MeasurementWidget("RR", "_readback", "inhale_exhale_ratio")
-        self.FIO2_widget = MeasurementWidget("FIO2 [%]", "_cycle", "fiO2_percent")
-        self.VTE_widget = MeasurementWidget(
-            "VTE [mL]", "_cycle", "exhaled_tidal_volume"
-        )
-        self.MVE_widget = MeasurementWidget(
-            "MVE [L/min]", "_cycle", "exhaled_minute_volume"
-        )
-        self.PEEP_widget = MeasurementWidget("PEEP [cmH2O]", "_readback", "peep")
-
         widget_list = [
-            self.P_plateau_widget,
-            self.RR_widget,
-            self.FIO2_widget,
-            self.VTE_widget,
-            self.MVE_widget,
-            self.PEEP_widget,
+            MeasurementWidget("P_plateau [cmH2O]", "_cycle", "plateau_pressure"),
+            MeasurementWidget("RR", "_readback", "inhale_exhale_ratio"),
+            MeasurementWidget("FIO2 [%]", "_cycle", "fiO2_percent"),
+            MeasurementWidget("VTE [mL]", "_cycle", "exhaled_tidal_volume"),
+            MeasurementWidget("MVE [L/min]", "_cycle", "exhaled_minute_volume"),
+            MeasurementWidget("PEEP [cmH2O]", "_readback", "peep"),
         ]
 
         label = QtWidgets.QLabel("Measurements")
