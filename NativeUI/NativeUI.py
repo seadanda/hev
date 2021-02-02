@@ -5,15 +5,22 @@ import sys
 
 import numpy as np
 from alarm_widgets.tab_alarms import TabAlarm
+from global_widgets.tab_top_bar import TabTopBar
 from hev_main import MainView
 from hev_settings import SettingsView
 from hevclient import HEVClient
 from main_widgets.tab_page_buttons import TabPageButtons
-from main_widgets.tab_personal import TabPersonal
-from PySide2.QtCore import QUrl, Slot
+from PySide2.QtCore import QUrl, Signal, Slot
 from PySide2.QtGui import QColor, QPalette
-from PySide2.QtWidgets import (QApplication, QHBoxLayout, QMainWindow,
-                               QStackedWidget, QToolBar, QVBoxLayout, QWidget)
+from PySide2.QtWidgets import (
+    QApplication,
+    QHBoxLayout,
+    QMainWindow,
+    QStackedWidget,
+    QToolBar,
+    QVBoxLayout,
+    QWidget,
+)
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -23,12 +30,15 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
+    battery_signal = Signal(dict)
+
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
+        self.setFixedSize(1920, 1080)
 
         # bars
-        self.personInfoBar = TabPersonal()
+        self.topBar = TabTopBar()
         self.buttonBar = TabPageButtons()
 
         # Views
@@ -48,7 +58,7 @@ class NativeUI(HEVClient, QMainWindow):
         hlayout.addWidget(self.stack)
 
         vlayout = QVBoxLayout()
-        vlayout.addWidget(self.personInfoBar)
+        vlayout.addWidget(self.topBar)
         vlayout.addLayout(hlayout)
 
         # Set Central
@@ -114,6 +124,9 @@ class NativeUI(HEVClient, QMainWindow):
                     ],
                     axis=0,
                 )
+            if payload["type"] == "BATTERY":
+                self.battery = payload["BATTERY"]
+                self.battery_signal.emit(self.battery)
             if payload["type"] == "ALARM":
                 self.alarms = payload["ALARM"]
             if payload["type"] == "TARGET":
@@ -181,5 +194,8 @@ if __name__ == "__main__":
     # engine = QQmlApplicationEngine()
     # engine.load(QUrl('hev-display/assets/Cell.qml'))
     dep = NativeUI()
+
+    dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
+
     dep.show()
     app.exec_()
