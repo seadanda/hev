@@ -1,3 +1,4 @@
+from main_widgets.tab_battery import TabBattery
 import argparse
 import logging
 import sys
@@ -45,6 +46,7 @@ class MainView(QWidget):
         self.page_buttons = TabPageButtons()
         self.start_stop_standby_buttons = TabStartStopStandbyButtons()
         self.measurements = TabMeasurements()
+        self.battery      = TabBattery()
 
         # left column - page buttons and start/stop/standby
         left_vlayout.addWidget(self.page_buttons)
@@ -58,6 +60,7 @@ class MainView(QWidget):
         hlayout.addLayout(center_vlayout)
 
         # right column - measurements
+        right_vlayout.addWidget(self.battery)
         right_vlayout.addWidget(self.measurements)
         hlayout.addLayout(right_vlayout)
 
