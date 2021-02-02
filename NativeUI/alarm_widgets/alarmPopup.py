@@ -1,8 +1,7 @@
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtCore, QtGui, QtWidgets
 
-class alarmPopup(
-    QtWidgets.QDialog
-):
+
+class alarmPopup(QtWidgets.QDialog):
     def __init__(self, *args, **kwargs):
         super(alarmPopup, self).__init__(*args, **kwargs)
 
@@ -23,7 +22,6 @@ class alarmPopup(
         self.shadow.setBlurRadius(20)
         self.shadow.setXOffset(10)
         self.shadow.setYOffset(10)
-
 
     def clearAlarms(self):
         for i in reversed(range(self.layout.count())):
