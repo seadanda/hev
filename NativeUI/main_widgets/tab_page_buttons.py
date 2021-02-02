@@ -38,6 +38,23 @@ class TabPageButtons(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
+        self.button_signin.pressed.connect(self.__signin_pressed)
+        self.button_alarms.pressed.connect(self.__alarms_pressed)
+        self.button_cntrls.pressed.connect(self.__cntrls_pressed)
+
+    def __signin_pressed(self):
+        self.parent().parent().stack.setCurrentWidget(self.parent().parent().main_view)
+
+    def __cntrls_pressed(self):
+        self.parent().parent().stack.setCurrentWidget(
+            self.parent().parent().settings_view
+        )
+
+    def __alarms_pressed(self):
+        self.parent().parent().stack.setCurrentWidget(
+            self.parent().parent().alarms_view
+        )
+
     def __find_icons(self):
         initial_path = "hev-display/assets/svg/"
         # assume we're in the root directory

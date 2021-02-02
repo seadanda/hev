@@ -1,41 +1,50 @@
-import logging
 import argparse
+import logging
 import sys
-
-# from PySide2.QtCore import Slot
-from PySide2 import QtWidgets, QtGui, QtCore
 
 # from PySide2.QtWidgets import QWidget, QApplication, QHBoxLayout, QVBoxLayout
 from hevclient import HEVClient
-from settings_widgets.customLabelTab import labelTab
+# from PySide2.QtCore import Slot
+from PySide2 import QtCore, QtGui, QtWidgets
+from settings_widgets.tab_charts import TabChart
+from settings_widgets.tab_expert import TabExpert
 
 
 class SettingsView(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(SettingsView, self).__init__(*args, **kwargs)
 
-        hlayout = QtWidgets.QHBoxLayout()
-        # self.buttons = QtWidgets.QPushButton()
-        self.test = labelTab()
-        # self.buttons = TabButtons()
-        hlayout.addWidget(self.test)
-        # vlayout = QVBoxLayout()
-        # self.tab_plots = TabPlots()
-        # vlayout.addWidget(self.tab_plots)
-        # self.tab_spin = spinRow(self)
-        # vlayout.addWidget(self.tab_spin)
-        # hlayout.addLayout(vlayout)
-        # self.tab_label = TabLabels()
-        # hlayout.addWidget(self.tab_label)
-        self.setLayout(hlayout)
+        hTabLayout = QtWidgets.QHBoxLayout()
+        self.expertButton = QtWidgets.QPushButton("Expert")
+        self.expertButton.setStyleSheet("")
+        self.expertButton.pressed.connect(self.expertPressed)
+        hTabLayout.addWidget(self.expertButton)
+        self.chartButton = QtWidgets.QPushButton("Charts")
+        self.chartButton.setStyleSheet("")
+        self.chartButton.pressed.connect(self.chartPressed)
+        hTabLayout.addWidget(self.chartButton)
+        self.expertButton3 = QtWidgets.QPushButton("Expert3")
+        self.expertButton3.setStyleSheet("")
+        hTabLayout.addWidget(self.expertButton3)
 
-    #        self.buttons.pressed.connect(self.change)
-    # self.alarmHandler = alarmPopup(self)
-    # self.alarmHandler.show()
-    # self.setStyleSheet('background-color: black')
+        vlayout = QtWidgets.QVBoxLayout()
+        vlayout.addLayout(hTabLayout)
+
+        self.stack = QtWidgets.QStackedWidget()
+        self.expertTab = TabExpert()
+        self.stack.addWidget(self.expertTab)
+        self.chartTab = TabChart()
+        self.stack.addWidget(self.chartTab)
+
+        vlayout.addWidget(self.stack)
+        self.setLayout(vlayout)
+
+    def expertPressed(self):
+        self.stack.setCurrentWidget(self.expertTab)
+
+    def chartPressed(self):
+        self.stack.setCurrentWidget(self.chartTab)
 
     def change(self):
         print("pressed")
         self.parent().setCentralWidget(self.parent().main_view)
-
-        # self.setCentralWidget(self.settings_view)

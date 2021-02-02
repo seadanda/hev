@@ -132,7 +132,9 @@ class MeasurementWidget(QtWidgets.QWidget):
 
         #
         try:
-            data = vars(self.parent().parent().parent())[self.__keydir][self.__key]
+            data = vars(self.parent().parent().parent().parent().parent())[
+                self.__keydir
+            ][self.__key]
         except TypeError:
             self.value_display.setText("-")
             return
