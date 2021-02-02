@@ -35,6 +35,7 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
+        self.setFixedSize(1920, 1080)
 
         # bars
         self.topBar = TabTopBar()
