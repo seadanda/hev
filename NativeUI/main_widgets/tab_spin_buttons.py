@@ -1,14 +1,91 @@
-from PySide2 import QtWidgets, QtGui, QtCore
-from main_widgets.customPopup import customPopup
-
 # from customPopup2 import customPopup2
 import sys
 
+from PySide2 import QtCore, QtGui, QtWidgets
 
-class customButton(QtWidgets.QFrame):
-    def __init__(
-        self,
-    ):
+# from main_widgets.customPopup import customPopup
+
+
+class SpinPopup(
+    QtWidgets.QDialog
+):  # chose QWidget over QDialog family because easier to modify
+    def __init__(self):
+        super().__init__()
+
+        grid = QtWidgets.QGridLayout()
+        grid.setSpacing(1)
+
+        self.setStyleSheet("border-radius:4px; background-color:black")
+
+        self.lineEdit = QtWidgets.QLineEdit()
+        self.lineEdit.setText("4")
+        self.lineEdit.setStyleSheet(
+            """QLineEdit{font: 16pt;
+                                            background-color:white;
+                                            border-radius:4px }
+                                        QLineEdit[colour = "0"]{
+                                            color:green
+                                        }
+                                        QLineEdit[colour = "1"]{
+                                            color:rgb(144,231,211);
+                                        }
+                                        QLineEdit[colour = "2"]{
+                                            color:red
+                                        }"""
+        )
+        self.lineEdit.setProperty("colour", "1")
+        self.lineEdit.setAlignment(QtCore.Qt.AlignCenter)
+        self.lineEdit.saveVal = self.lineEdit.text()
+        self.lineEdit.setValidator(
+            QtGui.QDoubleValidator(0.0, 100.0, 2)
+        )  # ensures only doubles can be typed
+        # self.lineEdit.installEventFilter(
+        #    self
+        # )  # override to respond to key press(enter and esc) defined in eventFilter
+        grid.addWidget(self.lineEdit, 0, 0, 1, 2)
+
+        self.okButton = QtWidgets.QPushButton()
+        self.okButton.setIcon(QtGui.QIcon("hev-display/svg/check-solid.svg"))
+        self.okButton.setStyleSheet("background-color:white; border-radius:4px ")
+        grid.addWidget(self.okButton, 1, 0)
+
+        self.cancelButton = QtWidgets.QPushButton()
+        self.cancelButton.setIcon(QtGui.QIcon("figures/pic2.jpg"))
+        self.cancelButton.setStyleSheet("background-color:white; border-radius:4px ")
+        grid.addWidget(self.cancelButton, 1, 1)
+
+        self.setLayout(grid)
+        self.setWindowFlags(
+            QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
+        )  # no window title
+
+    def getValue(self):
+        return self.lineEdit.text()
+
+    def setTextColour(self, option):
+        self.lineEdit.style().unpolish(self.lineEdit)
+        self.lineEdit.style().polish(self.lineEdit)
+        self.lineEdit.setProperty("colour", option)
+
+    def setTextWhite(self):
+        self.lineEdit.style().unpolish(self.lineEdit)
+        self.lineEdit.style().polish(self.lineEdit)
+        self.lineEdit.setProperty("colour", "2")
+
+    def eventFilter(self, source, event):
+        if event.type() == QtCore.QEvent.KeyPress and source is self.lineEdit:
+            if event.text() == "\r":  # enter
+                self.okButton.click()
+                return True
+            elif event.text() == "\x1b":  # Escape button
+                self.cancelButton.click()
+                return True
+            else:
+                return False  # think False means process normally
+
+
+class SpinButton(QtWidgets.QFrame):
+    def __init__(self,):
         super().__init__()
 
         # self.setStyleSheet("background-color:blue;")
@@ -19,7 +96,7 @@ class customButton(QtWidgets.QFrame):
         self.layout.setMargin(0)
         self.label = QtWidgets.QLabel()
         self.label.setText("test label")
-        labelTextColour = "rbg(60,58,60)"
+
         labelBgColour = "rgb(60,58,60)"
         self.label.setStyleSheet(
             "font: 16pt; color:white; background-color:"
@@ -35,14 +112,6 @@ class customButton(QtWidgets.QFrame):
         )  # override is defined in 'eventFilter'. ensures lineEdit responds to double mouse click
         self.doubleSpin.lineEdit().setStyleSheet("border:blue;")
 
-        textColour = "blue"
-        bgColour = "black"
-        boxHeight, boxWidth = "100", "70"
-        buttonHeight = "100"
-        buttonWidth = "20"
-        upImage = "buttonIcons/settings1.jpeg"  # if these are
-        downImage = "buttonIcons/settings2.svg"
-        textColour = "rbg(136,235,220)"
         boxStyleString = """QDoubleSpinBox{
                         border:none;
                         background-color: black;
@@ -61,25 +130,23 @@ class customButton(QtWidgets.QFrame):
                         """
 
         upButtonStyleString = """QDoubleSpinBox::up-button{
-            height:30;
-            width:40;
-            }    """
-        # background-image: url('buttonIcons/settings1.jpeg');}"""
-        # upButtonStyleString = ""
-        upButtonPressedStyleString = (
-            "QDoubleSpinBox::up-button:pressed{ border:orange;}"
-        )
+             height:30;
+             width:40;
+             }    """
+
+        # upButtonPressedStyleString = (
+        #    "QDoubleSpinBox::up-button:pressed{ border:orange;}"
+        # )
         downButtonStyleString = upButtonStyleString.replace(
             "up", "down"
         )  # "QDoubleSpinBox::down-button{image: url('" + downImage + "');}"
-        downButtonPressedStyleString = ""  # "QDoubleSpinBox::down-button:pressed{background-color:white;image: url('" + upImage + "');}"
+        # downButtonPressedStyleString = ""  # "QDoubleSpinBox::down-button:pressed{background-color:white;image: url('" + upImage + "');}"
         self.doubleSpin.setStyleSheet(
-            boxStyleString
-            + upButtonStyleString
-            + downButtonStyleString
-            + upButtonPressedStyleString
-            + downButtonPressedStyleString
+            boxStyleString + upButtonStyleString + downButtonStyleString
         )
+        #     + upButtonPressedStyleString
+        #     + downButtonPressedStyleString
+        # )
         self.doubleSpin.setProperty("colour", "1")
         self.doubleSpin.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
@@ -90,9 +157,9 @@ class customButton(QtWidgets.QFrame):
         self.setLayout(self.layout)
         self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
 
-        self.popUp = customPopup()
-        self.popUp.okButton.clicked.connect(self.updateValue)
-        self.popUp.cancelButton.clicked.connect(self.cancelUpdate)
+        self.popUp = SpinPopup()
+        self.popUp.okButton.clicked.connect(self.okButtonPressed)
+        self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
         # self.lineEdit.installEventFilter(self)
 
         # self.test()
@@ -107,44 +174,38 @@ class customButton(QtWidgets.QFrame):
             return True
         return False
 
-    def updateValue(self):
+    def okButtonPressed(self):
         val = float(self.popUp.lineEdit.text())
         self.doubleSpin.setValue(val)
         self.popUp.close()
 
-    def cancelUpdate(self):
+    def cancelButtonPressed(self):
         self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
         self.popUp.close()
 
     def setTextColour(self, option):
-        # self.doubleSpin.setStyleSheet(self.boxStyleString + self.upArrowStyleString + self.downArrowStyleString + self.upArrowPressedStyleString + self.downArrowPressedStyleString)
         self.doubleSpin.style().unpolish(self.doubleSpin)
         self.doubleSpin.style().polish(self.doubleSpin)
         self.doubleSpin.setProperty("colour", option)
 
-    def setTextWhite(self):
-        # self.doubleSpin.setStyleSheet(boxStyleString + upArrowStyleString + downArrowStyleString + upArrowPressedStyleString + downArrowPressedStyleString)
-        self.doubleSpin.style().unpolish(self.doubleSpin)
-        self.doubleSpin.style().polish(self.doubleSpin)
-        self.doubleSpin.setProperty("colour", "2")
 
-    def valuechange(self):
-        print("changed to " + str(self.value()))
+#    def valuechange(self):
+#        print("changed to " + str(self.value()))
 
 
-class spinRow(QtWidgets.QWidget):
+class TabSpinButtons(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
-        super(spinRow, self).__init__(*args, **kwargs)
+        super(TabSpinButtons, self).__init__(*args, **kwargs)
 
         # self.setStyleSheet("background-color:blue;")
 
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(5)
 
-        self.spinInsp = customButton()
-        self.spinRR = customButton()
-        self.spinFIo2 = customButton()
-        self.spinInhaleT = customButton()
+        self.spinInsp = SpinButton()
+        self.spinRR = SpinButton()
+        self.spinFIo2 = SpinButton()
+        self.spinInhaleT = SpinButton()
 
         self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
         self.__labels = [
@@ -175,10 +236,8 @@ class spinRow(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(160)  # just faster than 60Hz
-        self.timer.timeout.connect(
-            self.updateTargets
-        )  # updates without checking if new data arrived?
+        self.timer.setInterval(160)
+        self.timer.timeout.connect(self.updateTargets)
         self.timer.start()
         self.existingAlarms = []
 

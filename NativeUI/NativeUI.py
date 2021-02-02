@@ -4,23 +4,16 @@ import logging
 import sys
 
 import numpy as np
+from alarm_widgets.tab_alarms import TabAlarm
 from hev_main import MainView
 from hev_settings import SettingsView
 from hevclient import HEVClient
-from main_widgets.tab_personal import TabPersonal
 from main_widgets.tab_page_buttons import TabPageButtons
-from alarm_widgets.tab_alarms import TabAlarm
+from main_widgets.tab_personal import TabPersonal
 from PySide2.QtCore import QUrl, Slot
 from PySide2.QtGui import QColor, QPalette
-from PySide2.QtWidgets import (
-    QStackedWidget,
-    QWidget,
-    QApplication,
-    QMainWindow,
-    QToolBar,
-    QVBoxLayout,
-    QHBoxLayout,
-)
+from PySide2.QtWidgets import (QApplication, QHBoxLayout, QMainWindow,
+                               QStackedWidget, QToolBar, QVBoxLayout, QWidget)
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -63,19 +56,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.centralWidget.setLayout(vlayout)
         self.setCentralWidget(self.centralWidget)
 
-
-        # self.setLayout(vlayout)
-        # self.main_view.show()
-        # self.central_layout = vlayout
-        # self.setCentralWidget(self.main_view)
-        # self.setMenuWidget(self.menu_bar)
-        # self.tool_bar = QToolBar(TabPageButtons())
-        # self.tool_bar.setAllowedAreas(1)
-        # self.addToolBar(self.tool_bar)
-        # add buttons
-        # Statusbar
-        # central_widget = centralWidget()
-        # self.setCentralWidget(central_widget)
         self.statusBar().showMessage("Waiting for data")
         self.statusBar().setStyleSheet("color: white")
 

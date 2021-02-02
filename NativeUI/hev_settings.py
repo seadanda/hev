@@ -1,14 +1,13 @@
-import logging
 import argparse
+import logging
 import sys
-
-# from PySide2.QtCore import Slot
-from PySide2 import QtWidgets, QtGui, QtCore
 
 # from PySide2.QtWidgets import QWidget, QApplication, QHBoxLayout, QVBoxLayout
 from hevclient import HEVClient
-from settings_widgets.tab_expert import TabExpert
+# from PySide2.QtCore import Slot
+from PySide2 import QtCore, QtGui, QtWidgets
 from settings_widgets.tab_charts import TabChart
+from settings_widgets.tab_expert import TabExpert
 
 
 class SettingsView(QtWidgets.QWidget):
@@ -30,7 +29,6 @@ class SettingsView(QtWidgets.QWidget):
 
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.addLayout(hTabLayout)
-        # self.buttons = QtWidgets.QPushButton()
 
         self.stack = QtWidgets.QStackedWidget()
         self.expertTab = TabExpert()
