@@ -25,24 +25,11 @@ class alarmPopup(
         self.shadow.setYOffset(10)
 
 
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(16)  # just faster than 60Hz
-        # self.timer.timeout.connect(
-        #     self.updateAlarms
-        # )  # updates without checking if new data arrived?
-        # self.timer.start()
-        # self.existingAlarms = []
-
-    # def updateAlarms(self):
-    #     newAlarm = self.parent().alarms
-    #     if newAlarm == []:
-    #         return
-    #     if newAlarm["alarm_code"] in self.existingAlarms:
-    #         a = 1  # do nothing
-    #     else:
-    #         self.addAlarm(newAlarm)
-    #         self.existingAlarms.append(newAlarm["alarm_code"])
-    #     self.show()
+    def clearAlarms(self):
+        for i in reversed(range(self.layout.count())):
+            self.layout.itemAt(i).widget().setParent(None)
+        self.adjustSize()
+        self.setLayout(self.layout)
 
     def addAlarm(self, alarmPayload):
         alarmBox = QtWidgets.QWidget()

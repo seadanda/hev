@@ -69,7 +69,7 @@ class TabAlarm(
 
     def acknowledge_pressed(self):
         self.existingAlarms = []
-        # self.alarmHandler
+        self.alarmHandler.clearAlarms()
         self.list.acknowledge_all()
 
     def updateAlarms(self):
