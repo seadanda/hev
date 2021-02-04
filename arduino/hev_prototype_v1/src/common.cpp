@@ -246,8 +246,7 @@ float adcToO2PercentFloat(float adc, float offset)
     float ADC_to_mVoltage_Gain	= 0.788; 	// this is the measured gain
     float ADC_offset		= 162.;		// this is the measured offset
 
-    float o2pc = PCB_Gain * Sensor_Gain * (ADC_to_mVoltage_Gain * adc + ADC_offset); 
-    logMsg("adc: " + String(adc));
+    float o2pc = PCB_Gain * Sensor_Gain * (ADC_to_mVoltage_Gain * adc); 
     return o2pc;
 }
 
