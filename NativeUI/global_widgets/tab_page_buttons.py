@@ -2,6 +2,7 @@ import os
 
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize
+from global_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
 
 
 class TabPageButtons(QtWidgets.QWidget):
@@ -40,19 +41,27 @@ class TabPageButtons(QtWidgets.QWidget):
 
         self.button_signin.pressed.connect(self.__signin_pressed)
         self.button_alarms.pressed.connect(self.__alarms_pressed)
+        self.button_fancon.pressed.connect(self.__fancon_pressed)
         self.button_cntrls.pressed.connect(self.__cntrls_pressed)
 
     def __signin_pressed(self):
-        self.parent().parent().stack.setCurrentWidget(self.parent().parent().main_view)
+        self.parent().parent().parent().stack.setCurrentWidget(
+            self.parent().parent().parent().main_view
+        )
 
     def __cntrls_pressed(self):
-        self.parent().parent().stack.setCurrentWidget(
-            self.parent().parent().settings_view
+        self.parent().parent().parent().stack.setCurrentWidget(
+            self.parent().parent().parent().settings_view
         )
 
     def __alarms_pressed(self):
-        self.parent().parent().stack.setCurrentWidget(
-            self.parent().parent().alarms_view
+        self.parent().parent().parent().stack.setCurrentWidget(
+            self.parent().parent().parent().alarms_view
+        )
+
+    def __fancon_pressed(self):
+        self.parent().parent().parent().stack.setCurrentWidget(
+            self.parent().parent().parent().modes_view
         )
 
     def __find_icons(self):

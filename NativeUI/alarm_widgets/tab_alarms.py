@@ -73,12 +73,13 @@ class TabAlarm(
         self.list.acknowledge_all()
 
     def updateAlarms(self):
-        newAlarm = self.parent().parent().parent().alarms
+        newAlarm = self.parent().parent().parent().parent().parent().alarms
         if newAlarm == []:
             return
-        if newAlarm["alarm_code"] in self.existingAlarms:
+        if newAlarm["alarm_code"] in self.alarmHandler.alarmDict:
+            self.alarmHandler.resetTimer(newAlarm)
             a = 1  # do nothing
         else:
             self.alarmHandler.addAlarm(newAlarm)
-            self.existingAlarms.append(newAlarm["alarm_code"])
+            # self.existingAlarms.append(newAlarm["alarm_code"])
             self.list.addAlarm(newAlarm)

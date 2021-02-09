@@ -1,56 +1,7 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-import sys
-
-
-class simpleSpin(QtWidgets.QWidget):
-    def __init__(self, infoArray, *args, **kwargs):
-        super(simpleSpin, self).__init__(*args, **kwargs)
-
-        self.label, self.units, self.tag = infoArray
-
-        layout = QtWidgets.QHBoxLayout()
-
-        textStyle = "color:white; font: 16pt"
-
-        self.nameLabel = QtWidgets.QLabel(self.label)
-        self.nameLabel.setStyleSheet(textStyle)
-        self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
-        layout.addWidget(self.nameLabel)
-
-        self.simpleSpin = QtWidgets.QSpinBox()
-        self.simpleSpin.setStyleSheet(
-            """QSpinBox{background-color:white; width:100px; font:16pt}
-                                        QSpinBox[colour="0"]{color:black}
-                                        QSpinBox[colour="1"]{color:red}
-                                        QSpinBox::up-button{width:20; }
-                                        QSpinBox::down-button{width:20; }
-                                        """
-        )
-        self.simpleSpin.setProperty("colour", "1")
-        self.simpleSpin.setButtonSymbols(
-            QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
-        )
-        self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
-        layout.addWidget(self.simpleSpin)
-
-        self.unitLabel = QtWidgets.QLabel(self.units)
-        self.unitLabel.setStyleSheet(textStyle)
-        self.unitLabel.setAlignment(QtCore.Qt.AlignLeft)
-        layout.addWidget(self.unitLabel)
-
-        self.setLayout(layout)
-
-    def update_value(self):
-        newVal = (
-            self.parent()
-            .parent()
-            .parent()
-            .parent()
-            .parent()
-            .parent()
-            .readback[self.tag]
-        )
-        self.simpleSpin.setValue(newVal)
+from global_widgets.global_spinbox import simpleSpin
+from global_widgets.global_select_button import selectorButton
+from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class TabExpert(
@@ -58,7 +9,8 @@ class TabExpert(
 ):  # chose QWidget over QDialog family because easier to modify
     def __init__(self, *args, **kwargs):
         super(TabExpert, self).__init__(*args, **kwargs)
-
+        self.liveUpdating = True
+        self.modifications = []
         controlDict = {
             "Buffers": [
                 ["Calibration", "ms", "duration_calibration"],
@@ -80,7 +32,7 @@ class TabExpert(
                 ["O2 in", "", "valve_o2_in"],
                 ["Inhale", "", "valve_inhale"],
                 ["Exhale", "", "valve_exhale"],
-                ["Purge", "", "valve_purge"],
+                ["Purge valve", "", "valve_purge"],
                 ["Inhale Opening", "%", "valve_inhale_percent"],
                 ["Exhale Opening", "%", "valve_exhale_percent"],
             ],
@@ -117,12 +69,14 @@ class TabExpert(
         self.okButton.setStyleSheet(
             "height:50px; background-color:white; border-radius:4px;"
         )
+        self.okButton.pressed.connect(self.okButtonPressed)
         grid.addWidget(self.okButton, i, 0, 1, 3)
 
         self.cancelButton = QtWidgets.QPushButton()
         self.cancelButton.setStyleSheet(
             "height:50px; background-color:white; border-radius:4px;"
         )
+        self.cancelButton.pressed.connect(self.cancelButtonPressed)
         grid.addWidget(self.cancelButton, i, 3, 1, 3)
 
         self.setLayout(grid)
@@ -133,5 +87,23 @@ class TabExpert(
         self.timer.start()
 
     def update_settings_data(self):
-        for spinBox in self.spinDict:
-            self.spinDict[spinBox].update_value()
+        if self.liveUpdating:
+            for spinBox in self.spinDict:
+                self.spinDict[spinBox].update_readback_value()
+
+    def okButtonPressed(self):
+        message = []
+        self.liveUpdating = True
+        for widget in self.spinDict:
+            # print(widget)
+            if self.spinDict[widget].manuallyUpdated:
+                setVal = self.spinDict[widget].simpleSpin.value()
+                # print('manually updated')
+                print("set" + widget + " to " + str(setVal))
+                message.append(["set" + widget + " to " + str(setVal)])
+                self.spinDict[widget].manuallyUpdated = False
+        self.popup = SetConfirmPopup(message)
+        self.popup.show()
+
+    def cancelButtonPressed(self):
+        self.liveUpdating = True
