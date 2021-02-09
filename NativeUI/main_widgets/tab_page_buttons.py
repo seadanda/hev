@@ -1,15 +1,17 @@
 import os
-
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize
+import logging
 
 
 class TabPageButtons(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, background_color=None, foreground_color=None, **kwargs):
         super(TabPageButtons, self).__init__(*args, **kwargs)
 
-        self.__iconsize = QSize(50, 50)
+        self.__iconsize = QSize(80, 80)
         self.__iconpath = self.__find_icons()
+        self.__background_color = self.__interpret_color(background_color)
+        self.__foreground_color = self.__interpret_color(foreground_color)
 
         layout = QtWidgets.QVBoxLayout()
 
@@ -25,14 +27,27 @@ class TabPageButtons(QtWidgets.QWidget):
             self.button_cntrls,
         ]
         self.__icons = [
-            "user-md-solid.svg",
-            "exclamation-triangle-solid.svg",
-            "fan-solid.svg",
-            "sliders-h-solid.svg",
+            "user-md-solid",
+            "exclamation-triangle-solid",
+            "fan-solid",
+            "sliders-h-solid",
         ]
+        self.__icons = [ic + ".png" for ic in self.__icons]
 
         for button, icon in zip(self.__buttons, self.__icons):
-            button.setIcon(QtGui.QIcon(os.path.join(self.__iconpath, icon)))
+            pixmap = QtGui.QPixmap(os.path.join(self.__iconpath, icon))
+
+            # set icon color
+            mask = pixmap.mask()
+            pixmap.fill(self.__foreground_color)
+            pixmap.setMask(mask)
+
+            # set button appearance
+            button.setStyleSheet(
+                "background-color: " + self.__background_color.name() + ";"
+            )
+
+            button.setIcon(QtGui.QIcon(pixmap))
             button.setIconSize(self.__iconsize)
             layout.addWidget(button)
 
@@ -41,6 +56,18 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_signin.pressed.connect(self.__signin_pressed)
         self.button_alarms.pressed.connect(self.__alarms_pressed)
         self.button_cntrls.pressed.connect(self.__cntrls_pressed)
+
+    def __interpret_color(self, color):
+        if color is None:
+            logging.warning("No color provided for TabPageButtons")
+            return QtGui.QColor.fromRgb(255, 0, 0)
+        elif isinstance(color, tuple):
+            return QtGui.QColor.fromRgb(*color)
+        elif isinstance(color, list):
+            return QtGui.QColor.fromRgb(*tuple(color))
+        elif isinstance(color, QtGui.QColor):
+            return color
+        raise TypeError("Unrecognised type for color")
 
     def __signin_pressed(self):
         self.parent().parent().stack.setCurrentWidget(self.parent().parent().main_view)
@@ -56,7 +83,7 @@ class TabPageButtons(QtWidgets.QWidget):
         )
 
     def __find_icons(self):
-        initial_path = "hev-display/assets/svg/"
+        initial_path = "hev-display/assets/png/"
         # assume we're in the root directory
         temp_path = os.path.join(os.getcwd(), initial_path)
         if os.path.isdir(temp_path):
@@ -69,11 +96,11 @@ class TabPageButtons(QtWidgets.QWidget):
 
         walk = os.walk(os.path.join(os.getcwd(), ".."))
         for w in walk:
-            if "svg" in w[1]:
-                temp_path = os.path.join(os.path.normpath(w[0]), "svg")
+            if "png" in w[1]:
+                temp_path = os.path.join(os.path.normpath(w[0]), "png")
                 return temp_path
 
-        raise Exception(FileNotFoundError, "could not locate svg icon files")
+        raise Exception(FileNotFoundError, "could not locate png icon files")
 
 
 if __name__ == "__main__":
