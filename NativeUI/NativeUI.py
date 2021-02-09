@@ -41,12 +41,14 @@ class NativeUI(HEVClient, QMainWindow):
         self.setWindowTitle("HEV NativeUI")
         self.setFixedSize(1920, 1080)
 
-        self.__background_color = QColor.fromRgb(30, 30, 30)
-        self.__foreground_color = QColor.fromRgb(200, 200, 200)
+        self.colors = {
+            "background": QColor.fromRgb(30, 30, 30),
+            "foreground": QColor.fromRgb(200, 200, 200),
+        }
 
         # bars
         self.topBar = TabTopBar()
-        self.leftBar = TabLeftBar()
+        self.leftBar = TabLeftBar(colors=self.colors)
 
         # Views
         self.stack = QStackedWidget(self)
@@ -91,7 +93,7 @@ class NativeUI(HEVClient, QMainWindow):
 
         # Appearance
         palette = self.palette()
-        palette.setColor(QPalette.Window, self.__background_color)
+        palette.setColor(QPalette.Window, self.colors["background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 

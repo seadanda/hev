@@ -2,24 +2,31 @@ import os
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize
 import logging
-from global_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
 
 
 class TabPageButtons(QtWidgets.QWidget):
-    def __init__(self, *args, background_color=None, foreground_color=None, **kwargs):
+    """
+    Widget to contain the buttons that allow movement between pages. Buttons
+    are oriented vertically.
+
+    Button colors may be dictated by setting the colors dict, wherein
+    foreground and background colors are provided in QColor types. If button
+    colors are not set they default to red.
+    """
+
+    def __init__(self, *args, colors: dict = None, **kwargs):
         super(TabPageButtons, self).__init__(*args, **kwargs)
 
         self.__iconsize = QSize(80, 80)
         self.__iconpath = self.__find_icons()
-        self.__background_color = self.__interpret_color(background_color)
-        self.__foreground_color = self.__interpret_color(foreground_color)
+        self.__colors = self.__interpret_colors(colors)
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.button_signin = QtWidgets.QPushButton()
-        self.button_alarms = QtWidgets.QPushButton()
-        self.button_fancon = QtWidgets.QPushButton()
-        self.button_cntrls = QtWidgets.QPushButton()
+        self.button_signin = QtWidgets.QPushButton("")
+        self.button_alarms = QtWidgets.QPushButton("")
+        self.button_fancon = QtWidgets.QPushButton("")
+        self.button_cntrls = QtWidgets.QPushButton("")
 
         self.__buttons = [
             self.button_signin,
@@ -39,13 +46,13 @@ class TabPageButtons(QtWidgets.QWidget):
             pixmap = QtGui.QPixmap(os.path.join(self.__iconpath, icon))
 
             # set icon color
-            mask = pixmap.mask()
-            pixmap.fill(self.__foreground_color)
-            pixmap.setMask(mask)
+            mask = pixmap.mask()  # mask from alpha
+            pixmap.fill(self.__colors["foreground"])  # fill with color
+            pixmap.setMask(mask)  # reapply mask
 
             # set button appearance
             button.setStyleSheet(
-                "background-color: " + self.__background_color.name() + ";"
+                "background-color: " + self.__colors["background"].name() + ";"
             )
 
             button.setIcon(QtGui.QIcon(pixmap))
@@ -59,17 +66,18 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_fancon.pressed.connect(self.__fancon_pressed)
         self.button_cntrls.pressed.connect(self.__cntrls_pressed)
 
-    def __interpret_color(self, color):
-        if color is None:
-            logging.warning("No color provided for TabPageButtons")
-            return QtGui.QColor.fromRgb(255, 0, 0)
-        elif isinstance(color, tuple):
-            return QtGui.QColor.fromRgb(*color)
-        elif isinstance(color, list):
-            return QtGui.QColor.fromRgb(*tuple(color))
-        elif isinstance(color, QtGui.QColor):
-            return color
-        raise TypeError("Unrecognised type for color")
+    def __interpret_colors(self, colors):
+        try:
+            _, _ = colors["foreground"], colors["background"]
+            return colors
+        except TypeError:
+            logging.warning("Color dict not set")
+        except KeyError:
+            logging.warning("missing key in color dict: %s" % str(colors))
+        return {
+            "foreground": QtGui.QColor.fromRgb(255, 0, 0),
+            "background": QtGui.QColor.fromRgb(0, 255, 0),
+        }
 
     def __signin_pressed(self):
         self.parent().parent().parent().stack.setCurrentWidget(
