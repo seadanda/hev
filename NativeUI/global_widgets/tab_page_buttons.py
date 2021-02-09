@@ -14,12 +14,17 @@ class TabPageButtons(QtWidgets.QWidget):
     colors are not set they default to red.
     """
 
-    def __init__(self, *args, colors: dict = None, **kwargs):
+    def __init__(self, *args, size: QSize = None, colors: dict = None, **kwargs):
         super(TabPageButtons, self).__init__(*args, **kwargs)
 
-        self.__iconsize = QSize(80, 80)
         self.__iconpath = self.__find_icons()
         self.__colors = self.__interpret_colors(colors)
+
+        if size is not None:
+            self.__button_size = size
+        else:
+            self.__button_size = QSize(100, 100)
+        self.__iconsize = self.__button_size * 0.8
 
         layout = QtWidgets.QVBoxLayout()
 
@@ -53,7 +58,9 @@ class TabPageButtons(QtWidgets.QWidget):
             # set button appearance
             button.setStyleSheet(
                 "background-color: " + self.__colors["background"].name() + ";"
+                "border-color: " + self.__colors["background"].name() + ";"
             )
+            button.setFixedSize(self.__button_size)
 
             button.setIcon(QtGui.QIcon(pixmap))
             button.setIconSize(self.__iconsize)
@@ -65,19 +72,6 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_alarms.pressed.connect(self.__alarms_pressed)
         self.button_fancon.pressed.connect(self.__fancon_pressed)
         self.button_cntrls.pressed.connect(self.__cntrls_pressed)
-
-    def __interpret_colors(self, colors):
-        try:
-            _, _ = colors["foreground"], colors["background"]
-            return colors
-        except TypeError:
-            logging.warning("Color dict not set")
-        except KeyError:
-            logging.warning("missing key in color dict: %s" % str(colors))
-        return {
-            "foreground": QtGui.QColor.fromRgb(255, 0, 0),
-            "background": QtGui.QColor.fromRgb(0, 255, 0),
-        }
 
     def __signin_pressed(self):
         self.parent().parent().parent().stack.setCurrentWidget(
@@ -118,6 +112,19 @@ class TabPageButtons(QtWidgets.QWidget):
                 return temp_path
 
         raise Exception(FileNotFoundError, "could not locate png icon files")
+
+    def __interpret_colors(self, colors):
+        try:
+            _, _ = colors["foreground"], colors["background"]
+            return colors
+        except TypeError:
+            logging.warning("Color dict not set")
+        except KeyError:
+            logging.warning("missing key in color dict: %s" % str(colors))
+        return {
+            "foreground": QtGui.QColor.fromRgb(255, 0, 0),
+            "background": QtGui.QColor.fromRgb(0, 255, 0),
+        }
 
 
 if __name__ == "__main__":

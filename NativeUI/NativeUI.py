@@ -14,14 +14,13 @@ from hev_alarms import AlarmView
 from hev_modes import ModeView
 from hevclient import HEVClient
 
-from PySide2.QtCore import QUrl, Signal, Slot
+from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QPalette
 from PySide2.QtWidgets import (
     QApplication,
     QHBoxLayout,
     QMainWindow,
     QStackedWidget,
-    QToolBar,
     QVBoxLayout,
     QWidget,
 )
