@@ -27,27 +27,31 @@ class TabModes(
         self.pcacButton.setProperty("selected", "1")
         self.pcacButton.style().polish(self.pcacButton)
         self.pcacEnable = [1, 0, 1, 1, 0, 1, 0, 1]
-        self.pcacBoxes = TemplateSetValues()
-        self.pcacBoxes.addSpinSingleCol(settingsList)
-        self.pcacBoxes.finaliseLayout()
+        self.pcacVals = [1,2,3,4,5,6,7,8]
+        #self.pcacBoxes = TemplateSetValues()
+        #self.pcacBoxes.addSpinSingleCol(settingsList)
+        #self.pcacBoxes.finaliseLayout()
 
         self.prvcButton = selectorButton("PC/AC-PRVC")
         self.prvcEnable = [1, 1, 0, 1, 0, 1, 1, 1]
-        self.prvcBoxes = TemplateSetValues()
-        self.prvcBoxes.addSpinSingleCol(settingsList)
-        self.prvcBoxes.finaliseLayout()
+        self.prvcVals = [2,3,4,5,6,7,8,9]
+        #self.prvcBoxes = TemplateSetValues()
+        #self.prvcBoxes.addSpinSingleCol(settingsList)
+        #self.prvcBoxes.finaliseLayout()
 
         self.psvButton = selectorButton("PC-PSV")
         self.psvEnable = [1, 1, 0, 1, 0, 1, 0, 1]
-        self.psvBoxes = TemplateSetValues()
-        self.psvBoxes.addSpinSingleCol(settingsList)
-        self.psvBoxes.finaliseLayout()
+        self.psvVals = [3,4,5,6,7,8,9,1]
+        #self.psvBoxes = TemplateSetValues()
+        #self.psvBoxes.addSpinSingleCol(settingsList)
+        #self.psvBoxes.finaliseLayout()
 
         self.cpapButton = selectorButton("CPAP")
         self.cpapEnable = [1, 0, 1, 1, 0, 1, 0, 1]
-        self.cpapBoxes = TemplateSetValues()
-        self.cpapBoxes.addSpinSingleCol(settingsList)
-        self.cpapBoxes.finaliseLayout()
+        self.cpapVals = [4,5,6,7,8,9,1,2]
+        #self.cpapBoxes = TemplateSetValues()
+        #self.cpapBoxes.addSpinSingleCol(settingsList)
+        #self.cpapBoxes.finaliseLayout()
 
         self.buttonWidgets = [
             self.pcacButton,
@@ -56,23 +60,24 @@ class TabModes(
             self.cpapButton,
         ]
         enableList = [self.pcacEnable, self.prvcEnable, self.psvEnable, self.cpapEnable]
-        self.boxes = [self.pcacBoxes, self.prvcBoxes, self.psvBoxes, self.cpapBoxes]
-        for button, array, box in zip(self.buttonWidgets, enableList, self.boxes):
+        #self.boxes = [self.pcacBoxes, self.prvcBoxes, self.psvBoxes, self.cpapBoxes]
+        self.valsList = [self.pcacVals, self.prvcVals, self.psvVals, self.cpapVals]
+        for button, array, vals in zip(self.buttonWidgets, enableList, self.valsList):
             hlayout.addWidget(button)
-            self.modeSwitch2(box, array)
+#            self.modeSwitch2(box, array)
             button.pressed.connect(lambda i=button: self.setColour(i))
             # button.pressed.connect(lambda i=array: self.modeSwitch(i))
-            button.pressed.connect(lambda i=box: self.modeSwitch(i))
+            button.pressed.connect(lambda i=vals: self.modeSwitch(i))
         self.layoutList.append(hlayout)
 
-        vlayout = QtWidgets.QVBoxLayout()
-        self.stack = QtWidgets.QStackedWidget()
-        for box in self.boxes:
-            self.stack.addWidget(box)
-        self.stack.setCurrentWidget(self.pcacBoxes)
-        vlayout.addWidget(self.stack)
-        self.layoutList.append(vlayout)
-
+        # vlayout = QtWidgets.QVBoxLayout()
+        # self.stack = QtWidgets.QStackedWidget()
+        # for box in self.boxes:
+        #     self.stack.addWidget(box)
+        # self.stack.setCurrentWidget(self.pcacBoxes)
+        # vlayout.addWidget(self.stack)
+        # self.layoutList.append(vlayout)
+        self.addSpinSingleCol(settingsList)
         # self.addSpinSingleCol(settingsList)
         self.addButtons()
         self.finaliseLayout()
@@ -87,7 +92,12 @@ class TabModes(
             button.style().unpolish(button)
             button.style().polish(button)
 
-    def modeSwitch(self, box):
+    def modeSwitch(self,vals):
+        for widget, value in zip(self.spinDict, vals):
+            self.spinDict[widget].simpleSpin.setValue(value)
+
+
+    def modeSwitch3(self, box):
         self.stack.setCurrentWidget(box)
 
     def modeSwitch2(self, box, enableList):

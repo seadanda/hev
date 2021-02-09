@@ -33,4 +33,4 @@ class SetConfirmPopup(
         )  # no window title
 
     def cancel_button_pressed(self):
-        self.parent = None
+        self.close()

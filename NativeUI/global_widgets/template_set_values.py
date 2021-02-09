@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets, QtGui, QtCore
 from settings_widgets.tab_expert import simpleSpin
+from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class TemplateSetValues(
@@ -9,6 +10,7 @@ class TemplateSetValues(
         super(TemplateSetValues, self).__init__(*args, **kwargs)
         self.liveUpdating = True
         self.layoutList = []
+        self.spinDict = {}
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)  # just faster than 60Hz
@@ -22,12 +24,43 @@ class TemplateSetValues(
         self.setLayout(vlayout)
 
     def addSpinSingleCol(self, settingsList):
-        self.spinDict = {}
         vOptionLayout = QtWidgets.QVBoxLayout()
         for info in settingsList:
             self.spinDict[info[0]] = simpleSpin(info)
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
+
+    def addSpinDblCol(self,settingsList):
+        grid = QtWidgets.QGridLayout()
+        i = 0
+        for info in settingsList:
+            self.spinDict[info[0]] = simpleSpin(info)
+            grid.addWidget(self.spinDict[info[0]], int(i / 2), i % 2)
+            i = i + 1
+        self.layoutList.append(grid)
+
+    def addExpertControls(self,controlDict):
+        grid = QtWidgets.QGridLayout()
+        i = 0
+        for section in controlDict.keys():
+
+            self.titleLabel = QtWidgets.QLabel(section)
+            self.titleLabel.setStyleSheet("background-color:white")
+            self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
+            grid.addWidget(self.titleLabel, i, 0, 1, 6)
+            j = -1
+            for boxInfo in controlDict[section]:
+                j = j + 1
+                # label, units = boxInfo, controlDict[section][boxInfo]
+                self.spinDict[boxInfo[0]] = simpleSpin(boxInfo)
+                #self.spinInfo.append(boxInfo)
+                grid.addWidget(
+                    self.spinDict[boxInfo[0]], i + 1 + int(j / 3), 2 * (j % 3), 1, 2
+                )
+
+            i = i + 1 + int(j / 3) + 1
+        self.layoutList.append(grid)
+
 
     def addButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
@@ -55,12 +88,12 @@ class TemplateSetValues(
         message = []
         self.liveUpdating = True
         for widget in self.spinDict:
-            # print(widget)
             if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].simpleSpin.value()
-                # print('manually updated')
-                print("set" + widget + " to " + str(setVal))
                 self.spinDict[widget].manuallyUpdated = False
+                message.append("set" + widget + " to " + str(setVal))
+        self.popup = SetConfirmPopup(message)
+        self.popup.show()
 
     def cancelButtonPressed(self):
         self.liveUpdating = True
