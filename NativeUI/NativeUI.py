@@ -4,12 +4,16 @@ import logging
 import sys
 
 import numpy as np
-from alarm_widgets.tab_alarms import TabAlarm
+
+# from alarm_widgets.tab_alarms import TabAlarm
 from global_widgets.tab_top_bar import TabTopBar
+from global_widgets.tab_left_bar import TabLeftBar
 from hev_main import MainView
 from hev_settings import SettingsView
+from hev_alarms import AlarmView
+from hev_modes import ModeView
 from hevclient import HEVClient
-from main_widgets.tab_page_buttons import TabPageButtons
+
 from PySide2.QtCore import QUrl, Signal, Slot
 from PySide2.QtGui import QColor, QPalette
 from PySide2.QtWidgets import (
@@ -42,10 +46,7 @@ class NativeUI(HEVClient, QMainWindow):
 
         # bars
         self.topBar = TabTopBar()
-        self.buttonBar = TabPageButtons(
-            background_color=self.__background_color,
-            foreground_color=self.__foreground_color,
-        )
+        self.leftBar = TabLeftBar()
 
         # Views
         self.stack = QStackedWidget(self)
@@ -53,14 +54,16 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.main_view)
         self.settings_view = SettingsView()
         self.stack.addWidget(self.settings_view)
-        self.alarms_view = TabAlarm()
+        self.alarms_view = AlarmView()
         self.stack.addWidget(self.alarms_view)
+        self.modes_view = ModeView()
+        self.stack.addWidget(self.modes_view)
         self.stack.setCurrentWidget(self.alarms_view)
-        self.menu_bar = TabPageButtons()
+        #        self.menu_bar = TabPageButtons()
 
         # Layout
         hlayout = QHBoxLayout()
-        hlayout.addWidget(self.buttonBar)
+        hlayout.addWidget(self.leftBar)
         hlayout.addWidget(self.stack)
 
         vlayout = QVBoxLayout()
@@ -112,10 +115,11 @@ class NativeUI(HEVClient, QMainWindow):
         """callback from the polling function, payload is data from socket """
         # Store data in dictionary of lists
         self.statusBar().showMessage(f"{payload}")
-        print(payload["type"])
+        # print(payload["type"])
         try:
             if payload["type"] == "DATA":
                 self.data = payload["DATA"]
+                self.ongoingAlarms = payload["alarms"]
                 # remove first entry and append plot data to end
                 self.plots = np.append(
                     np.delete(self.plots, 0, 0),
@@ -139,11 +143,11 @@ class NativeUI(HEVClient, QMainWindow):
                 self.targets = payload["TARGET"]
             if payload["type"] == "READBACK":
                 self.readback = payload["READBACK"]
-                print(self.readback)
+                # print(self.readback)
             if payload["type"] == "PERSONAL":
-                self.data = payload["PERSONAL"]
-                self.targets = self.data
-                print(self.targets)
+                self.personal = payload["PERSONAL"]
+                #  self.personal = self.data
+                # print(self.targets)
 
                 self.plots = np.append(
                     np.delete(self.plots, 0, 0),

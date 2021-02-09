@@ -1,8 +1,48 @@
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtCore, QtGui, QtWidgets
 
-class alarmPopup(
-    QtWidgets.QDialog
-):
+
+class alarmWidget(QtWidgets.QWidget):
+    def __init__(self, alarmPayload, *args, **kwargs):
+        super(alarmWidget, self).__init__(*args, **kwargs)
+        self.layout = QtWidgets.QHBoxLayout()
+        self.layout.setSpacing(0)
+        self.layout.setMargin(0)
+        self.alarmPayload = alarmPayload
+
+        iconLabel = QtWidgets.QLabel()
+        iconLabel.setText("icon!")
+
+        self.layout.addWidget(iconLabel)
+
+        textLabel = QtWidgets.QLabel()
+        textLabel.setText(self.alarmPayload["alarm_code"])
+        textLabel.setFixedHeight(40)
+        textLabel.setFixedWidth(150)
+        textLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.layout.addWidget(textLabel)
+
+        self.setLayout(self.layout)
+        if alarmPayload["alarm_type"] == "PRIORITY_HIGH":
+            self.setStyleSheet("background-color:red;")
+        elif alarmPayload["alarm_type"] == "PRIORITY_MEDIUM":
+            self.setStyleSheet("background-color:orange;")
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(20000)  # just faster than 60Hz
+        self.timer.timeout.connect(self.checkAlarm)
+        self.timer.start()
+
+    def checkAlarm(self):
+        # ongoingAlarms = self.parent().parent().parent().parent().parent().parent().parent().ongoingAlarms
+        # for alarms in ongoingAlarms:
+        #    if alarms['alarm_code'] == 'rubbis':#self.alarmPayload['alarm_code']:
+        #        return
+        # print('alarm no longer exists')
+        self.parent().alarmDict.pop(self.alarmPayload["alarm_code"])
+        self.setParent(None)
+
+
+class alarmPopup(QtWidgets.QDialog):
     def __init__(self, *args, **kwargs):
         super(alarmPopup, self).__init__(*args, **kwargs)
 
@@ -24,51 +64,24 @@ class alarmPopup(
         self.shadow.setXOffset(10)
         self.shadow.setYOffset(10)
 
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(100)  # just faster than 60Hz
+        self.timer.timeout.connect(self.adjustSize)
+        self.timer.start()
 
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(16)  # just faster than 60Hz
-        # self.timer.timeout.connect(
-        #     self.updateAlarms
-        # )  # updates without checking if new data arrived?
-        # self.timer.start()
-        # self.existingAlarms = []
-
-    # def updateAlarms(self):
-    #     newAlarm = self.parent().alarms
-    #     if newAlarm == []:
-    #         return
-    #     if newAlarm["alarm_code"] in self.existingAlarms:
-    #         a = 1  # do nothing
-    #     else:
-    #         self.addAlarm(newAlarm)
-    #         self.existingAlarms.append(newAlarm["alarm_code"])
-    #     self.show()
+    def clearAlarms(self):
+        for i in reversed(range(self.layout.count())):
+            self.layout.itemAt(i).widget().setParent(None)
+        self.adjustSize()
+        self.setLayout(self.layout)
+        self.alarmDict = {}
 
     def addAlarm(self, alarmPayload):
-        alarmBox = QtWidgets.QWidget()
-        alarmLayout = QtWidgets.QHBoxLayout()
-        alarmLayout.setSpacing(0)
+        self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(alarmPayload)
+        self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
 
-        alarmLayout.setMargin(0)
-        iconLabel = QtWidgets.QLabel()
-        iconLabel.setText("icon!")
-        alarmLayout.addWidget(iconLabel)
-
-        textLabel = QtWidgets.QLabel()
-        textLabel.setText(alarmPayload["alarm_code"])
-
-        textLabel.setFixedHeight(40)
-        textLabel.setFixedWidth(150)
-        textLabel.setAlignment(QtCore.Qt.AlignCenter)
-        alarmLayout.addWidget(textLabel)
-
-        alarmBox.setLayout(alarmLayout)
-        if alarmPayload["alarm_type"] == "PRIORITY_HIGH":
-            alarmBox.setStyleSheet("background-color:red;")
-        elif alarmPayload["alarm_type"] == "PRIORITY_MEDIUM":
-            alarmBox.setStyleSheet("background-color:orange;")
-
-        self.layout.addWidget(alarmBox)
+    def resetTimer(self, alarmPayload):
+        self.alarmDict[alarmPayload["alarm_code"]].timer.start()
 
     def location_on_window(self):
         screen = QtWidgets.QDesktopWidget().screenGeometry()

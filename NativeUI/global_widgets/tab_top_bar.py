@@ -1,5 +1,5 @@
-from main_widgets.tab_battery import TabBattery
-from main_widgets.tab_personal import TabPersonal
+from global_widgets.tab_battery import TabBattery
+from global_widgets.tab_personal import TabPersonal
 from PySide2 import QtCore, QtGui, QtWidgets
 
 

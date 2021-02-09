@@ -7,25 +7,25 @@ from hevclient import HEVClient
 
 # from PySide2.QtCore import Slot
 from PySide2 import QtCore, QtGui, QtWidgets
-from settings_widgets.tab_charts import TabChart
-from settings_widgets.tab_expert import TabExpert
+from mode_widgets.tab_modes import TabModes
+from mode_widgets.tab_personal import TabPersonal
 from global_widgets.global_select_button import selectorButton
 
 
-class SettingsView(QtWidgets.QWidget):
+class ModeView(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
-        super(SettingsView, self).__init__(*args, **kwargs)
+        super(ModeView, self).__init__(*args, **kwargs)
 
         hTabLayout = QtWidgets.QHBoxLayout()
-        self.expertButton = selectorButton("Expert")
-        self.expertButton.setProperty("selected", "1")
-        self.expertButton.style().polish(self.expertButton)
-        self.expertButton.pressed.connect(self.expertPressed)
+        self.modeButton = selectorButton("Mode Settings")
+        self.modeButton.setProperty("selected", "1")
+        self.modeButton.style().polish(self.modeButton)
+        self.modeButton.pressed.connect(self.modePressed)
 
-        self.chartButton = selectorButton("Charts")
-        self.chartButton.pressed.connect(self.chartPressed)
+        self.personalButton = selectorButton("Personal Settings")
+        self.personalButton.pressed.connect(self.personalPressed)
 
-        self.buttonWidgets = [self.expertButton, self.chartButton]
+        self.buttonWidgets = [self.modeButton, self.personalButton]
         for button in self.buttonWidgets:
             hTabLayout.addWidget(button)
             button.pressed.connect(lambda i=button: self.setColour(i))
@@ -34,23 +34,19 @@ class SettingsView(QtWidgets.QWidget):
         vlayout.addLayout(hTabLayout)
 
         self.stack = QtWidgets.QStackedWidget()
-        self.expertTab = TabExpert()
-        self.stack.addWidget(self.expertTab)
-        self.chartTab = TabChart()
-        self.stack.addWidget(self.chartTab)
+        self.modeTab = TabModes()
+        self.stack.addWidget(self.modeTab)
+        self.personalTab = TabPersonal()
+        self.stack.addWidget(self.personalTab)
 
         vlayout.addWidget(self.stack)
         self.setLayout(vlayout)
 
-    def expertPressed(self):
-        self.stack.setCurrentWidget(self.expertTab)
+    def modePressed(self):
+        self.stack.setCurrentWidget(self.modeTab)
 
-    def chartPressed(self):
-        self.stack.setCurrentWidget(self.chartTab)
-
-    def change(self):
-        print("pressed")
-        self.parent().setCentralWidget(self.parent().main_view)
+    def personalPressed(self):
+        self.stack.setCurrentWidget(self.personalTab)
 
     def setColour(self, buttonWidg):
         for button in self.buttonWidgets:

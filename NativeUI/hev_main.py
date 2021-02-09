@@ -5,7 +5,7 @@ Docstring
 from main_widgets.tab_measurements import TabMeasurements
 from main_widgets.tab_plots import TabPlots
 from main_widgets.tab_spin_buttons import TabSpinButtons
-from main_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
+from main_widgets.tab_ellipsis import TabEllipsis
 from PySide2.QtWidgets import QHBoxLayout, QVBoxLayout, QWidget
 
 
@@ -20,25 +20,23 @@ class MainView(QWidget):
         hlayout = QHBoxLayout()
 
         # self.setStyleSheet('background-color: black')
-        left_vlayout = QVBoxLayout()
+        # left_vlayout = QVBoxLayout()
         center_vlayout = QVBoxLayout()
         right_vlayout = QVBoxLayout()
+        bottom_layout = QHBoxLayout()
 
         # Set up the widget tabs
         self.tab_plots = TabPlots()
-        # self.page_buttons = TabPageButtons()
-        self.start_stop_standby_buttons = TabStartStopStandbyButtons()
         self.measurements = TabMeasurements()
 
-        # left column - page buttons and start/stop/standby
-        # left_vlayout.addWidget(self.page_buttons)
-        left_vlayout.addWidget(self.start_stop_standby_buttons)
-        hlayout.addLayout(left_vlayout)
+        self.tab_spin = TabSpinButtons(self)
+        self.ellipsis = TabEllipsis(self)
+        bottom_layout.addWidget(self.ellipsis)
+        bottom_layout.addWidget(self.tab_spin)
 
         # center column - plots
         center_vlayout.addWidget(self.tab_plots)
-        self.tab_spin = TabSpinButtons(self)
-        center_vlayout.addWidget(self.tab_spin)
+        center_vlayout.addLayout(bottom_layout)
         hlayout.addLayout(center_vlayout)
 
         # right column - measurements

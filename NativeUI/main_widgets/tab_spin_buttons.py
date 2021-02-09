@@ -94,6 +94,8 @@ class SpinButton(QtWidgets.QFrame):
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setMargin(0)
+
+        # create and style label
         self.label = QtWidgets.QLabel()
         self.label.setText("test label")
 
@@ -160,9 +162,6 @@ class SpinButton(QtWidgets.QFrame):
         self.popUp = SpinPopup()
         self.popUp.okButton.clicked.connect(self.okButtonPressed)
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
-        # self.lineEdit.installEventFilter(self)
-
-        # self.test()
 
     def eventFilter(self, source, event):
         if (
@@ -187,10 +186,6 @@ class SpinButton(QtWidgets.QFrame):
         self.doubleSpin.style().unpolish(self.doubleSpin)
         self.doubleSpin.style().polish(self.doubleSpin)
         self.doubleSpin.setProperty("colour", option)
-
-
-#    def valuechange(self):
-#        print("changed to " + str(self.value()))
 
 
 class TabSpinButtons(QtWidgets.QWidget):
