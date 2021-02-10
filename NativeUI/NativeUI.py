@@ -47,7 +47,7 @@ class NativeUI(HEVClient, QMainWindow):
 
         # bars
         self.topBar = TabTopBar()
-        self.leftBar = TabLeftBar(colors=self.colors)
+        self.leftBar = TabLeftBar(self, colors=self.colors)
 
         # Views
         self.stack = QStackedWidget(self)

@@ -14,9 +14,12 @@ class TabPageButtons(QtWidgets.QWidget):
     colors are not set they default to red.
     """
 
-    def __init__(self, *args, size: QSize = None, colors: dict = None, **kwargs):
+    def __init__(
+        self, NativeUI, *args, size: QSize = None, colors: dict = None, **kwargs
+    ):
         super(TabPageButtons, self).__init__(*args, **kwargs)
 
+        self.NativeUI = NativeUI
         self.__iconpath = self.__find_icons()
         self.__colors = self.__interpret_colors(colors)
 
@@ -74,24 +77,16 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_cntrls.pressed.connect(self.__cntrls_pressed)
 
     def __signin_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().main_view
-        )
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.main_view)
 
     def __cntrls_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().settings_view
-        )
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.settings_view)
 
     def __alarms_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().alarms_view
-        )
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI().alarms_view)
 
     def __fancon_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().modes_view
-        )
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.modes_view)
 
     def __find_icons(self):
         initial_path = "hev-display/assets/png/"
