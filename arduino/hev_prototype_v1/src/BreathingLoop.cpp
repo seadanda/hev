@@ -1453,9 +1453,13 @@ void BreathingLoop::updateO2Concentration()
     }
     _valve_O2_last_state = vin_o2;
     _valve_air_last_state = vin_air;
-    if(_fiO2_est < 0.21 || _fiO2_est > 1){
-        // something went wrong, raise error
 
+    if(_fiO2_est <= 0.21) 
+    {
+        _fiO2_est = 0.211; //NEVER equal to 0.21 since a division by 0 could occur
+    }else if(_fiO2_est >=1){
+        // something went wrong, raise error
+        _fiO2_est = 0.99;  //NEVER equal to 1 since a division by 0 could occur
     }
     // _readings_avgs.o2_percent = _fiO2_est * 100;
 }
@@ -1478,7 +1482,7 @@ uint8_t BreathingLoop::determineFillMode()
     if (fiO2_desired < 0.22 && delta_fiO2 > -0.1){
         // If fiO2_est is below 32% fill with air without purging
 	next_fill_state = FILL_STATES::AIR_FILL;
-    }else if (delta_fiO2 > 0.){      // overshoot when increasing 
+    }else if (delta_fiO2 > 0.){      
         float dp_purge = (p_atm + p_buff_upper) * delta_fiO2 / (1 - _fiO2_est);
         if (dp_purge < (p_buff_upper - p_max_purge)){
             _p_to_purge = p_buff_upper - dp_purge;
@@ -1489,7 +1493,7 @@ uint8_t BreathingLoop::determineFillMode()
         _t_start_purge = millis();
         next_fill_state = FILL_STATES::INCREASE_O2;
     }else if (delta_fiO2 < -0.05){      // tolerance of 5%
-        float dp_purge = (p_atm + p_buff_upper) * -1 * delta_fiO2 / _fiO2_est;
+        float dp_purge = (p_atm + p_buff_upper) * -1 * delta_fiO2 / (_fiO2_est - .21);
         if (dp_purge < (p_buff_upper - p_max_purge)){
             _p_to_purge = p_buff_upper - dp_purge;
         }else{
@@ -1500,9 +1504,8 @@ uint8_t BreathingLoop::determineFillMode()
         next_fill_state = FILL_STATES::DECREASE_O2;
     }else{
         _o2_frac_pressure = p_buff_now + (fiO2_desired - 0.21) * (p_buff_upper - p_buff_now) / 0.79; 
-        // fill purely with O2 when O2_frac_p is > p_buff_low (overshoot fiO2)
         _finished_filling = false;
-	next_fill_state = FILL_STATES::MAINTAIN_O2;
+	    next_fill_state = FILL_STATES::MAINTAIN_O2;
     }
     
     logMsg("delta_fiO2= " + String(delta_fiO2) + " FillState: " + String(next_fill_state));
