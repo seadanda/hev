@@ -31,13 +31,13 @@ class TabPageButtons(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.button_signin = QtWidgets.QPushButton("")
+        self.button_mainview = QtWidgets.QPushButton("")
         self.button_alarms = QtWidgets.QPushButton("")
         self.button_fancon = QtWidgets.QPushButton("")
         self.button_cntrls = QtWidgets.QPushButton("")
 
         self.__buttons = [
-            self.button_signin,
+            self.button_mainview,
             self.button_alarms,
             self.button_fancon,
             self.button_cntrls,
@@ -76,30 +76,30 @@ class TabPageButtons(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.button_signin.pressed.connect(self.__signin_pressed)
-        self.button_alarms.pressed.connect(self.__alarms_pressed)
-        self.button_fancon.pressed.connect(self.__fancon_pressed)
-        self.button_cntrls.pressed.connect(self.__cntrls_pressed)
+        self.button_mainview.pressed.connect(self.mainview_pressed)
+        self.button_alarms.pressed.connect(self.alarms_pressed)
+        self.button_fancon.pressed.connect(self.fancon_pressed)
+        self.button_cntrls.pressed.connect(self.cntrls_pressed)
 
-    def __signin_pressed(self):
+    def mainview_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.main_view)
         for button in self.__buttons:
             button.setEnabled(True)
-        self.button_signin.setEnabled(False)
+        self.button_mainview.setEnabled(False)
 
-    def __cntrls_pressed(self):
+    def cntrls_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.settings_view)
         for button in self.__buttons:
             button.setEnabled(True)
         self.button_cntrls.setEnabled(False)
 
-    def __alarms_pressed(self):
+    def alarms_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.alarms_view)
         for button in self.__buttons:
             button.setEnabled(True)
         self.button_alarms.setEnabled(False)
 
-    def __fancon_pressed(self):
+    def fancon_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.modes_view)
         for button in self.__buttons:
             button.setEnabled(True)
@@ -137,8 +137,3 @@ class TabPageButtons(QtWidgets.QWidget):
             "foreground": QtGui.QColor.fromRgb(255, 0, 0),
             "background": QtGui.QColor.fromRgb(0, 255, 0),
         }
-
-
-if __name__ == "__main__":
-    y = QtWidgets.QApplication()
-    x = TabPageButtons()

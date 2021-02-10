@@ -61,7 +61,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView()
         self.stack.addWidget(self.modes_view)
-        self.stack.setCurrentWidget(self.alarms_view)
+        # self.stack.setCurrentWidget(self.main_view)
         #        self.menu_bar = TabPageButtons()
 
         # Layout
@@ -97,6 +97,9 @@ class NativeUI(HEVClient, QMainWindow):
         palette.setColor(QPalette.Window, self.colors["background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
+
+        # Update page buttons to match the shown view
+        self.leftBar.tab_page_buttons.mainview_pressed()
 
         # self.main_view.alarmHandler.show()
 
