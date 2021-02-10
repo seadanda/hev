@@ -30,7 +30,7 @@ class TemplateSetValues(
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
 
-    def addSpinDblCol(self,settingsList):
+    def addSpinDblCol(self, settingsList):
         grid = QtWidgets.QGridLayout()
         i = 0
         for info in settingsList:
@@ -39,7 +39,7 @@ class TemplateSetValues(
             i = i + 1
         self.layoutList.append(grid)
 
-    def addExpertControls(self,controlDict):
+    def addExpertControls(self, controlDict):
         grid = QtWidgets.QGridLayout()
         i = 0
         for section in controlDict.keys():
@@ -53,14 +53,13 @@ class TemplateSetValues(
                 j = j + 1
                 # label, units = boxInfo, controlDict[section][boxInfo]
                 self.spinDict[boxInfo[0]] = simpleSpin(boxInfo)
-                #self.spinInfo.append(boxInfo)
+                # self.spinInfo.append(boxInfo)
                 grid.addWidget(
                     self.spinDict[boxInfo[0]], i + 1 + int(j / 3), 2 * (j % 3), 1, 2
                 )
 
             i = i + 1 + int(j / 3) + 1
         self.layoutList.append(grid)
-
 
     def addButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
@@ -82,7 +81,11 @@ class TemplateSetValues(
     def update_settings_data(self):
         if self.liveUpdating:
             for widget in self.spinDict:
-                self.spinDict[widget].update_targets_value()
+                # Added to avoid the error this throws making the output unreadable
+                try:
+                    self.spinDict[widget].update_targets_value()
+                except AttributeError:
+                    return
 
     def okButtonPressed(self):
         message = []

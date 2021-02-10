@@ -13,7 +13,7 @@ from global_widgets.global_select_button import selectorButton
 
 
 class AlarmView(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmView, self).__init__(*args, **kwargs)
 
         hTabLayout = QtWidgets.QHBoxLayout()
@@ -38,7 +38,7 @@ class AlarmView(QtWidgets.QWidget):
         vlayout.addLayout(hTabLayout)
 
         self.stack = QtWidgets.QStackedWidget()
-        self.alarmTab = TabAlarm()
+        self.alarmTab = TabAlarm(NativeUI)
         self.stack.addWidget(self.alarmTab)
         self.clinicalTab = TabClinical()
         self.stack.addWidget(self.clinicalTab)

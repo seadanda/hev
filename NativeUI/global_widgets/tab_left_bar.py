@@ -24,7 +24,7 @@ class TabLeftBar(QtWidgets.QWidget):
             NativeUI, colors=colors, size=QSize(button_width, button_width)
         )
         self.tab_start_stop_buttons = TabStartStopStandbyButtons(
-            colors=colors, size=QSize(button_width, int(button_width / 3))
+            NativeUI, colors=colors, size=QSize(button_width, int(button_width / 3))
         )
 
         self.widgets = [self.tab_page_buttons, self.tab_start_stop_buttons]

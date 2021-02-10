@@ -4,12 +4,12 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class TabTopBar(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         layout = QtWidgets.QHBoxLayout(self)
-        self.tab_personal = TabPersonal()
-        self.tab_battery = TabBattery()
+        self.tab_personal = TabPersonal(NativeUI)
+        self.tab_battery = TabBattery(NativeUI)
         self.widgets = [self.tab_personal, self.tab_battery]
         for widget in self.widgets:
             layout.addWidget(widget)
