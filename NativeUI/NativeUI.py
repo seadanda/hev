@@ -43,6 +43,8 @@ class NativeUI(HEVClient, QMainWindow):
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
+            "background-disabled": QColor.fromRgb(15, 15, 15),
+            "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
 
         # bars
