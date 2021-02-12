@@ -287,7 +287,6 @@ void BreathingLoop::updateCycleReadings()
 
     if (_bl_state == BL_STATES::BUFF_PRE_INHALE){
         if(_cycle_done == false){
-    logMsg("hello\n");
             uint32_t tnow = static_cast<uint32_t>(millis());
 
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
@@ -1506,9 +1505,6 @@ uint8_t BreathingLoop::determineFillMode()
         _o2_frac_pressure = p_buff_now + (fiO2_desired - 0.21) * (p_buff_upper - p_buff_now) / 0.79; 
         _finished_filling = false;
 	    next_fill_state = FILL_STATES::MAINTAIN_O2;
-    }
-    
-    logMsg("delta_fiO2= " + String(delta_fiO2) + " FillState: " + String(next_fill_state));
-    
+    }    
     return next_fill_state;
 }
