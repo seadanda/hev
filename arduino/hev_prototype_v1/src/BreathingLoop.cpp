@@ -294,6 +294,8 @@ void BreathingLoop::updateCycleReadings()
 
             _cycle_readings.timestamp = tnow;
             _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// FIXME
+            // logging to cross check fio2 with TestChest
+            logMsg(String(tnow)+","+String(_targets_current->fiO2_percent)+","+String( _readings_avgs.o2_percent)+","+String(_fiO2_est));
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
             _total_cycle_duration[_cycle_index] = (
@@ -953,11 +955,9 @@ uint32_t BreathingLoop::calculateDurationExhale() {
 
 float    BreathingLoop::getIERatio(){
     // TODO : check with Oscar/Xavier 
-    // commented to display fiO2_est
-    // float total_inhale_time = _states_durations.inhale + _states_durations.pause;
-    // float total_exhale_time = _states_durations.exhale;
-    // return total_inhale_time/total_exhale_time;
-    return _fiO2_est *100;
+    float total_inhale_time = _states_durations.inhale + _states_durations.pause;
+    float total_exhale_time = _states_durations.exhale;
+    return total_inhale_time/total_exhale_time;
 }
 
 
