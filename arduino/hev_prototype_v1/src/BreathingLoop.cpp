@@ -253,7 +253,8 @@ void BreathingLoop::updateReadings()
 
         resetReadingSums();
         updateFromTargets();
-
+        // logging to cross check fio2 with TestChest
+        logMsg(String(_targets_current->fiO2_percent)+","+String( _readings_avgs.o2_percent)+","+String(_fiO2_est));
     }
 }
 
@@ -293,8 +294,6 @@ void BreathingLoop::updateCycleReadings()
 
             _cycle_readings.timestamp = tnow;
             _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// FIXME
-            // logging to cross check fio2 with TestChest
-            logMsg(String(tnow)+","+String(_targets_current->fiO2_percent)+","+String( _readings_avgs.o2_percent)+","+String(_fiO2_est));
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
             _total_cycle_duration[_cycle_index] = (
