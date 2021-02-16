@@ -1,30 +1,21 @@
-import logging
-import argparse
-import sys
-
-# from PySide2.QtCore import Slot
-from PySide2 import QtWidgets, QtGui, QtCore
-
-# from PySide2.QtWidgets import QWidget, QApplication, QHBoxLayout, QVBoxLayout
-from hevclient import HEVClient
 from alarm_widgets.tab_alarms import TabAlarm
 from alarm_widgets.tab_clinical import TabClinical
 from global_widgets.global_select_button import selectorButton
 from global_widgets.template_main_pages import TemplateMainPages
 
 
-class AlarmView(QtWidgets.QWidget):
+class AlarmView(TemplateMainPages):
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmView, self).__init__(*args, **kwargs)
 
-        self.alarmButton = selectorButton("List of Alarms")
-        self.clinicalButton = selectorButton("Clinical Limits")
-        self.techButton = selectorButton("Technical Limits")
+        self.alarm_button = selectorButton("List of Alarms")
+        self.clinical_button = selectorButton("Clinical Limits")
+        self.tech_button = selectorButton("Technical Limits")
 
-        self.buttonWidgets = [self.alarmButton, self.clinicalButton, self.techButton]
+        self.button_widgets = [self.alarmButton, self.clinicalButton, self.techButton]
 
-        self.alarmTab = TabAlarm()
-        self.clinicalTab = TabClinical()
-        self.technicalTab = TabClinical()
-        self.tabsList = [self.alarmTab, self.clinicalTab, self.technicalTab]
-        self.buildPage(self.buttonWidgets, self.tabsList)
+        self.alarm_tab = TabAlarm(NativeUI)
+        self.clinical_tab = TabClinical(NativeUI)
+        self.technical_tab = TabClinical(NativeUI)
+        self.tabs_list = [self.alarm_tab, self.clinical_tab, self.technical_tab]
+        self.buildPage(self.button_widgets, self.tabs_list)
