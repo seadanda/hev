@@ -11,14 +11,14 @@ class TabModes(
         super(TabModes, self).__init__(*args, **kwargs)
 
         settingsList = [
-            ["Respiratory Rate", "/min", "respiratory_rate"],
-            ["Inhale Time", "s", "inhale_time"],
-            ["IE Ratio", "", "ie_ratio"],
-            ["Inhale Trigger Sensitivity", "", "inhale_trigger_threshold"],
-            ["Exhale Trigger Sensitivity", "", "exhale_trigger_threshold"],
-            ["Inhale Pressure", "", "inspiratory_pressure"],
-            ["Inhale volume", "", "volume"],
-            ["Percentage O2", "", "fiO2_percent"],
+            ["Respiratory Rate", "/min", "respiratory_rate", "SET_TARGET_","RESPIRATORY_RATE"],
+            ["Inhale Time", "s", "inhale_time", "SET_TARGET_","INHALE_TIME"],
+            ["IE Ratio", "", "ie_ratio", "SET_TARGET_","IE_RATIO"],
+            ["Inhale Trigger Sensitivity", "", "inhale_trigger_threshold", "SET_TARGET_","INHALE_TRIGGER_THRESHOLD"],
+            ["Exhale Trigger Sensitivity", "", "exhale_trigger_threshold", "SET_TARGET_","EXHALE_TRIGGER_THRESHOLD"],
+            ["Inhale Pressure", "", "inspiratory_pressure", "SET_TARGET_","INSPIRATORY_PRESSURE"],
+            ["Inhale volume", "", "volume", "SET_TARGET_","VOLUME"],
+            ["Percentage O2", "", "fiO2_percent", "SET_TARGET_","FIO2_PERCENT"],
         ]
 
         hlayout = QtWidgets.QHBoxLayout()
@@ -54,10 +54,13 @@ class TabModes(
         enableList = [self.pcacEnable, self.prvcEnable, self.psvEnable, self.cpapEnable]
         self.pageList = [self.pcacPage, self.prvcPage, self.psvPage, self.cpapPage]
         self.valsList = [self.pcacVals, self.prvcVals, self.psvVals, self.cpapVals]
-        for button, page, enableList, vals in zip(
-            self.buttonWidgets, self.pageList, enableList, self.valsList
+        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+        for button, page, enableList, vals, mode in zip(
+            self.buttonWidgets, self.pageList, enableList, self.valsList, self.modeList
         ):
             hlayout.addWidget(button)
+            for setting in settingsList:
+                setting[3] = 'SET_TARGET_' + mode
             page.addSpinSingleCol(settingsList)
             page.finaliseLayout()
             self._setEnabled(page, enableList, vals)

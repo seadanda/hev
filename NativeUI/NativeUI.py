@@ -147,6 +147,7 @@ class NativeUI(HEVClient, QMainWindow):
                 # print(self.readback)
             if payload["type"] == "PERSONAL":
                 self.personal = payload["PERSONAL"]
+                self.q_send_cmd("SET_THRESHOLD_MIN", "BATTERY", 10)
                 #  self.personal = self.data
                 # print(self.targets)
 

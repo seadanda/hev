@@ -1,5 +1,5 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from settings_widgets.tab_expert import simpleSpin
+from global_widgets.global_spinbox import simpleSpin
 from global_widgets.global_send_popup import SetConfirmPopup
 
 
@@ -111,14 +111,15 @@ class TemplateSetValues(QtWidgets.QWidget):
     #                self.spinDict[widget].update_targets_value()
 
     def okButtonPressed(self):
-        message = []
+        message, command = [], []
         self.liveUpdating = True
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].simpleSpin.value()
                 self.spinDict[widget].manuallyUpdated = False
                 message.append("set" + widget + " to " + str(setVal))
-        self.popup = SetConfirmPopup(message)
+                command.append("type: " + self.spinDict[widget].cmd_type + " code: " + self.spinDict[widget].cmd_code)
+        self.popup = SetConfirmPopup(message, command)
         self.popup.show()
 
     def cancelButtonPressed(self):

@@ -12,19 +12,19 @@ class TabExpert(TemplateSetValues):
         self.modifications = []
         controlDict = {
             "Buffers": [
-                ["Calibration", "ms", "duration_calibration"],
-                ["Purge", "ms", "duration_buff_purge"],
-                ["Flush", "ms", "duration_buff_flush"],
-                ["Pre-fill", "ms", "duration_buff_prefill"],
-                ["Fill", "ms", "duration_buff_prefill"],
-                ["Pre-inhale", "ms", "duration_buff_pre_inhale"],
+                ["Calibration", "ms", "duration_calibration", "SET_DURATION", "CALIBRATION"],
+                ["Purge", "ms", "duration_buff_purge","SET_DURATION", "BUFF_PURGE"],
+                ["Flush", "ms", "duration_buff_flush","SET_DURATION", "BUFF_FLUSH"],
+                ["Pre-fill", "ms", "duration_buff_prefill","SET_DURATION", "BUFF_PREFILL"],
+                ["Fill", "ms", "duration_buff_prefill","SET_DURATION", "BUFF_FILL"],
+                ["Pre-inhale", "ms", "duration_buff_pre_inhale","SET_DURATION","BUFF_PRE_INHALE"],
             ],
             "PID": [
-                ["KP", "", "kp"],
-                ["KI", "", "ki"],
-                ["KD", "", "kd"],
-                ["PID Gain", "", "pid_gain"],
-                ["Max. PP", "", "max_patient_pressure"],
+                ["KP", "", "kp", "SET_PID", "KP"],
+                ["KI", "", "ki", "SET_PID", "KI"],
+                ["KD", "", "kd", "SET_PID", "KD"],
+                ["PID Gain", "", "pid_gain", "SET_PID", "PID_GAIN"],
+                ["Max. PP", "", "max_patient_pressure", "SET_PID", "MAX_PATIENT_PRESSURE"],
             ],
             "Valves": [
                 ["Air in", "", "valve_air_in"],
@@ -36,10 +36,10 @@ class TabExpert(TemplateSetValues):
                 ["Exhale Opening", "%", "valve_exhale_percent"],
             ],
             "Breathing": [
-                ["Inhale", "ms", "duration_inhale"],
-                ["Pause", "ms", "duration_pause"],
-                ["Exhale fill", "ms", "duration_exhale"],
-                ["Exhale", "ms", "duration_exhale"],
+                ["Inhale", "ms", "duration_inhale", "SET_DURATION", "INHALE"],
+                ["Pause", "ms", "duration_pause", "SET_DURATION", "PAUSE"],
+                ["Exhale fill", "ms", "duration_exhale", "SET_DURATION", "EXHALE_FILL"],
+                ["Exhale", "ms", "duration_exhale", "SET_DURATION", "EXHALE"],
                 ["I:E Ratio", "", "inhale_exhale_ratio"],
             ],
         }

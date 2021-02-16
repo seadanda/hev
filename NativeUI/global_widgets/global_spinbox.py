@@ -43,8 +43,13 @@ class signallingSpinBox(QtWidgets.QSpinBox):
 class simpleSpin(QtWidgets.QWidget):
     def __init__(self, infoArray, *args, **kwargs):
         super(simpleSpin, self).__init__(*args, **kwargs)
+        print(infoArray)
 
-        self.label, self.units, self.tag = infoArray
+        self.cmd_type, self.cmd_code = '',''
+        if len(infoArray) == 5:
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
+        elif len(infoArray) == 3:
+            self.label, self.units, self.tag = infoArray
         self.manuallyUpdated = False
         layout = QtWidgets.QHBoxLayout()
         widgetList = []
@@ -73,6 +78,9 @@ class simpleSpin(QtWidgets.QWidget):
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
+        if self.cmd_type == '':
+            self.simpleSpin.setReadOnly(True)
+            self.simpleSpin.setProperty("bgColour", "1")
         widgetList.append(self.simpleSpin)
 
         if self.units != "":
