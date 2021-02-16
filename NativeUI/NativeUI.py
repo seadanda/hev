@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import logging
 import sys
@@ -40,7 +41,7 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-        # self.setFixedSize(1920, 1080)
+        self.setFixedSize(1920, 1080)
 
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),

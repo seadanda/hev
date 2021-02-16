@@ -1,16 +1,24 @@
 #!/usr/bin/env python3
+
+"""
+tab_battery.py
+"""
+
+__author__ = "Benjamin Mummery"
+__copyright__ = "© Copyright [] 2021"  # TODO
+__credits__ = ["Tiago Sarmento", "Benjamin Mummery", "Dónal Murray"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Prototype"
+
 import logging
-import os
 
 import numpy as np
 import pyqtgraph as pg
-from hevclient import HEVClient
-from pyqtgraph import PlotWidget, mkColor, plot
+from pyqtgraph import mkColor
 from PySide2 import QtCore, QtWidgets
-
-logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
-)
 
 
 class TabPlots(QtWidgets.QWidget):
@@ -23,22 +31,22 @@ class TabPlots(QtWidgets.QWidget):
         self.port = port
 
         layout = QtWidgets.QVBoxLayout()
-        self.graphWidget = pg.GraphicsLayoutWidget()
-        layout.addWidget(self.graphWidget)
+        self.graph_widget = pg.GraphicsLayoutWidget()
+        layout.addWidget(self.graph_widget)
 
-        self.pressurePlot = self.graphWidget.addPlot(title="Pressure")
-        self.graphWidget.nextRow()
-        self.flowPlot = self.graphWidget.addPlot(title="Flow")
-        self.graphWidget.nextRow()
-        self.volumePlot = self.graphWidget.addPlot(title="Volume")
-        self.graphWidget.nextRow()
+        self.pressurePlot = self.graph_widget.addPlot(title="Pressure")
+        self.graph_widget.nextRow()
+        self.flowPlot = self.graph_widget.addPlot(title="Flow")
+        self.graph_widget.nextRow()
+        self.volumePlot = self.graph_widget.addPlot(title="Volume")
+        self.graph_widget.nextRow()
 
         self.timestamp = list(el * (-1) for el in range(self.history_length))[::-1]
         self.PID_P = list(0 for _ in range(self.history_length))
         self.PID_I = list(0 for _ in range(self.history_length))
         self.PID_D = list(0 for _ in range(self.history_length))
 
-        self.graphWidget.setBackground(mkColor(30, 30, 30))
+        self.graph_widget.setBackground(self.NativeUI.colors["background"])
 
         # Add grid
         self.flowPlot.showGrid(x=True, y=True)
@@ -46,12 +54,7 @@ class TabPlots(QtWidgets.QWidget):
         self.pressurePlot.showGrid(x=True, y=True)
 
         # Set Range
-        self.flowPlot.setXRange(self.time_range * (-1), 0, padding=0)
-        self.volumePlot.setXRange(self.time_range * (-1), 0, padding=0)
-        self.pressurePlot.setXRange(self.time_range * (-1), 0, padding=0)
-        self.flowPlot.enableAutoRange("y", True)
-        self.volumePlot.enableAutoRange("y", True)
-        self.pressurePlot.enableAutoRange("y", True)
+        self.update_plot_time_range(60)
 
         # Plot styles
         self.line1 = self.plot(
@@ -80,3 +83,13 @@ class TabPlots(QtWidgets.QWidget):
         self.line1.setData(timestamp, plots[:, 1])
         self.line2.setData(timestamp, plots[:, 2])
         self.line3.setData(timestamp, plots[:, 3])
+
+    @QtCore.Slot()
+    def update_plot_time_range(self, time_range: int):
+        self.time_range = time_range
+        self.flowPlot.setXRange(self.time_range * (-1), 0, padding=0)
+        self.volumePlot.setXRange(self.time_range * (-1), 0, padding=0)
+        self.pressurePlot.setXRange(self.time_range * (-1), 0, padding=0)
+        self.flowPlot.enableAutoRange("y", True)
+        self.volumePlot.enableAutoRange("y", True)
+        self.pressurePlot.enableAutoRange("y", True)
