@@ -45,8 +45,9 @@ class alarmList(QtWidgets.QWidget):
 class TabAlarm(
     QtWidgets.QWidget
 ):  # chose QWidget over QDialog family because easier to modify
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabAlarm, self).__init__(*args, **kwargs)
+        self.NativeUI = NativeUI
 
         self.alarmHandler = alarmPopup(self)
         self.alarmHandler.show()
@@ -73,7 +74,7 @@ class TabAlarm(
         self.list.acknowledge_all()
 
     def updateAlarms(self):
-        newAlarm = self.parent().parent().parent().parent().parent().alarms
+        newAlarm = self.NativeUI.get_alarms_db()
         if newAlarm == []:
             return
         if newAlarm["alarm_code"] in self.alarmHandler.alarmDict:

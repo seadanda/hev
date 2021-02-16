@@ -13,8 +13,8 @@ from global_widgets.global_select_button import selectorButton
 from global_widgets.template_main_pages import TemplateMainPages
 
 
-class AlarmView(TemplateMainPages):
-    def __init__(self, *args, **kwargs):
+class AlarmView(QtWidgets.QWidget):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmView, self).__init__(*args, **kwargs)
 
         self.alarmButton = selectorButton("List of Alarms")

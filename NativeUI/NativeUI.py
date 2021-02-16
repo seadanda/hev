@@ -14,6 +14,8 @@ from hev_alarms import AlarmView
 from hev_modes import ModeView
 from hevclient import HEVClient
 
+from threading import Lock
+
 from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QPalette
 from PySide2.QtWidgets import (
@@ -33,7 +35,7 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    battery_signal = Signal(dict)
+    battery_signal = Signal()
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
@@ -43,23 +45,25 @@ class NativeUI(HEVClient, QMainWindow):
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
+            "background-disabled": QColor.fromRgb(15, 15, 15),
+            "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
 
         # bars
-        self.topBar = TabTopBar()
-        self.leftBar = TabLeftBar(colors=self.colors)
+        self.topBar = TabTopBar(self)
+        self.leftBar = TabLeftBar(self, colors=self.colors)
 
         # Views
         self.stack = QStackedWidget(self)
-        self.main_view = MainView()
+        self.main_view = MainView(self)
         self.stack.addWidget(self.main_view)
-        self.settings_view = SettingsView()
+        self.settings_view = SettingsView(self)
         self.stack.addWidget(self.settings_view)
-        self.alarms_view = AlarmView()
+        self.alarms_view = AlarmView(self)
         self.stack.addWidget(self.alarms_view)
-        self.modes_view = ModeView()
+        self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
-        self.stack.setCurrentWidget(self.alarms_view)
+        # self.stack.setCurrentWidget(self.main_view)
         #        self.menu_bar = TabPageButtons()
 
         # Layout
@@ -80,15 +84,17 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().setStyleSheet("color: white")
 
         # database
-        self.data = {}
-        self.target = {}
-        self.readback = {}
-        self.cycle = {}
-        self.battery = {}
-        self.plots = np.zeros((500, 5))
-        self.plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
-        self.alarms = []
-        self.targets = "empty"
+        self.db_lock = Lock()
+        self.__data = {}
+        # self.__target = {}
+        self.__readback = {}
+        self.__cycle = {}
+        self.__battery = {}
+        self.__plots = np.zeros((500, 5))
+        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
+        self.__alarms = []
+        self.__targets = "empty"
+        self.__personal = {}
 
         # Appearance
         palette = self.palette()
@@ -96,7 +102,169 @@ class NativeUI(HEVClient, QMainWindow):
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
+        # Update page buttons to match the shown view
+        self.leftBar.tab_page_buttons.mainview_pressed()
+
         # self.main_view.alarmHandler.show()
+
+    def get_data_db(self):
+        """
+        Return the contents of the __data database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__data
+        return temp
+
+    def get_targets_db(self):
+        """
+        Return the contents of the __target database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__targets
+        return temp
+
+    def get_readback_db(self):
+        """
+        Return the contents of the __readback database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__readback
+        return temp
+
+    def get_cycle_db(self):
+        """
+        Return the contents of the __cycle database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__cycle
+        return temp
+
+    def get_battery_db(self):
+        """
+        Return the contents of the __battery database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__battery
+        return temp
+
+    def get_plots_db(self):
+        """
+        Return the contents of the __plots database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__plots
+        return temp
+
+    def get_alarms_db(self):
+        """
+        Return the contents of the __alarms database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__alarms
+        return temp
+
+    def get_personal_db(self):
+        """
+        Return the contents of the __personal database. Uses lock to avoid race
+        conditions.
+        """
+        with self.db_lock:
+            temp = self.__personal
+        return temp
+
+    def set_data_db(self, data: dict):
+        """
+        Set the contents of the __data database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(data, dict)
+        with self.db_lock:
+            for key in data:
+                self.__data[key] = data[key]
+        return 0
+
+    def set_targets_db(self, targets: dict):
+        """
+        Set the contents of the __targets database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(targets, dict)
+        with self.db_lock:
+            for key in targets:
+                self.__targets[key] = targets[key]
+        return 0
+
+    def set_readback_db(self, readback: dict):
+        """
+        Set the contents of the __readback database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(readback, dict)
+        with self.db_lock:
+            for key in readback:
+                self.__readback[key] = readback[key]
+        return 0
+
+    def set_cycle_db(self, cycle: dict):
+        """
+        Set the contents of the __cycle database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(cycle, dict)
+        with self.db_lock:
+            for key in cycle:
+                self.__cycle[key] = cycle[key]
+        return 0
+
+    def set_battery_db(self, battery: dict):
+        """
+        Set the contents of the __battery database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(battery, dict)
+        with self.db_lock:
+            for key in battery:
+                self.__battery[key] = battery[key]
+        return 0
+
+    def set_plots_db(self, plots):
+        """
+        Set the contents of the __plots database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(plots, np.ndarray)
+        with self.db_lock:
+            self.__plots = plots
+        return 0
+
+    def set_alarms_db(self, alarms: dict):
+        """
+        Set the contents of the __alarms database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(alarms, dict)
+        with self.db_lock:
+            for key in alarms:
+                self.__alarms[key] = alarms[key]
+        return 0
+
+    def set_personal_db(self, personal: dict):
+        """
+        Set the contents of the __personal database. Uses lock to avoid race
+        conditions.
+        """
+        assert isinstance(personal, dict)
+        with self.db_lock:
+            for key in personal:
+                self.__personal[key] = personal[key]
+        return 0
 
     def start_client(self):
         """runs in other thread - works as long as super goes last and nothing
@@ -119,49 +287,37 @@ class NativeUI(HEVClient, QMainWindow):
         # print(payload["type"])
         try:
             if payload["type"] == "DATA":
-                self.data = payload["DATA"]
+                self.set_data_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
+
                 # remove first entry and append plot data to end
-                self.plots = np.append(
-                    np.delete(self.plots, 0, 0),
-                    [
+                plots = self.get_plots_db()
+                self.set_plots_db(
+                    np.append(
+                        np.delete(plots, 0, 0),
                         [
-                            self.data["timestamp"],
-                            self.data["pressure_patient"],
-                            self.data["flow"],
-                            self.data["volume"],
-                            self.data["volume"],
-                        ]
-                    ],
-                    axis=0,
+                            [
+                                payload["DATA"]["timestamp"],
+                                payload["DATA"]["pressure_patient"],
+                                payload["DATA"]["flow"],
+                                payload["DATA"]["volume"],
+                                payload["DATA"]["volume"],
+                            ]
+                        ],
+                        axis=0,
+                    )
                 )
             if payload["type"] == "BATTERY":
-                self.battery = payload["BATTERY"]
-                self.battery_signal.emit(self.battery)
+                self.set_battery_db(payload["BATTERY"])
+                self.battery_signal.emit()
             if payload["type"] == "ALARM":
-                self.alarms = payload["ALARM"]
+                self.set_alarms_db(payload["ALARM"])
             if payload["type"] == "TARGET":
-                self.targets = payload["TARGET"]
+                self.set_targets_db(payload["TARGET"])
             if payload["type"] == "READBACK":
-                self.readback = payload["READBACK"]
-                # print(self.readback)
+                self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
-                self.personal = payload["PERSONAL"]
-                #  self.personal = self.data
-                # print(self.targets)
-
-                self.plots = np.append(
-                    np.delete(self.plots, 0, 0),
-                    [
-                        [
-                            self.data["timestamp"],
-                            self.data["pressure_patient"],
-                            self.data["flow"],
-                            self.data["volume"],
-                        ]
-                    ],
-                    axis=0,
-                )
+                self.set_personal_db(payload["PERSONAL"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 
@@ -193,12 +349,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    if args.debug == 0:
-        logging.getLogger().setLevel(logging.WARNING)
-    elif args.debug == 1:
-        logging.getLogger().setLevel(logging.INFO)
-    else:
-        logging.getLogger().setLevel(logging.DEBUG)
+    # if args.debug == 0:
+    #     logging.getLogger().setLevel(logging.WARNING)
+    # elif args.debug == 1:
+    #     logging.getLogger().setLevel(logging.INFO)
+    # else:
+    #     logging.getLogger().setLevel(logging.DEBUG)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)

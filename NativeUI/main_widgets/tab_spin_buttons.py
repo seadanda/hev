@@ -190,9 +190,9 @@ class SpinButton(QtWidgets.QFrame):
 
 
 class TabSpinButtons(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabSpinButtons, self).__init__(*args, **kwargs)
-
+        self.NativeUI = NativeUI
         # self.setStyleSheet("background-color:blue;")
 
         self.layout = QtWidgets.QHBoxLayout()
@@ -238,7 +238,7 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.existingAlarms = []
 
     def updateTargets(self):
-        targets = self.parent().parent().parent().parent().targets
+        targets = self.NativeUI.get_targets_db()
         if targets == "empty":
             return
         for spin, label in zip(self.__spins, self.__labels):

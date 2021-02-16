@@ -2,7 +2,7 @@ from PySide2 import QtGui, QtWidgets, QtCore
 
 
 class TabPersonal(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabPersonal, self).__init__(*args, **kwargs)
 
         self.infoLabel = QtWidgets.QLabel("Person person, 55kg")

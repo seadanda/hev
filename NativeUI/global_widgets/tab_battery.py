@@ -24,8 +24,9 @@ class TabBattery(QtWidgets.QWidget):
     battery charge.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabBattery, self).__init__(*args, **kwargs)
+        self.NativeUI = NativeUI
 
         layout = QtWidgets.QHBoxLayout(self)
         self.widgets = [BatteryIcon(), BatteryText()]
@@ -42,9 +43,10 @@ class TabBattery(QtWidgets.QWidget):
         # self.timer.start()
 
     @QtCore.Slot(dict)
-    def update_value(self, battery_info: dict):
+    def update_value(self):
+        battery_data = self.NativeUI.get_battery_db()
         for widget in self.widgets:
-            widget.update_value(battery_info["bat"])
+            widget.update_value(battery_data)
         return 0
 
 
@@ -64,8 +66,10 @@ class BatteryText(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-    def update_value(self, battery_percent):
-        """"""
+    def update_value(self, battery_data):
+        """
+        """
+        battery_percent = 0
         self.label.setText(str(battery_percent) + " %")
         return 0
 
@@ -93,10 +97,11 @@ class BatteryIcon(QtWidgets.QWidget):
         self.setLayout(layout)
         self.update_value(0)
 
-    def update_value(self, battery_percent):
+    def update_value(self, battery_data):
         """
         Update the icon to match that of the specified battery percentage value.
         """
+        battery_percent = 0
         self.icon_display.setIcon(
             QtGui.QIcon(self.__icon_list[self.__get_range_index(battery_percent)])
         )
