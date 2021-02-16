@@ -1,5 +1,4 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-import sys
 
 
 class selectorButton(QtWidgets.QPushButton):

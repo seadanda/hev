@@ -49,8 +49,7 @@ class TabBattery(QtWidgets.QWidget):
 
 
 class BatteryText(QtWidgets.QWidget):
-    """
-    """
+    """"""
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,8 +65,7 @@ class BatteryText(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def update_value(self, battery_percent):
-        """
-        """
+        """"""
         self.label.setText(str(battery_percent) + " %")
         return 0
 

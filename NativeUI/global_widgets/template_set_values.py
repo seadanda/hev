@@ -3,9 +3,7 @@ from settings_widgets.tab_expert import simpleSpin
 from global_widgets.global_send_popup import SetConfirmPopup
 
 
-class TemplateSetValues(
-    QtWidgets.QWidget
-):  # chose QWidget over QDialog family because easier to modify
+class TemplateSetValues(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(TemplateSetValues, self).__init__(*args, **kwargs)
         self.liveUpdating = True
@@ -30,16 +28,43 @@ class TemplateSetValues(
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
 
-    def addSpinDblCol(self,settingsList):
+    def addSpinDblCol(self, settingsList):
         grid = QtWidgets.QGridLayout()
+        grid.setHorizontalSpacing(0)
+        vlayout = QtWidgets.QVBoxLayout()
+        vlayout2 = QtWidgets.QVBoxLayout()
         i = 0
         for info in settingsList:
-            self.spinDict[info[0]] = simpleSpin(info)
-            grid.addWidget(self.spinDict[info[0]], int(i / 2), i % 2)
+
+            if "_Low" in info[0]:
+                self.spinDict[info[0]] = simpleSpin([info[0], "", info[2]])
+                self.spinDict[info[0] + "_2"] = simpleSpin(["", info[1], info[2]])
+                # hlayout = QtWidgets.QHBoxLayout()
+                # hlayout.setSpacing(0)
+                # hlayout.addWidget(self.spinDict[info[0]])
+                # hlayout.addWidget(self.spinDict[info[0]+ '_2'])
+                # if (i%2) == 0:
+                #     vlayout.addLayout(hlayout)
+                # else:
+                #     vlayout2.addLayout(hlayout)
+                grid.addWidget(self.spinDict[info[0]], int(i / 2), 2 * (i % 2), 1, 1)
+                grid.addWidget(
+                    self.spinDict[info[0] + "_2"], int(i / 2), 2 * (i % 2) + 1, 1, 1
+                )
+            else:
+                self.spinDict[info[0]] = simpleSpin(info)
+                # if (i%2) == 0:
+                #     vlayout.addWidget(self.spinDict[info[0]])
+                # else:
+                #     vlayout2.addWidget(self.spinDict[info[0]])
+                grid.addWidget(self.spinDict[info[0]], int(i / 2), 2 * (i % 2), 1, 2)
             i = i + 1
+        # hlayoutMeta = QtWidgets.QHBoxLayout()
+        # hlayoutMeta.addLayout(vlayout)
+        # hlayoutMeta.addLayout(vlayout2)
         self.layoutList.append(grid)
 
-    def addExpertControls(self,controlDict):
+    def addExpertControls(self, controlDict):
         grid = QtWidgets.QGridLayout()
         i = 0
         for section in controlDict.keys():
@@ -53,14 +78,13 @@ class TemplateSetValues(
                 j = j + 1
                 # label, units = boxInfo, controlDict[section][boxInfo]
                 self.spinDict[boxInfo[0]] = simpleSpin(boxInfo)
-                #self.spinInfo.append(boxInfo)
+                # self.spinInfo.append(boxInfo)
                 grid.addWidget(
                     self.spinDict[boxInfo[0]], i + 1 + int(j / 3), 2 * (j % 3), 1, 2
                 )
 
             i = i + 1 + int(j / 3) + 1
         self.layoutList.append(grid)
-
 
     def addButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
@@ -82,7 +106,9 @@ class TemplateSetValues(
     def update_settings_data(self):
         if self.liveUpdating:
             for widget in self.spinDict:
-                self.spinDict[widget].update_targets_value()
+                a = 1
+
+    #                self.spinDict[widget].update_targets_value()
 
     def okButtonPressed(self):
         message = []

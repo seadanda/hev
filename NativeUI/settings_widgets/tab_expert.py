@@ -4,9 +4,8 @@ from global_widgets.global_select_button import selectorButton
 from global_widgets.global_send_popup import SetConfirmPopup
 from global_widgets.template_set_values import TemplateSetValues
 
-class TabExpert(
-    TemplateSetValues
-): 
+
+class TabExpert(TemplateSetValues):
     def __init__(self, *args, **kwargs):
         super(TabExpert, self).__init__(*args, **kwargs)
         self.liveUpdating = True
@@ -48,9 +47,3 @@ class TabExpert(
         self.addExpertControls(controlDict)
         self.addButtons()
         self.finaliseLayout()
-
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(160)  # just faster than 60Hz
-        # self.timer.timeout.connect(self.update_settings_data)
-        # self.timer.start()
-

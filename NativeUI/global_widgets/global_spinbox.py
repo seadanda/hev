@@ -1,14 +1,43 @@
 from PySide2 import QtWidgets, QtGui, QtCore
+from global_widgets.global_typeval_popup import TypeValuePopup
 
 
 class signallingSpinBox(QtWidgets.QSpinBox):
-    stepChanged = QtCore.Signal()
+    manualChanged = QtCore.Signal()
+
+    def __init__(self):
+        super().__init__()
+        self.lineEdit().installEventFilter(self)
+
+        self.popUp = TypeValuePopup()
+        self.popUp.okButton.clicked.connect(self.okButtonPressed)
+        self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
+
+    def okButtonPressed(self):
+        val = float(self.popUp.lineEdit.text())
+        self.setValue(val)
+        self.popUp.close()
+        self.manualChanged.emit()
+
+    def cancelButtonPressed(self):
+        self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
+        self.popUp.close()
 
     def stepBy(self, step):
         value = self.value()
         super(signallingSpinBox, self).stepBy(step)
         if self.value() != value:
-            self.stepChanged.emit()
+            self.manualChanged.emit()
+
+    def eventFilter(self, source, event):
+        if (
+            source is self.lineEdit()
+            and event.type() == QtCore.QEvent.MouseButtonDblClick
+        ):
+            self.popUp.lineEdit.setText(str(self.value()))
+            self.popUp.show()
+            return True
+        return False
 
 
 class simpleSpin(QtWidgets.QWidget):
@@ -18,12 +47,14 @@ class simpleSpin(QtWidgets.QWidget):
         self.label, self.units, self.tag = infoArray
         self.manuallyUpdated = False
         layout = QtWidgets.QHBoxLayout()
-
+        widgetList = []
         textStyle = "color:white; font: 16pt"
 
-        self.nameLabel = QtWidgets.QLabel(self.label)
-        self.nameLabel.setStyleSheet(textStyle)
-        self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
+        if self.label != "":
+            self.nameLabel = QtWidgets.QLabel(self.label)
+            self.nameLabel.setStyleSheet(textStyle)
+            self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
+            widgetList.append(self.nameLabel)
 
         self.simpleSpin = signallingSpinBox()
         self.simpleSpin.setStyleSheet(
@@ -42,17 +73,19 @@ class simpleSpin(QtWidgets.QWidget):
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
+        widgetList.append(self.simpleSpin)
 
-        self.unitLabel = QtWidgets.QLabel(self.units)
-        self.unitLabel.setStyleSheet(textStyle)
-        self.unitLabel.setAlignment(QtCore.Qt.AlignLeft)
+        if self.units != "":
+            self.unitLabel = QtWidgets.QLabel(self.units)
+            self.unitLabel.setStyleSheet(textStyle)
+            self.unitLabel.setAlignment(QtCore.Qt.AlignLeft)
+            widgetList.append(self.unitLabel)
 
-        widgets = [self.nameLabel, self.simpleSpin, self.unitLabel]
-        for widget in widgets:
+        for widget in widgetList:
             layout.addWidget(widget)
 
         self.setLayout(layout)
-        self.simpleSpin.stepChanged.connect(self.manualStep)
+        self.simpleSpin.manualChanged.connect(self.manualStep)
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
     def manualStep(self):
@@ -63,38 +96,38 @@ class simpleSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
-        newVal = (
-            self.parent()
-            .parent()
-            .parent()
-            .parent()
-            .parent()
-            .parent()
-            .readback[self.tag]
-        )
+        # newVal = (
+        #     self.parent()
+        #     .parent()
+        #     .parent()
+        #     .parent()
+        #     .parent()
+        #     .parent()
+        #     .readback[self.tag]
+        # )
         self.simpleSpin.setValue(newVal)
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
-        if (
-            type(
-                self.parent()
-                .parent()
-                .parent()
-                .parent()
-                .parent()
-                .parent()
-                .parent()
-                .parent()
-                .targets
-            )
-            == str
-        ):
-            return
-        newVal = (
-            self.parent().parent().parent().parent().parent().parent().targets[self.tag]
-        )
-        self.simpleSpin.setValue(newVal)
+        # if (
+        #     type(
+        #         self.parent()
+        #         .parent()
+        #         .parent()
+        #         .parent()
+        #         .parent()
+        #         .parent()
+        #         .parent()
+        #         .parent()
+        #         .targets
+        #     )
+        #     == str
+        # ):
+        #     return
+        # newVal = (
+        #     self.parent().parent().parent().parent().parent().parent().targets[self.tag]
+        # )
+        # self.simpleSpin.setValue(newVal)
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)
