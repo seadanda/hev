@@ -46,7 +46,7 @@ class simpleSpin(QtWidgets.QWidget):
         print(infoArray)
         self.NativeUI = NativeUI
 
-        self.cmd_type, self.cmd_code = '',''
+        self.cmd_type, self.cmd_code = "", ""
         if len(infoArray) == 5:
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
         elif len(infoArray) == 3:
@@ -79,7 +79,7 @@ class simpleSpin(QtWidgets.QWidget):
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
-        if self.cmd_type == '':
+        if self.cmd_type == "":
             self.simpleSpin.setReadOnly(True)
             self.simpleSpin.setProperty("bgColour", "1")
         widgetList.append(self.simpleSpin)
@@ -105,16 +105,15 @@ class simpleSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
-        newVal = self.NativeUI.readback[self.tag]
-        self.simpleSpin.setValue(newVal)
+        newVal = self.NativeUI.get_readback_db()
+        self.simpleSpin.setValue(newVal[self.tag])
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
-        #print('new target')
-        
         newVal = self.NativeUI.get_targets_db()
-        #print(newVal)
-        #self.simpleSpin.setValue(newVal)
+        if newVal == "empty":
+            return
+        self.simpleSpin.setValue(newVal[self.tag])
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)

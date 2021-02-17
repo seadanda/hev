@@ -7,9 +7,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 path = "/home/pi/Documents/hev/hev-display/assets/svg/"
 
 
-class TabAlarm(
-    QtWidgets.QWidget
-):
+class TabAlarm(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TabAlarm, self).__init__(*args, **kwargs)
         self.NativeUI = NativeUI
@@ -27,7 +25,7 @@ class TabAlarm(
 
         self.setLayout(vlayout)
         self.existingAlarms = []
-#fdd
+        # fdd
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)  # just faster than 60Hz
         self.timer.timeout.connect(self.updateAlarms)
@@ -40,7 +38,6 @@ class TabAlarm(
 
     def updateAlarms(self):
         newAlarm = self.NativeUI.get_alarms_db()
-        print(newAlarm)
         if newAlarm == []:
             return
         if newAlarm["alarm_code"] in self.popup.alarmDict:

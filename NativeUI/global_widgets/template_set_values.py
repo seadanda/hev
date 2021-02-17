@@ -10,11 +10,15 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList = []
         self.spinDict = {}
         self.NativeUI = NativeUI
+        self.packet = "target"
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(160)  # just faster than 60Hz
+        self.timer.setInterval(500)  # just faster than 60Hz
         self.timer.timeout.connect(self.update_settings_data)
         self.timer.start()
+
+    def setPacketType(self, packetName):
+        self.packet = packetName
 
     def finaliseLayout(self):
         vlayout = QtWidgets.QVBoxLayout()
@@ -111,7 +115,10 @@ class TemplateSetValues(QtWidgets.QWidget):
     def update_settings_data(self):
         if self.liveUpdating:
             for widget in self.spinDict:
-                self.spinDict[widget].update_targets_value()
+                if self.packet == "target":
+                    self.spinDict[widget].update_targets_value()
+                elif self.packet == "readback":
+                    self.spinDict[widget].update_readback_value()
 
     def okButtonPressed(self):
         message, command = [], []
@@ -121,7 +128,11 @@ class TemplateSetValues(QtWidgets.QWidget):
                 setVal = self.spinDict[widget].simpleSpin.value()
                 self.spinDict[widget].manuallyUpdated = False
                 message.append("set" + widget + " to " + str(setVal))
-                command.append("type: " + self.spinDict[widget].cmd_type + " code: " + self.spinDict[widget].cmd_code)
+                command.append(
+                    [self.spinDict[widget].cmd_type, self.spinDict[widget].cmd_code, 10]
+                )
+                # command.append("type: " + self.spinDict[widget].cmd_type + " code: " + self.spinDict[widget].cmd_code)
+        print(command)
         self.popup = SetConfirmPopup(self.NativeUI, message, command)
         self.popup.show()
 

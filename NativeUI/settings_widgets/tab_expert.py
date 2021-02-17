@@ -9,22 +9,48 @@ class TabExpert(TemplateSetValues):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TabExpert, self).__init__(NativeUI, *args, **kwargs)
         self.liveUpdating = True
+        # self.parent().packet = 'readback'
+        self.setPacketType("readback")
         self.modifications = []
         controlDict = {
             "Buffers": [
-                ["Calibration", "ms", "duration_calibration", "SET_DURATION", "CALIBRATION"],
-                ["Purge", "ms", "duration_buff_purge","SET_DURATION", "BUFF_PURGE"],
-                ["Flush", "ms", "duration_buff_flush","SET_DURATION", "BUFF_FLUSH"],
-                ["Pre-fill", "ms", "duration_buff_prefill","SET_DURATION", "BUFF_PREFILL"],
-                ["Fill", "ms", "duration_buff_prefill","SET_DURATION", "BUFF_FILL"],
-                ["Pre-inhale", "ms", "duration_buff_pre_inhale","SET_DURATION","BUFF_PRE_INHALE"],
+                [
+                    "Calibration",
+                    "ms",
+                    "duration_calibration",
+                    "SET_DURATION",
+                    "CALIBRATION",
+                ],
+                ["Purge", "ms", "duration_buff_purge", "SET_DURATION", "BUFF_PURGE"],
+                ["Flush", "ms", "duration_buff_flush", "SET_DURATION", "BUFF_FLUSH"],
+                [
+                    "Pre-fill",
+                    "ms",
+                    "duration_buff_prefill",
+                    "SET_DURATION",
+                    "BUFF_PREFILL",
+                ],
+                ["Fill", "ms", "duration_buff_prefill", "SET_DURATION", "BUFF_FILL"],
+                [
+                    "Pre-inhale",
+                    "ms",
+                    "duration_buff_pre_inhale",
+                    "SET_DURATION",
+                    "BUFF_PRE_INHALE",
+                ],
             ],
             "PID": [
                 ["KP", "", "kp", "SET_PID", "KP"],
                 ["KI", "", "ki", "SET_PID", "KI"],
                 ["KD", "", "kd", "SET_PID", "KD"],
                 ["PID Gain", "", "pid_gain", "SET_PID", "PID_GAIN"],
-                ["Max. PP", "", "max_patient_pressure", "SET_PID", "MAX_PATIENT_PRESSURE"],
+                [
+                    "Max. PP",
+                    "",
+                    "max_patient_pressure",
+                    "SET_PID",
+                    "MAX_PATIENT_PRESSURE",
+                ],
             ],
             "Valves": [
                 ["Air in", "", "valve_air_in"],
@@ -47,3 +73,8 @@ class TabExpert(TemplateSetValues):
         self.addExpertControls(controlDict)
         self.addButtons()
         self.finaliseLayout()
+
+    def update_settings_data(self):
+        if self.liveUpdating:
+            for widget in self.spinDict:
+                self.spinDict[widget].update_readback_value()
