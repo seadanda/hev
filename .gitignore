@@ -13,3 +13,6 @@ __pycache__
 raspberry-dataserver/foo
 env/
 BM_SCRATCH
+.cache
+.pylintrc
+.pre-commit-config.yaml

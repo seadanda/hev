@@ -14,9 +14,10 @@ logging.basicConfig(
 
 
 class TabPlots(QtWidgets.QWidget):
-    def __init__(self, port=54322, *args, **kwargs):
+    def __init__(self, NativeUI, port=54322, *args, **kwargs):
         super(TabPlots, self).__init__(*args, **kwargs)
 
+        self.NativeUI = NativeUI
         self.history_length = 500
         self.time_range = 30
         self.port = port
@@ -74,14 +75,8 @@ class TabPlots(QtWidgets.QWidget):
 
     def update_plot_data(self):
         # subtract latest timestamp and scale to seconds
-        timestamp = np.true_divide(
-            np.subtract(
-                self.parent().parent().plots[:, 0], self.parent().parent().plots[-1, 0]
-            ),
-            1000,
-        )  # this reaches for the plots arrays in NativeUI.py
-        self.line1.setData(timestamp, self.parent().parent().plots[:, 1])
-        self.line2.setData(timestamp, self.parent().parent().plots[:, 2])
-        self.line3.setData(
-            timestamp, self.parent().parent().plots[:, 3]
-        )  # this is the plots array in Native UI
+        plots = self.NativeUI.get_plots_db()
+        timestamp = np.true_divide(np.subtract(plots[:, 0], plots[-1, 0]), 1000)
+        self.line1.setData(timestamp, plots[:, 1])
+        self.line2.setData(timestamp, plots[:, 2])
+        self.line3.setData(timestamp, plots[:, 3])
