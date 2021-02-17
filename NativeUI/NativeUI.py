@@ -65,8 +65,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
-        # self.stack.setCurrentWidget(self.main_view)
-        #        self.menu_bar = TabPageButtons()
 
         # Layout
         hlayout = QHBoxLayout()
@@ -220,11 +218,10 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __cycle database. Uses lock to avoid race
         conditions.
         """
-        logging.info("setting cycle db")  # TODO
+        logging.debug("setting cycle db")
         with self.db_lock:
             for key in payload:
                 self.__cycle[key] = payload[key]
-        print(self.__cycle)
         return 0
 
     def set_battery_db(self, payload):
@@ -287,6 +284,7 @@ class NativeUI(HEVClient, QMainWindow):
         else is blocking. If something more than a one-shot process is needed
         then use async
         """
+        logging.debug("start_client")
         # call for all the targets and personal details
         # when starting the web app so we always have some in the db
         self.send_cmd("GET_TARGETS", "PC_AC")
@@ -298,9 +296,8 @@ class NativeUI(HEVClient, QMainWindow):
 
     def get_updates(self, payload):
         """callback from the polling function, payload is data from socket """
-        # Store data in dictionary of lists
         self.statusBar().showMessage(f"{payload}")
-        # logging.debug("revieved payload of type %s" % payload["type"])
+        logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
                 self.set_data_db(payload["DATA"])
