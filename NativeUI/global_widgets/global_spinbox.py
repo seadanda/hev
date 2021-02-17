@@ -5,11 +5,11 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 class signallingSpinBox(QtWidgets.QSpinBox):
     manualChanged = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self, NativeUI):
         super().__init__()
         self.lineEdit().installEventFilter(self)
 
-        self.popUp = TypeValuePopup()
+        self.popUp = TypeValuePopup(NativeUI)
         self.popUp.okButton.clicked.connect(self.okButtonPressed)
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
 
@@ -41,7 +41,7 @@ class signallingSpinBox(QtWidgets.QSpinBox):
 
 
 class simpleSpin(QtWidgets.QWidget):
-    def __init__(self, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, infoArray, *args, **kwargs):
         super(simpleSpin, self).__init__(*args, **kwargs)
 
         self.label, self.units, self.tag = infoArray
@@ -56,7 +56,7 @@ class simpleSpin(QtWidgets.QWidget):
             self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
             widgetList.append(self.nameLabel)
 
-        self.simpleSpin = signallingSpinBox()
+        self.simpleSpin = signallingSpinBox(NativeUI)
         self.simpleSpin.setStyleSheet(
             """QSpinBox{ width:100px; font:16pt}
             QSpinBox[bgColour="0"]{background-color:white; }

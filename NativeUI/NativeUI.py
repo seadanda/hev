@@ -2,6 +2,7 @@
 import argparse
 import logging
 import sys
+import os
 
 import numpy as np
 
@@ -48,6 +49,7 @@ class NativeUI(HEVClient, QMainWindow):
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
+        self.iconpath = self.__find_icons()
 
         # bars
         self.topBar = TabTopBar(self)
@@ -335,6 +337,30 @@ class NativeUI(HEVClient, QMainWindow):
     def q_send_personal(self, personal: str):
         """send personal details to hevserver"""
         self.send_personal(personal=personal)
+
+    def __find_icons(self):
+        """
+        Locate the icons firectory and return its path.
+        """
+        iconext = "png"
+        initial_path = os.path.join("hev-display/assets/", iconext)
+        # assume we're in the root directory
+        temp_path = os.path.join(os.getcwd(), initial_path)
+        if os.path.isdir(temp_path):
+            return temp_path
+
+        # assume we're one folder deep in the root directory
+        temp_path = os.path.join("..", temp_path)
+        if os.path.isdir(temp_path):
+            return temp_path
+
+        walk = os.walk(os.path.join(os.getcwd(), ".."))
+        for w in walk:
+            if "svg" in w[1]:
+                temp_path = os.path.join(os.path.normpath(w[0]), iconext)
+                return temp_path
+
+        raise Exception(FileNotFoundError, "could not locate %s icon files" % iconext)
 
 
 # from PySide2.QtQml import QQmlApplicationEngine

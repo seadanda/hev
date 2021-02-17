@@ -6,8 +6,8 @@ from global_widgets.template_set_values import TemplateSetValues
 
 
 class TabExpert(TemplateSetValues):
-    def __init__(self, *args, **kwargs):
-        super(TabExpert, self).__init__(*args, **kwargs)
+    def __init__(self, NativeUI, *args, **kwargs):
+        super(TabExpert, self).__init__(NativeUI, *args, **kwargs)
         self.liveUpdating = True
         self.modifications = []
         controlDict = {

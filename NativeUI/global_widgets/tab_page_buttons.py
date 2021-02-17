@@ -20,7 +20,7 @@ class TabPageButtons(QtWidgets.QWidget):
         super(TabPageButtons, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.__iconpath = self.__find_icons()
+        # self.__iconpath = self.__find_icons()
         self.__colors = self.__interpret_colors(colors)
 
         if size is not None:
@@ -51,7 +51,7 @@ class TabPageButtons(QtWidgets.QWidget):
         self.__icons = [ic + ".png" for ic in self.__icons]
 
         for button, icon in zip(self.__buttons, self.__icons):
-            pixmap = QtGui.QPixmap(os.path.join(self.__iconpath, icon))
+            pixmap = QtGui.QPixmap(os.path.join(self.NativeUI.iconpath, icon))
 
             # set icon color
             mask = pixmap.mask()  # mask from alpha

@@ -7,8 +7,8 @@ from global_widgets.template_set_values import TemplateSetValues
 class TabModes(
     TemplateSetValues
 ):  # chose QWidget over QDialog family because easier to modify
-    def __init__(self, *args, **kwargs):
-        super(TabModes, self).__init__(*args, **kwargs)
+    def __init__(self, NativeUI, *args, **kwargs):
+        super(TabModes, self).__init__(NativeUI, *args, **kwargs)
 
         settingsList = [
             ["Respiratory Rate", "/min", "respiratory_rate"],
@@ -28,22 +28,22 @@ class TabModes(
         self.pcacButton.style().polish(self.pcacButton)
         self.pcacEnable = [1, 0, 1, 1, 0, 1, 0, 1]
         self.pcacVals = [1, 2, 3, 4, 5, 6, 7, 8]
-        self.pcacPage = TemplateSetValues()
+        self.pcacPage = TemplateSetValues(NativeUI)
 
         self.prvcButton = selectorButton("PC/AC-PRVC")
         self.prvcEnable = [1, 1, 0, 1, 0, 1, 1, 1]
         self.prvcVals = [2, 3, 4, 5, 6, 7, 8, 9]
-        self.prvcPage = TemplateSetValues()
+        self.prvcPage = TemplateSetValues(NativeUI)
 
         self.psvButton = selectorButton("PC-PSV")
         self.psvEnable = [1, 1, 0, 1, 0, 1, 0, 1]
         self.psvVals = [3, 4, 5, 6, 7, 8, 9, 1]
-        self.psvPage = TemplateSetValues()
+        self.psvPage = TemplateSetValues(NativeUI)
 
         self.cpapButton = selectorButton("CPAP")
         self.cpapEnable = [1, 0, 1, 1, 0, 1, 0, 1]
         self.cpapVals = [4, 5, 6, 7, 8, 9, 1, 2]
-        self.cpapPage = TemplateSetValues()
+        self.cpapPage = TemplateSetValues(NativeUI)
 
         self.buttonWidgets = [
             self.pcacButton,
