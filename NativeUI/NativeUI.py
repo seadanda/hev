@@ -88,7 +88,6 @@ class NativeUI(HEVClient, QMainWindow):
         # database
         self.db_lock = Lock()
         self.__data = {}
-        # self.__target = {}
         self.__readback = {}
         self.__cycle = {}
         self.__battery = {}
@@ -181,91 +180,106 @@ class NativeUI(HEVClient, QMainWindow):
             temp = self.__personal
         return temp
 
-    def set_data_db(self, data: dict):
+    def set_data_db(self, payload):
         """
         Set the contents of the __data database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(data, dict)
+        print("setting data db")
         with self.db_lock:
-            for key in data:
-                self.__data[key] = data[key]
+            for key in payload:
+                self.__data[key] = payload[key]
         return 0
 
-    def set_targets_db(self, targets: dict):
+    def set_targets_db(self, payload):
         """
         Set the contents of the __targets database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(targets, dict)
+        print("setting targets db")
         with self.db_lock:
-            for key in targets:
-                self.__targets[key] = targets[key]
+            if self.__targets == "empty":
+                self.__targets = {}
+            for key in payload:
+                self.__targets[key] = payload[key]
+        print(self.__targets)
+        exit()
         return 0
 
-    def set_readback_db(self, readback: dict):
+    def set_readback_db(self, payload):
         """
         Set the contents of the __readback database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(readback, dict)
+        print("setting readback db")
         with self.db_lock:
-            for key in readback:
-                self.__readback[key] = readback[key]
+            for key in payload:
+                self.__readback[key] = payload[key]
         return 0
 
-    def set_cycle_db(self, cycle: dict):
+    def set_cycle_db(self, payload):
         """
         Set the contents of the __cycle database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(cycle, dict)
+        print("setting cycle db")
         with self.db_lock:
-            for key in cycle:
-                self.__cycle[key] = cycle[key]
+            for key in payload:
+                self.__cycle[key] = payload[key]
         return 0
 
-    def set_battery_db(self, battery: dict):
+    def set_battery_db(self, payload):
         """
         Set the contents of the __battery database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(battery, dict)
+        print("setting battery db")
         with self.db_lock:
-            for key in battery:
-                self.__battery[key] = battery[key]
+            for key in payload:
+                self.__battery[key] = payload[key]
         return 0
 
-    def set_plots_db(self, plots):
+    def set_plots_db(self, payload):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(plots, np.ndarray)
+        print("setting plots db")
         with self.db_lock:
-            self.__plots = plots
+            self.__plots = np.append(
+                np.delete(self.__plots, 0, 0),
+                [
+                    [
+                        payload["timestamp"],
+                        payload["pressure_patient"],
+                        payload["flow"],
+                        payload["volume"],
+                    ]
+                ],
+                axis=0,
+            )
         return 0
 
-    def set_alarms_db(self, alarms: dict):
+    def set_alarms_db(self, payload):
         """
         Set the contents of the __alarms database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(alarms, dict)
+        print("setting alarms db")
         with self.db_lock:
-            for key in alarms:
-                self.__alarms[key] = alarms[key]
+            self.__alarms = payload
+            print(self.__alarms)
         return 0
 
-    def set_personal_db(self, personal: dict):
+    def set_personal_db(self, payload):
         """
         Set the contents of the __personal database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(personal, dict)
+        print("setting personal db")
         with self.db_lock:
-            for key in personal:
-                self.__personal[key] = personal[key]
+            for key in payload:
+                self.__personal[key] = payload[key]
         return 0
 
     def start_client(self):
@@ -290,25 +304,8 @@ class NativeUI(HEVClient, QMainWindow):
         try:
             if payload["type"] == "DATA":
                 self.set_data_db(payload["DATA"])
+                self.set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
-
-                # remove first entry and append plot data to end
-                plots = self.get_plots_db()
-                self.set_plots_db(
-                    np.append(
-                        np.delete(plots, 0, 0),
-                        [
-                            [
-                                payload["DATA"]["timestamp"],
-                                payload["DATA"]["pressure_patient"],
-                                payload["DATA"]["flow"],
-                                payload["DATA"]["volume"],
-                                payload["DATA"]["volume"],
-                            ]
-                        ],
-                        axis=0,
-                    )
-                )
             if payload["type"] == "BATTERY":
                 self.set_battery_db(payload["BATTERY"])
                 self.battery_signal.emit()
@@ -322,6 +319,8 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_personal_db(payload["PERSONAL"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
+
+        print()
 
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> None:
