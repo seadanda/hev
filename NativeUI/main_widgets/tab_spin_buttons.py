@@ -86,7 +86,7 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 
 
 class SpinButton(QtWidgets.QFrame):
-    def __init__(self,):
+    def __init__(self, NativeUI):
         super().__init__()
 
         # self.setStyleSheet("background-color:blue;")
@@ -160,7 +160,7 @@ class SpinButton(QtWidgets.QFrame):
         self.setLayout(self.layout)
         self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
 
-        self.popUp = TypeValuePopup()
+        self.popUp = TypeValuePopup(NativeUI)
         self.popUp.okButton.clicked.connect(self.okButtonPressed)
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
 
@@ -198,10 +198,10 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(5)
 
-        self.spinInsp = SpinButton()
-        self.spinRR = SpinButton()
-        self.spinFIo2 = SpinButton()
-        self.spinInhaleT = SpinButton()
+        self.spinInsp = SpinButton(NativeUI)
+        self.spinRR = SpinButton(NativeUI)
+        self.spinFIo2 = SpinButton(NativeUI)
+        self.spinInhaleT = SpinButton(NativeUI)
 
         self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
         self.__labels = [

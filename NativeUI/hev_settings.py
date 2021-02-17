@@ -14,15 +14,15 @@ from global_widgets.template_main_pages import TemplateMainPages
 
 
 class SettingsView(TemplateMainPages):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(SettingsView, self).__init__(*args, **kwargs)
 
         self.expertButton = selectorButton("Expert")
         self.chartButton = selectorButton("Charts")
         self.buttonWidgets = [self.expertButton, self.chartButton]
 
-        self.expertTab = TabExpert()
-        self.chartTab = TabChart()
+        self.expertTab = TabExpert(NativeUI)
+        self.chartTab = TabChart(NativeUI)
         self.tabsList = [self.expertTab, self.chartTab]
 
         self.buildPage(self.buttonWidgets, self.tabsList)

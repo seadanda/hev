@@ -3,6 +3,7 @@
 import argparse
 import logging
 import sys
+import os
 
 import numpy as np
 
@@ -49,6 +50,7 @@ class NativeUI(HEVClient, QMainWindow):
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
+        self.iconpath = self.__find_icons()
 
         # bars
         self.topBar = TabTopBar(self)
@@ -64,8 +66,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
-        # self.stack.setCurrentWidget(self.main_view)
-        #        self.menu_bar = TabPageButtons()
 
         # Layout
         hlayout = QHBoxLayout()
@@ -87,7 +87,6 @@ class NativeUI(HEVClient, QMainWindow):
         # database
         self.db_lock = Lock()
         self.__data = {}
-        # self.__target = {}
         self.__readback = {}
         self.__cycle = {}
         self.__battery = {}
@@ -180,91 +179,105 @@ class NativeUI(HEVClient, QMainWindow):
             temp = self.__personal
         return temp
 
-    def set_data_db(self, data: dict):
+    def set_data_db(self, payload):
         """
         Set the contents of the __data database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(data, dict)
+        logging.debug("setting data db")
         with self.db_lock:
-            for key in data:
-                self.__data[key] = data[key]
+            for key in payload:
+                self.__data[key] = payload[key]
         return 0
 
-    def set_targets_db(self, targets: dict):
+    def set_targets_db(self, payload):
         """
         Set the contents of the __targets database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(targets, dict)
+        logging.debug("setting targets db")
         with self.db_lock:
-            for key in targets:
-                self.__targets[key] = targets[key]
+            if self.__targets == "empty":
+                self.__targets = {}
+            for key in payload:
+                self.__targets[key] = payload[key]
         return 0
 
-    def set_readback_db(self, readback: dict):
+    def set_readback_db(self, payload):
         """
         Set the contents of the __readback database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(readback, dict)
+        logging.debug("setting readback db")
         with self.db_lock:
-            for key in readback:
-                self.__readback[key] = readback[key]
+            for key in payload:
+                self.__readback[key] = payload[key]
         return 0
 
-    def set_cycle_db(self, cycle: dict):
+    def set_cycle_db(self, payload):
         """
         Set the contents of the __cycle database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(cycle, dict)
+        logging.debug("setting cycle db")
         with self.db_lock:
-            for key in cycle:
-                self.__cycle[key] = cycle[key]
+            for key in payload:
+                self.__cycle[key] = payload[key]
         return 0
 
-    def set_battery_db(self, battery: dict):
+    def set_battery_db(self, payload):
         """
         Set the contents of the __battery database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(battery, dict)
+        logging.debug("setting battery db")
         with self.db_lock:
-            for key in battery:
-                self.__battery[key] = battery[key]
+            for key in payload:
+                self.__battery[key] = payload[key]
         return 0
 
-    def set_plots_db(self, plots):
+    def set_plots_db(self, payload):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
+        TODO: why are there 2 volumes? Is this necessary for something?
         """
-        assert isinstance(plots, np.ndarray)
+        logging.debug("setting plots db")
         with self.db_lock:
-            self.__plots = plots
+            self.__plots = np.append(
+                np.delete(self.__plots, 0, 0),
+                [
+                    [
+                        payload["timestamp"],
+                        payload["pressure_patient"],
+                        payload["flow"],
+                        payload["volume"],
+                        payload["volume"],
+                    ]
+                ],
+                axis=0,
+            )
         return 0
 
-    def set_alarms_db(self, alarms: dict):
+    def set_alarms_db(self, payload):
         """
         Set the contents of the __alarms database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(alarms, dict)
+        logging.debug("setting alarms db")
         with self.db_lock:
-            for key in alarms:
-                self.__alarms[key] = alarms[key]
+            self.__alarms = payload
         return 0
 
-    def set_personal_db(self, personal: dict):
+    def set_personal_db(self, payload):
         """
         Set the contents of the __personal database. Uses lock to avoid race
         conditions.
         """
-        assert isinstance(personal, dict)
+        logging.debug("setting personal db")
         with self.db_lock:
-            for key in personal:
-                self.__personal[key] = personal[key]
+            for key in payload:
+                self.__personal[key] = payload[key]
         return 0
 
     def start_client(self):
@@ -272,6 +285,7 @@ class NativeUI(HEVClient, QMainWindow):
         else is blocking. If something more than a one-shot process is needed
         then use async
         """
+        logging.debug("start_client")
         # call for all the targets and personal details
         # when starting the web app so we always have some in the db
         self.send_cmd("GET_TARGETS", "PC_AC")
@@ -283,31 +297,13 @@ class NativeUI(HEVClient, QMainWindow):
 
     def get_updates(self, payload):
         """callback from the polling function, payload is data from socket """
-        # Store data in dictionary of lists
         self.statusBar().showMessage(f"{payload}")
-        # print(payload["type"])
+        logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
                 self.set_data_db(payload["DATA"])
+                self.set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
-
-                # remove first entry and append plot data to end
-                plots = self.get_plots_db()
-                self.set_plots_db(
-                    np.append(
-                        np.delete(plots, 0, 0),
-                        [
-                            [
-                                payload["DATA"]["timestamp"],
-                                payload["DATA"]["pressure_patient"],
-                                payload["DATA"]["flow"],
-                                payload["DATA"]["volume"],
-                                payload["DATA"]["volume"],
-                            ]
-                        ],
-                        axis=0,
-                    )
-                )
             if payload["type"] == "BATTERY":
                 self.set_battery_db(payload["BATTERY"])
                 self.battery_signal.emit()
@@ -319,6 +315,8 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
                 self.set_personal_db(payload["PERSONAL"])
+            if payload["type"] == "CYCLE":
+                self.set_cycle_db(payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 
@@ -336,6 +334,30 @@ class NativeUI(HEVClient, QMainWindow):
     def q_send_personal(self, personal: str):
         """send personal details to hevserver"""
         self.send_personal(personal=personal)
+
+    def __find_icons(self):
+        """
+        Locate the icons firectory and return its path.
+        """
+        iconext = "png"
+        initial_path = os.path.join("hev-display/assets/", iconext)
+        # assume we're in the root directory
+        temp_path = os.path.join(os.getcwd(), initial_path)
+        if os.path.isdir(temp_path):
+            return temp_path
+
+        # assume we're one folder deep in the root directory
+        temp_path = os.path.join("..", temp_path)
+        if os.path.isdir(temp_path):
+            return temp_path
+
+        walk = os.walk(os.path.join(os.getcwd(), ".."))
+        for w in walk:
+            if "svg" in w[1]:
+                temp_path = os.path.join(os.path.normpath(w[0]), iconext)
+                return temp_path
+
+        raise Exception(FileNotFoundError, "could not locate %s icon files" % iconext)
 
 
 # from PySide2.QtQml import QQmlApplicationEngine
