@@ -153,6 +153,9 @@ class HEVClient(object):
                 # close connection
                 writer.close()
                 await writer.wait_closed()
+            except ConnectionRefusedError as e:
+                logging.error(str(e) + " - is the microcontroller running?")
+                await asyncio.sleep(2)
             except Exception as e:
                 # warn and reopen connection
                 logging.error(e)
@@ -220,9 +223,12 @@ class HEVClient(object):
     def send_cmd(self, cmdtype: str, cmd: str, param: Union[float, int] = None) -> bool:
         # send a cmd and wait to see if it's valid
         # print(cmdtype, cmd, param)
-        return asyncio.run(
-            self.send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param)
-        )
+        try:
+            return asyncio.run(
+                self.send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param)
+            )
+        except ConnectionRefusedError as error:
+            logging.error(str(error) + " - is the microcontroller running?")
 
     def ack_alarm(self, alarm: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list
