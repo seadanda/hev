@@ -4,11 +4,12 @@ from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class TemplateSetValues(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TemplateSetValues, self).__init__(*args, **kwargs)
         self.liveUpdating = True
         self.layoutList = []
         self.spinDict = {}
+        self.NativeUI = NativeUI
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)  # just faster than 60Hz
@@ -24,7 +25,7 @@ class TemplateSetValues(QtWidgets.QWidget):
     def addSpinSingleCol(self, settingsList):
         vOptionLayout = QtWidgets.QVBoxLayout()
         for info in settingsList:
-            self.spinDict[info[0]] = simpleSpin(info)
+            self.spinDict[info[0]] = simpleSpin(self.NativeUI, info)
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
 
@@ -37,8 +38,12 @@ class TemplateSetValues(QtWidgets.QWidget):
         for info in settingsList:
 
             if "_Low" in info[0]:
-                self.spinDict[info[0]] = simpleSpin([info[0], "", info[2]])
-                self.spinDict[info[0] + "_2"] = simpleSpin(["", info[1], info[2]])
+                self.spinDict[info[0]] = simpleSpin(
+                    self.NativeUI, [info[0], "", info[2]]
+                )
+                self.spinDict[info[0] + "_2"] = simpleSpin(
+                    self.NativeUI, ["", info[1], info[2]]
+                )
                 # hlayout = QtWidgets.QHBoxLayout()
                 # hlayout.setSpacing(0)
                 # hlayout.addWidget(self.spinDict[info[0]])
@@ -52,7 +57,7 @@ class TemplateSetValues(QtWidgets.QWidget):
                     self.spinDict[info[0] + "_2"], int(i / 2), 2 * (i % 2) + 1, 1, 1
                 )
             else:
-                self.spinDict[info[0]] = simpleSpin(info)
+                self.spinDict[info[0]] = simpleSpin(self.NativeUI, info)
                 # if (i%2) == 0:
                 #     vlayout.addWidget(self.spinDict[info[0]])
                 # else:
@@ -77,7 +82,7 @@ class TemplateSetValues(QtWidgets.QWidget):
             for boxInfo in controlDict[section]:
                 j = j + 1
                 # label, units = boxInfo, controlDict[section][boxInfo]
-                self.spinDict[boxInfo[0]] = simpleSpin(boxInfo)
+                self.spinDict[boxInfo[0]] = simpleSpin(self.NativeUI, boxInfo)
                 # self.spinInfo.append(boxInfo)
                 grid.addWidget(
                     self.spinDict[boxInfo[0]], i + 1 + int(j / 3), 2 * (j % 3), 1, 2
@@ -106,9 +111,7 @@ class TemplateSetValues(QtWidgets.QWidget):
     def update_settings_data(self):
         if self.liveUpdating:
             for widget in self.spinDict:
-                a = 1
-
-    #                self.spinDict[widget].update_targets_value()
+                self.spinDict[widget].update_targets_value()
 
     def okButtonPressed(self):
         message, command = [], []
@@ -119,7 +122,7 @@ class TemplateSetValues(QtWidgets.QWidget):
                 self.spinDict[widget].manuallyUpdated = False
                 message.append("set" + widget + " to " + str(setVal))
                 command.append("type: " + self.spinDict[widget].cmd_type + " code: " + self.spinDict[widget].cmd_code)
-        self.popup = SetConfirmPopup(message, command)
+        self.popup = SetConfirmPopup(self.NativeUI, message, command)
         self.popup.show()
 
     def cancelButtonPressed(self):

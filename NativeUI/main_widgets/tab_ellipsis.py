@@ -2,7 +2,7 @@ from PySide2 import QtWidgets
 
 
 class TabEllipsis(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabEllipsis, self).__init__(*args, **kwargs)
 
         grid = QtWidgets.QGridLayout()

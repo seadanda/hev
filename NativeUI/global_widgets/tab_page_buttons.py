@@ -14,10 +14,13 @@ class TabPageButtons(QtWidgets.QWidget):
     colors are not set they default to red.
     """
 
-    def __init__(self, *args, size: QSize = None, colors: dict = None, **kwargs):
+    def __init__(
+        self, NativeUI, *args, size: QSize = None, colors: dict = None, **kwargs
+    ):
         super(TabPageButtons, self).__init__(*args, **kwargs)
 
-        self.__iconpath = self.__find_icons()
+        self.NativeUI = NativeUI
+        # self.__iconpath = self.__find_icons()
         self.__colors = self.__interpret_colors(colors)
 
         if size is not None:
@@ -28,13 +31,13 @@ class TabPageButtons(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.button_signin = QtWidgets.QPushButton("")
+        self.button_mainview = QtWidgets.QPushButton("")
         self.button_alarms = QtWidgets.QPushButton("")
         self.button_fancon = QtWidgets.QPushButton("")
         self.button_cntrls = QtWidgets.QPushButton("")
 
         self.__buttons = [
-            self.button_signin,
+            self.button_mainview,
             self.button_alarms,
             self.button_fancon,
             self.button_cntrls,
@@ -48,7 +51,7 @@ class TabPageButtons(QtWidgets.QWidget):
         self.__icons = [ic + ".png" for ic in self.__icons]
 
         for button, icon in zip(self.__buttons, self.__icons):
-            pixmap = QtGui.QPixmap(os.path.join(self.__iconpath, icon))
+            pixmap = QtGui.QPixmap(os.path.join(self.NativeUI.iconpath, icon))
 
             # set icon color
             mask = pixmap.mask()  # mask from alpha
@@ -57,8 +60,13 @@ class TabPageButtons(QtWidgets.QWidget):
 
             # set button appearance
             button.setStyleSheet(
+                "QPushButton{"
                 "background-color: " + self.__colors["background"].name() + ";"
                 "border-color: " + self.__colors["background"].name() + ";"
+                "}"
+                "QPushButton:disabled{"
+                "background-color: " + self.__colors["background-disabled"].name() + ";"
+                "}"
             )
             button.setFixedSize(self.__button_size)
 
@@ -68,30 +76,34 @@ class TabPageButtons(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.button_signin.pressed.connect(self.__signin_pressed)
-        self.button_alarms.pressed.connect(self.__alarms_pressed)
-        self.button_fancon.pressed.connect(self.__fancon_pressed)
-        self.button_cntrls.pressed.connect(self.__cntrls_pressed)
+        self.button_mainview.pressed.connect(self.mainview_pressed)
+        self.button_alarms.pressed.connect(self.alarms_pressed)
+        self.button_fancon.pressed.connect(self.fancon_pressed)
+        self.button_cntrls.pressed.connect(self.cntrls_pressed)
 
-    def __signin_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().main_view
-        )
+    def mainview_pressed(self):
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.main_view)
+        for button in self.__buttons:
+            button.setEnabled(True)
+        self.button_mainview.setEnabled(False)
 
-    def __cntrls_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().settings_view
-        )
+    def cntrls_pressed(self):
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.settings_view)
+        for button in self.__buttons:
+            button.setEnabled(True)
+        self.button_cntrls.setEnabled(False)
 
-    def __alarms_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().alarms_view
-        )
+    def alarms_pressed(self):
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.alarms_view)
+        for button in self.__buttons:
+            button.setEnabled(True)
+        self.button_alarms.setEnabled(False)
 
-    def __fancon_pressed(self):
-        self.parent().parent().parent().stack.setCurrentWidget(
-            self.parent().parent().parent().modes_view
-        )
+    def fancon_pressed(self):
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.modes_view)
+        for button in self.__buttons:
+            button.setEnabled(True)
+        self.button_fancon.setEnabled(False)
 
     def __find_icons(self):
         initial_path = "hev-display/assets/png/"
@@ -125,8 +137,3 @@ class TabPageButtons(QtWidgets.QWidget):
             "foreground": QtGui.QColor.fromRgb(255, 0, 0),
             "background": QtGui.QColor.fromRgb(0, 255, 0),
         }
-
-
-if __name__ == "__main__":
-    y = QtWidgets.QApplication()
-    x = TabPageButtons()

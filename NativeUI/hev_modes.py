@@ -6,15 +6,15 @@ from global_widgets.template_main_pages import TemplateMainPages
 
 
 class ModeView(TemplateMainPages):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(ModeView, self).__init__(*args, **kwargs)
 
         self.modeButton = selectorButton("Mode Settings")
         self.personalButton = selectorButton("Personal Settings")
         self.buttonWidgets = [self.modeButton, self.personalButton]
 
-        self.modeTab = TabModes()
-        self.personalTab = TabPersonal()
+        self.modeTab = TabModes(NativeUI)
+        self.personalTab = TabPersonal(NativeUI)
         self.tabsList = [self.modeTab, self.personalTab]
 
         self.buildPage(self.buttonWidgets, self.tabsList)

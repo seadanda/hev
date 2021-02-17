@@ -1,14 +1,20 @@
 from PySide2 import QtWidgets, QtGui, QtCore
 import sys
+import os
 
 
 class SetConfirmPopup(
     QtWidgets.QDialog
 ):  # chose QWidget over QDialog family because easier to modify
-    def __init__(self, setList, commandList, *args, **kwargs):
+    def __init__(self, NativeUI, setList, commandList, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
-        
+        self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
+
+        if NativeUI is None:
+            iconpath = "hev-display/svg/check-solid.svg"
+        else:
+            iconpath = os.path.join(NativeUI.iconpath, "check-solid.png")
+
         if setList == []:
             setList = ["no values were set"]
         self.commandList = commandList
@@ -27,9 +33,8 @@ class SetConfirmPopup(
 
         buttonHLayout = QtWidgets.QHBoxLayout()
         self.okButton = QtWidgets.QPushButton()
-        self.okButton.setIcon(QtGui.QIcon("hev-display/svg/check-solid.svg"))
-        #self.okButton.setStyleSheet("background-color:white; border-radius:4px ")
-        self.okButton.pressed.connect(self.ok_button_pressed)
+        self.okButton.setIcon(QtGui.QIcon(iconpath))
+        self.okButton.setStyleSheet("background-color:white; border-radius:4px ")
         buttonHLayout.addWidget(self.okButton)
 
         self.cancelButton = QtWidgets.QPushButton()
@@ -59,6 +64,8 @@ class SetConfirmPopup(
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
-    widg = SetConfirmPopup(["test text", "test", "test", "tregfdgdfgd", "experiment"], ['command', 'dnamoc'])
+    widg = SetConfirmPopup(
+        None, ["test text", "test", "test", "tregfdgdfgd", "experiment"]
+    )
     widg.show()
     sys.exit(app.exec_())

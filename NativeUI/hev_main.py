@@ -14,7 +14,7 @@ class MainView(QWidget):
     Docstring [TODO]
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(MainView, self).__init__(*args, **kwargs)
 
         hlayout = QHBoxLayout()
@@ -26,11 +26,11 @@ class MainView(QWidget):
         bottom_layout = QHBoxLayout()
 
         # Set up the widget tabs
-        self.tab_plots = TabPlots()
-        self.measurements = TabMeasurements()
+        self.tab_plots = TabPlots(NativeUI)
+        self.measurements = TabMeasurements(NativeUI)
+        self.tab_spin = TabSpinButtons(NativeUI)
+        self.ellipsis = TabEllipsis(NativeUI)
 
-        self.tab_spin = TabSpinButtons(self)
-        self.ellipsis = TabEllipsis(self)
         bottom_layout.addWidget(self.ellipsis)
         bottom_layout.addWidget(self.tab_spin)
 

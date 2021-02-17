@@ -5,11 +5,11 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 class signallingSpinBox(QtWidgets.QSpinBox):
     manualChanged = QtCore.Signal()
 
-    def __init__(self):
+    def __init__(self, NativeUI):
         super().__init__()
         self.lineEdit().installEventFilter(self)
 
-        self.popUp = TypeValuePopup()
+        self.popUp = TypeValuePopup(NativeUI)
         self.popUp.okButton.clicked.connect(self.okButtonPressed)
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
 
@@ -41,9 +41,10 @@ class signallingSpinBox(QtWidgets.QSpinBox):
 
 
 class simpleSpin(QtWidgets.QWidget):
-    def __init__(self, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, infoArray, *args, **kwargs):
         super(simpleSpin, self).__init__(*args, **kwargs)
         print(infoArray)
+        self.NativeUI = NativeUI
 
         self.cmd_type, self.cmd_code = '',''
         if len(infoArray) == 5:
@@ -61,7 +62,7 @@ class simpleSpin(QtWidgets.QWidget):
             self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
             widgetList.append(self.nameLabel)
 
-        self.simpleSpin = signallingSpinBox()
+        self.simpleSpin = signallingSpinBox(NativeUI)
         self.simpleSpin.setStyleSheet(
             """QSpinBox{ width:100px; font:16pt}
             QSpinBox[bgColour="0"]{background-color:white; }
@@ -104,38 +105,16 @@ class simpleSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
-        # newVal = (
-        #     self.parent()
-        #     .parent()
-        #     .parent()
-        #     .parent()
-        #     .parent()
-        #     .parent()
-        #     .readback[self.tag]
-        # )
+        newVal = self.NativeUI.readback[self.tag]
         self.simpleSpin.setValue(newVal)
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
-        # if (
-        #     type(
-        #         self.parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .targets
-        #     )
-        #     == str
-        # ):
-        #     return
-        # newVal = (
-        #     self.parent().parent().parent().parent().parent().parent().targets[self.tag]
-        # )
-        # self.simpleSpin.setValue(newVal)
+        #print('new target')
+        
+        newVal = self.NativeUI.get_targets_db()
+        #print(newVal)
+        #self.simpleSpin.setValue(newVal)
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)

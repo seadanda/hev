@@ -1,4 +1,5 @@
 from PySide2 import QtCore, QtGui, QtWidgets
+import os
 
 # from main_widgets.customPopup import customPopup
 
@@ -6,7 +7,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 class TypeValuePopup(
     QtWidgets.QDialog
 ):  # chose QWidget over QDialog family because easier to modify
-    def __init__(self):
+    def __init__(self, NativeUI):
         super().__init__()
 
         grid = QtWidgets.QGridLayout()
@@ -42,7 +43,9 @@ class TypeValuePopup(
         grid.addWidget(self.lineEdit, 0, 0, 1, 2)
 
         self.okButton = QtWidgets.QPushButton()
-        self.okButton.setIcon(QtGui.QIcon("hev-display/svg/check-solid.svg"))
+        self.okButton.setIcon(
+            QtGui.QIcon(os.path.join(NativeUI.iconpath, "check-solid.png"))
+        )
         self.okButton.setStyleSheet("background-color:white; border-radius:4px ")
         grid.addWidget(self.okButton, 1, 0)
 

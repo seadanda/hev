@@ -8,18 +8,18 @@ class TabMeasurements(QtWidgets.QWidget):
     Block of widgets displaying various measurement parameters
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabMeasurements, self).__init__(*args, **kwargs)
 
         layout = QtWidgets.QVBoxLayout()
 
         widget_list = [
-            MeasurementWidget("P_plateau [cmH2O]", "_cycle", "plateau_pressure"),
-            MeasurementWidget("RR", "_readback", "inhale_exhale_ratio"),
-            MeasurementWidget("FIO2 [%]", "_cycle", "fiO2_percent"),
-            MeasurementWidget("VTE [mL]", "_cycle", "exhaled_tidal_volume"),
-            MeasurementWidget("MVE [L/min]", "_cycle", "exhaled_minute_volume"),
-            MeasurementWidget("PEEP [cmH2O]", "_readback", "peep"),
+            CycleMeasurementWidget(NativeUI, "P_plateau [cmH2O]", "plateau_pressure"),
+            CycleMeasurementWidget(NativeUI, "RR", "respiratory_rate"),
+            CycleMeasurementWidget(NativeUI, "FIO2 [%]", "fiO2_percent"),
+            CycleMeasurementWidget(NativeUI, "VTE [mL]", "exhaled_tidal_volume"),
+            CycleMeasurementWidget(NativeUI, "MVE [L/min]", "exhaled_minute_volume"),
+            ReadbackMeasurementWidget(NativeUI, "PEEP [cmH2O]", "peep"),
         ]
 
         label = QtWidgets.QLabel("Measurements")
@@ -61,8 +61,8 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     def __init__(
         self,
+        NativeUI,
         label: str,
-        keydir: str,
         key: str,
         width: int = 140,
         height: int = 60,
@@ -70,9 +70,9 @@ class MeasurementWidget(QtWidgets.QWidget):
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
+        self.NativeUI = NativeUI
 
-        self.__keydir = keydir
-        self.__key = key
+        self.key = key
         min_height = 60
 
         # Layout and widgets
@@ -107,33 +107,38 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     def update_value(self):
         """
-        Update the widget to display the current value
+        Placeholder function to be overwritten by subclasses
         """
-        # Placeholder while in development - TODO: remove
-        if self.__keydir is None:
-            self.value_display.setText("-")
-            return
-        if self.__key is None:
-            self.value_display.setText("-")
-            return
+        pass
 
-        #
+
+class CycleMeasurementWidget(MeasurementWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def update_value(self):
+        if self.key is None:
+            self.value_display.setText("-")
+            return 0
         try:
-            data = vars(self.parent().parent().parent().parent().parent())[
-                self.__keydir
-            ][self.__key]
-        except TypeError:
+            self.value_display.setNum(self.NativeUI.get_data_db()[self.key])
+        except KeyError:  # usually means that the db hasn't been populated yet
             self.value_display.setText("-")
-            return
-        except KeyError:
-            outstr = (
-                "unrecognised database - key pair: "
-                + str(self.__keydir)
-                + " - "
-                + str(self.__key)
-            )
-            logging.warning(outstr)
-            self.value_display.setText("-")
-            return
+            return 0
+        return 0
 
-        self.value_display.setNum(data)
+
+class ReadbackMeasurementWidget(MeasurementWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def update_value(self):
+        if self.key is None:
+            self.value_display.setText("-")
+            return 0
+        try:
+            self.value_display.setNum(self.NativeUI.get_readback_db()[self.key])
+        except KeyError:  # usually means that the db hasn't been populated yet
+            self.value_display.setText("-")
+            return 0
+        return 0

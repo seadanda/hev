@@ -10,8 +10,9 @@ path = "/home/pi/Documents/hev/hev-display/assets/svg/"
 class TabAlarm(
     QtWidgets.QWidget
 ):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabAlarm, self).__init__(*args, **kwargs)
+        self.NativeUI = NativeUI
 
         self.popup = alarmPopup(self)
         self.popup.show()
@@ -26,7 +27,7 @@ class TabAlarm(
 
         self.setLayout(vlayout)
         self.existingAlarms = []
-
+#fdd
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)  # just faster than 60Hz
         self.timer.timeout.connect(self.updateAlarms)
@@ -38,7 +39,8 @@ class TabAlarm(
         self.list.acknowledge_all()
 
     def updateAlarms(self):
-        newAlarm = self.parent().parent().parent().parent().parent().alarms
+        newAlarm = self.NativeUI.get_alarms_db()
+        print(newAlarm)
         if newAlarm == []:
             return
         if newAlarm["alarm_code"] in self.popup.alarmDict:

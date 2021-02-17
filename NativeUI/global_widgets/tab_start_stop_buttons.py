@@ -11,8 +11,12 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
     TODO
     """
 
-    def __init__(self, *args, size: QSize = None, colors: dict = None, **kwargs):
+    def __init__(
+        self, NativeUI, *args, size: QSize = None, colors: dict = None, **kwargs
+    ):
         super(TabStartStopStandbyButtons, self).__init__(*args, **kwargs)
+
+        self.NativeUI = NativeUI
 
         self.__colors = self.__interpret_colors(colors)
         if size is not None:

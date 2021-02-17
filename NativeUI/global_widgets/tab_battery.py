@@ -24,11 +24,12 @@ class TabBattery(QtWidgets.QWidget):
     battery charge.
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(TabBattery, self).__init__(*args, **kwargs)
+        self.NativeUI = NativeUI
 
         layout = QtWidgets.QHBoxLayout(self)
-        self.widgets = [BatteryIcon(), BatteryText()]
+        self.widgets = [BatteryIcon(NativeUI), BatteryText()]
 
         for widget in self.widgets:
             layout.addWidget(widget)
@@ -42,9 +43,10 @@ class TabBattery(QtWidgets.QWidget):
         # self.timer.start()
 
     @QtCore.Slot(dict)
-    def update_value(self, battery_info: dict):
+    def update_value(self):
+        battery_data = self.NativeUI.get_battery_db()
         for widget in self.widgets:
-            widget.update_value(battery_info["bat"])
+            widget.update_value(battery_data)
         return 0
 
 
@@ -64,8 +66,10 @@ class BatteryText(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-    def update_value(self, battery_percent):
-        """"""
+    def update_value(self, battery_data):
+        """
+        """
+        battery_percent = 0
         self.label.setText(str(battery_percent) + " %")
         return 0
 
@@ -75,16 +79,17 @@ class BatteryIcon(QtWidgets.QWidget):
     Widget to display the current battery icon
     """
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.__iconsize = QtCore.QSize(25, 25)
+        self.NativeUI = NativeUI
+        iconsize = QtCore.QSize(25, 25)
         self.__icon_list = self.__make_icon_list()
         self.__icon_percentiles = self.__make_percentile_ranges()
 
         layout = QtWidgets.QVBoxLayout()
         self.icon_display = QtWidgets.QPushButton("")
-        self.icon_display.setIconSize(self.__iconsize)
+        self.icon_display.setIconSize(iconsize)
         layout.addWidget(self.icon_display)
 
         self.icon_display.setEnabled(False)
@@ -93,10 +98,11 @@ class BatteryIcon(QtWidgets.QWidget):
         self.setLayout(layout)
         self.update_value(0)
 
-    def update_value(self, battery_percent):
+    def update_value(self, battery_data):
         """
         Update the icon to match that of the specified battery percentage value.
         """
+        battery_percent = 0
         self.icon_display.setIcon(
             QtGui.QIcon(self.__icon_list[self.__get_range_index(battery_percent)])
         )
@@ -144,36 +150,11 @@ class BatteryIcon(QtWidgets.QWidget):
         Make a list of paths to battery icons, in order of the battery charge
         they represent
         """
-        iconpath = self.__find_icons()
         icon_list = [
-            "battery-empty-solid.svg",
-            "battery-quarter-solid.svg",
-            "battery-half-solid.svg",
-            "battery-three-quarters-solid.svg",
+            "battery-empty-solid.png",
+            "battery-quarter-solid.png",
+            "battery-half-solid.png",
+            "battery-three-quarters-solid.png",
         ]
-        icon_list = [os.path.join(iconpath, icon) for icon in icon_list]
+        icon_list = [os.path.join(self.NativeUI.iconpath, icon) for icon in icon_list]
         return icon_list
-
-    def __find_icons(self):
-        """
-        TODO: remove and find a way to do this without having this function
-        both here and in tab_page_buttons.
-        """
-        initial_path = "hev-display/assets/svg/"
-        # assume we're in the root directory
-        temp_path = os.path.join(os.getcwd(), initial_path)
-        if os.path.isdir(temp_path):
-            return temp_path
-
-        # assume we're one folder deep in the root directory
-        temp_path = os.path.join("..", temp_path)
-        if os.path.isdir(temp_path):
-            return temp_path
-
-        walk = os.walk(os.path.join(os.getcwd(), ".."))
-        for w in walk:
-            if "svg" in w[1]:
-                temp_path = os.path.join(os.path.normpath(w[0]), "svg")
-                return temp_path
-
-        raise Exception(FileNotFoundError, "could not locate svg icon files")
