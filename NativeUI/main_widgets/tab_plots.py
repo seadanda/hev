@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_battery.py
+tab_plots.py
 """
 
 __author__ = "Benjamin Mummery"
@@ -11,7 +11,7 @@ __license__ = "GPL"
 __version__ = "0.0.1"
 __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
-__status__ = "Prototype"
+__status__ = "Development"
 
 import logging
 
