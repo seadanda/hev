@@ -1,12 +1,12 @@
 import sys
-
+import os
 from PySide2 import QtCore, QtGui, QtWidgets
 
 path = "/home/pi/Documents/hev/hev-display/assets/svg/"
 
 
 class alarmList(QtWidgets.QWidget):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(alarmList, self).__init__(*args, **kwargs)
 
         self.labelList = []
@@ -14,8 +14,12 @@ class alarmList(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
         self.setStyleSheet("background-color:white; font:15pt white;")
-        self.solidBell = QtGui.QIcon(path + "bell-solid.svg")
-        self.regularBell = QtGui.QIcon(path + "bell-regular.svg")
+        
+        iconpath_bell = os.path.join(NativeUI.iconpath, "bell-solid.png") 
+        iconpath_bellReg = os.path.join(NativeUI.iconpath, "bell-regular.png") 
+
+        self.solidBell = QtGui.QIcon(iconpath_bell)
+        self.regularBell = QtGui.QIcon(iconpath_bellReg)
 
         self.vlayout = QtWidgets.QVBoxLayout()
         self.alarmList = QtWidgets.QListWidget()

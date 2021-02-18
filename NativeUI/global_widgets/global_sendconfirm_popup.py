@@ -4,7 +4,7 @@ import os
 
 
 class confirmWidget(QtWidgets.QWidget):
-    def __init__(self, confirmMessage, *args, **kwargs):
+    def __init__(self, NativeUI, confirmMessage, *args, **kwargs):
         super(confirmWidget, self).__init__(*args, **kwargs)
         self.hlayout = QtWidgets.QHBoxLayout()
         self.hlayout.setSpacing(0)
@@ -12,7 +12,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.confirmMessage = confirmMessage
 
         iconLabel = QtWidgets.QLabel()
-        iconpath_check = "/home/pi/Documents/hev/hev-display/assets/svg/check-solid.svg"
+        iconpath_check = os.path.join(self.NativeUI.iconpath, "check-solid.svg") 
         pixmap = QtGui.QPixmap(iconpath_check)
         iconLabel.setPixmap(pixmap)
         self.hlayout.addWidget(iconLabel)
@@ -38,9 +38,10 @@ class confirmWidget(QtWidgets.QWidget):
 
 
 class confirmPopup(QtWidgets.QDialog):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(confirmPopup, self).__init__(*args, **kwargs)
 
+        self.NativeUI = NativeUI
         self.confirmDict = {}
 
         self.vlayout = QtWidgets.QVBoxLayout()
@@ -66,7 +67,7 @@ class confirmPopup(QtWidgets.QDialog):
         self.timer.start()
 
     def addConfirmation(self, confirmMessage):
-        self.confirmDict[confirmMessage] = confirmWidget(confirmMessage)
+        self.confirmDict[confirmMessage] = confirmWidget( self.NativeUI, confirmMessage)
         self.vlayout.addWidget(self.confirmDict[confirmMessage])
 
     def location_on_window(self):

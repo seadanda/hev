@@ -1,26 +1,31 @@
+import os
 from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class alarmWidget(QtWidgets.QWidget):
-    def __init__(self, alarmPayload, *args, **kwargs):
+    def __init__(self, NativeUI, alarmPayload, *args, **kwargs):
         super(alarmWidget, self).__init__(*args, **kwargs)
+
+        self.NativeUI = NativeUI
+
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setMargin(0)
         self.alarmPayload = alarmPayload
 
         iconLabel = QtWidgets.QLabel()
-        iconLabel.setText("icon!")
-
+        iconpath_check = os.path.join(self.NativeUI.iconpath, "exclamation-triangle-solid.png") 
+        pixmap = QtGui.QPixmap(iconpath_check)
+        iconLabel.setPixmap(pixmap)
         self.layout.addWidget(iconLabel)
 
         textLabel = QtWidgets.QLabel()
         textLabel.setText(self.alarmPayload["alarm_code"])
-        textLabel.setFixedHeight(40)
         textLabel.setFixedWidth(150)
         textLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(textLabel)
 
+        self.setFixedHeight(40)
         self.setLayout(self.layout)
         if alarmPayload["alarm_type"] == "PRIORITY_HIGH":
             self.setStyleSheet("background-color:red;")
@@ -38,10 +43,11 @@ class alarmWidget(QtWidgets.QWidget):
 
 
 class alarmPopup(QtWidgets.QDialog):
-    def __init__(self, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super(alarmPopup, self).__init__(*args, **kwargs)
 
         self.alarmDict = {}
+        self.NativeUI = NativeUI
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
@@ -72,7 +78,7 @@ class alarmPopup(QtWidgets.QDialog):
         self.alarmDict = {}
 
     def addAlarm(self, alarmPayload):
-        self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(alarmPayload)
+        self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(self.NativeUI, alarmPayload)
         self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
 
     def resetTimer(self, alarmPayload):

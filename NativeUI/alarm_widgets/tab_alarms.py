@@ -12,10 +12,10 @@ class TabAlarm(QtWidgets.QWidget):
         super(TabAlarm, self).__init__(*args, **kwargs)
         self.NativeUI = NativeUI
 
-        self.popup = alarmPopup(self)
+        self.popup = alarmPopup(NativeUI,self)
         self.popup.show()
 
-        self.list = alarmList()
+        self.list = alarmList(NativeUI)
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.addWidget(self.list)
 
