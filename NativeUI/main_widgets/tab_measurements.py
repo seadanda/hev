@@ -117,14 +117,16 @@ class CycleMeasurementWidget(MeasurementWidget):
         super().__init__(*args, **kwargs)
 
     def update_value(self):
-        if self.key is None:
+        if self.key is None:  # widget can be created without assigning a parameter
             self.value_display.setText("-")
             return 0
-        try:
-            self.value_display.setNum(self.NativeUI.get_data_db()[self.key])
-        except KeyError:  # usually means that the db hasn't been populated yet
+
+        data = self.NativeUI.get_cycle_db()
+        if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
+
+        self.value_display.setNum(self.NativeUI.get_cycle_db()[self.key])
         return 0
 
 
@@ -133,12 +135,14 @@ class ReadbackMeasurementWidget(MeasurementWidget):
         super().__init__(*args, **kwargs)
 
     def update_value(self):
-        if self.key is None:
+        if self.key is None:  # widget can be created without assigning a parameter
             self.value_display.setText("-")
             return 0
-        try:
-            self.value_display.setNum(self.NativeUI.get_readback_db()[self.key])
-        except KeyError:  # usually means that the db hasn't been populated yet
+
+        data = self.NativeUI.get_readback_db()
+        if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
+
+        self.value_display.setNum(self.NativeUI.get_readback_db()[self.key])
         return 0

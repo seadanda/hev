@@ -9,6 +9,7 @@ import numpy as np
 # from alarm_widgets.tab_alarms import TabAlarm
 from global_widgets.tab_top_bar import TabTopBar
 from global_widgets.tab_left_bar import TabLeftBar
+from global_widgets.global_sendconfirm_popup import confirmPopup
 from hev_main import MainView
 from hev_settings import SettingsView
 from hev_alarms import AlarmView
@@ -67,6 +68,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.modes_view)
         # self.stack.setCurrentWidget(self.main_view)
         #        self.menu_bar = TabPageButtons()
+
+        self.confirmPopup = confirmPopup(self)
+        self.confirmPopup.show()
 
         # Layout
         hlayout = QHBoxLayout()
@@ -186,7 +190,7 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __data database. Uses lock to avoid race
         conditions.
         """
-        print("setting data db")
+        logging.debug("setting data db")
         with self.db_lock:
             for key in payload:
                 self.__data[key] = payload[key]
@@ -197,15 +201,12 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __targets database. Uses lock to avoid race
         conditions.
         """
-        print("setting targets db")
-        print(payload)
+        logging.debug("setting targets db")
         with self.db_lock:
             if self.__targets == "empty":
                 self.__targets = {}
             for key in payload:
                 self.__targets[key] = payload[key]
-        print(self.__targets)
-        exit()
         return 0
 
     def set_readback_db(self, payload):
@@ -213,7 +214,7 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __readback database. Uses lock to avoid race
         conditions.
         """
-        print("setting readback db")
+        logging.debug("setting readback db")
         with self.db_lock:
             for key in payload:
                 self.__readback[key] = payload[key]
@@ -224,10 +225,11 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __cycle database. Uses lock to avoid race
         conditions.
         """
-        print("setting cycle db")
+        logging.info("setting cycle db")  # TODO
         with self.db_lock:
             for key in payload:
                 self.__cycle[key] = payload[key]
+        # print(self.__cycle)
         return 0
 
     def set_battery_db(self, payload):
@@ -235,7 +237,7 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __battery database. Uses lock to avoid race
         conditions.
         """
-        print("setting battery db")
+        logging.debug("setting battery db")
         with self.db_lock:
             for key in payload:
                 self.__battery[key] = payload[key]
@@ -245,8 +247,9 @@ class NativeUI(HEVClient, QMainWindow):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
+        TODO: why are there 2 volumes? Is this necessary for something?
         """
-        print("setting plots db")
+        logging.debug("setting plots db")
         with self.db_lock:
             self.__plots = np.append(
                 np.delete(self.__plots, 0, 0),
@@ -255,6 +258,7 @@ class NativeUI(HEVClient, QMainWindow):
                         payload["timestamp"],
                         payload["pressure_patient"],
                         payload["flow"],
+                        payload["volume"],
                         payload["volume"],
                     ]
                 ],
@@ -267,10 +271,9 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __alarms database. Uses lock to avoid race
         conditions.
         """
-        # print("setting alarms db")
+        logging.debug("setting alarms db")
         with self.db_lock:
             self.__alarms = payload
-        # print(self.__alarms)
         return 0
 
     def set_personal_db(self, payload):
@@ -278,7 +281,7 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __personal database. Uses lock to avoid race
         conditions.
         """
-        print("setting personal db")
+        logging.debug("setting personal db")
         with self.db_lock:
             for key in payload:
                 self.__personal[key] = payload[key]
@@ -302,7 +305,7 @@ class NativeUI(HEVClient, QMainWindow):
         """callback from the polling function, payload is data from socket """
         # Store data in dictionary of lists
         self.statusBar().showMessage(f"{payload}")
-        # print(payload["type"])
+        # logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
                 self.set_data_db(payload["DATA"])
@@ -319,18 +322,18 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
                 self.set_personal_db(payload["PERSONAL"])
-            if payload["type"] != ("DATA" or "BATTERY" or "ALARM" or "TARGET"):
-                print("unusual payload")
-                print(payload)
+
+            if payload["type"] == "CYCLE":
+                self.set_cycle_db(payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
-
-        print()
 
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> None:
         """send command to hevserver via socket"""
-        self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        if check:
+            self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
 
     @Slot(str)
     def q_ack_alarm(self, alarm: str):

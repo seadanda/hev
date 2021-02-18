@@ -1,5 +1,6 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from global_widgets.global_spinbox import simpleSpin
+
+# from global_widgets.global_spinbox import simpleSpin
 from global_widgets.global_select_button import selectorButton
 from global_widgets.global_send_popup import SetConfirmPopup
 from global_widgets.template_set_values import TemplateSetValues
@@ -9,9 +10,8 @@ class TabExpert(TemplateSetValues):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TabExpert, self).__init__(NativeUI, *args, **kwargs)
         self.liveUpdating = True
-        # self.parent().packet = 'readback'
         self.setPacketType("readback")
-        self.modifications = []
+
         controlDict = {
             "Buffers": [
                 [
@@ -74,7 +74,7 @@ class TabExpert(TemplateSetValues):
         self.addButtons()
         self.finaliseLayout()
 
-    def update_settings_data(self):
-        if self.liveUpdating:
-            for widget in self.spinDict:
-                self.spinDict[widget].update_readback_value()
+    # def update_settings_data(self):
+    #     if self.liveUpdating:
+    #         for widget in self.spinDict:
+    #             self.spinDict[widget].update_readback_value()

@@ -33,11 +33,6 @@ class alarmWidget(QtWidgets.QWidget):
         self.timer.start()
 
     def checkAlarm(self):
-        # ongoingAlarms = self.parent().parent().parent().parent().parent().parent().parent().ongoingAlarms
-        # for alarms in ongoingAlarms:
-        #    if alarms['alarm_code'] == 'rubbis':#self.alarmPayload['alarm_code']:
-        #        return
-        # print('alarm no longer exists')
         self.parent().alarmDict.pop(self.alarmPayload["alarm_code"])
         self.setParent(None)
 
@@ -85,7 +80,7 @@ class alarmPopup(QtWidgets.QDialog):
 
     def location_on_window(self):
         screen = QtWidgets.QDesktopWidget().screenGeometry()
-        widget = self.geometry()
+
         x = screen.width() - screen.width() / 2
         y = 0  # screen.height() - widget.height()
         self.move(x, y)

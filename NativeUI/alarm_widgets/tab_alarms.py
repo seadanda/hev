@@ -1,6 +1,6 @@
 import sys
 
-from alarm_widgets.alarmPopup import alarmPopup
+from alarm_widgets.alarm_popup import alarmPopup
 from alarm_widgets.alarm_list import alarmList
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -24,7 +24,6 @@ class TabAlarm(QtWidgets.QWidget):
         vlayout.addWidget(self.acknowledgeButton)
 
         self.setLayout(vlayout)
-        self.existingAlarms = []
         # fdd
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)  # just faster than 60Hz
@@ -32,7 +31,6 @@ class TabAlarm(QtWidgets.QWidget):
         self.timer.start()
 
     def acknowledge_pressed(self):
-        self.existingAlarms = []
         self.popup.clearAlarms()
         self.list.acknowledge_all()
 

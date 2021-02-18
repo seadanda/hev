@@ -40,12 +40,12 @@ class signallingSpinBox(QtWidgets.QSpinBox):
         return False
 
 
-class simpleSpin(QtWidgets.QWidget):
-    def __init__(self, NativeUI, infoArray, *args, **kwargs):
-        super(simpleSpin, self).__init__(*args, **kwargs)
+class labelledSpin(QtWidgets.QWidget):
+    def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
+        super(labelledSpin, self).__init__(*args, **kwargs)
         print(infoArray)
         self.NativeUI = NativeUI
-
+        self.template = template
         self.cmd_type, self.cmd_code = "", ""
         if len(infoArray) == 5:
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
@@ -98,7 +98,7 @@ class simpleSpin(QtWidgets.QWidget):
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
     def manualStep(self):
-        self.parent().liveUpdating = False
+        self.template.liveUpdating = False
         self.manuallyUpdated = True
         self.simpleSpin.setProperty("textColour", "1")
         # self.expertButton.style().unpolish(self.expertButton)
@@ -113,6 +113,8 @@ class simpleSpin(QtWidgets.QWidget):
     def update_targets_value(self):
         newVal = self.NativeUI.get_targets_db()
         if newVal == "empty":
+            return
+        if self.tag == "":
             return
         self.simpleSpin.setValue(newVal[self.tag])
         self.simpleSpin.setProperty("textColour", "0")
