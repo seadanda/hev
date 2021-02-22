@@ -32,33 +32,30 @@ class MainView(QWidget):
         hlayout = QHBoxLayout()
 
         center_vlayout = QVBoxLayout()
-        right_vlayout = QVBoxLayout()
         bottom_layout = QHBoxLayout()
 
         # Set up the widget tabs
         self.stack = QStackedWidget(self)
-        self.tab_plots = TabPlots(NativeUI)
         self.tab_expert_plots = TabExpertPlots(NativeUI)
-        self.tab_measurements = TabMeasurements(NativeUI)
         self.tab_spin = TabSpinButtons(NativeUI)
         self.tab_history_buttons = TabHistoryButtons(NativeUI)
         self.tab_normal_expert_buttons = TabNormalExpertButtons(NativeUI)
+        self.tab_normal_plots_view = TabNormalPlotsView(NativeUI)
+
+        # Get references to the widgets
+        self.tab_plots = self.tab_normal_plots_view.tab_plots
 
         # Bottom bar -
         bottom_layout.addWidget(self.tab_history_buttons)
         bottom_layout.addWidget(self.tab_spin)
 
-        # center column - plots
-        self.stack.addWidget(self.tab_plots)
+        # stack layout
+        self.stack.addWidget(self.tab_normal_plots_view)
         self.stack.addWidget(self.tab_expert_plots)
         center_vlayout.addWidget(self.tab_normal_expert_buttons)
         center_vlayout.addWidget(self.stack)
         center_vlayout.addLayout(bottom_layout)
         hlayout.addLayout(center_vlayout)
-
-        # right column - measurements
-        right_vlayout.addWidget(self.tab_measurements)
-        hlayout.addLayout(right_vlayout)
 
         self.setLayout(hlayout)
 
@@ -81,7 +78,7 @@ class MainView(QWidget):
         """
         raise the normal plots view
         """
-        self.stack.setCurrentWidget(self.tab_plots)
+        self.stack.setCurrentWidget(self.tab_normal_plots_view)
         for button in self.tab_normal_expert_buttons.buttons:
             button.setEnabled(True)
         self.tab_normal_expert_buttons.normal_button.setEnabled(False)
@@ -131,3 +128,18 @@ class TabNormalExpertButtons(QWidget):
                 "}"
             )
             button.setFixedSize(button_size)
+
+
+class TabNormalPlotsView(QWidget):
+    def __init__(self, NativeUI, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        layout = QHBoxLayout()
+
+        self.tab_plots = TabPlots(NativeUI)
+        self.tab_measurements = TabMeasurements(NativeUI)
+
+        layout.addWidget(self.tab_plots)
+        layout.addWidget(self.tab_measurements)
+
+        self.setLayout(layout)
