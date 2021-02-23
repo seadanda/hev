@@ -8,11 +8,22 @@ class okButton(
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_check = os.path.join(NativeUI.iconpath, "check-solid.png")
-        self.setIcon(QtGui.QIcon(iconpath_check))
+
+        # set icon color
+        pixmap = QtGui.QPixmap(iconpath_check)
+        mask = pixmap.mask()
+        pixmap.fill(NativeUI.colors["foreground"])
+        pixmap.setMask(mask)
+        self.setIcon(QtGui.QIcon(pixmap))
+
         self.setStyleSheet(
             "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
-            "border-radius:4px "
+            "color: " + NativeUI.colors["foreground"].name() + ";"
+            "border-color: " + NativeUI.colors["foreground"].name() + ";"
         )
+
+        self.setFixedHeight(50)
+        # self.setFixedSize(QtCore.QSize(150, 50))
 
 
 class cancelButton(
@@ -21,8 +32,19 @@ class cancelButton(
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")
-        self.setIcon(QtGui.QIcon(iconpath_cross))
+
+        # set icon color
+        pixmap = QtGui.QPixmap(iconpath_cross)
+        mask = pixmap.mask()
+        pixmap.fill(NativeUI.colors["foreground"])
+        pixmap.setMask(mask)
+        self.setIcon(QtGui.QIcon(pixmap))
+
         self.setStyleSheet(
             "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
-            "border-radius:4px "
+            "color: " + NativeUI.colors["foreground"].name() + ";"
+            "border-color: " + NativeUI.colors["foreground"].name() + ";"
         )
+
+        self.setFixedHeight(50)
+        # self.setFixedSize(QtCore.QSize(150, 50))

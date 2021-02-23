@@ -106,7 +106,10 @@ class labelledSpin(QtWidgets.QWidget):
 
     def update_readback_value(self):
         newVal = self.NativeUI.get_readback_db()
-        self.simpleSpin.setValue(newVal[self.tag])
+        try:
+            self.simpleSpin.setValue(newVal[self.tag])
+        except KeyError:
+            pass
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.style().polish(self.simpleSpin)
 
