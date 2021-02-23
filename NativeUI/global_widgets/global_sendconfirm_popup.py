@@ -12,7 +12,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.confirmMessage = confirmMessage
 
         iconLabel = QtWidgets.QLabel()
-        iconpath_check = os.path.join(NativeUI.iconpath, "exclamation-circle-solid.png") 
+        iconpath_check = os.path.join(NativeUI.iconpath, "exclamation-circle-solid.png")
         pixmap = QtGui.QPixmap(iconpath_check).scaledToHeight(40)
         iconLabel.setPixmap(pixmap)
         self.hlayout.addWidget(iconLabel)
@@ -67,7 +67,7 @@ class confirmPopup(QtWidgets.QWidget):
         self.timer.start()
 
     def addConfirmation(self, confirmMessage):
-        self.confirmDict[confirmMessage] = confirmWidget( self.NativeUI, confirmMessage)
+        self.confirmDict[confirmMessage] = confirmWidget(self.NativeUI, confirmMessage)
         self.vlayout.addWidget(self.confirmDict[confirmMessage])
 
     def location_on_window(self):

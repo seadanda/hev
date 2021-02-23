@@ -1,6 +1,6 @@
-
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+
 
 class TabModeswitchButton(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
@@ -9,7 +9,7 @@ class TabModeswitchButton(QtWidgets.QWidget):
         self.NativeUI = NativeUI
 
         layout = QtWidgets.QHBoxLayout(self)
-        self.label = QtWidgets.QLabel('Mode: ')
+        self.label = QtWidgets.QLabel("Mode: ")
         self.switchButton = QtWidgets.QPushButton("PCAC")
         layout.addWidget(self.label)
         layout.addWidget(self.switchButton)
@@ -44,19 +44,19 @@ class modeswitchPopup(QtWidgets.QDialog):
             vradioLayout.addWidget(button)
             button.pressed.connect(lambda i=button: self.update_settings_data(i))
         groupBox.setLayout(vradioLayout)
-        
+
         valuesLayout = QtWidgets.QVBoxLayout()
-        
-        initlabel = settingsLabel(' ') # titles
-        initlabel.currentLabel.setText('Current')
-        initlabel.settingLabel.setText('New')
+
+        initlabel = settingsLabel(" ")  # titles
+        initlabel.currentLabel.setText("Current")
+        initlabel.settingLabel.setText("New")
         valuesLayout.addWidget(initlabel)
 
         self.labelList = []
         for settings in self.settingsList:
             label = settingsLabel(settings[0])
             self.labelList.append(label)
-            #settingVal = spinDict
+            # settingVal = spinDict
             valuesLayout.addWidget(label)
 
         hlayout = QtWidgets.QHBoxLayout()
@@ -80,37 +80,35 @@ class modeswitchPopup(QtWidgets.QDialog):
         radioButtons[0].click()
         self.update_settings_data(radioButtons[0])
 
-    def update_settings_data(self,button):
+    def update_settings_data(self, button):
         self.mode = button.text()
         data = self.NativeUI.get_targets_db()
-        for label,settings in zip(self.labelList,self.settingsList):
+        for label, settings in zip(self.labelList, self.settingsList):
             currentVal = data[settings[2]]
             setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
             label.update_values(currentVal, setVal)
 
     def ok_button_pressed(self):
-        self.NativeUI.q_send_cmd('SET_MODE', self.mode)
+        self.NativeUI.q_send_cmd("SET_MODE", self.mode)
         # need to decide whetehr this sets individual values or just mode
         # for label,settings in zip(self.labelList,self.settingsList):
         #     currentVal = data[settings[2]]
         #     setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
         #     label.update_values(currentVal, setVal)
         self.close()
-    
-    
+
     def cancel_button_pressed(self):
         self.close()
-
 
 
 class settingsLabel(QtWidgets.QWidget):
     def __init__(self, name, *args, **kwargs):
         super(settingsLabel, self).__init__(*args, **kwargs)
-        
+
         self.nameLabel = QtWidgets.QLabel(name)
         self.currentLabel = QtWidgets.QLabel(str(0))
         self.settingLabel = QtWidgets.QLabel(str(0))
-        self.settingLabel.setStyleSheet('color:red')
+        self.settingLabel.setStyleSheet("color:red")
 
         hlayout = QtWidgets.QHBoxLayout()
         labels = [self.nameLabel, self.currentLabel, self.settingLabel]
@@ -118,6 +116,6 @@ class settingsLabel(QtWidgets.QWidget):
             hlayout.addWidget(label)
         self.setLayout(hlayout)
 
-    def update_values(self,currentVal, setVal):
+    def update_values(self, currentVal, setVal):
         self.currentLabel.setText(str(currentVal))
         self.settingLabel.setText(str(setVal))

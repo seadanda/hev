@@ -69,7 +69,9 @@ class NativeUI(HEVClient, QMainWindow):
         # self.stack.setCurrentWidget(self.main_view)
         #        self.menu_bar = TabPageButtons()
 
-        self.confirmPopup = confirmPopup(self,self) # one is passed as an argument, the other becomes parent
+        self.confirmPopup = confirmPopup(
+            self, self
+        )  # one is passed as an argument, the other becomes parent
         self.confirmPopup.show()
 
         # Layout

@@ -107,7 +107,7 @@ class labelledSpin(QtWidgets.QWidget):
     def update_readback_value(self):
         newVal = self.NativeUI.get_readback_db()
         if newVal == {}:
-            a=1 # do nothing
+            a = 1  # do nothing
         else:
             self.simpleSpin.setValue(newVal[self.tag])
             self.simpleSpin.setProperty("textColour", "0")
@@ -116,7 +116,7 @@ class labelledSpin(QtWidgets.QWidget):
     def update_targets_value(self):
         newVal = self.NativeUI.get_targets_db()
         if (newVal == {}) or (self.tag == ""):
-            a=1 # do nothing
+            a = 1  # do nothing
         else:
             self.simpleSpin.setValue(newVal[self.tag])
             self.simpleSpin.setProperty("textColour", "0")

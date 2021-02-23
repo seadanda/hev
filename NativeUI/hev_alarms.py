@@ -20,8 +20,7 @@ from global_widgets.template_main_pages import TemplateMainPages
 
 
 class AlarmView(TemplateMainPages):
-    """Subclasses TemplateMainPages to display alarms.
-    """
+    """Subclasses TemplateMainPages to display alarms."""
 
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmView, self).__init__(*args, **kwargs)

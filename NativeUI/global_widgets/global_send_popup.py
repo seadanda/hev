@@ -34,10 +34,10 @@ class SetConfirmPopup(
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        listWidget.setFixedHeight(listWidget.sizeHintForRow(0) * listWidget.count() + 10)
-        listWidget.setFixedWidth(listWidget.sizeHintForColumn(0)*listWidget.count())
-        
-
+        listWidget.setFixedHeight(
+            listWidget.sizeHintForRow(0) * listWidget.count() + 10
+        )
+        listWidget.setFixedWidth(listWidget.sizeHintForColumn(0) * listWidget.count())
 
         buttonHLayout = QtWidgets.QHBoxLayout()
 
