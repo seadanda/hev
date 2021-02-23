@@ -1,5 +1,4 @@
 from PySide2 import QtWidgets, QtGui, QtCore
-from settings_widgets.tab_expert import simpleSpin
 from global_widgets.global_send_popup import SetConfirmPopup
 
 

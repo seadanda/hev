@@ -9,6 +9,7 @@ import numpy as np
 # from alarm_widgets.tab_alarms import TabAlarm
 from global_widgets.tab_top_bar import TabTopBar
 from global_widgets.tab_left_bar import TabLeftBar
+from global_widgets.global_sendconfirm_popup import confirmPopup
 from hev_main import MainView
 from hev_settings import SettingsView
 from hev_alarms import AlarmView
@@ -66,6 +67,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
 
+        self.confirmPopup = confirmPopup(
+            self, self
+        )  # one is passed as an argument, the other becomes parent
+        self.confirmPopup.show()
+
         # Layout
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.leftBar)
@@ -92,7 +98,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.__plots = np.zeros((500, 5))
         self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
         self.__alarms = []
-        self.__targets = "empty"
+        self.__targets = {}
         self.__personal = {}
 
         # Appearance
@@ -120,6 +126,7 @@ class NativeUI(HEVClient, QMainWindow):
         Return the contents of the __target database. Uses lock to avoid race
         conditions.
         """
+
         with self.db_lock:
             temp = self.__targets
         return temp
@@ -196,8 +203,6 @@ class NativeUI(HEVClient, QMainWindow):
         """
         logging.debug("setting targets db")
         with self.db_lock:
-            if self.__targets == "empty":
-                self.__targets = {}
             for key in payload:
                 self.__targets[key] = payload[key]
         return 0
@@ -222,6 +227,7 @@ class NativeUI(HEVClient, QMainWindow):
         with self.db_lock:
             for key in payload:
                 self.__cycle[key] = payload[key]
+        # print(self.__cycle)
         return 0
 
     def set_battery_db(self, payload):
@@ -314,6 +320,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
                 self.set_personal_db(payload["PERSONAL"])
+
             if payload["type"] == "CYCLE":
                 self.set_cycle_db(payload["CYCLE"])
         except KeyError:
@@ -322,7 +329,9 @@ class NativeUI(HEVClient, QMainWindow):
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> None:
         """send command to hevserver via socket"""
-        self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        if check:
+            self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
 
     @Slot(str)
     def q_ack_alarm(self, alarm: str):
