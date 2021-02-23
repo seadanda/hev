@@ -8,11 +8,9 @@ class TabClinical(
     def __init__(self, *args, **kwargs):
         super(TabClinical, self).__init__(*args, **kwargs)
         self.liveUpdating = True
-        self.modifications = []
-        # self.spinDict = {}
         clinicalList = [
-            ["APNEA", "ms", "duration_calibration"],
-            ["Check Pressure Patient", "ms", "duration_buff_purge"],
+            ["APNEA", "ms", ""],
+            ["Check Pressure Patient", "ms", ""],
             ["High FIO2", "ms", ""],
             ["High Pressure_Low", " ", ""],
             ["High Respiratory Rate", " ", ""],
