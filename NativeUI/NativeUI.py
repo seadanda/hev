@@ -54,6 +54,18 @@ class NativeUI(HEVClient, QMainWindow):
         }
         self.iconpath = self.__find_icons()
 
+        # database
+        self.db_lock = Lock()
+        self.__data = {}
+        self.__readback = {}
+        self.__cycle = {}
+        self.__battery = {}
+        self.__plots = np.zeros((500, 5))
+        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
+        self.__alarms = []
+        self.__targets = {}
+        self.__personal = {}
+
         # bars
         self.topBar = TabTopBar(self)
         self.leftBar = TabLeftBar(self)
@@ -90,18 +102,6 @@ class NativeUI(HEVClient, QMainWindow):
 
         self.statusBar().showMessage("Waiting for data")
         self.statusBar().setStyleSheet("color: white")
-
-        # database
-        self.db_lock = Lock()
-        self.__data = {}
-        self.__readback = {}
-        self.__cycle = {}
-        self.__battery = {}
-        self.__plots = np.zeros((500, 5))
-        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
-        self.__alarms = []
-        self.__targets = {}
-        self.__personal = {}
 
         # Appearance
         palette = self.palette()

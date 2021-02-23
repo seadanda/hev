@@ -5,6 +5,7 @@ class selectorButton(QtWidgets.QPushButton):
     def __init__(self, NativeUI, *args, **kwargs):
         super(selectorButton, self).__init__(*args, **kwargs)
         fontsize = 20
+
         style = (
             "QPushButton{"
             "font: " + str(fontsize) + "pt;"
