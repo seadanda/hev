@@ -12,8 +12,8 @@ class confirmWidget(QtWidgets.QWidget):
         self.confirmMessage = confirmMessage
 
         iconLabel = QtWidgets.QLabel()
-        iconpath_check = os.path.join(self.NativeUI.iconpath, "check-solid.svg") 
-        pixmap = QtGui.QPixmap(iconpath_check)
+        iconpath_check = os.path.join(NativeUI.iconpath, "exclamation-circle-solid.png") 
+        pixmap = QtGui.QPixmap(iconpath_check).scaledToHeight(40)
         iconLabel.setPixmap(pixmap)
         self.hlayout.addWidget(iconLabel)
 
@@ -37,7 +37,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.setParent(None)
 
 
-class confirmPopup(QtWidgets.QDialog):
+class confirmPopup(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(confirmPopup, self).__init__(*args, **kwargs)
 
