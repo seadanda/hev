@@ -103,10 +103,7 @@ class TabNormalExpertButtons(QWidget):
         layout = QHBoxLayout()
         self.normal_button = QPushButton("Normal")
         self.expert_button = QPushButton("Detailed")
-        self.buttons = [
-            self.normal_button,
-            self.expert_button,
-        ]
+        self.buttons = [self.normal_button, self.expert_button]
         layout.addWidget(self.normal_button)
         layout.addWidget(self.expert_button)
         # layout.setAlignment(self.normal_button, QtCore.Qt.AlignLeft)
@@ -118,7 +115,9 @@ class TabNormalExpertButtons(QWidget):
                 "QPushButton{"
                 "color: " + NativeUI.colors["foreground"].name() + ";"
                 "font-size: " + str(font_size) + "pt;"
-                "background-color: " + NativeUI.colors["background"].name() + ";"
+                "background-color: "
+                + NativeUI.colors["background-enabled"].name()
+                + ";"
                 "border-color: " + NativeUI.colors["background"].name() + ";"
                 "}"
                 "QPushButton:disabled{"

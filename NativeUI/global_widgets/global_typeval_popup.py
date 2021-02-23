@@ -18,18 +18,20 @@ class TypeValuePopup(
         self.lineEdit = QtWidgets.QLineEdit()
         self.lineEdit.setText("4")
         self.lineEdit.setStyleSheet(
-            """QLineEdit{font: 16pt;
-                                            background-color:white;
-                                            border-radius:4px }
-                                        QLineEdit[colour = "0"]{
-                                            color:green
-                                        }
-                                        QLineEdit[colour = "1"]{
-                                            color:rgb(144,231,211);
-                                        }
-                                        QLineEdit[colour = "2"]{
-                                            color:red
-                                        }"""
+            "QLineEdit{"
+            "font: 16pt;"
+            "background-color: white;"
+            "border-radius: 4px;"
+            "}"
+            "QLineEdit[colour = '0']{"
+            "color: green;"
+            "}"
+            "QLineEdit[colour = '1']{"
+            "color: rgb(144, 231, 211);"
+            "}"
+            "QLineEdit[colour = '2']{"
+            "color: red;"
+            "}"
         )
         self.lineEdit.setProperty("colour", "1")
         self.lineEdit.setAlignment(QtCore.Qt.AlignCenter)

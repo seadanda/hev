@@ -26,9 +26,9 @@ class AlarmView(TemplateMainPages):
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmView, self).__init__(*args, **kwargs)
 
-        self.alarmButton = selectorButton("List of Alarms")
-        self.clinicalButton = selectorButton("Clinical Limits")
-        self.techButton = selectorButton("Technical Limits")
+        self.alarmButton = selectorButton(NativeUI, "List of Alarms")
+        self.clinicalButton = selectorButton(NativeUI, "Clinical Limits")
+        self.techButton = selectorButton(NativeUI, "Technical Limits")
 
         self.buttonWidgets = [self.alarmButton, self.clinicalButton, self.techButton]
 

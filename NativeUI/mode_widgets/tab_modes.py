@@ -23,24 +23,24 @@ class TabModes(
 
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.setSpacing(0)
-        self.pcacButton = selectorButton("PC/AC")
+        self.pcacButton = selectorButton(NativeUI, "PC/AC")
         self.pcacButton.setProperty("selected", "1")
         self.pcacButton.style().polish(self.pcacButton)
         self.pcacEnable = [1, 0, 1, 1, 0, 1, 0, 1]
         self.pcacVals = [1, 2, 3, 4, 5, 6, 7, 8]
         self.pcacPage = TemplateSetValues(NativeUI)
 
-        self.prvcButton = selectorButton("PC/AC-PRVC")
+        self.prvcButton = selectorButton(NativeUI, "PC/AC-PRVC")
         self.prvcEnable = [1, 1, 0, 1, 0, 1, 1, 1]
         self.prvcVals = [2, 3, 4, 5, 6, 7, 8, 9]
         self.prvcPage = TemplateSetValues(NativeUI)
 
-        self.psvButton = selectorButton("PC-PSV")
+        self.psvButton = selectorButton(NativeUI, "PC-PSV")
         self.psvEnable = [1, 1, 0, 1, 0, 1, 0, 1]
         self.psvVals = [3, 4, 5, 6, 7, 8, 9, 1]
         self.psvPage = TemplateSetValues(NativeUI)
 
-        self.cpapButton = selectorButton("CPAP")
+        self.cpapButton = selectorButton(NativeUI, "CPAP")
         self.cpapEnable = [1, 0, 1, 1, 0, 1, 0, 1]
         self.cpapVals = [4, 5, 6, 7, 8, 9, 1, 2]
         self.cpapPage = TemplateSetValues(NativeUI)

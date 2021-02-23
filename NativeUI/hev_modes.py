@@ -9,8 +9,8 @@ class ModeView(TemplateMainPages):
     def __init__(self, NativeUI, *args, **kwargs):
         super(ModeView, self).__init__(*args, **kwargs)
 
-        self.modeButton = selectorButton("Mode Settings")
-        self.personalButton = selectorButton("Personal Settings")
+        self.modeButton = selectorButton(NativeUI, "Mode Settings")
+        self.personalButton = selectorButton(NativeUI, "Personal Settings")
         self.buttonWidgets = [self.modeButton, self.personalButton]
 
         self.modeTab = TabModes(NativeUI)
