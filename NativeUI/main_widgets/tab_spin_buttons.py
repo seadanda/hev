@@ -158,7 +158,7 @@ class TabSpinButtons(QtWidgets.QWidget):
 
     def updateTargets(self):
         targets = self.NativeUI.get_targets_db()
-        if targets == "empty":
+        if targets == {}:
             return
         for spin, label in zip(self.__spins, self.__labels):
             if spin.doubleSpin.value() != float(targets[label]):

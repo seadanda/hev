@@ -43,7 +43,7 @@ class signallingSpinBox(QtWidgets.QSpinBox):
 class labelledSpin(QtWidgets.QWidget):
     def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
         super(labelledSpin, self).__init__(*args, **kwargs)
-        print(infoArray)
+        # print(infoArray)
         self.NativeUI = NativeUI
         self.template = template
         self.cmd_type, self.cmd_code = "", ""
@@ -106,19 +106,18 @@ class labelledSpin(QtWidgets.QWidget):
 
     def update_readback_value(self):
         newVal = self.NativeUI.get_readback_db()
-        try:
+        if newVal == {}:
+            a = 1  # do nothing
+        else:
             self.simpleSpin.setValue(newVal[self.tag])
-        except KeyError:
-            pass
-        self.simpleSpin.setProperty("textColour", "0")
-        self.simpleSpin.style().polish(self.simpleSpin)
+            self.simpleSpin.setProperty("textColour", "0")
+            self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
         newVal = self.NativeUI.get_targets_db()
-        if newVal == "empty":
-            return
-        if self.tag == "":
-            return
-        self.simpleSpin.setValue(newVal[self.tag])
-        self.simpleSpin.setProperty("textColour", "0")
-        self.simpleSpin.style().polish(self.simpleSpin)
+        if (newVal == {}) or (self.tag == ""):
+            a = 1  # do nothing
+        else:
+            self.simpleSpin.setValue(newVal[self.tag])
+            self.simpleSpin.setProperty("textColour", "0")
+            self.simpleSpin.style().polish(self.simpleSpin)

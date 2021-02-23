@@ -8,7 +8,7 @@ from global_widgets.template_set_values import TemplateSetValues
 class TabModes(TemplateSetValues):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TabModes, self).__init__(NativeUI, *args, **kwargs)
-        settingsList = [
+        self.settingsList = [
             [
                 "Respiratory Rate",
                 "/min",
@@ -42,7 +42,7 @@ class TabModes(TemplateSetValues):
             ["Inhale volume", "", "volume", "SET_TARGET_", "VOLUME"],
             ["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT"],
         ]
-        self.addModeStack(settingsList)
+        self.addModeStack(self.settingsList)
         self.addButtons()
         self.finaliseLayout()
 

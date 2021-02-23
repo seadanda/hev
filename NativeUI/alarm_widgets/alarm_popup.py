@@ -14,8 +14,10 @@ class alarmWidget(QtWidgets.QWidget):
         self.alarmPayload = alarmPayload
 
         iconLabel = QtWidgets.QLabel()
-        iconpath_check = os.path.join(self.NativeUI.iconpath, "exclamation-triangle-solid.png") 
-        pixmap = QtGui.QPixmap(iconpath_check)
+        iconpath_check = os.path.join(
+            self.NativeUI.iconpath, "exclamation-triangle-solid.png"
+        )
+        pixmap = QtGui.QPixmap(iconpath_check).scaledToHeight(40)
         iconLabel.setPixmap(pixmap)
         self.layout.addWidget(iconLabel)
 
@@ -33,7 +35,7 @@ class alarmWidget(QtWidgets.QWidget):
             self.setStyleSheet("background-color:orange;")
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(20000)  # just faster than 60Hz
+        self.timer.setInterval(5000)  # just faster than 60Hz
         self.timer.timeout.connect(self.checkAlarm)
         self.timer.start()
 
@@ -78,7 +80,9 @@ class alarmPopup(QtWidgets.QDialog):
         self.alarmDict = {}
 
     def addAlarm(self, alarmPayload):
-        self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(self.NativeUI, alarmPayload)
+        self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(
+            self.NativeUI, alarmPayload
+        )
         self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
 
     def resetTimer(self, alarmPayload):

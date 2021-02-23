@@ -67,8 +67,7 @@ class BatteryText(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def update_value(self, battery_data):
-        """
-        """
+        """"""
         battery_percent = 0
         self.label.setText(str(battery_percent) + " %")
         return 0

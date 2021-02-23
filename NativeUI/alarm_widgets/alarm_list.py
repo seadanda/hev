@@ -14,9 +14,9 @@ class alarmList(QtWidgets.QWidget):
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
         self.setStyleSheet("background-color:white; font:15pt white;")
-        
-        iconpath_bell = os.path.join(NativeUI.iconpath, "bell-solid.png") 
-        iconpath_bellReg = os.path.join(NativeUI.iconpath, "bell-regular.png") 
+
+        iconpath_bell = os.path.join(NativeUI.iconpath, "bell-solid.png")
+        iconpath_bellReg = os.path.join(NativeUI.iconpath, "bell-regular.png")
 
         self.solidBell = QtGui.QIcon(iconpath_bell)
         self.regularBell = QtGui.QIcon(iconpath_bellReg)
@@ -43,7 +43,6 @@ class alarmList(QtWidgets.QWidget):
     def addAlarm(self, alarmPayload):
         newItem = QtWidgets.QListWidgetItem(self.solidBell, alarmPayload["alarm_code"])
         self.alarmList.insertItem(0, newItem)  # add to the top
-
 
 
 if __name__ == "__main__":

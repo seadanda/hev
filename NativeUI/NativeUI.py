@@ -69,7 +69,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
 
-        self.confirmPopup = confirmPopup(self)
+        self.confirmPopup = confirmPopup(
+            self, self
+        )  # one is passed as an argument, the other becomes parent
         self.confirmPopup.show()
 
         # Layout
@@ -98,7 +100,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.__plots = np.zeros((500, 5))
         self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
         self.__alarms = []
-        self.__targets = "empty"
+        self.__targets = {}
         self.__personal = {}
 
         # Appearance
@@ -203,8 +205,6 @@ class NativeUI(HEVClient, QMainWindow):
         """
         logging.debug("setting targets db")
         with self.db_lock:
-            if self.__targets == "empty":
-                self.__targets = {}
             for key in payload:
                 self.__targets[key] = payload[key]
         return 0
