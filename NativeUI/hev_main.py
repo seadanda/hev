@@ -119,11 +119,13 @@ class TabNormalExpertButtons(QWidget):
                 + NativeUI.colors["background-enabled"].name()
                 + ";"
                 "border-color: " + NativeUI.colors["background"].name() + ";"
+                "border:none"
                 "}"
                 "QPushButton:disabled{"
                 "background-color: "
                 + NativeUI.colors["background-disabled"].name()
                 + ";"
+                "border:none"
                 "}"
             )
             button.setFixedSize(button_size)

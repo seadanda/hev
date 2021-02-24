@@ -66,6 +66,7 @@ class TabPageButtons(QtWidgets.QWidget):
                 "background-color: "
                 + NativeUI.colors["background-disabled"].name()
                 + ";"
+                + "border:none"
                 "}"
             )
             button.setFixedSize(self.__button_size)

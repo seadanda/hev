@@ -20,6 +20,7 @@ class okButton(
             "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
             "color: " + NativeUI.colors["foreground"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "border:none"
         )
 
         self.setFixedHeight(50)
@@ -44,6 +45,7 @@ class cancelButton(
             "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
             "color: " + NativeUI.colors["foreground"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "border:none"
         )
 
         self.setFixedHeight(50)

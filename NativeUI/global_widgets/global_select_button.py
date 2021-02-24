@@ -14,11 +14,13 @@ class selectorButton(QtWidgets.QPushButton):
             "font: " + str(fontsize) + "pt;"
             "color: " + NativeUI.colors["foreground"].name() + ";"
             "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
+            "border:none"
             "}"
             "QPushButton[selected='1']{"
             "font: " + str(fontsize) + "pt;"
-            "color: " + NativeUI.colors["foreground"].name() + ";"
-            "background-color: " + NativeUI.colors["background-disabled"].name() + ";"
+            "color: " + NativeUI.colors["background"].name() + ";"
+            "background-color: " + NativeUI.colors["foreground-disabled"].name() + ";"
+            "border:none"
             "}"
         )
 
