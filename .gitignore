@@ -19,6 +19,9 @@ BM_SCRATCH
 .env
 ansible/playbooks/hosts
 
+# python virtual env created using ansible
+.hev_env
+
 # Created by https://www.toptal.com/developers/gitignore/api/python
 # Edit at https://www.toptal.com/developers/gitignore?templates=python
 
