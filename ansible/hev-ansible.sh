@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # © Copyright CERN, Riga Technical University and University of Liverpool 2020.
 # All rights not expressly granted are reserved. 
 # 
