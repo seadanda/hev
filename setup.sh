@@ -35,7 +35,7 @@ if [[ -f $hostsfile ]]; then
                     exit 1
                 fi
                 echo "User inputtted IP Address added to $hostsfile.";;
-        [Nn]* ) ;;
+        [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);;
         * ) echo "Please answer yes or no."; exit 1;;
     esac
 fi
