@@ -95,11 +95,11 @@
             virtualenv: "{{ ansible_env.HOME }}/hev/.hev_env"
             virtualenv_python: python3.7
 
-        - name: copy libscrc script
-          template: src=libscrc.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+        # - name: copy libscrc script
+        #   template: src=libscrc.sh dest={{ download_dir }} owner=pi group=pi mode=0755
 
-        - name: install libscrc
-          command: "{{ download_dir }}/libscrc.sh"
+        # - name: install libscrc
+        #   command: "{{ download_dir }}/libscrc.sh"
 
         #- name: check pi version
           #shell: "pinout | grep 'BCM2711'"
