@@ -1,5 +1,5 @@
 [hevpi]
-IP ADDRESS
+IPADDRESS
 
 [local]
 localhost
@@ -14,7 +14,7 @@ hevpi0
 hevpi1
 
 [allpi]
-10.42.0.41
+IPADDRESS
 nuliv
 hevpi0
 hevpi1
