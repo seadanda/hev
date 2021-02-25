@@ -48,5 +48,4 @@ rpi_swlist:
 
 pip_list: 
   - virtualenv
-  - pyserial_asyncio
   
