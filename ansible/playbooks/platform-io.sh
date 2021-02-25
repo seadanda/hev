@@ -60,5 +60,5 @@ pio lib  --global install 5390 # RingBuffer
 pio lib  --global install 5418 # uCRC16Lib
 pio lib  --global install 5574 # INA2xx
 pio lib  --global install  820 # Adafruit MCP9808 
-pio run 
+#pio run 
 #pio run -t nobuild -t upload
