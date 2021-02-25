@@ -52,15 +52,9 @@
         
         - name: copy platformio script
           template: src=platform-io.sh dest={{ download_dir }} owner=pi group=pi mode=0755
-        
-        - name: copy hev-display script
-          template: src=hev-display.sh dest={{ download_dir }} owner=pi group=pi mode=0755
 
         - name: copy apache script
           template: src=setup_apache.sh dest={{ download_dir }} owner=pi group=pi mode=0755
-        
-        - name: install hev-display
-          command: "{{ download_dir }}/hev-display.sh"
         
         - name: update PATH
           args:
@@ -93,36 +87,6 @@
           register: pi4
           ignore_errors: True
 
-        - name: install hev-display-pi4 via apt
-          apt: 
-              name: hev-display-pi4
-              state: latest
-              update_cache: yes
-          when: pi4 is succeeded
-          become: yes
-
-        - name: install hev-display-pi1 via apt
-          apt: 
-              name: hev-display-pi1
-              state: latest
-              update_cache: yes
-          when: pi4 is failed
-          become: yes
-        
-        - name: link fonts for hev-display
-          file:
-              src: "/usr/share/fonts/truetype/dejavu"
-              dest: "/usr/local/qt5pi/lib/fonts"
-              state: link
-          become: yes
-        
-#        - name: install hev-display systemd service
-#          copy:
-#              src: "{{ ansible_env.HOME }}/hev/hev-display/extras/systemd/hev-display.service"
-#              dest: "/usr/lib/systemd/system/hev-display.service"
-#              remote_src: yes
-#          become: yes
-
         - name: mk user systemd dir
           file:
               path: "{{ ansible_env.HOME }}/.config/systemd/user/"
@@ -143,13 +107,6 @@
               owner: root 
               group: root 
               mode: 0644
-          become: yes
-
-        - name: enable hev-display systemd service
-          systemd:
-            enabled: yes
-            daemon_reload: yes
-            name: hev-display
           become: yes
 
         - name: enable hevserver systemd service
