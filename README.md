@@ -45,13 +45,14 @@ Running the HEV UI requires three separate python process running in the same vi
 Note that a selection of dump files are provided in the `raspberry-dataserver/share` dir.
 
 ```bash
-raspberry-dataserver/ArduinoEmulator.py -f raspberry-dataserver/share/B6-20201207.dump
+source .hev_env/bin/activate
+./raspberry-dataserver/ArduinoEmulator.py -f raspberry-dataserver/share/B6-20201207.dump
 ```
 
 #### 2) Run hevserver in another shell
 
 ```bash
-source env/bin/activate
+source .hev_env/bin/activate
 cd raspberry-dataserver
 ./hevserver.py --use-dump-data
 ```
@@ -59,7 +60,7 @@ cd raspberry-dataserver
 #### 3) Run NativeUI in another shell
 
 ```bash
-source env/bin/activate
+source .hev_env/bin/activate
 ./NativeUI/NativeUI.py
 ```
 
