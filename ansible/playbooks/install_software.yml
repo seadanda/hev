@@ -95,7 +95,13 @@
             virtualenv: "{{ ansible_env.HOME }}/hev/.hev_env"
             virtualenv_python: python3.7
 
+        - name: copy PySide2 install into virtualenv
+          copy:
             src: "/usr/lib/python3/dist-packages/PySide2"
+            dest: "{{ ansible_env.HOME }}/hev/.hev_env/lib/python3.7/site-packages/"
+            remote_src: yes
+          become: yes
+
         # - name: copy libscrc script
         #   template: src=libscrc.sh dest={{ download_dir }} owner=pi group=pi mode=0755
 
