@@ -73,6 +73,7 @@
           git: 
               repo: https://ohwr.org/project/hev.git
               dest: "{{ ansible_env.HOME }}/hev"
+              version: "ui_dev"
         
         - name: install platformio
           command: "{{ download_dir }}/platform-io.sh"
