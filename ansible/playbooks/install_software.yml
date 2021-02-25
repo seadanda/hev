@@ -87,7 +87,13 @@
               executable: /usr/bin/pip3
               name: "{{ pip_list }}"  
           become: yes
-        
+
+        - name: install python requirements inside virtual environment
+          pip:
+            requirements: "{{ ansible_env.HOME }}/hev/requirements.txt"
+            virtualenv: "{{ ansible_env.HOME }}/hev/.hev_env"
+            virtualenv_python: python3.7
+
         - name: copy libscrc script
           template: src=libscrc.sh dest={{ download_dir }} owner=pi group=pi mode=0755
 
