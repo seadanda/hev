@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+
 import argparse
 import logging
 import sys
@@ -9,6 +10,7 @@ import numpy as np
 # from alarm_widgets.tab_alarms import TabAlarm
 from global_widgets.tab_top_bar import TabTopBar
 from global_widgets.tab_left_bar import TabLeftBar
+from global_widgets.global_sendconfirm_popup import confirmPopup
 from hev_main import MainView
 from hev_settings import SettingsView
 from hev_alarms import AlarmView
@@ -41,19 +43,32 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-        # self.setFixedSize(1920, 1080)
+        self.setFixedSize(1920, 1080)
 
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
+            "background-enabled": QColor.fromRgb(30, 30, 30),
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
         self.iconpath = self.__find_icons()
 
+        # database
+        self.db_lock = Lock()
+        self.__data = {}
+        self.__readback = {}
+        self.__cycle = {}
+        self.__battery = {}
+        self.__plots = np.zeros((500, 5))
+        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
+        self.__alarms = []
+        self.__targets = {}
+        self.__personal = {}
+
         # bars
         self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self, colors=self.colors)
+        self.leftBar = TabLeftBar(self)
 
         # Views
         self.stack = QStackedWidget(self)
@@ -65,8 +80,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
-        # self.stack.setCurrentWidget(self.main_view)
-        #        self.menu_bar = TabPageButtons()
+
+        self.confirmPopup = confirmPopup(
+            self, self
+        )  # one is passed as an argument, the other becomes parent
+        self.confirmPopup.show()
 
         # Layout
         hlayout = QHBoxLayout()
@@ -84,18 +102,6 @@ class NativeUI(HEVClient, QMainWindow):
 
         self.statusBar().showMessage("Waiting for data")
         self.statusBar().setStyleSheet("color: white")
-
-        # database
-        self.db_lock = Lock()
-        self.__data = {}
-        self.__readback = {}
-        self.__cycle = {}
-        self.__battery = {}
-        self.__plots = np.zeros((500, 5))
-        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
-        self.__alarms = []
-        self.__targets = "empty"
-        self.__personal = {}
 
         # Appearance
         palette = self.palette()
@@ -122,6 +128,7 @@ class NativeUI(HEVClient, QMainWindow):
         Return the contents of the __target database. Uses lock to avoid race
         conditions.
         """
+
         with self.db_lock:
             temp = self.__targets
         return temp
@@ -198,8 +205,6 @@ class NativeUI(HEVClient, QMainWindow):
         """
         logging.debug("setting targets db")
         with self.db_lock:
-            if self.__targets == "empty":
-                self.__targets = {}
             for key in payload:
                 self.__targets[key] = payload[key]
         return 0
@@ -220,11 +225,11 @@ class NativeUI(HEVClient, QMainWindow):
         Set the contents of the __cycle database. Uses lock to avoid race
         conditions.
         """
-        logging.info("setting cycle db")  # TODO
+        logging.debug("setting cycle db")
         with self.db_lock:
             for key in payload:
                 self.__cycle[key] = payload[key]
-        print(self.__cycle)
+        # print(self.__cycle)
         return 0
 
     def set_battery_db(self, payload):
@@ -287,6 +292,7 @@ class NativeUI(HEVClient, QMainWindow):
         else is blocking. If something more than a one-shot process is needed
         then use async
         """
+        logging.debug("start_client")
         # call for all the targets and personal details
         # when starting the web app so we always have some in the db
         self.send_cmd("GET_TARGETS", "PC_AC")
@@ -298,9 +304,8 @@ class NativeUI(HEVClient, QMainWindow):
 
     def get_updates(self, payload):
         """callback from the polling function, payload is data from socket """
-        # Store data in dictionary of lists
         self.statusBar().showMessage(f"{payload}")
-        # logging.debug("revieved payload of type %s" % payload["type"])
+        logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
                 self.set_data_db(payload["DATA"])
@@ -317,6 +322,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
                 self.set_personal_db(payload["PERSONAL"])
+
             if payload["type"] == "CYCLE":
                 self.set_cycle_db(payload["CYCLE"])
         except KeyError:
@@ -325,7 +331,9 @@ class NativeUI(HEVClient, QMainWindow):
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> None:
         """send command to hevserver via socket"""
-        self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        if check:
+            self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
 
     @Slot(str)
     def q_ack_alarm(self, alarm: str):

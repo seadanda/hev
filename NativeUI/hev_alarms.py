@@ -20,15 +20,14 @@ from global_widgets.template_main_pages import TemplateMainPages
 
 
 class AlarmView(TemplateMainPages):
-    """Subclasses TemplateMainPages to display alarms.
-    """
+    """Subclasses TemplateMainPages to display alarms."""
 
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmView, self).__init__(*args, **kwargs)
 
-        self.alarmButton = selectorButton("List of Alarms")
-        self.clinicalButton = selectorButton("Clinical Limits")
-        self.techButton = selectorButton("Technical Limits")
+        self.alarmButton = selectorButton(NativeUI, "List of Alarms")
+        self.clinicalButton = selectorButton(NativeUI, "Clinical Limits")
+        self.techButton = selectorButton(NativeUI, "Technical Limits")
 
         self.buttonWidgets = [self.alarmButton, self.clinicalButton, self.techButton]
 

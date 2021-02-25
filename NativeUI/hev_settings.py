@@ -17,8 +17,8 @@ class SettingsView(TemplateMainPages):
     def __init__(self, NativeUI, *args, **kwargs):
         super(SettingsView, self).__init__(*args, **kwargs)
 
-        self.expertButton = selectorButton("Expert")
-        self.chartButton = selectorButton("Charts")
+        self.expertButton = selectorButton(NativeUI, "Expert")
+        self.chartButton = selectorButton(NativeUI, "Charts")
         self.buttonWidgets = [self.expertButton, self.chartButton]
 
         self.expertTab = TabExpert(NativeUI)

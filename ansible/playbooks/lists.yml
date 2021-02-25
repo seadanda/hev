@@ -52,7 +52,6 @@ rpi_swlist:
   - qml-module-qtquick-virtualkeyboard
 
 pip_list: 
-  - libscrc
   - pyserial_asyncio
 
   

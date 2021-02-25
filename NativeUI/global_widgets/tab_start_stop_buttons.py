@@ -11,14 +11,11 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
     TODO
     """
 
-    def __init__(
-        self, NativeUI, *args, size: QSize = None, colors: dict = None, **kwargs
-    ):
+    def __init__(self, NativeUI, *args, size: QSize = None, **kwargs):
         super(TabStartStopStandbyButtons, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
 
-        self.__colors = self.__interpret_colors(colors)
         if size is not None:
             self.__button_size = size
         else:
@@ -37,24 +34,26 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
             button.setText(text)
             layout.addWidget(button)
             button.setStyleSheet(
-                "background-color: " + self.__colors["background"].name() + ";"
-                "border-color: " + self.__colors["foreground"].name() + ";"
+                "background-color: "
+                + NativeUI.colors["background-enabled"].name()
+                + ";"
+                "border-color: " + NativeUI.colors["foreground"].name() + ";"
                 "font-size: 20pt;"
-                "color: " + self.__colors["foreground"].name() + ";"
+                "color: " + NativeUI.colors["foreground"].name() + ";"
             )
             button.setFixedSize(self.__button_size)
 
         self.setLayout(layout)
 
-    def __interpret_colors(self, colors):
-        try:
-            _, _ = colors["foreground"], colors["background"]
-            return colors
-        except TypeError:
-            logging.warning("Color dict not set")
-        except KeyError:
-            logging.warning("missing key in color dict: %" % colors)
-        return {
-            "foreground": QtGui.QColor.fromRgb(255, 0, 0),
-            "background": QtGui.QColor.fromRgb(0, 255, 0),
-        }
+    # def __interpret_colors(self, colors):
+    #     try:
+    #         _, _ = colors["foreground"], colors["background"]
+    #         return colors
+    #     except TypeError:
+    #         logging.warning("Color dict not set")
+    #     except KeyError:
+    #         logging.warning("missing key in color dict: %" % colors)
+    #     return {
+    #         "foreground": QtGui.QColor.fromRgb(255, 0, 0),
+    #         "background": QtGui.QColor.fromRgb(0, 255, 0),
+    #     }

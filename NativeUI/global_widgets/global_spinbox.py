@@ -40,11 +40,17 @@ class signallingSpinBox(QtWidgets.QSpinBox):
         return False
 
 
-class simpleSpin(QtWidgets.QWidget):
-    def __init__(self, NativeUI, infoArray, *args, **kwargs):
-        super(simpleSpin, self).__init__(*args, **kwargs)
-
-        self.label, self.units, self.tag = infoArray
+class labelledSpin(QtWidgets.QWidget):
+    def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
+        super(labelledSpin, self).__init__(*args, **kwargs)
+        # print(infoArray)
+        self.NativeUI = NativeUI
+        self.template = template
+        self.cmd_type, self.cmd_code = "", ""
+        if len(infoArray) == 5:
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
+        elif len(infoArray) == 3:
+            self.label, self.units, self.tag = infoArray
         self.manuallyUpdated = False
         layout = QtWidgets.QHBoxLayout()
         widgetList = []
@@ -73,6 +79,9 @@ class simpleSpin(QtWidgets.QWidget):
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
+        if self.cmd_type == "":
+            self.simpleSpin.setReadOnly(True)
+            self.simpleSpin.setProperty("bgColour", "1")
         widgetList.append(self.simpleSpin)
 
         if self.units != "":
@@ -89,45 +98,26 @@ class simpleSpin(QtWidgets.QWidget):
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
     def manualStep(self):
-        self.parent().liveUpdating = False
+        self.template.liveUpdating = False
         self.manuallyUpdated = True
         self.simpleSpin.setProperty("textColour", "1")
         # self.expertButton.style().unpolish(self.expertButton)
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
-        # newVal = (
-        #     self.parent()
-        #     .parent()
-        #     .parent()
-        #     .parent()
-        #     .parent()
-        #     .parent()
-        #     .readback[self.tag]
-        # )
-        self.simpleSpin.setValue(newVal)
-        self.simpleSpin.setProperty("textColour", "0")
-        self.simpleSpin.style().polish(self.simpleSpin)
+        newVal = self.NativeUI.get_readback_db()
+        if newVal == {}:
+            a = 1  # do nothing
+        else:
+            self.simpleSpin.setValue(newVal[self.tag])
+            self.simpleSpin.setProperty("textColour", "0")
+            self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
-        # if (
-        #     type(
-        #         self.parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .parent()
-        #         .targets
-        #     )
-        #     == str
-        # ):
-        #     return
-        # newVal = (
-        #     self.parent().parent().parent().parent().parent().parent().targets[self.tag]
-        # )
-        # self.simpleSpin.setValue(newVal)
-        self.simpleSpin.setProperty("textColour", "0")
-        self.simpleSpin.style().polish(self.simpleSpin)
+        newVal = self.NativeUI.get_targets_db()
+        if (newVal == {}) or (self.tag == ""):
+            a = 1  # do nothing
+        else:
+            self.simpleSpin.setValue(newVal[self.tag])
+            self.simpleSpin.setProperty("textColour", "0")
+            self.simpleSpin.style().polish(self.simpleSpin)

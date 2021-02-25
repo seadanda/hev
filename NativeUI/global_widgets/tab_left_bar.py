@@ -13,7 +13,7 @@ class TabLeftBar(QtWidgets.QWidget):
     TODO
     """
 
-    def __init__(self, NativeUI, *args, colors: dict = None, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         layout = QtWidgets.QVBoxLayout(self)
@@ -21,10 +21,10 @@ class TabLeftBar(QtWidgets.QWidget):
         button_width = 150
 
         self.tab_page_buttons = TabPageButtons(
-            NativeUI, colors=colors, size=QSize(button_width, button_width)
+            NativeUI, size=QSize(button_width, button_width)
         )
         self.tab_start_stop_buttons = TabStartStopStandbyButtons(
-            NativeUI, colors=colors, size=QSize(button_width, int(button_width / 3))
+            NativeUI, size=QSize(button_width, int(button_width / 3))
         )
 
         self.widgets = [self.tab_page_buttons, self.tab_start_stop_buttons]

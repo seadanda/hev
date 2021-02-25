@@ -70,10 +70,13 @@ class MeasurementWidget(QtWidgets.QWidget):
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
-        self.NativeUI = NativeUI
+        width = 150
+        height = 100
+        labelheight = 25
+        border_radius = 5
 
+        self.NativeUI = NativeUI
         self.key = key
-        min_height = 60
 
         # Layout and widgets
         layout = QtWidgets.QVBoxLayout()
@@ -85,25 +88,38 @@ class MeasurementWidget(QtWidgets.QWidget):
         layout.addWidget(self.value_display)
 
         # Appearance
-        height = max([min_height, height])
-        topheight = 20
         self.name_display.setAlignment(QtCore.Qt.AlignCenter)
         self.name_display.setStyleSheet(
-            "color: white; background-color: black; border-style: outset; border-width: 1px; border-color: black; border-radius: 5px"
+            "color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "background-color: "
+            + self.NativeUI.colors["background-disabled"].name()
+            + ";"
+            "border-style: outset;"
+            "border-width: 1px;"
+            "border-color:" + self.NativeUI.colors["foreground"].name() + ";"
+            "border-radius: " + str(border_radius) + "px;"
         )
-        self.name_display.setFixedSize(width, topheight)
+        self.name_display.setFixedSize(width, labelheight)
         self.name_display.setFont(QtGui.QFont("SansSerif", 10))
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
-            "color: black; background-color: lightblue; border-style: outset; border-width: 1px; border-color: black; border-radius: 5px"
+            "color: black;"
+            "background-color: lightblue;"
+            "border-style: outset;"
+            "border-width: 1px;"
+            "border-color: black;"
+            "border-radius: " + str(border_radius) + "px;"
         )
-        self.value_display.setFixedSize(width, height - topheight)
+        self.value_display.setFixedSize(
+            width + border_radius, height - labelheight + border_radius
+        )
         self.value_display.setFont(QtGui.QFont("SansSerif", 20))
 
         # Layout
         layout.setSpacing(0)
         self.setLayout(layout)
+        self.setFixedSize(QtCore.QSize(width, height))
 
     def update_value(self):
         """
