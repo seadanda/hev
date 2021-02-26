@@ -2,7 +2,7 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_typeval_popup import TypeValuePopup
 
 
-class signallingSpinBox(QtWidgets.QSpinBox):
+class signallingSpinBox(QtWidgets.QDoubleSpinBox):
     manualChanged = QtCore.Signal()
 
     def __init__(self, NativeUI):
@@ -47,7 +47,11 @@ class labelledSpin(QtWidgets.QWidget):
         self.NativeUI = NativeUI
         self.template = template
         self.cmd_type, self.cmd_code = "", ""
-        if len(infoArray) == 5:
+        self.min, self.max, self.step = 0,10000,0.3
+        self.decPlaces = 2
+        if len(infoArray) == 9:
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.step, self.decPlaces = infoArray
+        elif len(infoArray) == 5:
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
         elif len(infoArray) == 3:
             self.label, self.units, self.tag = infoArray
@@ -63,14 +67,17 @@ class labelledSpin(QtWidgets.QWidget):
             widgetList.append(self.nameLabel)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
+        self.simpleSpin.setRange(self.min, self.max)
+        self.simpleSpin.setSingleStep(self.step)
+        self.simpleSpin.setDecimals(self.decPlaces)
         self.simpleSpin.setStyleSheet(
-            """QSpinBox{ width:100px; font:16pt}
-            QSpinBox[bgColour="0"]{background-color:white; }
-            QSpinBox[bgColour="1"]{background-color:grey; }
-                                        QSpinBox[textColour="0"]{color:black}
-                                        QSpinBox[textColour="1"]{color:red}
-                                        QSpinBox::up-button{width:20; border:solid white; color:black }
-                                        QSpinBox::down-button{width:20; }
+            """QDoubleSpinBox{ width:100px; font:16pt}
+            QDoubleSpinBox[bgColour="0"]{background-color:white; }
+            QDoubleSpinBox[bgColour="1"]{background-color:grey; }
+                                        QDoubleSpinBox[textColour="0"]{color:black}
+                                        QDoubleSpinBox[textColour="1"]{color:red}
+                                        QDoubleSpinBox::up-button{width:20; border:solid white; color:black }
+                                        QDoubleSpinBox::down-button{width:20; }
                                         """
         )
         self.simpleSpin.setProperty("textColour", "0")
@@ -101,7 +108,6 @@ class labelledSpin(QtWidgets.QWidget):
         self.template.liveUpdating = False
         self.manuallyUpdated = True
         self.simpleSpin.setProperty("textColour", "1")
-        # self.expertButton.style().unpolish(self.expertButton)
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):

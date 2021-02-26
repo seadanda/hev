@@ -3,12 +3,14 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_typeval_popup import TypeValuePopup
-
+from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from global_widgets.global_spinbox import signallingSpinBox
 
 class SpinButton(QtWidgets.QFrame):
     def __init__(self, NativeUI):
         super().__init__()
 
+        self.liveUpdating = True
         # self.setStyleSheet("background-color:blue;")
         self.currentVal = 0
 
@@ -29,10 +31,11 @@ class SpinButton(QtWidgets.QFrame):
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(self.label)
 
-        self.doubleSpin = QtWidgets.QDoubleSpinBox()
-        self.doubleSpin.lineEdit().installEventFilter(
-            self
-        )  # override is defined in 'eventFilter'. ensures lineEdit responds to double mouse click
+        self.doubleSpin = signallingSpinBox(NativeUI)
+        # self.doubleSpin = QtWidgets.QDoubleSpinBox()
+        # self.doubleSpin.lineEdit().installEventFilter(
+        #     self
+        # )  # override is defined in 'eventFilter'. ensures lineEdit responds to double mouse click
         self.doubleSpin.lineEdit().setStyleSheet("border:blue;")
 
         boxStyleString = """QDoubleSpinBox{
@@ -76,6 +79,7 @@ class SpinButton(QtWidgets.QFrame):
         )
         # self.doubleSpin.setStyleSheet("QDoubleSpinBox::up-button{ height:30; width:100;")
         self.doubleSpin.setAlignment(QtCore.Qt.AlignCenter)
+        self.doubleSpin.manualChanged.connect(self.manualChanged)
         self.layout.addWidget(self.doubleSpin)
         self.setLayout(self.layout)
         self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
@@ -83,6 +87,10 @@ class SpinButton(QtWidgets.QFrame):
         self.popUp = TypeValuePopup(NativeUI)
         self.popUp.okButton.clicked.connect(self.okButtonPressed)
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
+
+    def manualChanged(self):
+        self.liveUpdating = False
+
 
     def eventFilter(self, source, event):
         if (
@@ -125,26 +133,24 @@ class TabSpinButtons(QtWidgets.QWidget):
 
         self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
         self.__labels = [
-            "inspiratory_pressure",
+            "inhalation_pressure",
             "respiratory_rate",
             "fiO2_percent",
-            "inhale_time",
+            "lung_compliance",
         ]
-        for spin in self.__spins:
+        for spin,label in zip(self.__spins,self.__labels):
+            spin.label.setText(label)
             self.layout.addWidget(spin)
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
-        self.okButton = QtWidgets.QPushButton()
-        self.okButton.setStyleSheet(
-            "height:50; width:40;background-image:url('buttonIcons/settings1.jpeg')"
-        )
+
+        self.okButton = okButton(self.NativeUI)
+        self.okButton.pressed.connect(self.ok_button_pressed)
         self.buttonLayout.addWidget(self.okButton)
 
-        self.cancelButton = QtWidgets.QPushButton()
-        self.cancelButton.setStyleSheet(
-            "height:50; width:40;background-image:url('buttonIcons/settings1.jpeg')"
-        )
+        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton.pressed.connect(self.cancel_button_pressed)
         self.buttonLayout.addWidget(self.cancelButton)
 
         self.layout.addLayout(self.buttonLayout)
@@ -153,15 +159,36 @@ class TabSpinButtons(QtWidgets.QWidget):
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)
-        self.timer.timeout.connect(self.updateTargets)
+        self.timer.timeout.connect(self.updateCycle)
         self.timer.start()
 
-    def updateTargets(self):
-        targets = self.NativeUI.get_targets_db()
-        if targets == {}:
+    def updateCycle(self):
+        cycle = self.NativeUI.get_cycle_db()
+        if cycle == {}:
             return
         for spin, label in zip(self.__spins, self.__labels):
-            if spin.doubleSpin.value() != float(targets[label]):
-                spin.setTextColour("0")
+            if spin.doubleSpin.value() != float(cycle[label]):
+                if spin.liveUpdating:
+                    spin.doubleSpin.setValue(float(cycle[label]))
+                    spin.setTextColour("2")
+                else:
+                    spin.setTextColour("0")
             else:
                 spin.setTextColour("2")
+
+    def ok_button_pressed(self):
+        for spin in self.__spins:
+            spin.liveUpdating = True
+            spin.setTextColour("2")
+
+    def cancel_button_pressed(self):
+        self.liveUpdating = True
+
+        # targets = self.NativeUI.get_targets_db()
+        # if targets == {}:
+        #     return
+        # for spin, label in zip(self.__spins, self.__labels):
+        #     if spin.doubleSpin.value() != float(targets[label]):
+        #         spin.setTextColour("0")
+        #     else:
+        #         spin.setTextColour("2")

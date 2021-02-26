@@ -20,6 +20,7 @@ class TabExpert(TemplateSetValues):
                     "duration_calibration",
                     "SET_DURATION",
                     "CALIBRATION",
+                    0,1000,50, 0
                 ],
                 ["Purge", "ms", "duration_buff_purge", "SET_DURATION", "BUFF_PURGE"],
                 ["Flush", "ms", "duration_buff_flush", "SET_DURATION", "BUFF_FLUSH"],

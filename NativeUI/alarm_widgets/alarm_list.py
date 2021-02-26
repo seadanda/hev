@@ -27,13 +27,13 @@ class alarmList(QtWidgets.QWidget):
         self.alarmList.addItem("alarm the ring")
         self.vlayout.addWidget(self.alarmList)
         self.setLayout(self.vlayout)
-        self.alarmList.itemClicked.connect(self.selected)
+    #     self.alarmList.itemClicked.connect(self.selected)
 
-    def selected(self):
-        items = self.test.selectedItems()
-        for item in items:
-            item.setText("newtestText")
-            item.setIcon(self.regularBell)
+    # def selected(self):
+    #     items = self.test.selectedItems()
+    #     for item in items:
+    #         item.setText("newtestText")
+    #         item.setIcon(self.regularBell)
 
     def acknowledge_all(self):
         for x in range(self.alarmList.count() - 1):

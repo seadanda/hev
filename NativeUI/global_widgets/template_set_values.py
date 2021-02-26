@@ -194,7 +194,7 @@ class TemplateSetValues(QtWidgets.QWidget):
                 setVal = self.spinDict[widget].simpleSpin.value()
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
-                    [self.spinDict[widget].cmd_type, self.spinDict[widget].cmd_code, 10]
+                    [self.spinDict[widget].cmd_type, self.spinDict[widget].cmd_code, setVal]
                 )
         self.popup = SetConfirmPopup(self, self.NativeUI, message, command)
         self.popup.okButton.pressed.connect(self.commandSent)
