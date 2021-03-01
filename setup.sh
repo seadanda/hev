@@ -38,6 +38,19 @@ if [[ -f $hostsfile ]]; then
         [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);;
         * ) echo "Please answer yes or no."; exit 1;;
     esac
+else
+    cp -rp ansible/playbooks/hosts.default $hostsfile
+    # Get users raspberry pi / VM IP address
+    echo "What is the IP address for your Raspberry Pi / VM you wish to setup?"
+    read -r ipaddr
+    # Add the IP address into hosts file
+    if [[ $ipaddr != "" ]]; then 
+        sed -i '' "s/IPADDRESS/$ipaddr/" $hostsfile 
+    else
+        echo -e "${RED}ERROR:${NC} user input for IP Address was blank. Please rerun and enter IP Address."
+        exit 1
+    fi
+    echo "User inputtted IP Address added to $hostsfile."
 fi
 
 # Create local variables for ansible installation
