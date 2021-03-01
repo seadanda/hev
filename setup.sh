@@ -39,6 +39,8 @@ if [[ -f $hostsfile ]]; then
         * ) echo "Please answer yes or no."; exit 1;;
     esac
 else
+    # Replace current hostfile with the default
+    rm -f $hostsfile
     cp -rp ansible/playbooks/hosts.default $hostsfile
     # Get users raspberry pi / VM IP address
     echo "What is the IP address for your Raspberry Pi / VM you wish to setup?"
