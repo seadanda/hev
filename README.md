@@ -22,7 +22,7 @@ Raspbian Version: Raspbian GNU/Linux 10 (buster)
 
 Python Version: 3.7
 
-On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html)
+On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
 
 ### Installation
 
@@ -30,6 +30,12 @@ Run and follow the prompts:
 
 ```bash
 ./setup.sh
+```
+
+To obtain the IP Address of your Raspberry Pi / VM, on your Raspberry Pi / VM run:
+
+```bash
+148.79.120.62
 ```
 
 For manual installation instructions please refer to [manualInstallation.md](manualInstallation.md).
