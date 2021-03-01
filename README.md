@@ -34,7 +34,7 @@ On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/inst
 >
 > Without GUI: `sudo touch /boot/ssh`
 >
-> **WARNING:** There may be extra steps if you are using a VM on your local machine.*
+> ***WARNING:** There may be extra steps if you are using a VM on your local machine.*
 
 For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
 
@@ -43,25 +43,29 @@ ssh keygen
 ssh-copy-id pi@IP-ADDRESS
 ```
 
-Run and follow the prompts:
-
-```bash
-./setup.sh
-```
-
 To obtain the IP Address of your Raspberry Pi / VM, on your Raspberry Pi / VM run:
 
 ```bash
 hostname -I
 ```
 
-For manual installation instructions please refer to [manualInstallation.md](manualInstallation.md).
+Run and follow the prompts:
+
+```bash
+./setup.sh
+```
+
+Ansible logs are saved in `ansible/playbooks/logs`.
 
 ## Usage
 
 ### Running the HEV UI
 
-Running the HEV UI requires three separate python process running in the same virtualenv.
+Running the HEV UI requires three separate python process running in the same virtualenv from the `hev` directory.
+
+```bash
+cd /home/pi/hev
+```
 
 #### 1) Run ArduinoEmulator
 
