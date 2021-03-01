@@ -136,12 +136,12 @@
               #state: link
           #become: yes
         
-#        - name: install hev-display systemd service
-#          copy:
-#              src: "{{ ansible_env.HOME }}/hev/hev-display/extras/systemd/hev-display.service"
-#              dest: "/usr/lib/systemd/system/hev-display.service"
-#              remote_src: yes
-#          become: yes
+        #- name: install hev-display systemd service
+          #copy:
+              #src: "{{ ansible_env.HOME }}/hev/hev-display/extras/systemd/hev-display.service"
+              #dest: "/usr/lib/systemd/system/hev-display.service"
+              #remote_src: yes
+          #become: yes
 
         - name: mk user systemd dir
           file:
