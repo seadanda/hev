@@ -14,7 +14,9 @@ Rapidly-producible ventilator developed with CERN and collaborating institutes f
 
 ## Installation
 
-The following has been tested using Python 3.7.3 on a Raspberry Pi 4 4GB model B and Raspian Desktop VM (Buster).
+The following has been tested using Python 3.7 on a Raspberry Pi 4 4GB model B and Raspbian Desktop VM (Buster).
+
+You can install a VM using either [VirtualBox](https://www.virtualbox.org/) or [VMWare Fusion Player](https://www.vmware.com/products/fusion.html), and download the Raspbian OS from [here](https://www.raspberrypi.org/software/raspberry-pi-desktop/).
 
 ### Prerequisites
 
