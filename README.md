@@ -24,7 +24,14 @@ Python Version: 3.7
 
 On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
 
-### Installation
+### Setup
+
+For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
+
+```bash
+ssh keygen
+ssh-copy-id pi@IP-ADDRESS
+```
 
 Run and follow the prompts:
 
@@ -35,7 +42,7 @@ Run and follow the prompts:
 To obtain the IP Address of your Raspberry Pi / VM, on your Raspberry Pi / VM run:
 
 ```bash
-148.79.120.62
+hostname -I
 ```
 
 For manual installation instructions please refer to [manualInstallation.md](manualInstallation.md).
