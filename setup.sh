@@ -23,7 +23,7 @@ function create_hostsfile {
     cp -rp ansible/playbooks/hosts.default $hostsfile
     # Get users raspberry pi / VM IP address
     echo "What is the IP address for your Raspberry Pi / VM you wish to setup?"
-    echo -e "${ITALIC}NOTE: If you use a non-standard SSH port (22) then add it to your IP address as such: ${YELLOW}IPADDRESS:PORT${NC}"
+    echo -e "${ITALIC}NOTE: If you use a non-standard SSH port (22), add the port to your IP address as such: ${YELLOW}IPADDRESS:PORT${NC}"
     read -r ipaddr
     # Add the IP address into hosts file
     if [[ $ipaddr != "" ]]; then 
