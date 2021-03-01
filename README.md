@@ -26,6 +26,14 @@ On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/inst
 
 ### Setup
 
+> Make sure that SSH is enabled. To check this to go:
+>
+> With GUI: `Preferences > Raspberry Pi Configuration > Interfaces`
+>
+> Without GUI: `sudo touch /boot/ssh`
+>
+> **WARNING:** There may be extra steps if you are using a VM on your local machine.*
+
 For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
 
 ```bash
