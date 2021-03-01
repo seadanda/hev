@@ -14,7 +14,9 @@ Rapidly-producible ventilator developed with CERN and collaborating institutes f
 
 ## Installation
 
-The following has been tested using Python 3.7.3 on a Raspberry Pi 4 4GB model B and Raspian Desktop VM (Buster).
+The following has been tested using Python 3.7 on a Raspberry Pi 4 4GB model B and Raspbian Desktop VM (Buster).
+
+You can install a VM using either [VirtualBox](https://www.virtualbox.org/) or [VMWare Fusion Player](https://www.vmware.com/products/fusion.html), and download the Raspbian OS from [here](https://www.raspberrypi.org/software/raspberry-pi-desktop/).
 
 ### Prerequisites
 
@@ -24,7 +26,22 @@ Python Version: 3.7
 
 On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
 
-### Installation
+### Setup
+
+> Make sure that SSH is enabled. To check this to go:
+>
+> With GUI: `Preferences > Raspberry Pi Configuration > Interfaces`
+>
+> Without GUI: `sudo touch /boot/ssh`
+>
+> **WARNING:** There may be extra steps if you are using a VM on your local machine.*
+
+For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
+
+```bash
+ssh keygen
+ssh-copy-id pi@IP-ADDRESS
+```
 
 Run and follow the prompts:
 
@@ -35,7 +52,7 @@ Run and follow the prompts:
 To obtain the IP Address of your Raspberry Pi / VM, on your Raspberry Pi / VM run:
 
 ```bash
-148.79.120.62
+hostname -I
 ```
 
 For manual installation instructions please refer to [manualInstallation.md](manualInstallation.md).
