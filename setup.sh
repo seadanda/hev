@@ -15,30 +15,8 @@ cd "$(git rev-parse --show-toplevel)"
 # Create a hosts file from default
 hostsfile="ansible/playbooks/hosts"
 
-# Get the pi / vm ip address from user
-if [[ -f $hostsfile ]]; then
-    echo -e "${YELLOW}$hostsfile${NC} already exists, override and create a new hosts file? [y/n]"
-    read -r yn
-    case $yn in
-        [Yy]* )
-                # Replace current hostfile with the default
-                rm -f $hostsfile
-                cp -rp ansible/playbooks/hosts.default $hostsfile
-                # Get users raspberry pi / VM IP address
-                echo "What is the IP address for your Raspberry Pi / VM you wish to setup?"
-                read -r ipaddr
-                # Add the IP address into hosts file
-                if [[ $ipaddr != "" ]]; then 
-                    sed -i '' "s/IPADDRESS/$ipaddr/" $hostsfile 
-                else
-                    echo -e "${RED}ERROR:${NC} user input for IP Address was blank. Please rerun and enter IP Address."
-                    exit 1
-                fi
-                echo "User inputtted IP Address added to $hostsfile.";;
-        [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);;
-        * ) echo "Please answer yes or no."; exit 1;;
-    esac
-else
+# create and write hosts file function
+function create_hostsfile {
     # Replace current hostfile with the default
     rm -f $hostsfile
     cp -rp ansible/playbooks/hosts.default $hostsfile
@@ -47,12 +25,30 @@ else
     read -r ipaddr
     # Add the IP address into hosts file
     if [[ $ipaddr != "" ]]; then 
-        sed -i '' "s/IPADDRESS/$ipaddr/" $hostsfile 
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s/IPADDRESS/$ipaddr/g" $hostsfile
+        else
+            sed -i "s/IPADDRESS/$ipaddr/g" $hostsfile
+        fi
     else
         echo -e "${RED}ERROR:${NC} user input for IP Address was blank. Please rerun and enter IP Address."
         exit 1
     fi
     echo "User inputtted IP Address added to $hostsfile."
+}
+
+# Get the pi / vm ip address from user
+if [[ -f $hostsfile ]]; then
+    echo -e "${YELLOW}$hostsfile${NC} already exists, override and create a new hosts file? [y/n]"
+    read -r yn
+    case $yn in
+        [Yy]* )
+                create_hostsfile;;
+        [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);;
+        * ) echo "Please answer yes or no."; exit 1;;
+    esac
+else
+    create_hostsfile
 fi
 
 # Create local variables for ansible installation
