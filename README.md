@@ -28,6 +28,8 @@ On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/inst
 
 ### Setup
 
+#### Using SSH
+
 > Make sure that SSH is enabled. To check this to go:
 >
 > With GUI: `Preferences > Raspberry Pi Configuration > Interfaces`
@@ -50,6 +52,29 @@ hostname -I
 ```
 
 Run and follow the prompts:
+
+```bash
+./setup.sh
+```
+
+Ansible logs are saved in `ansible/playbooks/logs`.
+
+#### Locally
+
+Install ansible with the following:
+
+```bash
+pip3 install ansible
+```
+
+Clone this repo and checkout the `ui_dev` branch:
+
+```bash
+git clone https://ohwr.org/project/hev.git
+git checkout ui_dev
+```
+
+Run `setup.sh` and enter `localhost` when asked for an IP address.
 
 ```bash
 ./setup.sh
