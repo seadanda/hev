@@ -24,17 +24,26 @@ function create_hostsfile {
     # Get users raspberry pi / VM IP address
     echo "What is the IP address for your Raspberry Pi / VM you wish to setup?"
     echo -e "${ITALIC}NOTE: If you use a non-standard SSH port (22), add the port to your IP address as such: ${YELLOW}IPADDRESS:PORT${NC}"
+    echo -e "${ITALIC}NOTE: If you wish to run the ansible installation locally, please input: ${YELLOW}localhost${NC}"
     read -r ipaddr
     # Add the IP address into hosts file
-    if [[ $ipaddr != "" ]]; then 
+    if [[ $ipaddr == "" ]]; then
+        echo -e "${RED}ERROR:${NC} user input for IP Address was blank. Please rerun and enter IP Address."
+        exit 1
+    elif [[ $ipaddr == "localhost" ]]; then
+        localinstall="localhost ansible_connection=local ansible_python_interpreter=\"/usr/bin/env python3\""
+        local=True
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            sed -i '' "s/IPADDRESS/$localinstall/g" $hostsfile
+        else
+            sed -i "s/IPADDRESS/$localinstall/g" $hostsfile
+        fi
+    else
         if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' "s/IPADDRESS/$ipaddr/g" $hostsfile
         else
             sed -i "s/IPADDRESS/$ipaddr/g" $hostsfile
         fi
-    else
-        echo -e "${RED}ERROR:${NC} user input for IP Address was blank. Please rerun and enter IP Address."
-        exit 1
     fi
     echo "User inputtted IP Address added to $hostsfile."
 }
@@ -64,8 +73,17 @@ ansible-playbook install_software.yml
 # Clean up
 cd "$(git rev-parse --show-toplevel)"
 
-# Request to reboot raspberry pi / VM
-echo
-echo "SETUP FINISHED"
-echo -e "${YELLOW}Rasperberry Pi / VM must be rebooted for changes to take effect.${NC}"
-echo "Please run 'ssh pi@$ipaddr \"sudo reboot\"'."
+# Request to reboot raspberry pi / VM 
+if [[ $local == True ]]; then
+    echo
+    echo "SETUP FINISHED"
+    echo -e "${YELLOW}Rasperberry Pi / VM must be rebooted for changes to take effect.${NC}"
+    echo "Please run 'sudo reboot'."
+    echo
+else
+    echo
+    echo "SETUP FINISHED"
+    echo -e "${YELLOW}Rasperberry Pi / VM must be rebooted for changes to take effect.${NC}"
+    echo "Please run 'ssh pi@$ipaddr \"sudo reboot\"'."
+    echo
+fi
