@@ -24,6 +24,8 @@ Raspbian Version: Raspbian GNU/Linux 10 (buster)
 
 Python Version: 3.7
 
+Ansible: Version 2.8 or later
+
 ### Setup
 
 #### Using SSH
