@@ -21,7 +21,7 @@
 # of all those involved with the High Energy Ventilator project
 # (https://hev.web.cern.ch/).
 
-
+cd $HOME || exit
 curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
 python3 get-platformio.py
 
@@ -29,7 +29,7 @@ PATH=$PATH:$HOME/.platformio/penv/bin
 
 proj=$HOME/blink
 mkdir -p $proj
-cd $proj
+cd $proj || exit
 pio project init -b nodemcu-32s 
 cat << EOF > src/main.cpp
 #include <Arduino.h>
