@@ -45,11 +45,7 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.left_graph_widget.nextRow()
         self.volume_plot = self.left_graph_widget.addPlot(title="Volume")
         self.left_graph_widget.nextRow()
-        self.plots = [
-            self.pressure_plot,
-            self.flow_plot,
-            self.volume_plot,
-        ]
+        self.plots = [self.pressure_plot, self.flow_plot, self.volume_plot]
 
         # Right column - circle plots
         self.pressure_volume_plot = self.right_graph_widget.addPlot(
@@ -73,13 +69,8 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.right_graph_widget.setBackground(self.NativeUI.colors["background"])
 
         # Add Grid
-        for plot in self.plots:
+        for plot in self.plots + self.circleplots:
             plot.showGrid(x=True, y=True)
-        for plot in self.circleplots:
-            plot.showGrid(x=True, y=True)
-
-        # Set Range
-        self.update_plot_time_range(60)
 
         # Plot styles
         self.line1 = self.plot(
@@ -105,14 +96,15 @@ class TabExpertPlots(QtWidgets.QWidget):
             self.pressure_flow_plot, self.PID_P, self.PID_D, "Pressure vs Flow", "077"
         )
 
-        # TODO circleplots
-
         self.setLayout(layout)
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
         self.timer.timeout.connect(self.update_plot_data)
         self.timer.start()
+
+        # Set Time Range
+        self.update_plot_time_range(60)
 
     def plot(self, canvas, x, y, plotname, color):
         pen = pg.mkPen(color=color, width=3)
@@ -138,4 +130,5 @@ class TabExpertPlots(QtWidgets.QWidget):
         for plot in self.plots:
             plot.setXRange(self.time_range * (-1), 0, padding=0)
             plot.enableAutoRange("y", True)
+        self.update_plot_data()
         return 0

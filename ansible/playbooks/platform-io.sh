@@ -21,7 +21,7 @@
 # of all those involved with the High Energy Ventilator project
 # (https://hev.web.cern.ch/).
 
-
+cd $HOME || exit
 curl -fsSL https://raw.githubusercontent.com/platformio/platformio-core-installer/master/get-platformio.py -o get-platformio.py
 python3 get-platformio.py
 
@@ -29,7 +29,7 @@ PATH=$PATH:$HOME/.platformio/penv/bin
 
 proj=$HOME/blink
 mkdir -p $proj
-cd $proj
+cd $proj || exit
 pio project init -b nodemcu-32s 
 cat << EOF > src/main.cpp
 #include <Arduino.h>
@@ -60,5 +60,5 @@ pio lib  --global install 5390 # RingBuffer
 pio lib  --global install 5418 # uCRC16Lib
 pio lib  --global install 5574 # INA2xx
 pio lib  --global install  820 # Adafruit MCP9808 
-pio run 
+#pio run 
 #pio run -t nobuild -t upload

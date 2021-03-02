@@ -53,14 +53,14 @@
         - name: copy platformio script
           template: src=platform-io.sh dest={{ download_dir }} owner=pi group=pi mode=0755
         
-        - name: copy hev-display script
-          template: src=hev-display.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+        #- name: copy hev-display script
+          #template: src=hev-display.sh dest={{ download_dir }} owner=pi group=pi mode=0755
 
-        - name: copy apache script
-          template: src=setup_apache.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+        #- name: copy apache script
+          #template: src=setup_apache.sh dest={{ download_dir }} owner=pi group=pi mode=0755
         
-        - name: install hev-display
-          command: "{{ download_dir }}/hev-display.sh"
+        #- name: install hev-display
+          #command: "{{ download_dir }}/hev-display.sh"
         
         - name: update PATH
           args:
@@ -73,67 +73,87 @@
           git: 
               repo: https://ohwr.org/project/hev.git
               dest: "{{ ansible_env.HOME }}/hev"
+              version: "ui_dev"
         
         - name: install platformio
           command: "{{ download_dir }}/platform-io.sh"
         
-        - name: pip install packages
-          pip:
-              executable: /usr/bin/pip3
-              name: "{{ pip_list }}"  
+        #- name: pip install packages
+          #pip:
+              #executable: /usr/bin/pip3
+              #name: "{{ pip_list }}"  
 
         - name: pip install packages as root
           pip:
               executable: /usr/bin/pip3
               name: "{{ pip_list }}"  
           become: yes
-        
-        - name: check pi version
-          shell: "pinout | grep 'BCM2711'"
-          register: pi4
-          ignore_errors: True
 
-        - name: install hev-display-pi4 via apt
-          apt: 
-              name: hev-display-pi4
-              state: latest
-              update_cache: yes
-          when: pi4 is succeeded
+        - name: install python requirements inside virtual environment
+          pip:
+            requirements: "{{ ansible_env.HOME }}/hev/requirements.txt"
+            virtualenv: "{{ ansible_env.HOME }}/hev/.hev_env"
+            virtualenv_python: python3.7
+
+        - name: copy PySide2 install into virtualenv
+          copy:
+            src: "/usr/lib/python3/dist-packages/PySide2"
+            dest: "{{ ansible_env.HOME }}/hev/.hev_env/lib/python3.7/site-packages/"
+            remote_src: yes
           become: yes
 
-        - name: install hev-display-pi1 via apt
-          apt: 
-              name: hev-display-pi1
-              state: latest
-              update_cache: yes
-          when: pi4 is failed
-          become: yes
+        # - name: copy libscrc script
+        #   template: src=libscrc.sh dest={{ download_dir }} owner=pi group=pi mode=0755
+
+        # - name: install libscrc
+        #   command: "{{ download_dir }}/libscrc.sh"
+
+        #- name: check pi version
+          #shell: "pinout | grep 'BCM2711'"
+          #register: pi4
+          #ignore_errors: True
+
+        #- name: install hev-display-pi4 via apt
+          #apt: 
+              #name: hev-display-pi4
+              #state: latest
+              #update_cache: yes
+              ##when: pi4 is succeeded
+          #become: yes
+
+        #- name: install hev-display-pi1 via apt
+          #apt: 
+              #name: hev-display-pi1
+              #state: latest
+              #update_cache: yes
+          #when: pi4 is failed
+          #become: yes
         
-        - name: link fonts for hev-display
-          file:
-              src: "/usr/share/fonts/truetype/dejavu"
-              dest: "/usr/local/qt5pi/lib/fonts"
-              state: link
-          become: yes
+        #- name: link fonts for hev-display
+          #file:
+              #src: "/usr/share/fonts/truetype/dejavu"
+              #dest: "/usr/local/qt5pi/lib/fonts"
+              #state: link
+          #become: yes
         
-#        - name: install hev-display systemd service
-#          copy:
-#              src: "{{ ansible_env.HOME }}/hev/hev-display/extras/systemd/hev-display.service"
-#              dest: "/usr/lib/systemd/system/hev-display.service"
-#              remote_src: yes
-#          become: yes
+        #- name: install hev-display systemd service
+          #copy:
+              #src: "{{ ansible_env.HOME }}/hev/hev-display/extras/systemd/hev-display.service"
+              #dest: "/usr/lib/systemd/system/hev-display.service"
+              #remote_src: yes
+          #become: yes
 
         - name: mk user systemd dir
           file:
               path: "{{ ansible_env.HOME }}/.config/systemd/user/"
               state: directory
 
-        - name: install hevserver systemd service
-          copy:
-              src: "{{ ansible_env.HOME }}/hev/utils/hevserver.service"
-              dest: "/usr/lib/systemd/system/hevserver.service"
-              remote_src: yes
-          become: yes
+        #- name: install hevserver systemd service
+          #copy:
+              #src: "{{ ansible_env.HOME }}/hev/utils/hevserver.service"
+              #dest: "/usr/lib/systemd/system/hevserver.service"
+              #remote_src: yes
+          #become: yes
 
         - name: copy hev rules
           copy: 
@@ -145,41 +165,41 @@
               mode: 0644
           become: yes
 
-        - name: enable hev-display systemd service
-          systemd:
-            enabled: yes
-            daemon_reload: yes
-            name: hev-display
-          become: yes
+        #- name: enable hev-display systemd service
+          #systemd:
+            #enabled: yes
+            #daemon_reload: yes
+            #name: hev-display
+          #become: yes
 
-        - name: enable hevserver systemd service
-          systemd:
-            enabled: yes
-            daemon_reload: yes
-            name: hevserver
-          become: yes       
+        #- name: enable hevserver systemd service
+          #systemd:
+            #enabled: yes
+            #daemon_reload: yes
+            #name: hevserver
+          #become: yes       
 
-        - name: link libts
-          file:
-              src: "/usr/lib/arm-linux-gnueabihf/libts.so.0"
-              dest: "/usr/lib/arm-linux-gnueabihf/libts-0.0.so.0"
-              state: link
-          become: yes
+        #- name: link libts
+          #file:
+              #src: "/usr/lib/arm-linux-gnueabihf/libts.so.0"
+              #dest: "/usr/lib/arm-linux-gnueabihf/libts-0.0.so.0"
+              #state: link
+          #become: yes
 
-        - name: Adding user pi to www-data
-          user: 
-              name: pi
-              groups: www-data
-              append: yes
-          become: yes
+        #- name: Adding user pi to www-data
+          #user: 
+              #name: pi
+              #groups: www-data
+              #append: yes
+          #become: yes
 
-        - name: install hevconf into apache 
-          copy:
-              src: "{{ ansible_env.HOME }}/hev/raspberry-backend/share/hev.conf" 
-              dest: "/etc/apache2/sites-available/hev.conf"
-              remote_src: yes
-          become: yes
+        #- name: install hevconf into apache 
+          #copy:
+              #src: "{{ ansible_env.HOME }}/hev/raspberry-backend/share/hev.conf" 
+              #dest: "/etc/apache2/sites-available/hev.conf"
+              #remote_src: yes
+          #become: yes
 
-        - name: setup apache
-          command: "{{ download_dir }}/setup_apache.sh"
-          become: yes
+        #- name: setup apache
+          #command: "{{ download_dir }}/setup_apache.sh"
+          #become: yes
