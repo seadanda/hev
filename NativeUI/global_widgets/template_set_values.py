@@ -81,7 +81,11 @@ class TemplateSetValues(QtWidgets.QWidget):
         for section in controlDict.keys():
 
             self.titleLabel = QtWidgets.QLabel(section)
-            self.titleLabel.setStyleSheet("background-color:white")
+            self.titleLabel.setStyleSheet(
+                "background-color:" + self.NativeUI.colors["background"].name() + ";"
+                "color:" + self.NativeUI.colors["foreground"].name() + ";"
+                "font: 20pt;"
+            )
             self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
             grid.addWidget(self.titleLabel, i, 0, 1, 6)
             j = -1
