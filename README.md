@@ -24,9 +24,17 @@ Raspbian Version: Raspbian GNU/Linux 10 (buster)
 
 Python Version: 3.7
 
-On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
+Ansible: Version 2.8 or later
 
 ### Setup
+
+#### Using SSH
+
+On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html) at least version 2.8. The easiest way to do this via `pip`:
+
+```bash
+pip3 install ansible
+```
 
 > Make sure that SSH is enabled. To check this to go:
 >
@@ -34,7 +42,7 @@ On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/inst
 >
 > Without GUI: `sudo touch /boot/ssh`
 >
-> **WARNING:** There may be extra steps if you are using a VM on your local machine.*
+> ***WARNING:** There may be extra steps if you are using a VM on your local machine.*
 
 For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
 
@@ -43,25 +51,61 @@ ssh keygen
 ssh-copy-id pi@IP-ADDRESS
 ```
 
-Run and follow the prompts:
-
-```bash
-./setup.sh
-```
-
 To obtain the IP Address of your Raspberry Pi / VM, on your Raspberry Pi / VM run:
 
 ```bash
 hostname -I
 ```
 
-For manual installation instructions please refer to [manualInstallation.md](manualInstallation.md).
+Run and follow the prompts:
+
+```bash
+./setup.sh
+```
+
+Ansible logs are saved in `ansible/playbooks/logs`.
+
+#### Locally
+
+Change default Python to Python3.7:
+
+```bash
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2
+```
+
+Install ansible with the following:
+
+```bash
+pip3 install ansible
+sudo reboot
+```
+
+Clone this repo and checkout the `ui_dev` branch:
+
+```bash
+git clone https://ohwr.org/project/hev.git
+cd hev
+git checkout ui_dev
+```
+
+Run `setup.sh` and enter `localhost` when asked for an IP address.
+
+```bash
+./setup.sh
+```
+
+Ansible logs are saved in `ansible/playbooks/logs`.
 
 ## Usage
 
 ### Running the HEV UI
 
-Running the HEV UI requires three separate python process running in the same virtualenv.
+Running the HEV UI requires three separate python process running in the same virtualenv from the `hev` directory.
+
+```bash
+cd /home/pi/hev
+```
 
 #### 1) Run ArduinoEmulator
 
