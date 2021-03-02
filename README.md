@@ -24,11 +24,15 @@ Raspbian Version: Raspbian GNU/Linux 10 (buster)
 
 Python Version: 3.7
 
-On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html).
-
 ### Setup
 
 #### Using SSH
+
+On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html) at least version 2.8. The easiest way to do this via `pip`:
+
+```bash
+pip3 install ansible
+```
 
 > Make sure that SSH is enabled. To check this to go:
 >
@@ -61,16 +65,25 @@ Ansible logs are saved in `ansible/playbooks/logs`.
 
 #### Locally
 
+Change default Python to Python3.7:
+
+```bash
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+sudo update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2
+```
+
 Install ansible with the following:
 
 ```bash
 pip3 install ansible
+sudo reboot
 ```
 
 Clone this repo and checkout the `ui_dev` branch:
 
 ```bash
 git clone https://ohwr.org/project/hev.git
+cd hev
 git checkout ui_dev
 ```
 
