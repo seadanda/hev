@@ -43,12 +43,12 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-        #self.setFixedSize(1920, 1080)
+        self.setFixedSize(1920, 1080)
 
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
-            "background-enabled": QColor.fromRgb(30, 30, 30),
+            "background-enabled": QColor.fromRgb(50, 50, 50),
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
