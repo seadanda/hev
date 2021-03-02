@@ -119,6 +119,7 @@ BreathingLoop::BreathingLoop()
     _o2_frac_pressure = 0.;
     _fiO2_est = 0.21;
     _time_valve_closure = millis();
+    ledcWrite(4, _fiO2_est*255);
 }
 
 void BreathingLoop::initTargets()
@@ -289,6 +290,7 @@ void BreathingLoop::updateCycleReadings()
     if (_bl_state == BL_STATES::BUFF_PRE_INHALE){
         if(_cycle_done == false){
             uint32_t tnow = static_cast<uint32_t>(millis());
+            ledcWrite(4, _fiO2_est*255);
 
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
 

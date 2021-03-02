@@ -103,6 +103,10 @@ void setup()
     pinMode(pin_led_yellow, OUTPUT);
     pinMode(pin_led_red, OUTPUT);
 
+    // use channel for 4 of PWM generator to output calculated FiO2
+    ledcSetup(4, 500, 8); // channel 4, Frequency 500, 8bit resolution
+    ledcAttachPin(pin_spare_2, 4);  
+
     //pinMode(pin_buzzer, OUTPUT);
 
     comms.beginSerial();
