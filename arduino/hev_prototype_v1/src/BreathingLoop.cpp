@@ -254,7 +254,7 @@ void BreathingLoop::updateReadings()
         resetReadingSums();
         updateFromTargets();
         // logging to cross check fio2 with TestChest
-        logMsg(String(_targets_current->fiO2_percent)+","+String( _readings_avgs.o2_percent)+","+String(_fiO2_est));
+        // logMsg(String(_targets_current->fiO2_percent)+","+String( _readings_avgs.o2_percent)+","+String(_fiO2_est * 100.f));
     }
 }
 
@@ -293,7 +293,7 @@ void BreathingLoop::updateCycleReadings()
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
 
             _cycle_readings.timestamp = tnow;
-            _cycle_readings.fiO2_percent = _readings_avgs.o2_percent;// FIXME
+            _cycle_readings.fiO2_percent = _fiO2_est * 100.f; //_readings_avgs.o2_percent;// FIXME
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
             _total_cycle_duration[_cycle_index] = (
@@ -758,15 +758,15 @@ void BreathingLoop::doFillFSM()
         case FILL_STATES::MAINTAIN_O2:
             if(_readings_avgs.pressure_buffer >= _targets_current->buffer_upper_pressure){
                 _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-		_finished_filling = true;
+		        _finished_filling = true;
             } else if(_readings_avgs.pressure_buffer < _targets_current->buffer_lower_pressure || !_finished_filling){
                 if (_readings_avgs.pressure_buffer < _o2_frac_pressure){
                     // fill O2
                     _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::OPEN, VALVE_STATE::CLOSED);
                 }else if(_valves_controller.getO2Valve()){
-		    // close O2 valve before opening air valve
-		    _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
-		}else if (millis() - _time_valve_closure > 20){
+                    // close O2 valve before opening air valve
+                    _valves_controller.setFillValves(VALVE_STATE::CLOSED, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
+		        }else if (millis() - _time_valve_closure > 20){
                     // fill air
                     _valves_controller.setFillValves(VALVE_STATE::OPEN, VALVE_STATE::CLOSED, VALVE_STATE::CLOSED);
                 }
@@ -1429,9 +1429,10 @@ void BreathingLoop::updateO2Concentration()
             // O2 valve from open->closed
             _time_valve_closure = millis();
 	    if (delta_p < 0){
-                _fill_state = FILL_STATES::AIR_FILL;
+                _fill_state = FILL_STATES::AIR_FILL; // safety precaution: when during O2 filling not enough pressure is provided, fill with air
             }else{
-                _fiO2_est = (delta_p + _fiO2_est * _pressure_before_filling) / p_buff_now;
+                // _fiO2_est = (delta_p + _fiO2_est * _pressure_before_filling) / p_buff_now; //old
+                _fiO2_est = _fiO2_est + (1 - _fiO2_est) * (delta_p / p_buff_now);
             }   
         }
     }else if (vin_air != _valve_air_last_state){
@@ -1441,11 +1442,12 @@ void BreathingLoop::updateO2Concentration()
         }else{
             // air valve from open->closed
             _time_valve_closure = millis();
-	    // TODO check this calculation
+	        // TODO check this calculation
             if (delta_p < 0){
                 _fill_state = FILL_STATES::AIR_FILL;
             }else{
-                _fiO2_est = 1 - (delta_p * 0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
+                // _fiO2_est = 1 - (delta_p * 0.79 +(1 - _fiO2_est) * _pressure_before_filling) / p_buff_now;
+                _fiO2_est = 0.21 + (_fiO2_est - 0.21) * (p_buff_now - delta_p) / p_buff_now;
             }
         }
     }
