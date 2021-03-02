@@ -20,7 +20,6 @@ hostsfile="ansible/playbooks/hosts"
 function create_hostsfile {
     # Replace current hostfile with the default
     rm -f $hostsfile
-    cp -rp ansible/playbooks/hosts.default $hostsfile
     # Get users raspberry pi / VM IP address
     echo "What is the IP address for your Raspberry Pi / VM you wish to setup?"
     echo -e "${ITALIC}NOTE: If you use a non-standard SSH port (22), add the port to your IP address as such: ${YELLOW}IPADDRESS:PORT${NC}"
@@ -31,21 +30,18 @@ function create_hostsfile {
         echo -e "${RED}ERROR:${NC} user input for IP Address was blank. Please rerun and enter IP Address."
         exit 1
     elif [[ $ipaddr == "localhost" ]]; then
-        localinstall="localhost ansible_connection=local ansible_python_interpreter=\"/usr/bin/env python3\""
+        cp -rp ansible/playbooks/hosts.local $hostsfile
         local=True
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            sed -i '' "s/IPADDRESS/$localinstall/g" $hostsfile
-        else
-            sed -i "s/IPADDRESS/$localinstall/g" $hostsfile
-        fi
+        echo "Installing locally."
     else
+        cp -rp ansible/playbooks/hosts.default $hostsfile
         if [[ "$OSTYPE" == "darwin"* ]]; then
             sed -i '' "s/IPADDRESS/$ipaddr/g" $hostsfile
         else
             sed -i "s/IPADDRESS/$ipaddr/g" $hostsfile
         fi
+        echo "User inputtted IP Address added to $hostsfile."
     fi
-    echo "User inputtted IP Address added to $hostsfile."
 }
 
 # Get the pi / vm ip address from user
