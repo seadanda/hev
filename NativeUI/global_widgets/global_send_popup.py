@@ -11,11 +11,6 @@ class SetConfirmPopup(
         super().__init__(*args, **kwargs)
         # self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
 
-        # if NativeUI is None:
-        #     iconpath = "hev-display/svg/check-solid.svg"
-        # else:
-        #     iconpath_check = os.path.join(NativeUI.iconpath, "check-solid.png")
-        #     iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")
         self.NativeUI = NativeUI
         if setList == []:
             setList = ["no values were set"]

@@ -12,14 +12,15 @@ class okButton(
         # set icon color
         pixmap = QtGui.QPixmap(iconpath_check)
         mask = pixmap.mask()
-        pixmap.fill(NativeUI.colors["foreground"])
+        pixmap.fill(NativeUI.colors["background"])
         pixmap.setMask(mask)
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
-            "color: " + NativeUI.colors["foreground"].name() + ";"
+            "background-color: " + NativeUI.colors["foreground"].name() + ";"
+            "color: " + NativeUI.colors["background"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "border-radius: 8px;"
             "border:none"
         )
 
@@ -37,14 +38,15 @@ class cancelButton(
         # set icon color
         pixmap = QtGui.QPixmap(iconpath_cross)
         mask = pixmap.mask()
-        pixmap.fill(NativeUI.colors["foreground"])
+        pixmap.fill(NativeUI.colors["background"])
         pixmap.setMask(mask)
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
-            "color: " + NativeUI.colors["foreground"].name() + ";"
+            "background-color: " + NativeUI.colors["foreground"].name() + ";"
+            "color: " + NativeUI.colors["background"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "border-radius: 8px;"
             "border:none"
         )
 

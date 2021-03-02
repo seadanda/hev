@@ -3,10 +3,11 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class alarmWidget(QtWidgets.QWidget):
-    def __init__(self, NativeUI, alarmPayload, *args, **kwargs):
+    def __init__(self, NativeUI, alarmPayload, alarmCarrier, *args, **kwargs):
         super(alarmWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
+        self.alarmCarrier = alarmCarrier
 
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(0)
@@ -35,12 +36,16 @@ class alarmWidget(QtWidgets.QWidget):
             self.setStyleSheet("background-color:orange;")
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(5000)  # just faster than 60Hz
+        self.timer.setInterval(500)  # just faster than 60Hz
         self.timer.timeout.connect(self.checkAlarm)
         self.timer.start()
 
     def checkAlarm(self):
-        self.parent().alarmDict.pop(self.alarmPayload["alarm_code"])
+        self.ongoingAlarms = self.NativeUI.ongoingAlarms
+        for alarm in self.ongoingAlarms:
+            if self.alarmPayload["alarm_code"] == alarm["alarm_code"]:
+                return
+        self.alarmCarrier.alarmDict.pop(self.alarmPayload["alarm_code"])
         self.setParent(None)
 
 
@@ -81,7 +86,7 @@ class alarmPopup(QtWidgets.QDialog):
 
     def addAlarm(self, alarmPayload):
         self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(
-            self.NativeUI, alarmPayload
+            self.NativeUI, alarmPayload, self
         )
         self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
 

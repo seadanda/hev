@@ -25,6 +25,7 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
 
     def stepBy(self, step):
         value = self.value()
+        self.prevValue = value
         super(signallingSpinBox, self).stepBy(step)
         if self.value() != value:
             self.manualChanged.emit()
@@ -47,10 +48,12 @@ class labelledSpin(QtWidgets.QWidget):
         self.NativeUI = NativeUI
         self.template = template
         self.cmd_type, self.cmd_code = "", ""
-        self.min, self.max, self.step = 0,10000,0.3
+        self.min, self.max, self.step = 0, 10000, 0.3
         self.decPlaces = 2
         if len(infoArray) == 9:
-            self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.step, self.decPlaces = infoArray
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.step, self.decPlaces = (
+                infoArray
+            )
         elif len(infoArray) == 5:
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
         elif len(infoArray) == 3:
@@ -105,9 +108,15 @@ class labelledSpin(QtWidgets.QWidget):
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
     def manualStep(self):
+        if self.manuallyUpdated != True:
+            self.oldValue = self.simpleSpin.prevValue
         self.template.liveUpdating = False
         self.manuallyUpdated = True
-        self.simpleSpin.setProperty("textColour", "1")
+        if self.simpleSpin.value() != self.oldValue:
+            self.simpleSpin.setProperty("textColour", "1")
+        else:
+            self.simpleSpin.setProperty("textColour", "0")
+            self.manuallyUpdated = False
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):

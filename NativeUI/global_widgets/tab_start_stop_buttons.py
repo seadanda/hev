@@ -4,6 +4,7 @@ TODO
 import logging
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize
+from global_widgets.tab_hold_buttons import holdButton
 
 
 class TabStartStopStandbyButtons(QtWidgets.QWidget):
@@ -23,15 +24,17 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.button_start = QtWidgets.QPushButton()
-        self.button_stop = QtWidgets.QPushButton()
-        self.button_standby = QtWidgets.QPushButton()
+        self.button_start = holdButton(NativeUI)  # QtWidgets.QPushButton()
+        self.button_stop = holdButton(NativeUI)  # QtWidgets.QPushButton()
+        self.button_standby = holdButton(NativeUI)  # QtWidgets.QPushButton()
 
         self.__buttons = [self.button_start, self.button_stop, self.button_standby]
         self.__buttontext = ["START", "STOP", "STANDBY"]
+        self.__buttoncommand = [""]
 
         for button, text in zip(self.__buttons, self.__buttontext):
             button.setText(text)
+            button.popUp.completeLabel.setText("Ventilation " + text)
             layout.addWidget(button)
             button.setStyleSheet(
                 "background-color: "
@@ -39,8 +42,7 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
                 + ";"
                 "border-color: " + NativeUI.colors["foreground"].name() + ";"
                 "font-size: 20pt;"
-                "color: " + NativeUI.colors["foreground"].name() + ";" + 
-                "border:none"
+                "color: " + NativeUI.colors["foreground"].name() + ";" + "border:none"
             )
             button.setFixedSize(self.__button_size)
 

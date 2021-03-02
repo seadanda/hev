@@ -6,6 +6,7 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 from global_widgets.global_spinbox import signallingSpinBox
 
+
 class SpinButton(QtWidgets.QFrame):
     def __init__(self, NativeUI):
         super().__init__()
@@ -91,7 +92,6 @@ class SpinButton(QtWidgets.QFrame):
     def manualChanged(self):
         self.liveUpdating = False
 
-
     def eventFilter(self, source, event):
         if (
             source is self.doubleSpin.lineEdit()
@@ -133,12 +133,12 @@ class TabSpinButtons(QtWidgets.QWidget):
 
         self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
         self.__labels = [
-            "inhalation_pressure",
+            "inspiratory_pressure",
             "respiratory_rate",
             "fiO2_percent",
-            "lung_compliance",
+            "inhale_time",
         ]
-        for spin,label in zip(self.__spins,self.__labels):
+        for spin, label in zip(self.__spins, self.__labels):
             spin.label.setText(label)
             self.layout.addWidget(spin)
 
@@ -159,22 +159,23 @@ class TabSpinButtons(QtWidgets.QWidget):
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)
-        self.timer.timeout.connect(self.updateCycle)
+        self.timer.timeout.connect(self.updatetargets)
         self.timer.start()
 
-    def updateCycle(self):
-        cycle = self.NativeUI.get_cycle_db()
-        if cycle == {}:
+    def updatetargets(self):
+        targets = self.NativeUI.get_targets_db()
+        if targets == {}:
             return
-        for spin, label in zip(self.__spins, self.__labels):
-            if spin.doubleSpin.value() != float(cycle[label]):
-                if spin.liveUpdating:
-                    spin.doubleSpin.setValue(float(cycle[label]))
-                    spin.setTextColour("2")
+        if targets["mode"] == "CURRENT":
+            for spin, label in zip(self.__spins, self.__labels):
+                if spin.doubleSpin.value() != float(targets[label]):
+                    if spin.liveUpdating:
+                        spin.doubleSpin.setValue(float(targets[label]))
+                        spin.setTextColour("2")
+                    else:
+                        spin.setTextColour("0")
                 else:
-                    spin.setTextColour("0")
-            else:
-                spin.setTextColour("2")
+                    spin.setTextColour("2")
 
     def ok_button_pressed(self):
         for spin in self.__spins:
