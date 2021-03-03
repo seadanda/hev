@@ -38,7 +38,7 @@ function create_hostsfile {
     elif [[ $ipaddr == "localhost" ]]; then
         cp -rp ansible/playbooks/hosts.local $hostsfile
         local=True
-        echo "Installing locally."
+        echo "Installing locally at $repo_location."
     else
         cp -rp ansible/playbooks/hosts.default $hostsfile
         if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -52,37 +52,51 @@ function create_hostsfile {
 
 # Get the pi / vm ip address from user
 if [[ -f $hostsfile ]]; then
+    # Check if hosts file already exists
     echo -e "${YELLOW}$hostsfile${NC} already exists, override and create a new hosts file? [y/n]"
     read -r yn
     case $yn in
         [Yy]* )
                 create_hostsfile;;
-        [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);;
+        [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);; # copy IP address in hosts file to variable ipaddr
         * ) echo "Please answer yes or no."; exit 1;;
     esac
 else
     create_hostsfile
 fi
 
-# Create local variables for ansible installation
-echo "Using ansible to setup Raspberry Pi / VM."
-cd ansible
-source hev-ansible.sh
-cd playbooks
-ansible-playbook firstboot.yml
-ansible-playbook install_software.yml
-
-# Clean up
-cd "$(git rev-parse --show-toplevel)"
-
-# Request to reboot raspberry pi / VM 
-if [[ $local == True ]]; then
+# Run ansible playbooks for both local and remote
+if [[ $local == True ]]; then # Local run
+    # Create local variables for ansible installation
+    echo "Using ansible to setup local HEV install."
+    cd ansible
+    source hev-ansible.sh
+    # Run ansible playbooks
+    cd playbooks
+    # Create local repo variable
+    source local_variables.sh
+    echo $local_repo
+    ansible-playbook firstboot.yml
+    ansible-playbook install_software.yml
+    # Clean up
+    cd "$(git rev-parse --show-toplevel)"
     echo
     echo "SETUP FINISHED"
     echo -e "${YELLOW}Rasperberry Pi / VM must be rebooted for changes to take effect.${NC}"
     echo "Please run 'sudo reboot'."
     echo
-else
+else # Remote run
+    # Create local variables for ansible installation
+    echo "Using ansible to setup remote Raspberry Pi / VM."
+    cd ansible
+    source hev-ansible.sh
+    # Run ansible playbooks
+    cd playbooks
+    ansible-playbook firstboot.yml
+    ansible-playbook install_software.yml
+    # Clean up
+    cd "$(git rev-parse --show-toplevel)"
+    # Request to reboot raspberry pi / VM 
     echo
     echo "SETUP FINISHED"
     echo -e "${YELLOW}Rasperberry Pi / VM must be rebooted for changes to take effect.${NC}"
