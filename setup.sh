@@ -75,7 +75,6 @@ if [[ $local == True ]]; then # Local run
     cd playbooks
     # Create local repo variable
     source local_variables.sh
-    echo $local_repo
     ansible-playbook firstboot.yml
     ansible-playbook install_software.yml
     # Clean up
