@@ -10,8 +10,14 @@ YELLOW='\033[1;33m'
 ITALIC='\033[3m'
 NC='\033[0m' # No Color or Syntax
 
-# Move to top level of repo
-cd "$(git rev-parse --show-toplevel)"
+# CHeck if in repo and move to top level of repo
+if [[ -d $(git rev-parse --git-dir 2> /dev/null) ]]; then
+    cd "$(git rev-parse --show-toplevel)"
+    repo_location=$(pwd)
+else
+    echo "ERROR: Not a git directory. Please run setup.sh from the HEV repository."
+    exit 1
+fi
 
 # Create a hosts file from default
 hostsfile="ansible/playbooks/hosts"
