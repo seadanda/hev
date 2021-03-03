@@ -58,7 +58,11 @@ if [[ -f $hostsfile ]]; then
     case $yn in
         [Yy]* )
                 create_hostsfile;;
-        [Nn]* ) ipaddr=$(sed -n 2p ansible/playbooks/hosts);; # copy IP address in hosts file to variable ipaddr
+        [Nn]* ) if [[ $(sed -n 2p ansible/playbooks/hosts) == *"localhost"* ]]; then
+                    local=True
+                else
+                    ipaddr=$(sed -n 2p ansible/playbooks/hosts);; # copy IP address in hosts file to variable ipaddr
+                fi
         * ) echo "Please answer yes or no."; exit 1;;
     esac
 else
