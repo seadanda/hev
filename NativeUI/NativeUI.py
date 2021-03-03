@@ -66,6 +66,8 @@ class NativeUI(HEVClient, QMainWindow):
         self.__targets = {}
         self.__personal = {}
 
+        self.ongoingAlarms = {}
+
         # bars
         self.topBar = TabTopBar(self)
         self.leftBar = TabLeftBar(self)
