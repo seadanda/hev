@@ -76,7 +76,7 @@ if [[ $local == True ]]; then # Local run
     # Create local repo variable
     source local_variables.sh
     ansible-playbook firstboot.yml
-    ansible-playbook install_software.yml
+    ansible-playbook install_software_local.yml
     # Clean up
     cd "$(git rev-parse --show-toplevel)"
     echo
