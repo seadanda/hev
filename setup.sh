@@ -61,8 +61,8 @@ if [[ -f $hostsfile ]]; then
         [Nn]* ) if [[ $(sed -n 2p ansible/playbooks/hosts) == *"localhost"* ]]; then
                     local=True
                 else
-                    ipaddr=$(sed -n 2p ansible/playbooks/hosts);; # copy IP address in hosts file to variable ipaddr
-                fi
+                    ipaddr=$(sed -n 2p ansible/playbooks/hosts) # copy IP address in hosts file to variable ipaddr
+                fi;;
         * ) echo "Please answer yes or no."; exit 1;;
     esac
 else
