@@ -85,14 +85,14 @@
 
         - name: install python requirements inside virtual environment
           pip:
-            requirements: "{{ ansible_env.local_repo }}/requirements.txt"
-            virtualenv: "{{ ansible_env.local_repo }}/.hev_env"
+            requirements: "{{ playbook_dir }}/../../requirements.txt"
+            virtualenv: "{{ playbook_dir }}/../../.hev_env"
             virtualenv_python: python3.7
 
         - name: copy PySide2 install into virtualenv
           copy:
             src: "/usr/lib/python3/dist-packages/PySide2"
-            dest: "{{ ansible_env.local_repo }}/.hev_env/lib/python3.7/site-packages/"
+            dest: "{{ playbook_dir }}/../../.hev_env/lib/python3.7/site-packages/"
             remote_src: yes
           become: yes
 
@@ -132,7 +132,7 @@
         
         #- name: install hev-display systemd service
           #copy:
-              #src: "{{ ansible_env.local_repo }}/hev-display/extras/systemd/hev-display.service"
+              #src: "{{ playbook_dir }}/../../hev-display/extras/systemd/hev-display.service"
               #dest: "/usr/lib/systemd/system/hev-display.service"
               #remote_src: yes
           #become: yes
@@ -144,14 +144,14 @@
 
         #- name: install hevserver systemd service
           #copy:
-              #src: "{{ ansible_env.local_repo }}/utils/hevserver.service"
+              #src: "{{ playbook_dir }}/../../utils/hevserver.service"
               #dest: "/usr/lib/systemd/system/hevserver.service"
               #remote_src: yes
           #become: yes
 
         - name: copy hev rules
           copy: 
-              src: "{{ ansible_env.local_repo }}/utils/hev.rules"
+              src: "{{ playbook_dir }}/../../utils/hev.rules"
               dest: "/etc/udev/rules.d/88-hev.rules"
               remote_src: yes
               owner: root 
@@ -189,7 +189,7 @@
 
         #- name: install hevconf into apache 
           #copy:
-              #src: "{{ ansible_env.local_repo }}/raspberry-backend/share/hev.conf" 
+              #src: "{{ playbook_dir }}/../../raspberry-backend/share/hev.conf" 
               #dest: "/etc/apache2/sites-available/hev.conf"
               #remote_src: yes
           #become: yes
