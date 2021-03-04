@@ -104,7 +104,7 @@ void setup()
     pinMode(pin_led_red, OUTPUT);
 
     // use channel for 4 of PWM generator to output calculated FiO2
-    ledcSetup(pwm_chan_debug, pwm_resolution_debug, pwm_frequency_debug); // channel 4, Frequency 500, 8bit resolution
+    ledcSetup(pwm_chan_debug, pwm_frequency_debug, pwm_resolution_debug); // channel 4, Frequency 500, 8bit resolution
     ledcAttachPin(pin_spare_2, pwm_chan_debug);  
 
     //pinMode(pin_buzzer, OUTPUT);
