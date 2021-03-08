@@ -72,6 +72,6 @@ const int pwm_chan_exhale = 1;
 const int pwm_resolution = 16; // 8 bit resolution; up to 16 possible
 const int pwm_frequency  = 500; // frequency in Hz
 
-const int pwm_chan_debug = 1;
+const int pwm_chan_debug = 4;
 const int pwm_resolution_debug = 8; // 8 bit resolution; up to 16 possible
 const int pwm_frequency_debug  = 500; // frequency in Hz

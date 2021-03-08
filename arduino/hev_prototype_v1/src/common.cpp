@@ -240,7 +240,7 @@ float adcToO2PercentFloat(float adc, float offset)
 {
     // calibration should flush air only (21% o2) or o2 only (100%) for N secs 
 
-    float PCB_Gain		= 5.		; // real voltage is 4 times higher thant the measured in the PCB (there is a voltage divider)
+    float PCB_Gain		= 5.54		; // real voltage is 4 times higher thant the measured in the PCB (there is a voltage divider)
     float Sensor_Gain		= 100./10000.	; // the sensor gain is 100 % / 10000 mVolts
     float ADC_to_Voltage_Gain	= 3300./4096.0  ; // maximum Voltage of 3.3V for 4096 ADC counts - (It might need recalibration?)
     float ADC_to_mVoltage_Gain	= 0.788; 	// this is the measured gain

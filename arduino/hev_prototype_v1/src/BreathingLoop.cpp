@@ -289,12 +289,12 @@ void BreathingLoop::updateCycleReadings()
     if (_bl_state == BL_STATES::BUFF_PRE_INHALE){
         if(_cycle_done == false){
             uint32_t tnow = static_cast<uint32_t>(millis());
-            ledcWrite(pwm_chan_debug, uint8_t(_fiO2_est*255));
+            ledcWrite(pwm_chan_debug, uint8_t(_fiO2_est*122));
 
             _cycle_index = (_cycle_index == CYCLE_AVG_READINGS-1 ) ? 0 : _cycle_index+1;
 
             _cycle_readings.timestamp = tnow;
-            _cycle_readings.fiO2_percent = _fiO2_est * 100.f; //_readings_avgs.o2_percent;// FIXME
+            _cycle_readings.fiO2_percent =_readings_avgs.o2_percent;// 
             _running_inhale_minute_volume[_cycle_index] = _volume_inhale ;
             _running_exhale_minute_volume[_cycle_index] = _volume_exhale ;
             _total_cycle_duration[_cycle_index] = (
@@ -690,6 +690,7 @@ void BreathingLoop::assignFillFSM()
         case BL_STATES::EXHALE:
             if (_bl_laststate != BL_STATES::EXHALE){
                 _fill_state = determineFillMode();
+		logMsg("Fill state: " + String(_fill_state));
 	    }
             break;
         case BL_STATES::BUFF_FILL:
