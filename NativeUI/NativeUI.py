@@ -401,7 +401,8 @@ if __name__ == "__main__":
         dep.setGeometry(0, 0, 1920, 1080)
         dep.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     elif args.debug > 0:
-        dep.setGeometry(0, 0, 0.8 * 1920, 0.8 * 1080)
+        rescale = 0.7
+        dep.setGeometry(0, 0, rescale * 1920, rescale * 1080)
 
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
 
