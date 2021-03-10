@@ -4,6 +4,7 @@ import argparse
 import logging
 import sys
 import os
+from PySide2 import QtCore
 
 import numpy as np
 
@@ -43,7 +44,12 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
+
+        # Disable these lines for development
         self.setFixedSize(1920, 1080)
+        self.setGeometry(0, 0, 1920, 1080)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        #
 
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
@@ -384,12 +390,12 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    # if args.debug == 0:
-    #     logging.getLogger().setLevel(logging.WARNING)
-    # elif args.debug == 1:
-    #     logging.getLogger().setLevel(logging.INFO)
-    # else:
-    #     logging.getLogger().setLevel(logging.DEBUG)
+    if args.debug == 0:
+        logging.getLogger().setLevel(logging.WARNING)
+    elif args.debug == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    else:
+        logging.getLogger().setLevel(logging.DEBUG)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
