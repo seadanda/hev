@@ -28,7 +28,11 @@ Ansible: Version 2.8 or later
 
 ### Setup
 
-#### Using SSH
+There are 2 methods of installation, [using SSH](#ssh-installation) or installing [locally](#local-installation). Both methods can be used with both a Raspberry Pi and a VM depending on your setup and personal preference.
+
+The advantage of SSH is that the Raspberry Pi does not need dedicated peripherals and you can make use of your local development environment. However, there is no control over the default installation location (`/home/pi/hev`). Whereas, the local installation method installs all the requirements in the location you clone this repo to.
+
+#### SSH Installation
 
 On your local PC, install [ansible](https://docs.ansible.com/ansible/latest/installation_guide/index.html) at least version 2.8. The easiest way to do this via `pip`:
 
@@ -65,7 +69,7 @@ Run and follow the prompts:
 
 Ansible logs are saved in `ansible/playbooks/logs`.
 
-#### Locally
+#### Local Installation
 
 Change default Python to Python3.7:
 
@@ -101,37 +105,47 @@ Ansible logs are saved in `ansible/playbooks/logs`.
 
 ### Running the HEV UI
 
-Running the HEV UI requires three separate python process running in the same virtualenv from the `hev` directory.
+Running the HEV UI requires three separate python process running in the same virtualenv from the `hev` directory. This varies depending on your installation method as follows:
 
-```bash
-cd /home/pi/hev
-```
+* Remote Installation:
 
-#### 1) Run ArduinoEmulator
+    ```bash
+    cd /home/pi/hev
+    ```
 
-Note that a selection of dump files are provided in the `raspberry-dataserver/share` dir.
+* Local Installation:
 
-```bash
-source .hev_env/bin/activate
-./raspberry-dataserver/ArduinoEmulator.py -f raspberry-dataserver/share/B6-20201207.dump
-```
+    ```bash
+    cd /path/to/hev
+    ```
 
-#### 2) Run hevserver in another shell
+1) Run ArduinoEmulator
 
-```bash
-source .hev_env/bin/activate
-cd raspberry-dataserver
-./hevserver.py --use-dump-data
-```
+    Note that a selection of dump files are provided in the `raspberry-dataserver/share` dir.
 
-#### 3) Run NativeUI in another shell
+    ```bash
+    source .hev_env/bin/activate
+    ./raspberry-dataserver/ArduinoEmulator.py -f raspberry-dataserver/share/B6-20201207.dump
+    ```
 
-```bash
-source .hev_env/bin/activate
-./NativeUI/NativeUI.py
-```
+2) Run hevserver in another shell
+
+    ```bash
+    source .hev_env/bin/activate
+    cd raspberry-dataserver
+    ./hevserver.py --use-dump-data
+    ```
+
+3) Run NativeUI in another shell
+
+    ```bash
+    source .hev_env/bin/activate
+    ./NativeUI/NativeUI.py
+    ```
 
 ## Testing
+
+TO DO
 
 ## License
 

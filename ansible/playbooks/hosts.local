@@ -14,7 +14,7 @@ hevpi0
 hevpi1
 
 [allpi]
-IPADDRESS
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python3"
 nuliv
 hevpi0
 hevpi1
