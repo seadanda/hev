@@ -81,7 +81,7 @@ pip3 install ansible
 sudo reboot
 ```
 
-Clone this repo and checkout the `ui_dev` branch:
+Clone this repo and checkout the `release/ui` branch:
 
 ```bash
 git clone https://ohwr.org/project/hev.git
