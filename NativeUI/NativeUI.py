@@ -45,12 +45,6 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
-        # Disable these lines for development
-        self.setFixedSize(1920, 1080)
-        self.setGeometry(0, 0, 1920, 1080)
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        #
-
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
@@ -402,6 +396,12 @@ if __name__ == "__main__":
     # engine = QQmlApplicationEngine()
     # engine.load(QUrl('hev-display/assets/Cell.qml'))
     dep = NativeUI()
+    if args.debug == 0:
+        dep.setFixedSize(1920, 1080)
+        dep.setGeometry(0, 0, 1920, 1080)
+        dep.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+    elif args.debug > 0:
+        dep.setGeometry(0, 0, 0.8 * 1920, 0.8 * 1080)
 
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
 
