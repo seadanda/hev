@@ -75,6 +75,8 @@ class TabHistoryButtons(QtWidgets.QWidget):
                 i_row += 1
 
         self.setLayout(grid)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        # self.resize(110, 110)
 
         self.button_sixty.on_press()
 
