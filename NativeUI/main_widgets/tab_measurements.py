@@ -32,7 +32,6 @@ class Measurements_Block(QtWidgets.QWidget):
     def __init__(
         self, NativeUI, *args, measurements: list = None, columns: int = 1, **kwargs
     ):
-        print(measurements, "\n", columns)
 
         super(Measurements_Block, self).__init__(*args, **kwargs)
 
@@ -60,9 +59,9 @@ class Measurements_Block(QtWidgets.QWidget):
         layout.addWidget(label)
 
         # Compute max number of items per column
-        max_col_length = int(len(widget_list) / (columns)) + (
-            len(widget_list) % (columns)
-        )
+        max_col_length = int(len(widget_list) / (columns))
+        if len(widget_list) % (columns) != 0:
+            max_col_length += 1
 
         i_row = 0
         i_col = 0
