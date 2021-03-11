@@ -4,9 +4,8 @@
 tab_battery.py
 """
 
-__author__ = "Benjamin Mummery"
-__copyright__ = "© Copyright [] 2021"  # TODO
-__credits__ = ["Tiago Sarmento", "Benjamin Mummery", "Dónal Murray"]
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
 __license__ = "GPL"
 __version__ = "0.0.1"
 __maintainer__ = "Benjamin Mummery"

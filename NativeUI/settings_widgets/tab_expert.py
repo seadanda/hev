@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+tab_expert.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Development"
+
 from PySide2 import QtWidgets, QtGui, QtCore
 
 # from global_widgets.global_spinbox import simpleSpin
@@ -20,7 +34,10 @@ class TabExpert(TemplateSetValues):
                     "duration_calibration",
                     "SET_DURATION",
                     "CALIBRATION",
-                    0,1000,50, 0
+                    0,
+                    1000,
+                    50,
+                    0,
                 ],
                 ["Purge", "ms", "duration_buff_purge", "SET_DURATION", "BUFF_PURGE"],
                 ["Flush", "ms", "duration_buff_flush", "SET_DURATION", "BUFF_FLUSH"],

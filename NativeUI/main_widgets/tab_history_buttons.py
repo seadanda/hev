@@ -1,8 +1,32 @@
+#!/usr/bin/env python3
+
+"""
+tab_history_buttons.py
+
+Part of NativeUI. Defines the HistoryButton class to control the lookback time
+of plots, and constructs the TabHistoryButtons widget to contain the requisite
+historybuttons.
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Development"
+
 from PySide2 import QtWidgets
 from PySide2.QtCore import QSize, Signal, Slot
 
 
 class TabHistoryButtons(QtWidgets.QWidget):
+    """
+    Widget to hold the HistoryButtons.
+
+    TODO: restrict the spacing so that the buttons are tightly packed.
+    """
+
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

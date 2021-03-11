@@ -1,6 +1,16 @@
+#!/usr/bin/env python3
+
 """
-TODO
+tab_left_bar.py
 """
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Prototype"
 
 from PySide2.QtCore import QSize
 from global_widgets.tab_page_buttons import TabPageButtons

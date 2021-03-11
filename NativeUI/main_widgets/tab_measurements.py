@@ -1,3 +1,24 @@
+#!/usr/bin/env python3
+
+"""
+tab_measurements.py
+
+Part of NativeUI. Defines the MeasurementWidget class to display current
+parameters, and constructs the TabMeasurements widget to display the requisite
+MeasurementWidgets.
+
+TODO: Create a second widget constructor that shows the widgets for the expert
+plots page.
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Development"
+
 import logging
 
 from PySide2 import QtCore, QtGui, QtWidgets

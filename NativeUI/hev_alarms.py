@@ -4,13 +4,12 @@
 hev_alarms.py
 """
 
-__author__ = "Tiago Sarmento"
-__copyright__ = "© Copyright [] 2021"
-__credits__ = ["Tiago Sarmento", "Benjamin Mummery", "Dónal Murray"]
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
 __license__ = "GPL"
 __version__ = "0.0.1"
 __maintainer__ = "Tiago Sarmento"
-__email__ = "benjamin.mummery@stfc.ac.uk"
+__email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
 from alarm_widgets.tab_alarms import TabAlarm

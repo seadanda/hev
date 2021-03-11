@@ -1,5 +1,17 @@
 #!/usr/bin/env python3
 
+"""
+NativeUI.py
+"""
+
+__author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Prototype"
+
 import argparse
 import logging
 import sys

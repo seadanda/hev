@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+template_set_values.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
@@ -198,7 +212,11 @@ class TemplateSetValues(QtWidgets.QWidget):
                 setVal = self.spinDict[widget].simpleSpin.value()
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
-                    [self.spinDict[widget].cmd_type, self.spinDict[widget].cmd_code, setVal]
+                    [
+                        self.spinDict[widget].cmd_type,
+                        self.spinDict[widget].cmd_code,
+                        setVal,
+                    ]
                 )
         self.popup = SetConfirmPopup(self, self.NativeUI, message, command)
         self.popup.okButton.pressed.connect(self.commandSent)
