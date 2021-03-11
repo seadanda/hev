@@ -12,6 +12,7 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Development"
 
+from main_widgets.tab_measurements import TabExpertMeasurements
 from PySide2 import QtCore, QtWidgets
 import pyqtgraph as pg
 import numpy as np
@@ -33,8 +34,10 @@ class TabExpertPlots(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout()
         self.left_graph_widget = pg.GraphicsLayoutWidget()
+        self.tab_expert_measurements = TabExpertMeasurements(NativeUI)
         self.right_graph_widget = pg.GraphicsLayoutWidget()
         layout.addWidget(self.left_graph_widget)
+        layout.addWidget(self.tab_expert_measurements)
         layout.addWidget(self.right_graph_widget)
 
         # Left column - value-time plots
