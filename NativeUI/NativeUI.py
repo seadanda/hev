@@ -17,6 +17,7 @@ import logging
 import sys
 import os
 from PySide2 import QtCore
+from PySide2 import QtGui
 
 import numpy as np
 
@@ -57,14 +58,41 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
-        self.colors = {
+        self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
             "background-enabled": QColor.fromRgb(50, 50, 50),
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
+            "pressure_plot": QColor.fromRgb(0, 114, 178),
+            "volume_plot": QColor.fromRgb(0, 158, 115),
+            "flow_plot": QColor.fromRgb(240, 228, 66),
+            "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
+            "flow_volume_plot": QColor.fromRgb(204, 121, 167),
+            "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
         }
         self.text_size = "20pt"
+        self.PID_I_plot_scale = 3
+        self.text = {
+            "plot_axis_label_pressure": "Pressure [UNITS]",
+            "plot_axis_label_flow": "Flow [UNITS]",
+            "plot_axis_label_volume": "Volume [UNITS/10<sup>"
+            + str(self.PID_I_plot_scale)
+            + "</sup>]",
+            "plot_axis_label_time": "Time [s]",
+            "plot_line_label_pressure": "Airway Pressure",
+            "plot_line_label_flow": "Flow",
+            "plot_line_label_volume": "Volume",
+            "plot_line_label_pressure_flow": "Airway Pressure - Flow",
+            "plot_line_label_flow_volume": "Flow - Volume",
+            "plot_line_label_volume_pressure": "Volume - Airway Pressure",
+        }
+        # TODO: we can probably move this down into hev_main
+        self.plots = {
+            "plot_axis_range_pressure": [0, 20],
+            "plot_axis_range_flow": [-40, 80],
+            "plot_axis_range_volume": [0, 80],
+        }
         self.iconpath = self.__find_icons()
 
         # database
