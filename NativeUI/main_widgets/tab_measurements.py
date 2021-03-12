@@ -53,10 +53,13 @@ class Measurements_Block(QtWidgets.QWidget):
                     "measurement type %s is not a recognised parameter" % measurement[2]
                 )
 
-        label = QtWidgets.QLabel("Measurements")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setStyleSheet("color: grey; font-size: 15px")
-        layout.addWidget(label)
+        # label = QtWidgets.QLabel("Measurements")
+        # label.setAlignment(QtCore.Qt.AlignCenter)
+        # label.setStyleSheet(
+        #     "color: grey;"
+        #     "font-size: " + NativeUI.text_size + ";"
+        # )
+        # layout.addWidget(label)
 
         # Compute max number of items per column
         max_col_length = int(len(widget_list) / (columns))
@@ -112,10 +115,9 @@ class MeasurementWidget(QtWidgets.QWidget):
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
-        width = 150
-        height = 100
-        labelheight = 25
-        border_radius = 5
+        width = 250
+        height = 120
+        labelheight = 35
 
         self.NativeUI = NativeUI
         self.key = key
@@ -133,13 +135,11 @@ class MeasurementWidget(QtWidgets.QWidget):
         self.name_display.setAlignment(QtCore.Qt.AlignCenter)
         self.name_display.setStyleSheet(
             "color: " + self.NativeUI.colors["foreground"].name() + ";"
-            "background-color: "
-            + self.NativeUI.colors["background-disabled"].name()
+            "background-color:"
+            + self.NativeUI.colors["background-enabled"].name()
             + ";"
-            "border-style: outset;"
-            "border-width: 1px;"
-            "border-color:" + self.NativeUI.colors["foreground"].name() + ";"
-            "border-radius: " + str(border_radius) + "px;"
+            "border: none;"
+            "font-size: " + NativeUI.text_size + ";"
         )
         self.name_display.setFixedSize(width, labelheight)
         self.name_display.setFont(QtGui.QFont("SansSerif", 10))
@@ -147,15 +147,10 @@ class MeasurementWidget(QtWidgets.QWidget):
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
             "color: black;"
-            "background-color: lightblue;"
-            "border-style: outset;"
-            "border-width: 1px;"
-            "border-color: black;"
-            "border-radius: " + str(border_radius) + "px;"
+            "background-color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "border: none;"
         )
-        self.value_display.setFixedSize(
-            width + border_radius, height - labelheight + border_radius
-        )
+        self.value_display.setFixedSize(width, height - labelheight)
         self.value_display.setFont(QtGui.QFont("SansSerif", 20))
 
         # Layout
@@ -225,12 +220,12 @@ class TabMeasurements(Measurements_Block):
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("P_plateau [cmH2O]", "plateau_pressure", "cycle"),
+            ("P<sub>Plateau</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
             ("RR", "respiratory_rate", "cycle"),
-            ("FIO2 [%]", "fiO2_percent", "cycle"),
+            ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
-            ("MVE [L/min]", "exhaled_minute_volume", "cycle"),
-            ("PEEP [cmH2O]", "peep", "readback"),
+            ("MVE [<sup>L</sup>/<sub>min</sub>]", "exhaled_minute_volume", "cycle"),
+            ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
         ]
 
         super().__init__(

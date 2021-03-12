@@ -107,7 +107,6 @@ class MainView(QWidget):
 class TabNormalExpertButtons(QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        font_size = 20
         button_size = QSize(150, 50)
         self.NativeUI = NativeUI
         layout = QHBoxLayout()
@@ -123,19 +122,19 @@ class TabNormalExpertButtons(QWidget):
         for button in self.buttons:
             button.setStyleSheet(
                 "QPushButton{"
-                "color: " + NativeUI.colors["foreground"].name() + ";"
-                "font-size: " + str(font_size) + "pt;"
-                "background-color: "
+                "   color: " + NativeUI.colors["foreground"].name() + ";"
+                "   font-size: " + NativeUI.text_size + ";"
+                "   background-color: "
                 + NativeUI.colors["background-enabled"].name()
                 + ";"
-                "border-color: " + NativeUI.colors["background"].name() + ";"
-                "border:none"
+                "   border-color: " + NativeUI.colors["background"].name() + ";"
+                "   border:none"
                 "}"
                 "QPushButton:disabled{"
-                "background-color: "
+                "   background-color: "
                 + NativeUI.colors["background-disabled"].name()
                 + ";"
-                "border:none"
+                "   border:none"
                 "}"
             )
             button.setFixedSize(button_size)

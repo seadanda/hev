@@ -75,7 +75,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.manuallyUpdated = False
         layout = QtWidgets.QHBoxLayout()
         widgetList = []
-        textStyle = "color:white; font: 16pt"
+        textStyle = "color:white;" "font-size: " + NativeUI.text_size + ";"
 
         if self.label != "":
             self.nameLabel = QtWidgets.QLabel(self.label)
@@ -88,14 +88,30 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.setSingleStep(self.step)
         self.simpleSpin.setDecimals(self.decPlaces)
         self.simpleSpin.setStyleSheet(
-            """QDoubleSpinBox{ width:100px; font:16pt}
-            QDoubleSpinBox[bgColour="0"]{background-color:white; }
-            QDoubleSpinBox[bgColour="1"]{background-color:grey; }
-                                        QDoubleSpinBox[textColour="0"]{color:black}
-                                        QDoubleSpinBox[textColour="1"]{color:red}
-                                        QDoubleSpinBox::up-button{width:20; border:solid white; color:black }
-                                        QDoubleSpinBox::down-button{width:20; }
-                                        """
+            "QDoubleSpinBox{"
+            "   width: 100px"
+            "   font-size: " + NativeUI.text_size + ";"
+            "}"
+            "QDoubleSpinBox[bgColour='0']{"
+            "   background-color:white;"
+            "}"
+            "QDoubleSpinBox[bgColour='1']{"
+            "   background-color:grey;"
+            "}"
+            "QDoubleSpinBox[textColour='0']{"
+            "   color:black"
+            "}"
+            "QDoubleSpinBox[textColour='1']{"
+            "   color:red"
+            "}"
+            "QDoubleSpinBox::up-button{"
+            "   width:20;"
+            "   border:solid white;"
+            "   color:black"
+            "}"
+            "QDoubleSpinBox::down-button{"
+            "   width:20;"
+            "}"
         )
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.setProperty("bgColour", "0")

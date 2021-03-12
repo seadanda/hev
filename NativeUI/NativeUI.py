@@ -64,6 +64,7 @@ class NativeUI(HEVClient, QMainWindow):
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
         }
+        self.text_size = "20pt"
         self.iconpath = self.__find_icons()
 
         # database
@@ -413,7 +414,7 @@ if __name__ == "__main__":
         dep.setGeometry(0, 0, 1920, 1080)
         dep.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     elif args.debug > 0:
-        rescale = 0.7
+        rescale = 1
         dep.setGeometry(0, 0, rescale * 1920, rescale * 1080)
 
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)

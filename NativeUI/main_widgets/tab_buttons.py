@@ -31,9 +31,11 @@ class customButton(QtWidgets.QPushButton):
         super().__init__()
         # self.setIcon(icon)
         self.setStyleSheet(
-            "border:none; background-image:url('"
-            + iconPath
-            + "');height:100px;width:100px"
+            "border:none;"
+            "background-image:url('" + iconPath + "');"
+            "font-size: " + self.NativeUI.text_size + ";"
+            "height:100px;"
+            "width:100px;"
         )
 
 

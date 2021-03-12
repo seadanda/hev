@@ -98,7 +98,7 @@ class TemplateSetValues(QtWidgets.QWidget):
             self.titleLabel.setStyleSheet(
                 "background-color:" + self.NativeUI.colors["background"].name() + ";"
                 "color:" + self.NativeUI.colors["foreground"].name() + ";"
-                "font: 20pt;"
+                "font-size: " + self.NativeUI.text_size + ";"
             )
             self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
             grid.addWidget(self.titleLabel, i, 0, 1, 6)

@@ -27,7 +27,9 @@ class alarmList(QtWidgets.QWidget):
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
-        self.setStyleSheet("background-color:white; font:15pt white;")
+        self.setStyleSheet(
+            "background-color:white;" "font-size: " + NativeUI.text_size + ";"
+        )
 
         iconpath_bell = os.path.join(NativeUI.iconpath, "bell-solid.png")
         iconpath_bellReg = os.path.join(NativeUI.iconpath, "bell-regular.png")

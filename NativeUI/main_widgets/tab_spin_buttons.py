@@ -39,9 +39,11 @@ class SpinButton(QtWidgets.QFrame):
 
         labelBgColour = "rgb(60,58,60)"
         self.label.setStyleSheet(
-            "font: 16pt; color:white; background-color:"
-            + labelBgColour
-            + "; border-radius:4px; border: 2px solid white "
+            "font-size: " + NativeUI.text_size + ";"
+            "color:white;"
+            "background-color:" + labelBgColour + ";"
+            "border-radius:4px;"
+            "border: 2px solid white"
         )
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(self.label)
@@ -53,27 +55,25 @@ class SpinButton(QtWidgets.QFrame):
         # )  # override is defined in 'eventFilter'. ensures lineEdit responds to double mouse click
         self.doubleSpin.lineEdit().setStyleSheet("border:blue;")
 
-        boxStyleString = """QDoubleSpinBox{
-                        border:none;
-                        background-color: black;
-                        font: 16pt large 'Times New Roman';
-                        height:60px;
-                        }
-                        QDoubleSpinBox[colour="0"] {
-                            color:green;
-                        }
-                        QDoubleSpinBox[colour="1"] {
-                            color:rgb(144,231,211);
-                        }
-                        QDoubleSpinBox[colour="2"] {
-                            color:red;
-                        }
-                        """
+        boxStyleString = (
+            "QDoubleSpinBox{"
+            "   border:none;"
+            "   background-color: black;"
+            "   font: " + NativeUI.text_size + " large 'Times New Roman';"
+            "   height: 60px;"
+            "}"
+            "QDoubleSpinBox[colour='0'] {"
+            "   color:green;"
+            "}"
+            "QDoubleSpinBox[colour='1'] {"
+            "   color:rgb(144,231,211);"
+            "}"
+            "QDoubleSpinBox[colour='2'] {"
+            "    color:red;"
+            "}"
+        )
 
-        upButtonStyleString = """QDoubleSpinBox::up-button{
-             height:30;
-             width:40;
-             }    """
+        upButtonStyleString = "QDoubleSpinBox::up-button{" "height:30;" "width:40;" "}"
 
         # upButtonPressedStyleString = (
         #    "QDoubleSpinBox::up-button:pressed{ border:orange;}"
