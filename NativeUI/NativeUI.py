@@ -74,9 +74,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.text_size = "20pt"
         self.PID_I_plot_scale = 3
         self.text = {
-            "plot_axis_label_pressure": "Pressure [UNITS]",
-            "plot_axis_label_flow": "Flow [UNITS]",
-            "plot_axis_label_volume": "Volume [UNITS/10<sup>"
+            "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
+            "plot_axis_label_flow": "Flow [L/min]",
+            "plot_axis_label_volume": "Volume [mL/10<sup>"
             + str(self.PID_I_plot_scale)
             + "</sup>]",
             "plot_axis_label_time": "Time [s]",
