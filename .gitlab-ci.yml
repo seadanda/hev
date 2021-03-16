@@ -7,9 +7,9 @@ install_packages:
   script:
     - apt -y update
     - apt -y upgrade
+    - apt -y install python3.7
     - apt -y install software-properties-common
     - apt -y install python3-pip
-    - alias python=python3
-    - python --version
+    - python3 --version
     - pip install ansible
 
