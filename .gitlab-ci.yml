@@ -8,6 +8,6 @@ install_packages:
     - apt -y update
     - apt -y upgrade
     - apt -y install software-properties-common
-    - python --version
+    - python3 --version
     - pip3 install ansible
 
