@@ -18,6 +18,8 @@ install_packages:
 ui_installation:
   stage: build
   script:
+    - pwd
+    - ls -a
     - ./setup.sh local
 
 ui_test:
