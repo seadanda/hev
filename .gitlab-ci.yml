@@ -1,15 +1,17 @@
 stages:
+  - install
   - build
   - test
 
 install_packages:
-  stage: build
+  stage: install
   script:
     - apt -y update
     - apt -y upgrade
     - apt -y install python3.7
     - apt -y install software-properties-common
     - apt -y install python3-pip
+    - apt -y install git-all
     - python3 --version
     - pip3 install ansible
 
