@@ -58,6 +58,8 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
+        PID_I_plot_scale = 3
+
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
@@ -72,12 +74,11 @@ class NativeUI(HEVClient, QMainWindow):
             "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
         }
         self.text_size = "20pt"
-        self.PID_I_plot_scale = 3
         self.text = {
             "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
             "plot_axis_label_flow": "Flow [L/min]",
             "plot_axis_label_volume": "Volume [mL/10<sup>"
-            + str(self.PID_I_plot_scale)
+            + str(PID_I_plot_scale)
             + "</sup>]",
             "plot_axis_label_time": "Time [s]",
             "plot_line_label_pressure": "Airway Pressure",
@@ -102,7 +103,7 @@ class NativeUI(HEVClient, QMainWindow):
             "pressure": list(0 for _ in range(plot_history_length)),
             "flow": list(0 for _ in range(plot_history_length)),
             "volume": list(0 for _ in range(plot_history_length)),
-            "PID_I_scale": 3,
+            "PID_I_scale": PID_I_plot_scale,
             "pressure_axis_range": [0, 20],
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
