@@ -52,8 +52,9 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
                 + NativeUI.colors["background-enabled"].name()
                 + ";"
                 "border-color: " + NativeUI.colors["foreground"].name() + ";"
-                "font-size: 20pt;"
-                "color: " + NativeUI.colors["foreground"].name() + ";" + "border:none"
+                "font-size: " + NativeUI.text_size + ";"
+                "color: " + NativeUI.colors["foreground"].name() + ";"
+                "border:none"
             )
             button.setFixedSize(self.__button_size)
 
