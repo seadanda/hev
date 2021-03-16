@@ -16,5 +16,9 @@ install_packages:
 ui_installation:
   stage: build
   script:
-    - git checkout ui_dev
-    - ./setup.sh
+    - ./setup.sh local
+
+ui_test:
+  stage: test
+  script:
+    - echo "Tests will be here."
