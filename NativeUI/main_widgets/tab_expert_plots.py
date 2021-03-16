@@ -28,14 +28,6 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.time_range = 30
         self.port = port
 
-        self.timestamp = list(el * (-1) for el in range(self.history_length))[::-1]
-        self.PID_P = list(0 for _ in range(self.history_length))
-        self.PID_I = list(0 for _ in range(self.history_length))
-        self.PID_D = list(0 for _ in range(self.history_length))
-
-        # Scaling for plot axes (helpful for keeping left axis lined up)
-        self.__PID_I_scale = NativeUI.PID_I_plot_scale
-
         #
         layout = QtWidgets.QHBoxLayout()
         self.left_graph_widget = pg.GraphicsLayoutWidget()
@@ -117,43 +109,43 @@ class TabExpertPlots(QtWidgets.QWidget):
         # Plot styles
         self.pressure_line = self.plot(
             self.pressure_plot,
-            self.timestamp,
-            self.PID_P,
+            [0, 0],
+            [0, 0],
             NativeUI.text["plot_line_label_pressure"],
             NativeUI.colors["pressure_plot"].name(),
         )
         self.flow_line = self.plot(
             self.flow_plot,
-            self.timestamp,
-            self.PID_D,
+            [0, 0],
+            [0, 0],
             NativeUI.text["plot_line_label_flow"],
             NativeUI.colors["flow_plot"].name(),
         )
         self.volume_line = self.plot(
             self.volume_plot,
-            self.timestamp,
-            self.PID_I,
+            [0, 0],
+            [0, 0],
             NativeUI.text["plot_line_label_volume"],
             NativeUI.colors["volume_plot"].name(),
         )
         self.pressure_flow_line = self.plot(
             self.pressure_flow_plot,
-            self.PID_P,
-            self.PID_I,
+            [0, 0],
+            [0, 0],
             NativeUI.text["plot_line_label_pressure_flow"],
             NativeUI.colors["pressure_flow_plot"].name(),
         )
         self.flow_volume_line = self.plot(
             self.flow_volume_plot,
-            self.PID_D,
-            self.PID_I,
+            [0, 0],
+            [0, 0],
             NativeUI.text["plot_line_label_flow_volume"],
             NativeUI.colors["flow_volume_plot"].name(),
         )
         self.volume_pressure_line = self.plot(
             self.volume_pressure_plot,
-            self.PID_P,
-            self.PID_D,
+            [0, 0],
+            [0, 0],
             NativeUI.text["plot_line_label_volume_pressure"],
             NativeUI.colors["volume_pressure_plot"].name(),
         )
@@ -167,65 +159,37 @@ class TabExpertPlots(QtWidgets.QWidget):
 
         # Set Ranges
         self.update_plot_time_range(60)
-        self.__update_ranges()
+        self.update_plot_data()
 
     def plot(self, canvas, x, y, plotname, color):
         pen = pg.mkPen(color=color, width=3)
         return canvas.plot(x, y, name=plotname, pen=pen)
 
     def update_plot_data(self):
-        # subtract latest timestamp and scale to seconds
+        """
+        Get the current plots database and update the plots to match
+        """
         plots = self.NativeUI.get_plots_db()
-        timestamp = np.true_divide(np.subtract(plots[:, 0], plots[-1, 0]), 1000)
-        pressure = plots[:, 1]
-        flow = plots[:, 2]
-        volume = [v / (10 ** self.__PID_I_scale) for v in plots[:, 3]]
 
-        # Check whether data exceeds limits
-        update_ranges = False
-        if max(pressure) > self.NativeUI.plots["plot_axis_range_pressure"][1]:
-            self.NativeUI.plots["plot_axis_range_pressure"][1] = max(pressure)
-            update_ranges = True
-        if min(flow) < self.NativeUI.plots["plot_axis_range_flow"][0]:
-            self.NativeUI.plots["plot_axis_range_flow"][0] = min(flow)
-            update_ranges = True
-        if max(flow) > self.NativeUI.plots["plot_axis_range_flow"][1]:
-            self.NativeUI.plots["plot_axis_range_flow"][1] = max(flow)
-            update_ranges = True
-        if max(volume) > self.NativeUI.plots["plot_axis_range_volume"][1]:
-            self.NativeUI.plots["plot_axis_range_volume"][1] = max(volume)
-            update_ranges = True
-        if update_ranges:
-            self.__update_ranges()
+        # Extend the non-time scales if we need to
+        self.pressure_plot.setYRange(*plots["pressure_axis_range"])
+        self.flow_plot.setYRange(*plots["flow_axis_range"])
+        self.volume_plot.setYRange(*plots["volume_axis_range"])
+        self.pressure_flow_plot.setXRange(*plots["flow_axis_range"])
+        self.pressure_flow_plot.setYRange(*plots["pressure_axis_range"])
+        self.flow_volume_plot.setXRange(*plots["volume_axis_range"])
+        self.flow_volume_plot.setYRange(*plots["flow_axis_range"])
+        self.volume_pressure_plot.setXRange(*plots["pressure_axis_range"])
+        self.volume_pressure_plot.setYRange(*plots["volume_axis_range"])
 
-        self.pressure_line.setData(timestamp, pressure)
-        self.flow_line.setData(timestamp, flow)
-        self.volume_line.setData(timestamp, volume)
-        self.pressure_flow_line.setData(flow, pressure)
-        self.flow_volume_line.setData(volume, flow)
-        self.volume_pressure_line.setData(pressure, volume)
+        # Replot lines with new data
+        self.pressure_line.setData(plots["timestamp"], plots["pressure"])
+        self.flow_line.setData(plots["timestamp"], plots["flow"])
+        self.volume_line.setData(plots["timestamp"], plots["volume"])
+        self.pressure_flow_line.setData(plots["flow"], plots["pressure"])
+        self.flow_volume_line.setData(plots["volume"], plots["flow"])
+        self.volume_pressure_line.setData(plots["pressure"], plots["volume"])
 
-    def __update_ranges(self):
-        self.pressure_plot.setYRange(*self.NativeUI.plots["plot_axis_range_pressure"])
-
-        self.flow_plot.setYRange(*self.NativeUI.plots["plot_axis_range_flow"])
-
-        self.volume_plot.setYRange(*self.NativeUI.plots["plot_axis_range_volume"])
-
-        self.pressure_flow_plot.setXRange(*self.NativeUI.plots["plot_axis_range_flow"])
-        self.pressure_flow_plot.setYRange(
-            *self.NativeUI.plots["plot_axis_range_pressure"]
-        )
-
-        self.flow_volume_plot.setXRange(*self.NativeUI.plots["plot_axis_range_volume"])
-        self.flow_volume_plot.setYRange(*self.NativeUI.plots["plot_axis_range_flow"])
-
-        self.volume_pressure_plot.setXRange(
-            *self.NativeUI.plots["plot_axis_range_pressure"]
-        )
-        self.volume_pressure_plot.setYRange(
-            *self.NativeUI.plots["plot_axis_range_volume"]
-        )
         return 0
 
     @QtCore.Slot()

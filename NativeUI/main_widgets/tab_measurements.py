@@ -48,6 +48,12 @@ class Measurements_Block(QtWidgets.QWidget):
                 widget_list.append(
                     ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
                 )
+            elif (
+                measurement[2] is None
+            ):  # Create a placeholder widget for testing & dev
+                widget_list.append(
+                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
+                )
             else:
                 raise AttributeError(
                     "measurement type %s is not a recognised parameter" % measurement[2]
@@ -142,7 +148,7 @@ class MeasurementWidget(QtWidgets.QWidget):
             "font-size: " + NativeUI.text_size + ";"
         )
         self.name_display.setFixedSize(width, labelheight)
-        self.name_display.setFont(QtGui.QFont("SansSerif", 10))
+        # self.name_display.setFont(QtGui.QFont("SansSerif", 10))
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
@@ -151,7 +157,7 @@ class MeasurementWidget(QtWidgets.QWidget):
             "border: none;"
         )
         self.value_display.setFixedSize(width, height - labelheight)
-        self.value_display.setFont(QtGui.QFont("SansSerif", 20))
+        self.value_display.setFont(QtGui.QFont("SansSerif", 40))
 
         # Layout
         layout.setSpacing(0)
@@ -220,7 +226,7 @@ class TabMeasurements(Measurements_Block):
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("P<sub>Plateau</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
+            ("P<sub>PLATEAU</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
             ("RR", "respiratory_rate", "cycle"),
             ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
@@ -242,14 +248,24 @@ class TabExpertMeasurements(Measurements_Block):
     TODO: update the measurements list.
     """
 
+    # TODO: check that these are correct
+
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("P_plateau [cmH2O]", "plateau_pressure", "cycle"),
-            ("RR", "respiratory_rate", "cycle"),
-            ("FIO2 [%]", "fiO2_percent", "cycle"),
+            ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
+            ("I:E", "inhale_exhale_ratio", "readback"),
+            (
+                "P<sub>PEAK</sub> [cmH<sub>2</sub>O]",
+                "peak_inspiratory_pressure",
+                "cycle",
+            ),
+            ("P<sub>PLATEAU</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
+            ("P<sub>MEAN</sub> [cmH<sub>2</sub>O]", "mean_airway_pressure", "cycle"),
+            ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
+            ("VTI [mL]", "inhaled_tidal_volume", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
+            ("MVI [L/min]", "inhaled_minute_volume", "cycle"),
             ("MVE [L/min]", "exhaled_minute_volume", "cycle"),
-            ("PEEP [cmH2O]", "peep", "readback"),
         ]
 
         super().__init__(
