@@ -13,3 +13,8 @@ install_packages:
     - python3 --version
     - pip3 install ansible
 
+ui_installation:
+  stage: build
+  script:
+    - git checkout ui_dev
+    - ./setup.sh
