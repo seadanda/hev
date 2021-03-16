@@ -2,17 +2,12 @@ stages:
   - build
   - test
 
-build-job:
+install_packages:
   stage: build
-  script:
-    - ls
-    - cat /etc/os-release
-
-build-job1:
-  stage: test
   script:
     - apt -y update
     - apt -y upgrade
     - apt -y install software-properties-common
-    - apt -y install python3
+    - python --version
+    - pip3 install ansible
 
