@@ -50,23 +50,35 @@ function create_hostsfile {
     fi
 }
 
-# Get the pi / vm ip address from user
-if [[ -f $hostsfile ]]; then
-    # Check if hosts file already exists
-    echo -e "${YELLOW}$hostsfile${NC} already exists, override and create a new hosts file? [y/n]"
-    read -r yn
-    case $yn in
-        [Yy]* )
-                create_hostsfile;;
-        [Nn]* ) if [[ $(sed -n 2p ansible/playbooks/hosts) == *"localhost"* ]]; then
-                    local=True
-                else
-                    ipaddr=$(sed -n 2p ansible/playbooks/hosts) # copy IP address in hosts file to variable ipaddr
-                fi;;
-        * ) echo "Please answer yes or no."; exit 1;;
-    esac
+# Check if local flag has been used
+cli_flag1=$1
+
+if [[ $cli_flag1 == 'local' ]]; then
+    cp -rp ansible/playbooks/hosts.local $hostsfile
+    local=True
+    echo "Installing locally at $repo_location."
+elif [[ $cli_flag1 == '' ]]; then
+    # Get the pi / vm ip address from user
+    if [[ -f $hostsfile ]]; then
+        # Check if hosts file already exists
+        echo -e "${YELLOW}$hostsfile${NC} already exists, override and create a new hosts file? [y/n]"
+        read -r yn
+        case $yn in
+            [Yy]* )
+                    create_hostsfile;;
+            [Nn]* ) if [[ $(sed -n 2p ansible/playbooks/hosts) == *"localhost"* ]]; then
+                        local=True
+                    else
+                        ipaddr=$(sed -n 2p ansible/playbooks/hosts) # copy IP address in hosts file to variable ipaddr
+                    fi;;
+            * ) echo "Please answer yes or no."; exit 1;;
+        esac
+    else
+        create_hostsfile
+    fi
 else
-    create_hostsfile
+    echo "ERROR: Only CLI input accepted is 'local' for local installation."
+    exit 1
 fi
 
 # Run ansible playbooks for both local and remote
