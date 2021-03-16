@@ -34,6 +34,7 @@ class okButton(
             "background-color: " + NativeUI.colors["foreground"].name() + ";"
             "color: " + NativeUI.colors["background"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "font-size: " + NativeUI.text_size + ";"
             "border-radius: 8px;"
             "border:none"
         )
@@ -60,6 +61,7 @@ class cancelButton(
             "background-color: " + NativeUI.colors["foreground"].name() + ";"
             "color: " + NativeUI.colors["background"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "font-size: " + NativeUI.text_size + ";"
             "border-radius: 8px;"
             "border:none"
         )

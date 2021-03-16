@@ -17,6 +17,7 @@ import logging
 import sys
 import os
 from PySide2 import QtCore
+from PySide2 import QtGui
 
 import numpy as np
 
@@ -57,27 +58,60 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
-        self.colors = {
+        PID_I_plot_scale = 3
+
+        self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
             "background-enabled": QColor.fromRgb(50, 50, 50),
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
+            "pressure_plot": QColor.fromRgb(0, 114, 178),
+            "volume_plot": QColor.fromRgb(0, 158, 115),
+            "flow_plot": QColor.fromRgb(240, 228, 66),
+            "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
+            "flow_volume_plot": QColor.fromRgb(204, 121, 167),
+            "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
+        }
+        self.text_size = "20pt"
+        self.text = {
+            "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
+            "plot_axis_label_flow": "Flow [L/min]",
+            "plot_axis_label_volume": "Volume [mL/10<sup>"
+            + str(PID_I_plot_scale)
+            + "</sup>]",
+            "plot_axis_label_time": "Time [s]",
+            "plot_line_label_pressure": "Airway Pressure",
+            "plot_line_label_flow": "Flow",
+            "plot_line_label_volume": "Volume",
+            "plot_line_label_pressure_flow": "Airway Pressure - Flow",
+            "plot_line_label_flow_volume": "Flow - Volume",
+            "plot_line_label_volume_pressure": "Volume - Airway Pressure",
         }
         self.iconpath = self.__find_icons()
 
-        # database
+        # initialise databases
+        plot_history_length = 500
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
         self.__cycle = {}
         self.__battery = {}
-        self.__plots = np.zeros((500, 5))
-        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
+        self.__plots = {
+            "data": np.zeros((plot_history_length, 5)),
+            "timestamp": list(el * (-1) for el in range(plot_history_length))[::-1],
+            "pressure": list(0 for _ in range(plot_history_length)),
+            "flow": list(0 for _ in range(plot_history_length)),
+            "volume": list(0 for _ in range(plot_history_length)),
+            "PID_I_scale": PID_I_plot_scale,
+            "pressure_axis_range": [0, 20],
+            "flow_axis_range": [-40, 80],
+            "volume_axis_range": [0, 80],
+        }
+        self.__plots["data"][:, 0] = np.arange(500)  # fill timestamp with 0-499
         self.__alarms = []
         self.__targets = {}
         self.__personal = {}
-
         self.ongoingAlarms = {}
 
         # bars
@@ -265,8 +299,8 @@ class NativeUI(HEVClient, QMainWindow):
         """
         logging.debug("setting plots db")
         with self.db_lock:
-            self.__plots = np.append(
-                np.delete(self.__plots, 0, 0),
+            self.__plots["data"] = np.append(
+                np.delete(self.__plots["data"], 0, 0),
                 [
                     [
                         payload["timestamp"],
@@ -278,6 +312,31 @@ class NativeUI(HEVClient, QMainWindow):
                 ],
                 axis=0,
             )
+
+            # subtract latest timestamp and scale to seconds
+            self.__plots["timestamp"] = np.true_divide(
+                np.subtract(self.__plots["data"][:, 0], self.__plots["data"][-1, 0]),
+                1000,
+            )
+
+            self.__plots["pressure"] = self.__plots["data"][:, 1]
+            self.__plots["flow"] = self.__plots["data"][:, 2]
+            self.__plots["volume"] = [
+                v / (10 ** self.__plots["PID_I_scale"])
+                for v in self.__plots["data"][:, 3]
+            ]
+
+            self.__update_plot_ranges()
+        return 0
+
+    def __update_plot_ranges(self):
+        values = ["pressure", "flow", "volume"]
+        for value in values:
+            range = "%s_axis_range" % value
+            self.__plots[range] = [
+                min(self.__plots[range][0], min(self.__plots[value])),
+                max(self.__plots[range][1], max(self.__plots[value])),
+            ]
         return 0
 
     def set_alarms_db(self, payload):
@@ -413,7 +472,7 @@ if __name__ == "__main__":
         dep.setGeometry(0, 0, 1920, 1080)
         dep.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     elif args.debug > 0:
-        rescale = 0.7
+        rescale = 1
         dep.setGeometry(0, 0, rescale * 1920, rescale * 1080)
 
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)

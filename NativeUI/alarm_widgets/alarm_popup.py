@@ -40,6 +40,7 @@ class alarmWidget(QtWidgets.QWidget):
         textLabel.setText(self.alarmPayload["alarm_code"])
         textLabel.setFixedWidth(150)
         textLabel.setAlignment(QtCore.Qt.AlignCenter)
+        textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
         self.layout.addWidget(textLabel)
 
         self.setFixedHeight(40)
