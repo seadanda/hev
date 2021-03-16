@@ -27,7 +27,6 @@ class TabPlots(QtWidgets.QWidget):
         super(TabPlots, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.history_length = 500
         self.time_range = 30
         self.port = port
 
@@ -69,7 +68,7 @@ class TabPlots(QtWidgets.QWidget):
             l.setLabelTextSize(self.NativeUI.text_size)
 
         # Set Range
-        self.update_plot_time_range(60)
+        self.update_plot_time_range(61)
 
         # Plot styles
         self.pressure_line = self.plot(

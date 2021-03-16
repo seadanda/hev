@@ -24,7 +24,6 @@ class TabExpertPlots(QtWidgets.QWidget):
         super().__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.history_length = 500
         self.time_range = 30
         self.port = port
 
@@ -158,7 +157,7 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.timer.start()
 
         # Set Ranges
-        self.update_plot_time_range(60)
+        self.update_plot_time_range(61)
         self.update_plot_data()
 
     def plot(self, canvas, x, y, plotname, color):

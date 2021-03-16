@@ -34,8 +34,8 @@ class TabHistoryButtons(QtWidgets.QWidget):
         button_size = 60
         self.__button_size = QSize(button_size, button_size)
 
-        self.button_sixty = HistoryButton("60s", signal_value=60)
-        self.button_thirty = HistoryButton("30s", signal_value=30)
+        self.button_sixty = HistoryButton("60s", signal_value=61)
+        self.button_thirty = HistoryButton("30s", signal_value=31)
         self.button_fifteen = HistoryButton("15s", signal_value=15)
         self.button_five = HistoryButton("5s", signal_value=5)
         self.buttons = [
