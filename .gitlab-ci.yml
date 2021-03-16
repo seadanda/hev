@@ -20,7 +20,7 @@ ui_installation:
   script:
     - pwd
     - ls -a
-    - ./setup.sh local
+    - ./setup.sh CI
 
 ui_test:
   stage: test
