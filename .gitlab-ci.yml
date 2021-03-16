@@ -14,12 +14,14 @@ install_packages:
     - apt -y install git-all
     - python3 --version
     - pip3 install ansible
+    - ansible --version
 
 ui_installation:
   stage: build
   script:
     - pwd
     - ls -a
+    - ansible --version
     - ./setup.sh CI
 
 ui_test:
