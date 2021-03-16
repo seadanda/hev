@@ -11,8 +11,8 @@ build-job:
 build-job1:
   stage: test
   script:
-    - apt-get update
-    - apt-get upgrade
-    - apt-get install software-properties-common
-    - apt install python3
+    - apt -y update
+    - apt -y upgrade
+    - apt -y install software-properties-common
+    - apt -y install python3
 
