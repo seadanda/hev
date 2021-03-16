@@ -13,7 +13,5 @@ build-job1:
   script:
     - apt update
     - apt upgrade
-    - update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
-    - update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2
-    - pip3 install ansible
+    - python --version
 
