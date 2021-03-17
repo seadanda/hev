@@ -44,13 +44,13 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_mainview = QtWidgets.QPushButton("")
         self.button_alarms = QtWidgets.QPushButton("")
         self.button_fancon = QtWidgets.QPushButton("")
-        self.button_cntrls = QtWidgets.QPushButton("")
+        self.button_settings = QtWidgets.QPushButton("")
 
         self.__buttons = [
             self.button_mainview,
             self.button_alarms,
             self.button_fancon,
-            self.button_cntrls,
+            self.button_settings,
         ]
         self.__icons = [
             "user-md-solid",
@@ -97,7 +97,7 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_mainview.pressed.connect(self.mainview_pressed)
         self.button_alarms.pressed.connect(self.alarms_pressed)
         self.button_fancon.pressed.connect(self.fancon_pressed)
-        self.button_cntrls.pressed.connect(self.cntrls_pressed)
+        self.button_settings.pressed.connect(self.settings_pressed)
 
     def mainview_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.main_view)
@@ -105,11 +105,11 @@ class TabPageButtons(QtWidgets.QWidget):
             button.setEnabled(True)
         self.button_mainview.setEnabled(False)
 
-    def cntrls_pressed(self):
+    def settings_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.settings_view)
         for button in self.__buttons:
             button.setEnabled(True)
-        self.button_cntrls.setEnabled(False)
+        self.button_settings.setEnabled(False)
 
     def alarms_pressed(self):
         self.NativeUI.stack.setCurrentWidget(self.NativeUI.alarms_view)
