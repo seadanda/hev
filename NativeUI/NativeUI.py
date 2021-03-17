@@ -17,6 +17,7 @@ __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
 import argparse
+import git
 import logging
 import sys
 import os
@@ -424,31 +425,22 @@ class NativeUI(HEVClient, QMainWindow):
         """send personal details to hevserver"""
         self.send_personal(personal=personal)
 
-    def __find_icons(self):
+    def __find_icons(self) -> str:
         """
         Locate the icons firectory and return its path.
-        TODO: set root of git repo as variable - git commands to find root, go relative to that?
-        TODO: import logic?
+
+        Assumes that the cwd is in a git repo, and that the path of the icons folder
+        relative to the root of the repo is "hev-display/assets/png/".
         """
-        iconext = "png"
-        initial_path = os.path.join("hev-display/assets/", iconext)
-        # assume we're in the root directory
-        temp_path = os.path.join(os.getcwd(), initial_path)
-        if os.path.isdir(temp_path):
-            return temp_path
+        # Find the root of the git repo
+        rootdir = git.Repo(os.getcwd(), search_parent_directories=True).git.rev_parse(
+            "--show-toplevel"
+        )
+        icondir = os.path.join(rootdir, "hev-display", "assets", "png")
+        if not os.path.isdir(icondir):
+            raise FileNotFoundError("Could not find icon directory at %s" % icondir)
 
-        # assume we're one folder deep in the root directory
-        temp_path = os.path.join("..", temp_path)
-        if os.path.isdir(temp_path):
-            return temp_path
-
-        walk = os.walk(os.path.join(os.getcwd(), ".."))
-        for w in walk:
-            if iconext in w[1]:
-                temp_path = os.path.join(os.path.normpath(w[0]), iconext)
-                return temp_path
-
-        raise Exception(FileNotFoundError, "could not locate %s icon files" % iconext)
+        return icondir
 
 
 # from PySide2.QtQml import QQmlApplicationEngine
