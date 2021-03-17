@@ -149,7 +149,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.setCentralWidget(self.centralWidget)
 
         self.statusBar().showMessage("Waiting for data")
-        self.statusBar().setStyleSheet("color: white")
+        self.statusBar().setStyleSheet("color:" + self.colors["foreground"].name())
 
         # Appearance
         palette = self.palette()
@@ -361,7 +361,10 @@ class NativeUI(HEVClient, QMainWindow):
         return 0
 
     def start_client(self):
-        """runs in other thread - works as long as super goes last and nothing
+        """
+        Poll the microcontroller for current settings information.
+
+        runs in other thread - works as long as super goes last and nothing
         else is blocking. If something more than a one-shot process is needed
         then use async
         """
@@ -375,7 +378,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_cmd("GENERAL", "GET_PERSONAL")
         super().start_client()
 
-    def get_updates(self, payload):
+    def get_updates(self, payload: dict):
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
@@ -395,7 +398,6 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
                 self.set_personal_db(payload["PERSONAL"])
-
             if payload["type"] == "CYCLE":
                 self.set_cycle_db(payload["CYCLE"])
         except KeyError:
@@ -421,6 +423,8 @@ class NativeUI(HEVClient, QMainWindow):
     def __find_icons(self):
         """
         Locate the icons firectory and return its path.
+        TODO: set root of git repo as variable - git commands to find root, go relative to that?
+        TODO: import logic?
         """
         iconext = "png"
         initial_path = os.path.join("hev-display/assets/", iconext)
@@ -436,7 +440,7 @@ class NativeUI(HEVClient, QMainWindow):
 
         walk = os.walk(os.path.join(os.getcwd(), ".."))
         for w in walk:
-            if "svg" in w[1]:
+            if iconext in w[1]:
                 temp_path = os.path.join(os.path.normpath(w[0]), iconext)
                 return temp_path
 
@@ -453,6 +457,13 @@ if __name__ == "__main__":
     parser.add_argument(
         "-d", "--debug", action="count", default=0, help="Show debug output"
     )
+    parser.add_argument(
+        "-w",
+        "--windowed",
+        action="store_true",
+        default=False,
+        help="Run the UI in wondowed mode",
+    )
 
     args = parser.parse_args()
     if args.debug == 0:
@@ -467,13 +478,13 @@ if __name__ == "__main__":
     # engine = QQmlApplicationEngine()
     # engine.load(QUrl('hev-display/assets/Cell.qml'))
     dep = NativeUI()
-    if args.debug == 0:
+    if args.windowed:
+        rescale = 0.7
+        dep.setGeometry(0, 0, rescale * 1920, rescale * 1080)
+    else:
         dep.setFixedSize(1920, 1080)
         dep.setGeometry(0, 0, 1920, 1080)
         dep.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-    elif args.debug > 0:
-        rescale = 1
-        dep.setGeometry(0, 0, rescale * 1920, rescale * 1080)
 
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
 
