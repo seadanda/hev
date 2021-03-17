@@ -14,7 +14,9 @@ install_packages:
     - python3 --version
     - pip3 install ansible
     - ansible --version
-    - ./setup CI
+    - ls
+    - pwd
+    - ./setup.sh CI
 
 ui_installation:
   stage: build
