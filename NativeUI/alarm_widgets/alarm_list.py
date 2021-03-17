@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+alarm_list.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 import sys
 import os
 from PySide2 import QtCore, QtGui, QtWidgets
@@ -13,7 +27,9 @@ class alarmList(QtWidgets.QWidget):
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
-        self.setStyleSheet("background-color:white; font:15pt white;")
+        self.setStyleSheet(
+            "background-color:white;" "font-size: " + NativeUI.text_size + ";"
+        )
 
         iconpath_bell = os.path.join(NativeUI.iconpath, "bell-solid.png")
         iconpath_bellReg = os.path.join(NativeUI.iconpath, "bell-regular.png")
@@ -27,6 +43,7 @@ class alarmList(QtWidgets.QWidget):
         self.alarmList.addItem("alarm the ring")
         self.vlayout.addWidget(self.alarmList)
         self.setLayout(self.vlayout)
+
     #     self.alarmList.itemClicked.connect(self.selected)
 
     # def selected(self):

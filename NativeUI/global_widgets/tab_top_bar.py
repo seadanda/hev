@@ -1,3 +1,19 @@
+#!/usr/bin/env python3
+
+"""
+tab_top_bar.py
+
+Part of NativeUI. Provides the TabTopBar widget.
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from global_widgets.tab_battery import TabBattery
 from global_widgets.tab_personal import TabPersonal
 from global_widgets.tab_modeswitch_button import TabModeswitchButton

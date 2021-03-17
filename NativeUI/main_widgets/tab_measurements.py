@@ -1,34 +1,85 @@
+#!/usr/bin/env python3
+
+"""
+tab_measurements.py
+
+Part of NativeUI. Defines the MeasurementWidget class to display current
+parameters, and constructs the TabMeasurements widget to display the requisite
+MeasurementWidgets.
+
+TODO: Create a second widget constructor that shows the widgets for the expert
+plots page.
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Development"
+
 import logging
 
 from PySide2 import QtCore, QtGui, QtWidgets
 
 
-class TabMeasurements(QtWidgets.QWidget):
+class Measurements_Block(QtWidgets.QWidget):
     """
     Block of widgets displaying various measurement parameters
     """
 
-    def __init__(self, NativeUI, *args, **kwargs):
-        super(TabMeasurements, self).__init__(*args, **kwargs)
+    def __init__(
+        self, NativeUI, *args, measurements: list = None, columns: int = 1, **kwargs
+    ):
 
-        layout = QtWidgets.QVBoxLayout()
+        super(Measurements_Block, self).__init__(*args, **kwargs)
 
-        widget_list = [
-            CycleMeasurementWidget(NativeUI, "P_plateau [cmH2O]", "plateau_pressure"),
-            CycleMeasurementWidget(NativeUI, "RR", "respiratory_rate"),
-            CycleMeasurementWidget(NativeUI, "FIO2 [%]", "fiO2_percent"),
-            CycleMeasurementWidget(NativeUI, "VTE [mL]", "exhaled_tidal_volume"),
-            CycleMeasurementWidget(NativeUI, "MVE [L/min]", "exhaled_minute_volume"),
-            ReadbackMeasurementWidget(NativeUI, "PEEP [cmH2O]", "peep"),
-        ]
+        # layout = QtWidgets.QVBoxLayout()
+        layout = QtWidgets.QGridLayout(self)
 
-        label = QtWidgets.QLabel("Measurements")
-        label.setAlignment(QtCore.Qt.AlignCenter)
-        label.setStyleSheet("color: grey; font-size: 15px")
-        layout.addWidget(label)
+        widget_list = []
+        for measurement in measurements:
+            if measurement[2] == "cycle":
+                widget_list.append(
+                    CycleMeasurementWidget(NativeUI, measurement[0], measurement[1])
+                )
+            elif measurement[2] == "readback":
+                widget_list.append(
+                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
+                )
+            elif (
+                measurement[2] is None
+            ):  # Create a placeholder widget for testing & dev
+                widget_list.append(
+                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
+                )
+            else:
+                raise AttributeError(
+                    "measurement type %s is not a recognised parameter" % measurement[2]
+                )
 
+        # label = QtWidgets.QLabel("Measurements")
+        # label.setAlignment(QtCore.Qt.AlignCenter)
+        # label.setStyleSheet(
+        #     "color: grey;"
+        #     "font-size: " + NativeUI.text_size + ";"
+        # )
+        # layout.addWidget(label)
+
+        # Compute max number of items per column
+        max_col_length = int(len(widget_list) / (columns))
+        if len(widget_list) % (columns) != 0:
+            max_col_length += 1
+
+        i_row = 0
+        i_col = 0
         for widget in widget_list:
-            layout.addWidget(widget)
+            layout.addWidget(widget, i_row, i_col)
+            i_row += 1
+            if i_row == max_col_length:
+                i_row = 0
+                i_col += 1
 
         self.setLayout(layout)
 
@@ -70,10 +121,9 @@ class MeasurementWidget(QtWidgets.QWidget):
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
-        width = 150
-        height = 100
-        labelheight = 25
-        border_radius = 5
+        width = 250
+        height = 120
+        labelheight = 35
 
         self.NativeUI = NativeUI
         self.key = key
@@ -91,30 +141,23 @@ class MeasurementWidget(QtWidgets.QWidget):
         self.name_display.setAlignment(QtCore.Qt.AlignCenter)
         self.name_display.setStyleSheet(
             "color: " + self.NativeUI.colors["foreground"].name() + ";"
-            "background-color: "
-            + self.NativeUI.colors["background-disabled"].name()
+            "background-color:"
+            + self.NativeUI.colors["background-enabled"].name()
             + ";"
-            "border-style: outset;"
-            "border-width: 1px;"
-            "border-color:" + self.NativeUI.colors["foreground"].name() + ";"
-            "border-radius: " + str(border_radius) + "px;"
+            "border: none;"
+            "font-size: " + NativeUI.text_size + ";"
         )
         self.name_display.setFixedSize(width, labelheight)
-        self.name_display.setFont(QtGui.QFont("SansSerif", 10))
+        # self.name_display.setFont(QtGui.QFont("SansSerif", 10))
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
             "color: black;"
-            "background-color: lightblue;"
-            "border-style: outset;"
-            "border-width: 1px;"
-            "border-color: black;"
-            "border-radius: " + str(border_radius) + "px;"
+            "background-color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "border: none;"
         )
-        self.value_display.setFixedSize(
-            width + border_radius, height - labelheight + border_radius
-        )
-        self.value_display.setFont(QtGui.QFont("SansSerif", 20))
+        self.value_display.setFixedSize(width, height - labelheight)
+        self.value_display.setFont(QtGui.QFont("SansSerif", 40))
 
         # Layout
         layout.setSpacing(0)
@@ -129,6 +172,11 @@ class MeasurementWidget(QtWidgets.QWidget):
 
 
 class CycleMeasurementWidget(MeasurementWidget):
+    """
+    Widget to display a measurement in real time whose value is contained in
+    Cycle payloads.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -137,16 +185,21 @@ class CycleMeasurementWidget(MeasurementWidget):
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_cycle_db()
+        data = self.NativeUI.get_db("cycle")
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_cycle_db()[self.key])
+        self.value_display.setNum(self.NativeUI.get_db("cycle")[self.key])
         return 0
 
 
 class ReadbackMeasurementWidget(MeasurementWidget):
+    """
+    Widget to display a measurement in real time whose value is contained in
+    Readback payloads.
+    """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -155,10 +208,66 @@ class ReadbackMeasurementWidget(MeasurementWidget):
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_readback_db()
+        data = self.NativeUI.get_db("readback")
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_readback_db()[self.key])
+        self.value_display.setNum(self.NativeUI.get_db("readback")[self.key])
         return 0
+
+
+class TabMeasurements(Measurements_Block):
+    """
+    Widget to contain the measurements for the standard page. Essentially a
+    wrapper for the Measurements_Block class that specifies the measurements
+    and number of columns.
+    """
+
+    def __init__(self, NativeUI, *args, **kwargs):
+        measurements = [
+            ("P<sub>PLATEAU</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
+            ("RR", "respiratory_rate", "cycle"),
+            ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
+            ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
+            ("MVE [<sup>L</sup>/<sub>min</sub>]", "exhaled_minute_volume", "cycle"),
+            ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
+        ]
+
+        super().__init__(
+            NativeUI, *args, measurements=measurements, columns=1, **kwargs
+        )
+
+
+class TabExpertMeasurements(Measurements_Block):
+    """
+    Widget to contain the measurements for the standard page. Essentially a
+    wrapper for the Measurements_Block class that specifies the measurements
+    and number of columns.
+
+    TODO: update the measurements list.
+    """
+
+    # TODO: check that these are correct
+
+    def __init__(self, NativeUI, *args, **kwargs):
+        measurements = [
+            ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
+            ("I:E", "inhale_exhale_ratio", "readback"),
+            (
+                "P<sub>PEAK</sub> [cmH<sub>2</sub>O]",
+                "peak_inspiratory_pressure",
+                "cycle",
+            ),
+            ("P<sub>PLATEAU</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
+            ("P<sub>MEAN</sub> [cmH<sub>2</sub>O]", "mean_airway_pressure", "cycle"),
+            ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
+            ("VTI [mL]", "inhaled_tidal_volume", "cycle"),
+            ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
+            ("MVI [L/min]", "inhaled_minute_volume", "cycle"),
+            ("MVE [L/min]", "exhaled_minute_volume", "cycle"),
+        ]
+
+        super().__init__(
+            NativeUI, *args, measurements=measurements, columns=2, **kwargs
+        )

@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+tab_hold_buttons.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 import time

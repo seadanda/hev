@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+global_spinbox.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_typeval_popup import TypeValuePopup
 
@@ -75,7 +89,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.manuallyUpdated = False
         layout = QtWidgets.QHBoxLayout()
         widgetList = []
-        textStyle = "color:white; font: 16pt"
+        textStyle = "color:white;" "font-size: " + NativeUI.text_size + ";"
 
         if self.label != "":
             self.nameLabel = QtWidgets.QLabel(self.label)
@@ -88,14 +102,30 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.setSingleStep(self.step)
         self.simpleSpin.setDecimals(self.decPlaces)
         self.simpleSpin.setStyleSheet(
-            """QDoubleSpinBox{ width:100px; font:16pt}
-            QDoubleSpinBox[bgColour="0"]{background-color:white; }
-            QDoubleSpinBox[bgColour="1"]{background-color:grey; }
-                                        QDoubleSpinBox[textColour="0"]{color:black}
-                                        QDoubleSpinBox[textColour="1"]{color:red}
-                                        QDoubleSpinBox::up-button{width:20; border:solid white; color:black }
-                                        QDoubleSpinBox::down-button{width:20; }
-                                        """
+            "QDoubleSpinBox{"
+            "   width: 100px"
+            "   font-size: " + NativeUI.text_size + ";"
+            "}"
+            "QDoubleSpinBox[bgColour='0']{"
+            "   background-color:white;"
+            "}"
+            "QDoubleSpinBox[bgColour='1']{"
+            "   background-color:grey;"
+            "}"
+            "QDoubleSpinBox[textColour='0']{"
+            "   color:black"
+            "}"
+            "QDoubleSpinBox[textColour='1']{"
+            "   color:red"
+            "}"
+            "QDoubleSpinBox::up-button{"
+            "   width:20;"
+            "   border:solid white;"
+            "   color:black"
+            "}"
+            "QDoubleSpinBox::down-button{"
+            "   width:20;"
+            "}"
         )
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.setProperty("bgColour", "0")
@@ -135,8 +165,12 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
+<<<<<<< HEAD
         """update value from _readback database"""
         newVal = self.NativeUI.get_readback_db()
+=======
+        newVal = self.NativeUI.get_db("readback")
+>>>>>>> 1f8b6a54bd7eb2210e264627325cf5099c05d68e
         if newVal == {}:
             a = 1  # do nothing
         else:
@@ -145,8 +179,12 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
+<<<<<<< HEAD
         """update value from _targets database"""
         newVal = self.NativeUI.get_targets_db()
+=======
+        newVal = self.NativeUI.get_db("targets")
+>>>>>>> 1f8b6a54bd7eb2210e264627325cf5099c05d68e
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing
         else:

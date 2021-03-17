@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+alarm_popup.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 import os
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -26,6 +40,7 @@ class alarmWidget(QtWidgets.QWidget):
         textLabel.setText(self.alarmPayload["alarm_code"])
         textLabel.setFixedWidth(150)
         textLabel.setAlignment(QtCore.Qt.AlignCenter)
+        textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
         self.layout.addWidget(textLabel)
 
         self.setFixedHeight(40)

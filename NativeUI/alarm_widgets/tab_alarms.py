@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+tab_alarms.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 import sys
 
 from alarm_widgets.alarm_popup import alarmPopup
@@ -33,7 +47,7 @@ class TabAlarm(QtWidgets.QWidget):
         self.list.acknowledge_all()
 
     def updateAlarms(self):
-        newAlarm = self.NativeUI.get_alarms_db()
+        newAlarm = self.NativeUI.get_db("alarms")
         if newAlarm == []:
             return
         if newAlarm["alarm_code"] in self.popup.alarmDict:
