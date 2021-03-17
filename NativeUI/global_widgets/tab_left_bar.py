@@ -20,7 +20,7 @@ from PySide2 import QtWidgets
 
 class TabLeftBar(QtWidgets.QWidget):
     """
-    TODO
+    TODO: docstring
     """
 
     def __init__(self, NativeUI, *args, **kwargs):
