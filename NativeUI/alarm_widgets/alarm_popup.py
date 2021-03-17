@@ -46,7 +46,7 @@ class alarmWidget(QtWidgets.QWidget):
             if self.alarmPayload["alarm_code"] == alarm["alarm_code"]:
                 return
         self.alarmCarrier.alarmDict.pop(self.alarmPayload["alarm_code"])
-        self.setParent(None)
+        self.setParent(None) # delete self
 
 
 class alarmPopup(QtWidgets.QDialog):

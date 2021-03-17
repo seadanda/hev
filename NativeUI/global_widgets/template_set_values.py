@@ -187,7 +187,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         if self.liveUpdating:
             for widget in self.spinDict:
                 if self.packet == "target":
-                    self.spinDict[widget].update_targets_value()
+                    self.spinDict[widget].update_targets_value() # pass database
                 elif self.packet == "readback":
                     self.spinDict[widget].update_readback_value()
 

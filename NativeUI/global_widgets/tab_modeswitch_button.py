@@ -10,17 +10,21 @@ class TabModeswitchButton(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout(self)
         self.label = QtWidgets.QLabel("Mode: ")
-        self.switchButton = QtWidgets.QPushButton("PCAC")
+        self.switchButton = QtWidgets.QPushButton(self.NativeUI.modeList[0])
         layout.addWidget(self.label)
         layout.addWidget(self.switchButton)
         self.setLayout(layout)
 
+        self.mode_popup = False
         self.switchButton.pressed.connect(self.switch_button_pressed)
 
     def switch_button_pressed(self):
-        self.mode_popup = modeswitchPopup(self.NativeUI)
+        if self.mode_popup == False:
+            self.mode_popup = modeswitchPopup(self.NativeUI)
+            self.mode_popup.okbutton.pressed.connect(self.changeText)
+        else:
+            self.mode_popup.radioButtons[self.NativeUI.currentMode].click()
         self.mode_popup.show()
-        self.mode_popup.okbutton.pressed.connect(self.changeText)
 
     def changeText(self):
         self.switchButton.setText(self.mode_popup.mode)
@@ -32,15 +36,15 @@ class modeswitchPopup(QtWidgets.QDialog):
 
         self.NativeUI = NativeUI
         self.settingsList = self.NativeUI.modes_view.modeTab.settingsList
-        modeList = self.NativeUI.modes_view.modeTab.modeList
+        modeList = self.NativeUI.modeList
         self.spinDict = self.NativeUI.modes_view.modeTab.spinDict
 
         vradioLayout = QtWidgets.QVBoxLayout()
         groupBox = QtWidgets.QGroupBox()
-        radioButtons = []
+        self.radioButtons = {}
         for mode in modeList:
             button = QtWidgets.QRadioButton(mode)
-            radioButtons.append(button)
+            self.radioButtons[mode] = button
             vradioLayout.addWidget(button)
             button.pressed.connect(lambda i=button: self.update_settings_data(i))
         groupBox.setLayout(vradioLayout)
@@ -77,8 +81,8 @@ class modeswitchPopup(QtWidgets.QDialog):
 
         self.setLayout(vlayout)
 
-        radioButtons[0].click()
-        self.update_settings_data(radioButtons[0])
+        self.radioButtons[self.NativeUI.currentMode].click()
+        #self.update_settings_data(self.radioButtons[0]) # should update according to the mode we're in
 
     def update_settings_data(self, button):
         self.mode = button.text()
@@ -90,6 +94,7 @@ class modeswitchPopup(QtWidgets.QDialog):
 
     def ok_button_pressed(self):
         self.NativeUI.q_send_cmd("SET_MODE", self.mode)
+        self.NativeUI.currentMode = self.mode
         # need to decide whetehr this sets individual values or just mode
         # for label,settings in zip(self.labelList,self.settingsList):
         #     currentVal = data[settings[2]]

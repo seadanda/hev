@@ -44,7 +44,8 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
         self.setFixedSize(1920, 1080)
-
+        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+        self.currentMode = self.modeList[0]
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),

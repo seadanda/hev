@@ -3,6 +3,12 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 
 
 class signallingSpinBox(QtWidgets.QDoubleSpinBox):
+    """the base class for all the spinboxes.
+    Additional functionality:
+         A popup to edit the value appears when the box is double clicked.
+         A signal is emitted when the user presses up or down buttons.
+    """
+
     manualChanged = QtCore.Signal()
 
     def __init__(self, NativeUI):
@@ -14,16 +20,19 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
 
     def okButtonPressed(self):
+        """Ok button press applies changes in popup to the spin box, closes the popup, and emits a signal"""
         val = float(self.popUp.lineEdit.text())
         self.setValue(val)
         self.popUp.close()
         self.manualChanged.emit()
 
     def cancelButtonPressed(self):
+        """Cancel button press reverts changes and closes popup"""
         self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
         self.popUp.close()
 
     def stepBy(self, step):
+        """Overrides stepBy to store previous value and emit a signal when called"""
         value = self.value()
         self.prevValue = value
         super(signallingSpinBox, self).stepBy(step)
@@ -31,6 +40,7 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
             self.manualChanged.emit()
 
     def eventFilter(self, source, event):
+        """Overrides event filter to implement response to double click """
         if (
             source is self.lineEdit()
             and event.type() == QtCore.QEvent.MouseButtonDblClick
@@ -42,6 +52,10 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
 
 
 class labelledSpin(QtWidgets.QWidget):
+    """Combines signalling spin box with information relevant to its layout and to handle value updates.
+    It is created by an information array which indicates labels, units, command type and code for value setting,
+    and the range of permitted values"""
+
     def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
         super(labelledSpin, self).__init__(*args, **kwargs)
         # print(infoArray)
@@ -108,6 +122,7 @@ class labelledSpin(QtWidgets.QWidget):
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
     def manualStep(self):
+        """Handle changes in value. Change colour if different to set value, set updating values."""
         if self.manuallyUpdated != True:
             self.oldValue = self.simpleSpin.prevValue
         self.template.liveUpdating = False
@@ -120,6 +135,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
+        """update value from _readback database"""
         newVal = self.NativeUI.get_readback_db()
         if newVal == {}:
             a = 1  # do nothing
@@ -129,6 +145,7 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
+        """update value from _targets database"""
         newVal = self.NativeUI.get_targets_db()
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing

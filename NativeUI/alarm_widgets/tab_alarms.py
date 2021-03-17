@@ -4,8 +4,6 @@ from alarm_widgets.alarm_popup import alarmPopup
 from alarm_widgets.alarm_list import alarmList
 from PySide2 import QtCore, QtGui, QtWidgets
 
-path = "/home/pi/Documents/hev/hev-display/assets/svg/"
-
 
 class TabAlarm(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
@@ -26,7 +24,7 @@ class TabAlarm(QtWidgets.QWidget):
         self.setLayout(vlayout)
         # fdd
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(160)  # just faster than 60Hz
+        self.timer.setInterval(160)
         self.timer.timeout.connect(self.updateAlarms)
         self.timer.start()
 

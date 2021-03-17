@@ -85,31 +85,8 @@ class SpinButton(QtWidgets.QFrame):
         self.setLayout(self.layout)
         self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
 
-        self.popUp = TypeValuePopup(NativeUI)
-        self.popUp.okButton.clicked.connect(self.okButtonPressed)
-        self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
-
     def manualChanged(self):
         self.liveUpdating = False
-
-    def eventFilter(self, source, event):
-        if (
-            source is self.doubleSpin.lineEdit()
-            and event.type() == QtCore.QEvent.MouseButtonDblClick
-        ):
-            self.popUp.lineEdit.setText(str(self.doubleSpin.value()))
-            self.popUp.show()
-            return True
-        return False
-
-    def okButtonPressed(self):
-        val = float(self.popUp.lineEdit.text())
-        self.doubleSpin.setValue(val)
-        self.popUp.close()
-
-    def cancelButtonPressed(self):
-        self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
-        self.popUp.close()
 
     def setTextColour(self, option):
         self.doubleSpin.style().unpolish(self.doubleSpin)

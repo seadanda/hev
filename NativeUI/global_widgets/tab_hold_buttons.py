@@ -55,6 +55,8 @@ class timerConfirmPopup(QtWidgets.QWidget):
         stackLayout.addWidget(self.stack)
         self.setLayout(stackLayout)
 
+        #self.move(QtGui.QApplication.desktop().screen().rect().center() - self.rect().center())
+
 
 class holdButton(QtWidgets.QPushButton):
     def __init__(self, NativeUI, *args, **kwargs):
