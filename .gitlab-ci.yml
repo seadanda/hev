@@ -16,7 +16,7 @@ install_packages:
     - ansible --version
     - ls
     - pwd
-    - ./setup CI
+    - ./setup.sh CI
 
 ui_installation:
   stage: build
