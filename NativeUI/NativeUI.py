@@ -2,6 +2,10 @@
 
 """
 NativeUI.py
+
+Command-line arguments:
+-d, --debug    : set the level of debug output.Include once for INFO, twice for DEBUG
+-w, --windowed : run the user interface in windowed mode.
 """
 
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
@@ -449,8 +453,11 @@ class NativeUI(HEVClient, QMainWindow):
 
 # from PySide2.QtQml import QQmlApplicationEngine
 
-if __name__ == "__main__":
-    # parse args and setup logging
+
+def parse_command_line_arguments() -> argparse.Namespace:
+    """
+    Returns the parsed command line arguments.
+    """
     parser = argparse.ArgumentParser(
         description="Plotting script for the HEV lab setup"
     )
@@ -464,28 +471,56 @@ if __name__ == "__main__":
         default=False,
         help="Run the UI in wondowed mode",
     )
+    return parser.parse_args()
 
-    args = parser.parse_args()
-    if args.debug == 0:
+
+def set_logging_level(debug_level: int) -> int:
+    """
+    Set the level of logging output according to the value of debug_level:
+    0 = Warning
+    1 = Info
+    2 = Debug
+    """
+    if debug_level == 0:
         logging.getLogger().setLevel(logging.WARNING)
-    elif args.debug == 1:
+    elif debug_level == 1:
         logging.getLogger().setLevel(logging.INFO)
     else:
         logging.getLogger().setLevel(logging.DEBUG)
+    return 0
+
+
+def set_window_size(window, windowed: bool = False) -> int:
+    """
+    Set the size and position of the window.
+
+    By default the window will be borderless, 1920x1080 pixels, and positioned at 0,0.
+    If the "windowed" argument is True, the window will be bordered, and 30% smaller on
+    each side.
+    """
+    window_size = [1920, 1080]
+    if windowed:
+        rescale = 0.7
+        window.setGeometry(0, 0, rescale * window_size[0], rescale * window_size[1])
+    else:
+        window.setFixedSize(*window_size)
+        window.setGeometry(0, 0, window_size[0], window_size[1])
+        window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+    return 0
+
+
+if __name__ == "__main__":
+    # parse args and setup logging
+    command_line_args = parse_command_line_arguments()
+    print(type(command_line_args))
+    set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
-    # engine = QQmlApplicationEngine()
-    # engine.load(QUrl('hev-display/assets/Cell.qml'))
     dep = NativeUI()
-    if args.windowed:
-        rescale = 0.7
-        dep.setGeometry(0, 0, rescale * 1920, rescale * 1080)
-    else:
-        dep.setFixedSize(1920, 1080)
-        dep.setGeometry(0, 0, 1920, 1080)
-        dep.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+    set_window_size(dep, windowed=command_line_args.windowed)
 
+    # Connect top-level signals
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
 
     dep.show()
