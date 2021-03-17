@@ -118,6 +118,16 @@ class NativeUI(HEVClient, QMainWindow):
         self.__targets = {}
         self.__personal = {}
         self.ongoingAlarms = {}
+        self.__database_list = [
+            "__data",
+            "__readback",
+            "__cycle",
+            "__battery",
+            "__plots",
+            "__alarms",
+            "__targets",
+            "__personal",
+        ]
 
         # bars
         self.topBar = TabTopBar(self)
@@ -167,78 +177,26 @@ class NativeUI(HEVClient, QMainWindow):
 
         # self.main_view.alarmHandler.show()
 
-    def get_data_db(self):
+    def get_db(self, database_name: str):
         """
-        Return the contents of the __data database. Uses lock to avoid race
-        conditions.
+        Return the contents of the specified database dict, assuming that it is present
+        in __database_list.
         """
-        with self.db_lock:
-            temp = self.__data
-        return temp
+        # Add "__" to database_name if it isn't already present.
+        if not database_name.startswith("__"):
+            database_name = "__%s" % database_name
 
-    def get_targets_db(self):
-        """
-        Return the contents of the __target database. Uses lock to avoid race
-        conditions.
-        """
+        # Check against self.__database_list to ensure that only explicitely permitted
+        # attributes can be accessed by this method.
+        if not database_name in self.__database_list:
+            raise AttributeError(
+                "%s is not a recognised database in NativeUI" % database_name
+            )
 
+        # Return the database.
         with self.db_lock:
-            temp = self.__targets
-        return temp
-
-    def get_readback_db(self):
-        """
-        Return the contents of the __readback database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__readback
-        return temp
-
-    def get_cycle_db(self):
-        """
-        Return the contents of the __cycle database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__cycle
-        return temp
-
-    def get_battery_db(self):
-        """
-        Return the contents of the __battery database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__battery
-        return temp
-
-    def get_plots_db(self):
-        """
-        Return the contents of the __plots database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__plots
-        return temp
-
-    def get_alarms_db(self):
-        """
-        Return the contents of the __alarms database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__alarms
-        return temp
-
-    def get_personal_db(self):
-        """
-        Return the contents of the __personal database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__personal
-        return temp
+            # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
+            return getattr(self, "_%s%s" % (type(self).__name__, database_name))
 
     def set_data_db(self, payload):
         """
@@ -282,7 +240,6 @@ class NativeUI(HEVClient, QMainWindow):
         with self.db_lock:
             for key in payload:
                 self.__cycle[key] = payload[key]
-        # print(self.__cycle)
         return 0
 
     def set_battery_db(self, payload):
@@ -504,7 +461,6 @@ def set_window_size(window, windowed: bool = False) -> int:
 if __name__ == "__main__":
     # parse args and setup logging
     command_line_args = parse_command_line_arguments()
-    print(type(command_line_args))
     set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget

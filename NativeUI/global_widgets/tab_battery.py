@@ -43,7 +43,7 @@ class TabBattery(QtWidgets.QWidget):
 
     @QtCore.Slot(dict)
     def update_value(self):
-        battery_data = self.NativeUI.get_battery_db()
+        battery_data = self.NativeUI.get_db("battery")
         for widget in self.widgets:
             widget.update_value(battery_data)
         return 0

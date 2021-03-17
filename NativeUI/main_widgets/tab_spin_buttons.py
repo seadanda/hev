@@ -177,7 +177,7 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.timer.start()
 
     def updatetargets(self):
-        targets = self.NativeUI.get_targets_db()
+        targets = self.NativeUI.get_db("targets")
         if targets == {}:
             return
         if targets["mode"] == "CURRENT":

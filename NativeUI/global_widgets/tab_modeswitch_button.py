@@ -96,7 +96,7 @@ class modeswitchPopup(QtWidgets.QDialog):
 
     def update_settings_data(self, button):
         self.mode = button.text()
-        data = self.NativeUI.get_targets_db()
+        data = self.NativeUI.get_db("targets")
         for label, settings in zip(self.labelList, self.settingsList):
             currentVal = data[settings[2]]
             setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()

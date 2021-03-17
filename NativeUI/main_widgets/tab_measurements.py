@@ -185,12 +185,12 @@ class CycleMeasurementWidget(MeasurementWidget):
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_cycle_db()
+        data = self.NativeUI.get_db("cycle")
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_cycle_db()[self.key])
+        self.value_display.setNum(self.NativeUI.get_db("cycle")[self.key])
         return 0
 
 
@@ -208,12 +208,12 @@ class ReadbackMeasurementWidget(MeasurementWidget):
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_readback_db()
+        data = self.NativeUI.get_db("readback")
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_readback_db()[self.key])
+        self.value_display.setNum(self.NativeUI.get_db("readback")[self.key])
         return 0
 
 

@@ -49,7 +49,7 @@ class TabAlarm(QtWidgets.QWidget):
         self.list.acknowledge_all()
 
     def updateAlarms(self):
-        newAlarm = self.NativeUI.get_alarms_db()
+        newAlarm = self.NativeUI.get_db("alarms")
         if newAlarm == []:
             return
         if newAlarm["alarm_code"] in self.popup.alarmDict:

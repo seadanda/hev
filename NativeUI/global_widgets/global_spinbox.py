@@ -150,7 +150,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
-        newVal = self.NativeUI.get_readback_db()
+        newVal = self.NativeUI.get_db("readback")
         if newVal == {}:
             a = 1  # do nothing
         else:
@@ -159,7 +159,7 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
-        newVal = self.NativeUI.get_targets_db()
+        newVal = self.NativeUI.get_db("targets")
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing
         else:
