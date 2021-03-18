@@ -1,8 +1,28 @@
+#!/usr/bin/env python3
+
+"""
+global_spinbox.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_typeval_popup import TypeValuePopup
 
 
 class signallingSpinBox(QtWidgets.QDoubleSpinBox):
+    """the base class for all the spinboxes.
+    Additional functionality:
+         A popup to edit the value appears when the box is double clicked.
+         A signal is emitted when the user presses up or down buttons.
+    """
+
     manualChanged = QtCore.Signal()
 
     def __init__(self, NativeUI):
@@ -18,16 +38,19 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
         self.editable = setBool
 
     def okButtonPressed(self):
+        """Ok button press applies changes in popup to the spin box, closes the popup, and emits a signal"""
         val = float(self.popUp.lineEdit.text())
         self.setValue(val)
         self.popUp.close()
         self.manualChanged.emit()
 
     def cancelButtonPressed(self):
+        """Cancel button press reverts changes and closes popup"""
         self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
         self.popUp.close()
 
     def stepBy(self, step):
+        """Overrides stepBy to store previous value and emit a signal when called"""
         value = self.value()
         self.prevValue = value
         super(signallingSpinBox, self).stepBy(step)
@@ -35,6 +58,7 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
             self.manualChanged.emit()
 
     def eventFilter(self, source, event):
+        """Overrides event filter to implement response to double click """
         if (
             source is self.lineEdit()
             and event.type() == QtCore.QEvent.MouseButtonDblClick
@@ -48,6 +72,10 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
 
 
 class labelledSpin(QtWidgets.QWidget):
+    """Combines signalling spin box with information relevant to its layout and to handle value updates.
+    It is created by an information array which indicates labels, units, command type and code for value setting,
+    and the range of permitted values"""
+
     def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
         super(labelledSpin, self).__init__(*args, **kwargs)
         # print(infoArray)
@@ -68,7 +96,7 @@ class labelledSpin(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout()
         widgetList = []
-        textStyle = "color:white; font: 16pt"
+        textStyle = "color:white;" "font-size: " + NativeUI.text_size + ";"
 
         if self.label != "":
             self.nameLabel = QtWidgets.QLabel(self.label)
@@ -107,7 +135,6 @@ class labelledSpin(QtWidgets.QWidget):
         )
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
         if self.cmd_type == "":
-            print("command type is empty")
             self.simpleSpin.setReadOnly(True)
             # self.simpleSpin.setProperty("bgColour", "1")
             # self.simpleSpin.setProperty("textColour", "2")
@@ -128,7 +155,8 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.manualChanged.connect(self.manualStep)
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
-    def manualStep(self):  # if user makes a change
+    def manualStep(self):
+        """Handle changes in value. Change colour if different to set value, set updating values."""
         if self.manuallyUpdated != True:
             self.oldValue = self.simpleSpin.prevValue
         self.template.liveUpdating = False
@@ -141,7 +169,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_readback_value(self):
-        newVal = self.NativeUI.get_readback_db()
+        newVal = self.NativeUI.get_db("readback")
         if newVal == {}:
             a = 1  # do nothing
         else:
@@ -150,7 +178,7 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_targets_value(self):
-        newVal = self.NativeUI.get_targets_db()
+        newVal = self.NativeUI.get_db("targets")
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing
         else:
@@ -159,7 +187,7 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_personal_value(self):
-        newVal = self.NativeUI.get_personal_db()
+        newVal = self.NativeUI.get_db('personal')
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing
         else:

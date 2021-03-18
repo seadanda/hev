@@ -92,7 +92,7 @@ class labelledLineEdit(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def update_personal_value(self):
-        newVal = self.NativeUI.get_personal_db()
+        newVal = self.NativeUI.get_db('personal')
         if newVal == {}:
             a = 1  # do nothing
         else:

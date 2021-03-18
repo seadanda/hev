@@ -1,6 +1,17 @@
+#!/usr/bin/env python3
+
 """
-TODO
+tab_start_stop_buttons.py
 """
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 import logging
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize
@@ -41,8 +52,9 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
                 + NativeUI.colors["background-enabled"].name()
                 + ";"
                 "border-color: " + NativeUI.colors["foreground"].name() + ";"
-                "font-size: 20pt;"
-                "color: " + NativeUI.colors["foreground"].name() + ";" + "border:none"
+                "font-size: " + NativeUI.text_size + ";"
+                "color: " + NativeUI.colors["foreground"].name() + ";"
+                "border:none"
             )
             button.setFixedSize(self.__button_size)
 

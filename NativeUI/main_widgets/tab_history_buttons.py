@@ -1,17 +1,41 @@
+#!/usr/bin/env python3
+
+"""
+tab_history_buttons.py
+
+Part of NativeUI. Defines the HistoryButton class to control the lookback time
+of plots, and constructs the TabHistoryButtons widget to contain the requisite
+historybuttons.
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Development"
+
 from PySide2 import QtWidgets
 from PySide2.QtCore import QSize, Signal, Slot
 
 
 class TabHistoryButtons(QtWidgets.QWidget):
+    """
+    Widget to hold the HistoryButtons.
+
+    TODO: restrict the spacing so that the buttons are tightly packed.
+    """
+
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.__button_size = QSize(50, 50)
-        self.__button_font_size = 20
+        button_size = 60
+        self.__button_size = QSize(button_size, button_size)
 
-        self.button_sixty = HistoryButton("60s", signal_value=60)
-        self.button_thirty = HistoryButton("30s", signal_value=30)
+        self.button_sixty = HistoryButton("60s", signal_value=61)
+        self.button_thirty = HistoryButton("30s", signal_value=31)
         self.button_fifteen = HistoryButton("15s", signal_value=15)
         self.button_five = HistoryButton("5s", signal_value=5)
         self.buttons = [
@@ -25,13 +49,13 @@ class TabHistoryButtons(QtWidgets.QWidget):
         for button in self.buttons:
             button.setStyleSheet(
                 "QPushButton{"
-                "background-color: " + NativeUI.colors["background"].name() + ";"
-                "border-color: " + NativeUI.colors["background"].name() + ";"
-                "color: " + NativeUI.colors["foreground"].name() + ";"
-                "font-size: " + str(self.__button_font_size) + "px;"
+                "   background-color: " + NativeUI.colors["background"].name() + ";"
+                "   border-color: " + NativeUI.colors["background"].name() + ";"
+                "   color: " + NativeUI.colors["foreground"].name() + ";"
+                "   font-size: " + NativeUI.text_size + ";"
                 "}"
                 "QPushButton:disabled{"
-                "background-color: "
+                "   background-color: "
                 + NativeUI.colors["background-disabled"].name()
                 + ";"
                 "}"
@@ -51,6 +75,8 @@ class TabHistoryButtons(QtWidgets.QWidget):
                 i_row += 1
 
         self.setLayout(grid)
+        self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        # self.resize(110, 110)
 
         self.button_sixty.on_press()
 

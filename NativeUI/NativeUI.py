@@ -1,9 +1,28 @@
 #!/usr/bin/env python3
 
+"""
+NativeUI.py
+
+Command-line arguments:
+-d, --debug    : set the level of debug output.Include once for INFO, twice for DEBUG
+-w, --windowed : run the user interface in windowed mode.
+"""
+
+__author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Prototype"
+
 import argparse
+import git
 import logging
 import sys
 import os
+from PySide2 import QtCore
+from PySide2 import QtGui
 
 import numpy as np
 
@@ -43,9 +62,15 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-        # self.setFixedSize(1920, 1080)
 
-        self.colors = {
+        #self.setFixedSize(1920, 1080)
+        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+        self.currentMode = self.modeList[0]
+
+        PID_I_plot_scale = 3
+
+        self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
+
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
             "background-enabled": QColor.fromRgb(50, 50, 50),
@@ -53,20 +78,63 @@ class NativeUI(HEVClient, QMainWindow):
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
             "baby-blue": QColor.fromRgb(144, 231, 211),
             "modified-text": QColor.fromRgb(200, 0, 0),
+            "pressure_plot": QColor.fromRgb(0, 114, 178),
+            "volume_plot": QColor.fromRgb(0, 158, 115),
+            "flow_plot": QColor.fromRgb(240, 228, 66),
+            "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
+            "flow_volume_plot": QColor.fromRgb(204, 121, 167),
+            "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
+        }
+        self.text_size = "20pt"
+        self.text = {
+            "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
+            "plot_axis_label_flow": "Flow [L/min]",
+            "plot_axis_label_volume": "Volume [mL/10<sup>"
+            + str(PID_I_plot_scale)
+            + "</sup>]",
+            "plot_axis_label_time": "Time [s]",
+            "plot_line_label_pressure": "Airway Pressure",
+            "plot_line_label_flow": "Flow",
+            "plot_line_label_volume": "Volume",
+            "plot_line_label_pressure_flow": "Airway Pressure - Flow",
+            "plot_line_label_flow_volume": "Flow - Volume",
+            "plot_line_label_volume_pressure": "Volume - Airway Pressure",
         }
         self.iconpath = self.__find_icons()
 
-        # database
+        # initialise databases
+        plot_history_length = 500
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
         self.__cycle = {}
         self.__battery = {}
-        self.__plots = np.zeros((500, 5))
-        self.__plots[:, 0] = np.arange(500)  # fill timestamp with 0-499
+        self.__plots = {
+            "data": np.zeros((plot_history_length, 5)),
+            "timestamp": list(el * (-1) for el in range(plot_history_length))[::-1],
+            "pressure": list(0 for _ in range(plot_history_length)),
+            "flow": list(0 for _ in range(plot_history_length)),
+            "volume": list(0 for _ in range(plot_history_length)),
+            "PID_I_scale": PID_I_plot_scale,
+            "pressure_axis_range": [0, 20],
+            "flow_axis_range": [-40, 80],
+            "volume_axis_range": [0, 80],
+        }
+        self.__plots["data"][:, 0] = np.arange(500)  # fill timestamp with 0-499
         self.__alarms = []
         self.__targets = {}
         self.__personal = {}
+        self.ongoingAlarms = {}
+        self.__database_list = [
+            "__data",
+            "__readback",
+            "__cycle",
+            "__battery",
+            "__plots",
+            "__alarms",
+            "__targets",
+            "__personal",
+        ]
 
         # bars
         self.topBar = TabTopBar(self)
@@ -103,7 +171,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.setCentralWidget(self.centralWidget)
 
         self.statusBar().showMessage("Waiting for data")
-        self.statusBar().setStyleSheet("color: white")
+        self.statusBar().setStyleSheet("color:" + self.colors["foreground"].name())
 
         # Appearance
         palette = self.palette()
@@ -116,78 +184,26 @@ class NativeUI(HEVClient, QMainWindow):
 
         # self.main_view.alarmHandler.show()
 
-    def get_data_db(self):
+    def get_db(self, database_name: str):
         """
-        Return the contents of the __data database. Uses lock to avoid race
-        conditions.
+        Return the contents of the specified database dict, assuming that it is present
+        in __database_list.
         """
-        with self.db_lock:
-            temp = self.__data
-        return temp
+        # Add "__" to database_name if it isn't already present.
+        if not database_name.startswith("__"):
+            database_name = "__%s" % database_name
 
-    def get_targets_db(self):
-        """
-        Return the contents of the __target database. Uses lock to avoid race
-        conditions.
-        """
+        # Check against self.__database_list to ensure that only explicitely permitted
+        # attributes can be accessed by this method.
+        if not database_name in self.__database_list:
+            raise AttributeError(
+                "%s is not a recognised database in NativeUI" % database_name
+            )
 
+        # Return the database.
         with self.db_lock:
-            temp = self.__targets
-        return temp
-
-    def get_readback_db(self):
-        """
-        Return the contents of the __readback database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__readback
-        return temp
-
-    def get_cycle_db(self):
-        """
-        Return the contents of the __cycle database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__cycle
-        return temp
-
-    def get_battery_db(self):
-        """
-        Return the contents of the __battery database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__battery
-        return temp
-
-    def get_plots_db(self):
-        """
-        Return the contents of the __plots database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__plots
-        return temp
-
-    def get_alarms_db(self):
-        """
-        Return the contents of the __alarms database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__alarms
-        return temp
-
-    def get_personal_db(self):
-        """
-        Return the contents of the __personal database. Uses lock to avoid race
-        conditions.
-        """
-        with self.db_lock:
-            temp = self.__personal
-        return temp
+            # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
+            return getattr(self, "_%s%s" % (type(self).__name__, database_name))
 
     def set_data_db(self, payload):
         """
@@ -231,7 +247,6 @@ class NativeUI(HEVClient, QMainWindow):
         with self.db_lock:
             for key in payload:
                 self.__cycle[key] = payload[key]
-        # print(self.__cycle)
         return 0
 
     def set_battery_db(self, payload):
@@ -253,8 +268,8 @@ class NativeUI(HEVClient, QMainWindow):
         """
         logging.debug("setting plots db")
         with self.db_lock:
-            self.__plots = np.append(
-                np.delete(self.__plots, 0, 0),
+            self.__plots["data"] = np.append(
+                np.delete(self.__plots["data"], 0, 0),
                 [
                     [
                         payload["timestamp"],
@@ -266,6 +281,31 @@ class NativeUI(HEVClient, QMainWindow):
                 ],
                 axis=0,
             )
+
+            # subtract latest timestamp and scale to seconds
+            self.__plots["timestamp"] = np.true_divide(
+                np.subtract(self.__plots["data"][:, 0], self.__plots["data"][-1, 0]),
+                1000,
+            )
+
+            self.__plots["pressure"] = self.__plots["data"][:, 1]
+            self.__plots["flow"] = self.__plots["data"][:, 2]
+            self.__plots["volume"] = [
+                v / (10 ** self.__plots["PID_I_scale"])
+                for v in self.__plots["data"][:, 3]
+            ]
+
+            self.__update_plot_ranges()
+        return 0
+
+    def __update_plot_ranges(self):
+        values = ["pressure", "flow", "volume"]
+        for value in values:
+            range = "%s_axis_range" % value
+            self.__plots[range] = [
+                min(self.__plots[range][0], min(self.__plots[value])),
+                max(self.__plots[range][1], max(self.__plots[value])),
+            ]
         return 0
 
     def set_alarms_db(self, payload):
@@ -290,7 +330,10 @@ class NativeUI(HEVClient, QMainWindow):
         return 0
 
     def start_client(self):
-        """runs in other thread - works as long as super goes last and nothing
+        """
+        Poll the microcontroller for current settings information.
+
+        runs in other thread - works as long as super goes last and nothing
         else is blocking. If something more than a one-shot process is needed
         then use async
         """
@@ -304,7 +347,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_cmd("GENERAL", "GET_PERSONAL")
         super().start_client()
 
-    def get_updates(self, payload):
+    def get_updates(self, payload: dict):
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
@@ -324,7 +367,6 @@ class NativeUI(HEVClient, QMainWindow):
                 self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
                 self.set_personal_db(payload["PERSONAL"])
-
             if payload["type"] == "CYCLE":
                 self.set_cycle_db(payload["CYCLE"])
         except KeyError:
@@ -347,56 +389,93 @@ class NativeUI(HEVClient, QMainWindow):
         """send personal details to hevserver"""
         self.send_personal(personal=personal)
 
-    def __find_icons(self):
+    def __find_icons(self) -> str:
         """
         Locate the icons firectory and return its path.
+
+        Assumes that the cwd is in a git repo, and that the path of the icons folder
+        relative to the root of the repo is "hev-display/assets/png/".
         """
-        iconext = "png"
-        initial_path = os.path.join("hev-display/assets/", iconext)
-        # assume we're in the root directory
-        temp_path = os.path.join(os.getcwd(), initial_path)
-        if os.path.isdir(temp_path):
-            return temp_path
+        # Find the root of the git repo
+        rootdir = git.Repo(os.getcwd(), search_parent_directories=True).git.rev_parse(
+            "--show-toplevel"
+        )
+        icondir = os.path.join(rootdir, "hev-display", "assets", "png")
+        if not os.path.isdir(icondir):
+            raise FileNotFoundError("Could not find icon directory at %s" % icondir)
 
-        # assume we're one folder deep in the root directory
-        temp_path = os.path.join("..", temp_path)
-        if os.path.isdir(temp_path):
-            return temp_path
-
-        walk = os.walk(os.path.join(os.getcwd(), ".."))
-        for w in walk:
-            if "svg" in w[1]:
-                temp_path = os.path.join(os.path.normpath(w[0]), iconext)
-                return temp_path
-
-        raise Exception(FileNotFoundError, "could not locate %s icon files" % iconext)
+        return icondir
 
 
 # from PySide2.QtQml import QQmlApplicationEngine
 
-if __name__ == "__main__":
-    # parse args and setup logging
+
+def parse_command_line_arguments() -> argparse.Namespace:
+    """
+    Returns the parsed command line arguments.
+    """
     parser = argparse.ArgumentParser(
         description="Plotting script for the HEV lab setup"
     )
     parser.add_argument(
         "-d", "--debug", action="count", default=0, help="Show debug output"
     )
+    parser.add_argument(
+        "-w",
+        "--windowed",
+        action="store_true",
+        default=False,
+        help="Run the UI in wondowed mode",
+    )
+    return parser.parse_args()
 
-    args = parser.parse_args()
-    # if args.debug == 0:
-    #     logging.getLogger().setLevel(logging.WARNING)
-    # elif args.debug == 1:
-    #     logging.getLogger().setLevel(logging.INFO)
-    # else:
-    #     logging.getLogger().setLevel(logging.DEBUG)
+
+def set_logging_level(debug_level: int) -> int:
+    """
+    Set the level of logging output according to the value of debug_level:
+    0 = Warning
+    1 = Info
+    2 = Debug
+    """
+    if debug_level == 0:
+        logging.getLogger().setLevel(logging.WARNING)
+    elif debug_level == 1:
+        logging.getLogger().setLevel(logging.INFO)
+    else:
+        logging.getLogger().setLevel(logging.DEBUG)
+    return 0
+
+
+def set_window_size(window, windowed: bool = False) -> int:
+    """
+    Set the size and position of the window.
+
+    By default the window will be borderless, 1920x1080 pixels, and positioned at 0,0.
+    If the "windowed" argument is True, the window will be bordered, and 30% smaller on
+    each side.
+    """
+    window_size = [1920, 1080]
+    if windowed:
+        rescale = 0.7
+        window.setGeometry(0, 0, rescale * window_size[0], rescale * window_size[1])
+    else:
+        window.setFixedSize(*window_size)
+        window.setGeometry(0, 0, window_size[0], window_size[1])
+        window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+    return 0
+
+
+if __name__ == "__main__":
+    # parse args and setup logging
+    command_line_args = parse_command_line_arguments()
+    set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
-    # engine = QQmlApplicationEngine()
-    # engine.load(QUrl('hev-display/assets/Cell.qml'))
     dep = NativeUI()
+    set_window_size(dep, windowed=command_line_args.windowed)
 
+    # Connect top-level signals
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
 
     dep.show()

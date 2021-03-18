@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+global_typeval_popup.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtCore, QtGui, QtWidgets
 import os
 
@@ -19,18 +33,18 @@ class TypeValuePopup(QtWidgets.QDialog):
         self.lineEdit.setText("4")
         self.lineEdit.setStyleSheet(
             "QLineEdit{"
-            "font: 16pt;"
-            "background-color: white;"
-            "border-radius: 4px;"
+            "   font-size: " + NativeUI.text_size + ";"
+            "   background-color: white;"
+            "   border-radius: 4px;"
             "}"
             "QLineEdit[colour = '0']{"
-            "color: green;"
+            "   color: green;"
             "}"
             "QLineEdit[colour = '1']{"
-            "color: rgb(144, 231, 211);"
+            "   color: rgb(144, 231, 211);"
             "}"
             "QLineEdit[colour = '2']{"
-            "color: red;"
+            "   color: red;"
             "}"
         )
         self.lineEdit.setProperty("colour", "1")

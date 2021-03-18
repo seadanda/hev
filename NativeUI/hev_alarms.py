@@ -4,13 +4,12 @@
 hev_alarms.py
 """
 
-__author__ = "Tiago Sarmento"
-__copyright__ = "© Copyright [] 2021"
-__credits__ = ["Tiago Sarmento", "Benjamin Mummery", "Dónal Murray"]
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
 __license__ = "GPL"
 __version__ = "0.0.1"
 __maintainer__ = "Tiago Sarmento"
-__email__ = "benjamin.mummery@stfc.ac.uk"
+__email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
 from alarm_widgets.tab_alarms import TabAlarm
@@ -27,12 +26,12 @@ class AlarmView(TemplateMainPages):
 
         self.alarmButton = selectorButton(NativeUI, "List of Alarms")
         self.clinicalButton = selectorButton(NativeUI, "Clinical Limits")
-        self.techButton = selectorButton(NativeUI, "Technical Limits")
+        #self.techButton = selectorButton(NativeUI, "Technical Limits")
 
-        self.buttonWidgets = [self.alarmButton, self.clinicalButton, self.techButton]
+        self.buttonWidgets = [self.alarmButton, self.clinicalButton]#, self.techButton]
 
         self.alarmTab = TabAlarm(NativeUI)
         self.clinicalTab = TabClinical(NativeUI)
-        self.technicalTab = TabClinical(NativeUI)
-        self.tabsList = [self.alarmTab, self.clinicalTab, self.technicalTab]
+        #self.technicalTab = TabClinical(NativeUI)
+        self.tabsList = [self.alarmTab, self.clinicalTab]#, self.technicalTab]
         self.buildPage(self.buttonWidgets, self.tabsList)

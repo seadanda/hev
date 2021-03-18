@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+global_ok_cancel_buttons.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtWidgets, QtGui, QtCore
 import os
 
@@ -20,6 +34,7 @@ class okButton(
             "background-color: " + NativeUI.colors["foreground"].name() + ";"
             "color: " + NativeUI.colors["background"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "font-size: " + NativeUI.text_size + ";"
             "border-radius: 8px;"
             "border:none"
         )
@@ -46,6 +61,7 @@ class cancelButton(
             "background-color: " + NativeUI.colors["foreground"].name() + ";"
             "color: " + NativeUI.colors["background"].name() + ";"
             "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "font-size: " + NativeUI.text_size + ";"
             "border-radius: 8px;"
             "border:none"
         )

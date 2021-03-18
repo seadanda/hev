@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+template_set_values.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
@@ -83,9 +97,9 @@ class TemplateSetValues(QtWidgets.QWidget):
 
             self.titleLabel = QtWidgets.QLabel(section)
             self.titleLabel.setStyleSheet(
-                "background-color:" + self.NativeUI.colors["foreground"].name() + ";"
-                "color:" + self.NativeUI.colors["background"].name() + ";"
-                "font: 20pt;"
+                "background-color:" + self.NativeUI.colors["background"].name() + ";"
+                "color:" + self.NativeUI.colors["foreground"].name() + ";"
+                "font-size: " + self.NativeUI.text_size + ";"
             )
             self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
             vlayout.addWidget(self.titleLabel)
@@ -198,7 +212,6 @@ class TemplateSetValues(QtWidgets.QWidget):
         vOptionLayout = QtWidgets.QVBoxLayout()
         for info in settingsList:
             if info[0] in textBoxes:
-                print("in textbox")
                 self.spinDict[info[0]] = labelledLineEdit(self, self.NativeUI, info)
             else:
                 self.spinDict[info[0]] = labelledSpin(self, self.NativeUI, info)
@@ -220,7 +233,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         if self.liveUpdating:
             for widget in self.spinDict:
                 if self.packet == "target":
-                    self.spinDict[widget].update_targets_value()
+                    self.spinDict[widget].update_targets_value() # pass database
                 elif self.packet == "readback":
                     self.spinDict[widget].update_readback_value()
                 elif self.packet == "personal":
@@ -247,6 +260,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 self.spinDict[widget].manuallyUpdated = False
+        self.liveUpdating = True
 
     def cancelButtonPressed(self):
         for widget in self.spinDict:

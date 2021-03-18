@@ -1,10 +1,21 @@
+#!/usr/bin/env python3
+
 """
-Docstring # TODO
+hev_main.py
 """
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Benjamin Mummery"
+__email__ = "benjamin.mummery@stfc.ac.uk"
+__status__ = "Development"
 
 from PySide2 import QtGui
 from PySide2 import QtCore
 from PySide2.QtCore import QSize, Slot
+import numpy as np
 from main_widgets.tab_measurements import TabMeasurements
 from main_widgets.tab_plots import TabPlots
 from main_widgets.tab_spin_buttons import TabSpinButtons
@@ -97,7 +108,6 @@ class MainView(QWidget):
 class TabNormalExpertButtons(QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        font_size = 20
         button_size = QSize(150, 50)
         self.NativeUI = NativeUI
         layout = QHBoxLayout()
@@ -113,19 +123,19 @@ class TabNormalExpertButtons(QWidget):
         for button in self.buttons:
             button.setStyleSheet(
                 "QPushButton{"
-                "color: " + NativeUI.colors["foreground"].name() + ";"
-                "font-size: " + str(font_size) + "pt;"
-                "background-color: "
+                "   color: " + NativeUI.colors["foreground"].name() + ";"
+                "   font-size: " + NativeUI.text_size + ";"
+                "   background-color: "
                 + NativeUI.colors["background-enabled"].name()
                 + ";"
-                "border-color: " + NativeUI.colors["background"].name() + ";"
-                "border:none"
+                "   border-color: " + NativeUI.colors["background"].name() + ";"
+                "   border:none"
                 "}"
                 "QPushButton:disabled{"
-                "background-color: "
+                "   background-color: "
                 + NativeUI.colors["background-disabled"].name()
                 + ";"
-                "border:none"
+                "   border:none"
                 "}"
             )
             button.setFixedSize(button_size)

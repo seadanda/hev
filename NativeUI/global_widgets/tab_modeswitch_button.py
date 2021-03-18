@@ -1,3 +1,17 @@
+#!/usr/bin/env python3
+
+"""
+tab_modeswitch_button.py
+"""
+
+__author__ = ["Benjamin Mummery", "Tiago Sarmento"]
+__credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
+__license__ = "GPL"
+__version__ = "0.0.1"
+__maintainer__ = "Tiago Sarmento"
+__email__ = "tiago.sarmento@stfc.ac.uk"
+__status__ = "Prototype"
+
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 
@@ -10,17 +24,21 @@ class TabModeswitchButton(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout(self)
         self.label = QtWidgets.QLabel("Mode: ")
-        self.switchButton = QtWidgets.QPushButton("PCAC")
+        self.switchButton = QtWidgets.QPushButton(self.NativeUI.modeList[0])
         layout.addWidget(self.label)
         layout.addWidget(self.switchButton)
         self.setLayout(layout)
 
+        self.mode_popup = False
         self.switchButton.pressed.connect(self.switch_button_pressed)
 
     def switch_button_pressed(self):
-        self.mode_popup = modeswitchPopup(self.NativeUI)
+        if self.mode_popup == False:
+            self.mode_popup = modeswitchPopup(self.NativeUI)
+            self.mode_popup.okbutton.pressed.connect(self.changeText)
+        else:
+            self.mode_popup.radioButtons[self.NativeUI.currentMode].click()
         self.mode_popup.show()
-        self.mode_popup.okbutton.pressed.connect(self.changeText)
 
     def changeText(self):
         self.switchButton.setText(self.mode_popup.mode)
@@ -32,19 +50,15 @@ class modeswitchPopup(QtWidgets.QDialog):
 
         self.NativeUI = NativeUI
         self.settingsList = self.NativeUI.modes_view.modeTab.settingsList
-        modeList = self.NativeUI.modes_view.modeTab.modeList
-        self.modeSpinDict = self.NativeUI.modes_view.modeTab.spinDict
-
-        ## Radio buttons
+        modeList = self.NativeUI.modeList
+        self.spinDict = self.NativeUI.modes_view.modeTab.spinDict
 
         vradioLayout = QtWidgets.QVBoxLayout()
-        groupBox = (
-            QtWidgets.QGroupBox()
-        )  # handles exclusive button selection of radio buttons
-        radioButtons = []
+        groupBox = QtWidgets.QGroupBox()
+        self.radioButtons = {}
         for mode in modeList:
             button = QtWidgets.QRadioButton(mode)
-            radioButtons.append(button)
+            self.radioButtons[mode] = button
             vradioLayout.addWidget(button)
             button.pressed.connect(lambda i=button: self.update_settings_data(i))
         groupBox.setLayout(vradioLayout)
@@ -120,20 +134,25 @@ class modeswitchPopup(QtWidgets.QDialog):
             "font: 16pt bold;"
         )
 
-        self.update_settings_data(radioButtons[0])
+        self.radioButtons[self.NativeUI.currentMode].click()
+        #self.update_settings_data(self.radioButtons[0]) # should update according to the mode we're in
 
-    def update_settings_data(self, radioButton):
-        self.mode = radioButton.text()
-        data = self.NativeUI.get_targets_db()
-        for currentLabel, newLabel, settings in zip(
-            self.currentLabelList, self.newLabelList, self.settingsList
-        ):
-            currentLabel.setText(str(round(data[settings[2]], 4)))
-            setVal = self.modeSpinDict[self.mode + settings[0]].simpleSpin.value()
-            newLabel.setText(str(round(setVal, 4)))
+    def update_settings_data(self, button):
+        self.mode = button.text()
+        data = self.NativeUI.get_db("targets")
+        for label, settings in zip(self.labelList, self.settingsList):
+            currentVal = data[settings[2]]
+            setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
+            label.update_values(currentVal, setVal)
 
     def ok_button_pressed(self):
         self.NativeUI.q_send_cmd("SET_MODE", self.mode)
+        self.NativeUI.currentMode = self.mode
+        # need to decide whetehr this sets individual values or just mode
+        # for label,settings in zip(self.labelList,self.settingsList):
+        #     currentVal = data[settings[2]]
+        #     setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
+        #     label.update_values(currentVal, setVal)
         self.close()
 
     def cancel_button_pressed(self):
