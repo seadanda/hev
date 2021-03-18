@@ -94,8 +94,6 @@ class TabBattery(QtWidgets.QWidget):
             self.status["on_battery_power"] = False
             self.status["electrical_problem"] = "ERROR ELEC."
 
-        print(self.status)
-
         # Update widgets with new status
         for widget in self.widgets:
             widget.update_value(self.status)
