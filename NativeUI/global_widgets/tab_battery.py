@@ -66,8 +66,6 @@ class TabBattery(QtWidgets.QWidget):
     def update_value(self):
         battery_data = self.NativeUI.get_db("battery")
 
-        print(battery_data)
-
         # Update status
         try:
             self.status["on_mains_power"] = bool(battery_data["ok"])
