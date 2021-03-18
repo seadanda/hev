@@ -43,7 +43,7 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-        self.setFixedSize(1920, 1080)
+        # self.setFixedSize(1920, 1080)
 
         self.colors = {
             "background": QColor.fromRgb(30, 30, 30),
@@ -51,6 +51,8 @@ class NativeUI(HEVClient, QMainWindow):
             "background-enabled": QColor.fromRgb(50, 50, 50),
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
+            "baby-blue": QColor.fromRgb(144, 231, 211),
+            "modified-text": QColor.fromRgb(200, 0, 0),
         }
         self.iconpath = self.__find_icons()
 

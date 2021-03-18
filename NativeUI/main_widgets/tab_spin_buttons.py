@@ -39,46 +39,34 @@ class SpinButton(QtWidgets.QFrame):
         # )  # override is defined in 'eventFilter'. ensures lineEdit responds to double mouse click
         self.doubleSpin.lineEdit().setStyleSheet("border:blue;")
 
-        boxStyleString = """QDoubleSpinBox{
-                        border:none;
-                        background-color: black;
-                        font: 16pt large 'Times New Roman';
-                        height:60px;
-                        }
-                        QDoubleSpinBox[colour="0"] {
-                            color:green;
-                        }
-                        QDoubleSpinBox[colour="1"] {
-                            color:rgb(144,231,211);
-                        }
-                        QDoubleSpinBox[colour="2"] {
-                            color:red;
-                        }
-                        """
+        boxStyleString = (
+            "QDoubleSpinBox{"
+            "border:none;"
+            "background-color:" + NativeUI.colors["background"].name() + ";"
+            "font: 16pt large 'Times New Roman';"
+            "height:60px;"
+            "}"
+            "QDoubleSpinBox[colour='1'] {"
+            "color:" + NativeUI.colors["baby-blue"].name() + ";"
+            "}"
+            "QDoubleSpinBox[colour='2'] {"
+            "color:" + NativeUI.colors["modified-text"].name() + ";"
+            "}"
+        )
 
         upButtonStyleString = """QDoubleSpinBox::up-button{
              height:30;
              width:40;
              }    """
 
-        # upButtonPressedStyleString = (
-        #    "QDoubleSpinBox::up-button:pressed{ border:orange;}"
-        # )
-        downButtonStyleString = upButtonStyleString.replace(
-            "up", "down"
-        )  # "QDoubleSpinBox::down-button{image: url('" + downImage + "');}"
-        # downButtonPressedStyleString = ""  # "QDoubleSpinBox::down-button:pressed{background-color:white;image: url('" + upImage + "');}"
+        downButtonStyleString = upButtonStyleString.replace("up", "down")
         self.doubleSpin.setStyleSheet(
             boxStyleString + upButtonStyleString + downButtonStyleString
         )
-        #     + upButtonPressedStyleString
-        #     + downButtonPressedStyleString
-        # )
         self.doubleSpin.setProperty("colour", "1")
         self.doubleSpin.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
-        # self.doubleSpin.setStyleSheet("QDoubleSpinBox::up-button{ height:30; width:100;")
         self.doubleSpin.setAlignment(QtCore.Qt.AlignCenter)
         self.doubleSpin.manualChanged.connect(self.manualChanged)
         self.layout.addWidget(self.doubleSpin)
@@ -132,7 +120,8 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.spinInhaleT = SpinButton(NativeUI)
 
         self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
-        self.__labels = [
+        self.__labels = ["P_insp [cm H2O]", "RR", "FIO2 [%]", "Inhale Time [s]"]
+        self.__codes = [
             "inspiratory_pressure",
             "respiratory_rate",
             "fiO2_percent",
@@ -167,10 +156,10 @@ class TabSpinButtons(QtWidgets.QWidget):
         if targets == {}:
             return
         if targets["mode"] == "CURRENT":
-            for spin, label in zip(self.__spins, self.__labels):
-                if spin.doubleSpin.value() != float(targets[label]):
+            for spin, code in zip(self.__spins, self.__codes):
+                if spin.doubleSpin.value() != float(targets[code]):
                     if spin.liveUpdating:
-                        spin.doubleSpin.setValue(float(targets[label]))
+                        spin.doubleSpin.setValue(float(targets[code]))
                         spin.setTextColour("2")
                     else:
                         spin.setTextColour("0")
@@ -184,12 +173,3 @@ class TabSpinButtons(QtWidgets.QWidget):
 
     def cancel_button_pressed(self):
         self.liveUpdating = True
-
-        # targets = self.NativeUI.get_targets_db()
-        # if targets == {}:
-        #     return
-        # for spin, label in zip(self.__spins, self.__labels):
-        #     if spin.doubleSpin.value() != float(targets[label]):
-        #         spin.setTextColour("0")
-        #     else:
-        #         spin.setTextColour("2")

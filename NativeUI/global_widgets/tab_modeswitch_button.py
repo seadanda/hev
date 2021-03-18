@@ -33,10 +33,14 @@ class modeswitchPopup(QtWidgets.QDialog):
         self.NativeUI = NativeUI
         self.settingsList = self.NativeUI.modes_view.modeTab.settingsList
         modeList = self.NativeUI.modes_view.modeTab.modeList
-        self.spinDict = self.NativeUI.modes_view.modeTab.spinDict
+        self.modeSpinDict = self.NativeUI.modes_view.modeTab.spinDict
+
+        ## Radio buttons
 
         vradioLayout = QtWidgets.QVBoxLayout()
-        groupBox = QtWidgets.QGroupBox()
+        groupBox = (
+            QtWidgets.QGroupBox()
+        )  # handles exclusive button selection of radio buttons
         radioButtons = []
         for mode in modeList:
             button = QtWidgets.QRadioButton(mode)
@@ -45,23 +49,51 @@ class modeswitchPopup(QtWidgets.QDialog):
             button.pressed.connect(lambda i=button: self.update_settings_data(i))
         groupBox.setLayout(vradioLayout)
 
-        valuesLayout = QtWidgets.QVBoxLayout()
+        ## Values display
 
-        initlabel = settingsLabel(" ")  # titles
-        initlabel.currentLabel.setText("Current")
-        initlabel.settingLabel.setText("New")
-        valuesLayout.addWidget(initlabel)
+        valuesLayout = QtWidgets.QHBoxLayout()
 
-        self.labelList = []
+        initLabel = QtWidgets.QLabel(" ")  # titles
+        initVal = QtWidgets.QLabel("Current")
+        initVal.setAlignment(QtCore.Qt.AlignCenter)
+        newVal = QtWidgets.QLabel("New")
+        newVal.setAlignment(QtCore.Qt.AlignCenter)
+        newVal.setStyleSheet("color: red")
+
+        self.labelList, self.currentLabelList, self.newLabelList = [], [], []
+        vlayout1, vlayout2, vlayout3 = (
+            QtWidgets.QVBoxLayout(),
+            QtWidgets.QVBoxLayout(),
+            QtWidgets.QVBoxLayout(),
+        )
+        vlayout1.addWidget(initLabel)
+        vlayout2.addWidget(initVal)
+        vlayout3.addWidget(newVal)
         for settings in self.settingsList:
-            label = settingsLabel(settings[0])
-            self.labelList.append(label)
-            # settingVal = spinDict
-            valuesLayout.addWidget(label)
+            namelabel = QtWidgets.QLabel(settings[0])
+            namelabel.setAlignment(QtCore.Qt.AlignRight)
+            vlayout1.addWidget(namelabel)
+
+            currentLabel = QtWidgets.QLabel("0")
+            currentLabel.setAlignment(QtCore.Qt.AlignCenter)
+            self.currentLabelList.append(currentLabel)
+            vlayout2.addWidget(currentLabel)
+
+            newLabel = QtWidgets.QLabel("0")
+            newLabel.setAlignment(QtCore.Qt.AlignCenter)
+            newLabel.setStyleSheet("color: red")
+            self.newLabelList.append(newLabel)
+            vlayout3.addWidget(newLabel)
+
+        valuesLayout.addLayout(vlayout1)
+        valuesLayout.addLayout(vlayout2)
+        valuesLayout.addLayout(vlayout3)
 
         hlayout = QtWidgets.QHBoxLayout()
         hlayout.addWidget(groupBox)
         hlayout.addLayout(valuesLayout)
+
+        ## Ok Cancel Buttons
 
         hbuttonlayout = QtWidgets.QHBoxLayout()
         self.okbutton = okButton(NativeUI)
@@ -75,47 +107,34 @@ class modeswitchPopup(QtWidgets.QDialog):
         vlayout.addLayout(hlayout)
         vlayout.addLayout(hbuttonlayout)
 
-        self.setLayout(vlayout)
+        ## Final, general, initiation steps
 
-        radioButtons[0].click()
+        self.setLayout(vlayout)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        radioButtons[0].click()  # 1st button clicked by default
+        # self.update_settings_data(radioButtons[0])
+
+        self.setStyleSheet(
+            "background-color:" + NativeUI.colors["background"].name() + ";"
+            "color:" + NativeUI.colors["foreground"].name() + ";"
+            "font: 16pt bold;"
+        )
+
         self.update_settings_data(radioButtons[0])
 
-    def update_settings_data(self, button):
-        self.mode = button.text()
+    def update_settings_data(self, radioButton):
+        self.mode = radioButton.text()
         data = self.NativeUI.get_targets_db()
-        for label, settings in zip(self.labelList, self.settingsList):
-            currentVal = data[settings[2]]
-            setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
-            label.update_values(currentVal, setVal)
+        for currentLabel, newLabel, settings in zip(
+            self.currentLabelList, self.newLabelList, self.settingsList
+        ):
+            currentLabel.setText(str(round(data[settings[2]], 4)))
+            setVal = self.modeSpinDict[self.mode + settings[0]].simpleSpin.value()
+            newLabel.setText(str(round(setVal, 4)))
 
     def ok_button_pressed(self):
         self.NativeUI.q_send_cmd("SET_MODE", self.mode)
-        # need to decide whetehr this sets individual values or just mode
-        # for label,settings in zip(self.labelList,self.settingsList):
-        #     currentVal = data[settings[2]]
-        #     setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
-        #     label.update_values(currentVal, setVal)
         self.close()
 
     def cancel_button_pressed(self):
         self.close()
-
-
-class settingsLabel(QtWidgets.QWidget):
-    def __init__(self, name, *args, **kwargs):
-        super(settingsLabel, self).__init__(*args, **kwargs)
-
-        self.nameLabel = QtWidgets.QLabel(name)
-        self.currentLabel = QtWidgets.QLabel(str(0))
-        self.settingLabel = QtWidgets.QLabel(str(0))
-        self.settingLabel.setStyleSheet("color:red")
-
-        hlayout = QtWidgets.QHBoxLayout()
-        labels = [self.nameLabel, self.currentLabel, self.settingLabel]
-        for label in labels:
-            hlayout.addWidget(label)
-        self.setLayout(hlayout)
-
-    def update_values(self, currentVal, setVal):
-        self.currentLabel.setText(str(currentVal))
-        self.settingLabel.setText(str(setVal))
