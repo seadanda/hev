@@ -17,6 +17,7 @@ from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
 from global_widgets.global_select_button import selectorButton
 from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from global_widgets.global_lineEdit import labelledLineEdit
 
 
 class TemplateSetValues(QtWidgets.QWidget):
@@ -90,7 +91,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList.append(grid)
 
     def addExpertControls(self, controlDict):
-        grid = QtWidgets.QGridLayout()
+        vlayout = QtWidgets.QVBoxLayout()
         i = 0
         for section in controlDict.keys():
 
@@ -101,19 +102,35 @@ class TemplateSetValues(QtWidgets.QWidget):
                 "font-size: " + self.NativeUI.text_size + ";"
             )
             self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
-            grid.addWidget(self.titleLabel, i, 0, 1, 6)
+            vlayout.addWidget(self.titleLabel)
+
+            grid = QtWidgets.QGridLayout()
+            grid.setMargin(0)
+            grid.setSpacing(0)
+            widg = QtWidgets.QFrame()
+            widg.setStyleSheet(
+                "QFrame{border: 2px solid "
+                + self.NativeUI.colors["foreground"].name()
+                + ";} QLabel{border:none} "
+            )
             j = -1
             for boxInfo in controlDict[section]:
                 j = j + 1
                 # label, units = boxInfo, controlDict[section][boxInfo]
                 self.spinDict[boxInfo[0]] = labelledSpin(self, self.NativeUI, boxInfo)
-                # self.spinInfo.append(boxInfo)
+
                 grid.addWidget(
                     self.spinDict[boxInfo[0]], i + 1 + int(j / 3), 2 * (j % 3), 1, 2
                 )
+            # frame = QtWidgets.QFrame()
+            # grid.addWidget(frame)
+            # widg.frame.se
+            widg.setLayout(grid)
+
+            vlayout.addWidget(widg)
 
             i = i + 1 + int(j / 3) + 1
-        self.layoutList.append(grid)
+        self.layoutList.append(vlayout)
 
     def addModeStack(self, settingsList):
         hlayout = QtWidgets.QHBoxLayout()
@@ -170,6 +187,11 @@ class TemplateSetValues(QtWidgets.QWidget):
                     self.spinDict[mode + info[0]].simpleSpin.setProperty(
                         "bgColour", "1"
                     )
+                    self.spinDict[mode + info[0]].simpleSpin.setProperty(
+                        "textColour", "1"
+                    )
+                    self.spinDict[mode + info[0]].simpleSpin.setEditability(False)
+
                 self.spinDict[mode + info[0]].simpleSpin.style().polish(
                     self.spinDict[mode + info[0]].simpleSpin
                 )
@@ -186,6 +208,16 @@ class TemplateSetValues(QtWidgets.QWidget):
         vlayout.addWidget(self.stack)
         self.layoutList.append(vlayout)
 
+    def addPersonalCol(self, settingsList, textBoxes):
+        vOptionLayout = QtWidgets.QVBoxLayout()
+        for info in settingsList:
+            if info[0] in textBoxes:
+                self.spinDict[info[0]] = labelledLineEdit(self, self.NativeUI, info)
+            else:
+                self.spinDict[info[0]] = labelledSpin(self, self.NativeUI, info)
+            vOptionLayout.addWidget(self.spinDict[info[0]])
+        self.layoutList.append(vOptionLayout)
+
     def addButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
         self.okButton = okButton(self.NativeUI)
@@ -201,9 +233,11 @@ class TemplateSetValues(QtWidgets.QWidget):
         if self.liveUpdating:
             for widget in self.spinDict:
                 if self.packet == "target":
-                    self.spinDict[widget].update_targets_value()
+                    self.spinDict[widget].update_targets_value() # pass database
                 elif self.packet == "readback":
                     self.spinDict[widget].update_readback_value()
+                elif self.packet == "personal":
+                    self.spinDict[widget].update_personal_value()
 
     def okButtonPressed(self):
         message, command = [], []
@@ -226,6 +260,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 self.spinDict[widget].manuallyUpdated = False
+        self.liveUpdating = True
 
     def cancelButtonPressed(self):
         for widget in self.spinDict:

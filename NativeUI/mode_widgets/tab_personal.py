@@ -30,7 +30,9 @@ class TabPersonal(TemplateSetValues):
             ["Weight", "", "exhale_trigger_threshold", "SET_PERSONAL", "WEIGHT"],
             ["Height", "", "inspiratory_pressure", "SET_PERSONAL", "HEIGHT"],
         ]
-        self.addSpinSingleCol(settingsList)
+        textBoxes = ["Name", "Patient ID", "Sex"]
+        self.setPacketType("personal")
+        self.addPersonalCol(settingsList, textBoxes)
         self.addButtons()
         self.finaliseLayout()
 

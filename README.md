@@ -51,7 +51,7 @@ pip3 install ansible
 For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
 
 ```bash
-ssh keygen
+ssh-keygen
 ssh-copy-id pi@IP-ADDRESS
 ```
 

@@ -77,7 +77,7 @@ class TabPageButtons(QtWidgets.QWidget):
                 + "border-color: "
                 + NativeUI.colors["background"].name()
                 + ";"
-                + "border:none;"
+                + "border:3px;"
                 "}"
                 "QPushButton:disabled{"
                 "background-color: "

@@ -168,7 +168,7 @@ class TabExpertPlots(QtWidgets.QWidget):
         """
         Get the current plots database and update the plots to match
         """
-        plots = self.NativeUI.get_plots_db()
+        plots = self.NativeUI.get_db("plots")
 
         # Extend the non-time scales if we need to
         self.pressure_plot.setYRange(*plots["pressure_axis_range"])
