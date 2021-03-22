@@ -125,7 +125,7 @@ class modeswitchPopup(QtWidgets.QDialog):
 
         self.setLayout(vlayout)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        radioButtons[0].click()  # 1st button clicked by default
+        # self.radioButtons[0].click()  # 1st button clicked by default
         # self.update_settings_data(radioButtons[0])
 
         self.setStyleSheet(
@@ -135,7 +135,7 @@ class modeswitchPopup(QtWidgets.QDialog):
         )
 
         self.radioButtons[self.NativeUI.currentMode].click()
-        #self.update_settings_data(self.radioButtons[0]) # should update according to the mode we're in
+        # self.update_settings_data(self.radioButtons[0]) # should update according to the mode we're in
 
     def update_settings_data(self, button):
         self.mode = button.text()

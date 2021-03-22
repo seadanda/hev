@@ -22,7 +22,6 @@ import logging
 import sys
 import os
 from PySide2 import QtCore
-from PySide2 import QtGui
 
 import numpy as np
 
@@ -38,7 +37,7 @@ from hevclient import HEVClient
 
 from threading import Lock
 
-from PySide2.QtCore import Signal, Slot
+from PySide2.QtCore import QDateTime, Signal, Slot
 from PySide2.QtGui import QColor, QPalette
 from PySide2.QtWidgets import (
     QApplication,
@@ -63,14 +62,13 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
-        #self.setFixedSize(1920, 1080)
+        # self.setFixedSize(1920, 1080)
         self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
         PID_I_plot_scale = 3
 
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
             "background-enabled": QColor.fromRgb(50, 50, 50),
@@ -287,7 +285,6 @@ class NativeUI(HEVClient, QMainWindow):
                 np.subtract(self.__plots["data"][:, 0], self.__plots["data"][-1, 0]),
                 1000,
             )
-
             self.__plots["pressure"] = self.__plots["data"][:, 1]
             self.__plots["flow"] = self.__plots["data"][:, 2]
             self.__plots["volume"] = [
@@ -373,21 +370,24 @@ class NativeUI(HEVClient, QMainWindow):
             logging.warning(f"Invalid payload: {payload}")
 
     @Slot(str, str, float)
-    def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> None:
+    def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
         """send command to hevserver via socket"""
         check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
         if check:
             self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
+        return 0
 
     @Slot(str)
-    def q_ack_alarm(self, alarm: str):
+    def q_ack_alarm(self, alarm: str) -> int:
         """acknowledge an alarm in the hevserver"""
         self.ack_alarm(alarm=alarm)
+        return 0
 
     @Slot(str)
-    def q_send_personal(self, personal: str):
+    def q_send_personal(self, personal: str) -> int:
         """send personal details to hevserver"""
         self.send_personal(personal=personal)
+        return 0
 
     def __find_icons(self) -> str:
         """

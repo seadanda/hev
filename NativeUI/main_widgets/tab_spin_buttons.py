@@ -38,7 +38,7 @@ class SpinButton(QtWidgets.QFrame):
 
         # create and style label
         self.label = QtWidgets.QLabel(label)
-        #self.label.setText("test label")
+        # self.label.setText("test label")
 
         labelBgColour = "rgb(60,58,60)"
         self.label.setStyleSheet(
@@ -93,16 +93,15 @@ class SpinButton(QtWidgets.QFrame):
         self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
 
     def manualChanged(self):
-        print('manui')
+        print("manui")
         self.liveUpdating = False
         self.manuallyUpdated = True
-        self.setTextColour('2')
+        self.setTextColour("2")
 
     def setTextColour(self, option):
         self.simpleSpin.setProperty("colour", option)
         self.simpleSpin.style().unpolish(self.simpleSpin)
         self.simpleSpin.style().polish(self.simpleSpin)
-        
 
     def update_targets_value(self):
         newVal = self.NativeUI.get_db("targets")
@@ -124,12 +123,12 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(5)
 
-#        self.spinInsp = SpinButton(NativeUI)
- #       self.spinRR = SpinButton(NativeUI)
-  #      self.spinFIo2 = SpinButton(NativeUI)
-   #     self.spinInhaleT = SpinButton(NativeUI)
+        #        self.spinInsp = SpinButton(NativeUI)
+        #       self.spinRR = SpinButton(NativeUI)
+        #      self.spinFIo2 = SpinButton(NativeUI)
+        #     self.spinInhaleT = SpinButton(NativeUI)
 
-        #self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
+        # self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
         self.__labels = ["P_insp [cm H2O]", "RR", "FIO2 [%]", "Inhale Time [s]"]
         self.__codes = [
             "inspiratory_pressure",
@@ -137,9 +136,9 @@ class TabSpinButtons(QtWidgets.QWidget):
             "fiO2_percent",
             "inhale_time",
         ]
-        #self.cmd_code = [code.upper() for code in self.__codes]
+        # self.cmd_code = [code.upper() for code in self.__codes]
         self.spinDict = {}
-        for label,code in zip(self.__labels, self.__codes):
+        for label, code in zip(self.__labels, self.__codes):
             self.spinDict[code] = SpinButton(NativeUI, label, code)
             self.layout.addWidget(self.spinDict[code])
 
@@ -165,7 +164,7 @@ class TabSpinButtons(QtWidgets.QWidget):
 
     def updatetargets(self):
         for widget in self.spinDict:
-            self.spinDict[widget].update_targets_value() # pass database
+            self.spinDict[widget].update_targets_value()  # pass database
         # targets = self.NativeUI.get_db("targets")
         # if targets == {}:
         #     return
@@ -185,13 +184,11 @@ class TabSpinButtons(QtWidgets.QWidget):
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].simpleSpin.value()
-                message.append("set" + self.spinDict[widget].label.text() + " to " + str(setVal))
+                message.append(
+                    "set" + self.spinDict[widget].label.text() + " to " + str(setVal)
+                )
                 command.append(
-                    [
-                        'SET_TARGET_PC_AC',
-                        self.spinDict[widget].code.upper(),
-                        setVal,
-                    ]
+                    ["SET_TARGET_PC_AC", self.spinDict[widget].code.upper(), setVal]
                 )
         self.popup = SetConfirmPopup(self, self.NativeUI, message, command)
         self.popup.okButton.pressed.connect(self.commandSent)
@@ -201,7 +198,7 @@ class TabSpinButtons(QtWidgets.QWidget):
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 self.spinDict[widget].manuallyUpdated = False
-            self.spinDict[spin].setTextColour("1")
+            self.spinDict[widget].setTextColour("1")
 
     def cancel_button_pressed(self):
         for spin in self.spinDict:
