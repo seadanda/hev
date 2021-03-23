@@ -67,8 +67,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
-        PID_I_plot_scale = 3
-
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
@@ -88,9 +86,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.text = {
             "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
             "plot_axis_label_flow": "Flow [L/min]",
-            "plot_axis_label_volume": "Volume [mL/10<sup>"
-            + str(PID_I_plot_scale)
-            + "</sup>]",
+            "plot_axis_label_volume": "Volume [mL]",
             "plot_axis_label_time": "Time [s]",
             "plot_line_label_pressure": "Airway Pressure",
             "plot_line_label_flow": "Flow",
@@ -114,7 +110,6 @@ class NativeUI(HEVClient, QMainWindow):
             "pressure": list(0 for _ in range(plot_history_length)),
             "flow": list(0 for _ in range(plot_history_length)),
             "volume": list(0 for _ in range(plot_history_length)),
-            "PID_I_scale": PID_I_plot_scale,
             "pressure_axis_range": [0, 20],
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
@@ -287,10 +282,7 @@ class NativeUI(HEVClient, QMainWindow):
             )
             self.__plots["pressure"] = self.__plots["data"][:, 1]
             self.__plots["flow"] = self.__plots["data"][:, 2]
-            self.__plots["volume"] = [
-                v / (10 ** self.__plots["PID_I_scale"])
-                for v in self.__plots["data"][:, 3]
-            ]
+            self.__plots["volume"] = self.__plots["data"][:, 3]
 
             self.__update_plot_ranges()
         return 0
