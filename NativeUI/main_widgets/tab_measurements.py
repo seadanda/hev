@@ -121,9 +121,8 @@ class MeasurementWidget(QtWidgets.QWidget):
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
-        width = 250
-        height = 120
-        labelheight = 35
+
+        labelheight = int(height / 3.0)
 
         self.NativeUI = NativeUI
         self.key = key
