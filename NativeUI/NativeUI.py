@@ -22,6 +22,7 @@ import logging
 import sys
 import os
 from PySide2 import QtCore
+import re
 
 import numpy as np
 
@@ -427,6 +428,9 @@ def parse_command_line_arguments() -> argparse.Namespace:
         default=False,
         help="Run the UI in wondowed mode",
     )
+    parser.add_argument(
+        "-r", "--resolution", action="store", dest="resolution", type=str
+    )
     return parser.parse_args()
 
 
@@ -446,34 +450,61 @@ def set_logging_level(debug_level: int) -> int:
     return 0
 
 
-def set_window_size(window, windowed: bool = False) -> int:
+def interpret_resolution(input_string: str) -> list:
+    default_size = [1920, 1080]
+    if input_string is None:
+        return default_size
+
+    dimensions = [val for val in re.findall("\d*", input_string) if val != ""]
+    if len(dimensions) != 2:
+        logging.WARNING("Unsupported resolution argument %s" % input_string)
+        return default_size
+
+    try:
+        dimensions = [int(val) for val in dimensions]
+    except ValueError:
+        logging.WARNING(
+            "Resolution argument'%s' could not be interpreted as numerical values. Values must be integer numbers of pixels on x and y respectively, e.g. 1920x1080."
+            % input_string
+        )
+        return default_size
+
+    return dimensions
+
+
+def set_window_size(window, resolution: str = None, windowed: bool = False) -> int:
     """
     Set the size and position of the window.
 
     By default the window will be borderless, 1920x1080 pixels, and positioned at 0,0.
-    If the "windowed" argument is True, the window will be bordered, and 30% smaller on
-    each side.
+    If the "windowed" argument is True, the window will be bordered.
+    If the "resolution" argument is provided and has the form '[int]*[int]' or '[int]x[int]', the ints will be interpreted to be the desired window size.
     """
-    window_size = [1920, 1080]
-    if windowed:
-        rescale = 0.7
-        window.setGeometry(0, 0, rescale * window_size[0], rescale * window_size[1])
-    else:
-        window.setFixedSize(*window_size)
-        window.setGeometry(0, 0, window_size[0], window_size[1])
-        window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+    window_size = interpret_resolution(resolution)
+
+    print(window_size)
+
+    window.setFixedSize(*window_size)
+    window.move(0, 0)
+
+    window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     return 0
 
 
 if __name__ == "__main__":
     # parse args and setup logging
     command_line_args = parse_command_line_arguments()
+    print(command_line_args)
     set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
     dep = NativeUI()
-    set_window_size(dep, windowed=command_line_args.windowed)
+    set_window_size(
+        dep,
+        resolution=command_line_args.resolution,
+        windowed=command_line_args.windowed,
+    )
 
     # Connect top-level signals
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
