@@ -68,13 +68,13 @@ class NativeUI(HEVClient, QMainWindow):
         self.currentMode = self.modeList[0]
 
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-            "background": QColor.fromRgb(30, 30, 30),
-            "foreground": QColor.fromRgb(200, 200, 200),
-            "background-enabled": QColor.fromRgb(50, 50, 50),
-            "background-disabled": QColor.fromRgb(15, 15, 15),
-            "foreground-disabled": QColor.fromRgb(100, 100, 100),
-            "baby-blue": QColor.fromRgb(144, 231, 211),
-            "modified-text": QColor.fromRgb(200, 0, 0),
+            "page_background": QColor.fromRgb(30, 30, 30),
+            "page_foreground": QColor.fromRgb(200, 200, 200),
+            "background_enabled": QColor.fromRgb(50, 50, 50),
+            "background_disabled": QColor.fromRgb(15, 15, 15),
+            "foreground_disabled": QColor.fromRgb(100, 100, 100),
+            "baby_blue": QColor.fromRgb(144, 231, 211),
+            "modified_text": QColor.fromRgb(200, 0, 0),
             "pressure_plot": QColor.fromRgb(0, 114, 178),
             "volume_plot": QColor.fromRgb(0, 158, 115),
             "flow_plot": QColor.fromRgb(240, 228, 66),
@@ -164,11 +164,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.setCentralWidget(self.centralWidget)
 
         self.statusBar().showMessage("Waiting for data")
-        self.statusBar().setStyleSheet("color:" + self.colors["foreground"].name())
+        self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
         palette = self.palette()
-        palette.setColor(QPalette.Window, self.colors["background"])
+        palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 

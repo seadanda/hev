@@ -26,7 +26,7 @@ class TabPersonal(QtWidgets.QWidget):
         self.info_label = QtWidgets.QLabel("Person person, 55kg")
         self.info_label.setStyleSheet(
             "font:" + NativeUI.text_size + ";"
-            "color:" + NativeUI.colors["foreground"].name() + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
         )
         self.info_label.setAlignment(QtCore.Qt.AlignCenter)
         hlayout = QtWidgets.QHBoxLayout()

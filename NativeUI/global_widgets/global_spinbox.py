@@ -109,24 +109,35 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.setSingleStep(self.step)
         self.simpleSpin.setDecimals(self.decPlaces)
         self.simpleSpin.setStyleSheet(
-            "QDoubleSpinBox{ width:100px; font:16pt}"
-            "QDoubleSpinBox[bgColour='0']{background-color:"
-            + NativeUI.colors["foreground"].name()
-            + "; }"
-            "QDoubleSpinBox[bgColour='1']{background-color:"
-            + NativeUI.colors["background"].name()
-            + ";}"
-            "QDoubleSpinBox[textColour='0']{color:"
-            + NativeUI.colors["background"].name()
-            + "}"
-            "QDoubleSpinBox[textColour='1']{color:"
-            + NativeUI.colors["foreground"].name()
-            + "}"
-            "QDoubleSpinBox[textColour='2']{color:"
-            + NativeUI.colors["baby-blue"].name()
-            + "}"
-            "QDoubleSpinBox::up-button{width:20; background-color:white; color:black }"
-            "QDoubleSpinBox::down-button{width:20px; height:20px; border:none}"
+            "QDoubleSpinBox{"
+            "    width:100px;"  # TODO: unhardcode
+            "    font:" + NativeUI.text_size + ";"
+            "}"
+            "QDoubleSpinBox[bgColour='0']{"
+            "    background-color:" + NativeUI.colors["page_foreground"].name() + ";"
+            "}"
+            "QDoubleSpinBox[bgColour='1']{"
+            "    background-color:" + NativeUI.colors["page_background"].name() + ";"
+            "}"
+            "QDoubleSpinBox[textColour='0']{"
+            "    color:" + NativeUI.colors["page_background"].name() + ";"
+            "}"
+            "QDoubleSpinBox[textColour='1']{"
+            "    color:" + NativeUI.colors["page_foreground"].name() + ";"
+            "}"
+            "QDoubleSpinBox[textColour='2']{"
+            "    color:" + NativeUI.colors["baby_blue"].name() + ";"
+            "}"
+            "QDoubleSpinBox::up-button{"
+            "width:20; "
+            "background-color:white;"
+            "color:black;"
+            "}"
+            "QDoubleSpinBox::down-button{"
+            "width:20px;"
+            "height:20px; "
+            "border:none;"
+            "}"
         )
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.setProperty("bgColour", "0")
@@ -187,7 +198,7 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
 
     def update_personal_value(self):
-        newVal = self.NativeUI.get_db('personal')
+        newVal = self.NativeUI.get_db("personal")
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing
         else:

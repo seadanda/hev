@@ -120,9 +120,9 @@ class MeasurementWidget(QtWidgets.QWidget):
         # Appearance
         self.name_display.setAlignment(QtCore.Qt.AlignCenter)
         self.name_display.setStyleSheet(
-            "color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "color: " + self.NativeUI.colors["page_foreground"].name() + ";"
             "background-color:"
-            + self.NativeUI.colors["background-enabled"].name()
+            + self.NativeUI.colors["background_enabled"].name()
             + ";"
             "border: none;"
             "font-size: " + NativeUI.text_size + ";"
@@ -132,8 +132,8 @@ class MeasurementWidget(QtWidgets.QWidget):
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
-            "color: black;"
-            "background-color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "color: " + self.NativeUI.colors["page_background"].name() + ";"
+            "background-color: " + self.NativeUI.colors["page_foreground"].name() + ";"
             "border: none;"
         )
         self.value_display.setFixedSize(width, height - labelheight)

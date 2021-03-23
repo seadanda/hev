@@ -129,8 +129,8 @@ class modeswitchPopup(QtWidgets.QDialog):
         # self.update_settings_data(radioButtons[0])
 
         self.setStyleSheet(
-            "background-color:" + NativeUI.colors["background"].name() + ";"
-            "color:" + NativeUI.colors["foreground"].name() + ";"
+            "background-color:" + NativeUI.colors["page_background"].name() + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
             "font: 16pt bold;"
         )
 
