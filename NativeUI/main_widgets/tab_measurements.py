@@ -6,9 +6,6 @@ tab_measurements.py
 Part of NativeUI. Defines the MeasurementWidget class to display current
 parameters, and constructs the TabMeasurements widget to display the requisite
 MeasurementWidgets.
-
-TODO: Create a second widget constructor that shows the widgets for the expert
-plots page.
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -40,32 +37,14 @@ class Measurements_Block(QtWidgets.QWidget):
 
         widget_list = []
         for measurement in measurements:
-            if measurement[2] == "cycle":
-                widget_list.append(
-                    CycleMeasurementWidget(NativeUI, measurement[0], measurement[1])
+            widget_list.append(
+                MeasurementWidget(
+                    NativeUI,
+                    measurement[0],  # Label
+                    measurement[2],  # Keydir
+                    measurement[1],  # Key
                 )
-            elif measurement[2] == "readback":
-                widget_list.append(
-                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
-                )
-            elif (
-                measurement[2] is None
-            ):  # Create a placeholder widget for testing & dev
-                widget_list.append(
-                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
-                )
-            else:
-                raise AttributeError(
-                    "measurement type %s is not a recognised parameter" % measurement[2]
-                )
-
-        # label = QtWidgets.QLabel("Measurements")
-        # label.setAlignment(QtCore.Qt.AlignCenter)
-        # label.setStyleSheet(
-        #     "color: grey;"
-        #     "font-size: " + NativeUI.text_size + ";"
-        # )
-        # layout.addWidget(label)
+            )
 
         # Compute max number of items per column
         max_col_length = int(len(widget_list) / (columns))
@@ -96,9 +75,9 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     Parameters
     ----------
-        label
-        keydir
-        key
+        label (str): the measuremnt label as displayed to the user (can include html).
+        keydir (str): the data dict in which the quantity to be displayed is stored.
+        key (str): the key for the measurement as used in keydir
 
     Optional Parameters
     -------------------
@@ -114,9 +93,10 @@ class MeasurementWidget(QtWidgets.QWidget):
         self,
         NativeUI,
         label: str,
+        keydir: str,
         key: str,
-        width: int = 140,
-        height: int = 60,
+        width: int = 250,
+        height: int = 120,
         *args,
         **kwargs
     ):
@@ -125,6 +105,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         labelheight = int(height / 3.0)
 
         self.NativeUI = NativeUI
+        self.keydir = keydir
         self.key = key
 
         # Layout and widgets
@@ -167,52 +148,16 @@ class MeasurementWidget(QtWidgets.QWidget):
         """
         Placeholder function to be overwritten by subclasses
         """
-        pass
-
-
-class CycleMeasurementWidget(MeasurementWidget):
-    """
-    Widget to display a measurement in real time whose value is contained in
-    Cycle payloads.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def update_value(self):
         if self.key is None:  # widget can be created without assigning a parameter
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_db("cycle")
+        data = self.NativeUI.get_db(self.keydir)
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_db("cycle")[self.key])
-        return 0
-
-
-class ReadbackMeasurementWidget(MeasurementWidget):
-    """
-    Widget to display a measurement in real time whose value is contained in
-    Readback payloads.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def update_value(self):
-        if self.key is None:  # widget can be created without assigning a parameter
-            self.value_display.setText("-")
-            return 0
-
-        data = self.NativeUI.get_db("readback")
-        if len(data) == 0:  # means that the db hasn't been populated yet
-            self.value_display.setText("-")
-            return 0
-
-        self.value_display.setNum(self.NativeUI.get_db("readback")[self.key])
+        self.value_display.setNum(self.NativeUI.get_db(self.keydir)[self.key])
         return 0
 
 
@@ -243,11 +188,7 @@ class TabExpertMeasurements(Measurements_Block):
     Widget to contain the measurements for the standard page. Essentially a
     wrapper for the Measurements_Block class that specifies the measurements
     and number of columns.
-
-    TODO: update the measurements list.
     """
-
-    # TODO: check that these are correct
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
