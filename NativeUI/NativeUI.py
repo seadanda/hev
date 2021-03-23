@@ -119,7 +119,6 @@ class NativeUI(HEVClient, QMainWindow):
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
         }
-        self.__plots["data"][:, 0] = np.arange(500)  # fill timestamp with 0-499
         self.__alarms = []
         self.__targets = {}
         self.__personal = {}
