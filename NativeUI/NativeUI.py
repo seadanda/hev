@@ -450,21 +450,29 @@ def set_logging_level(debug_level: int) -> int:
 
 
 def interpret_resolution(input_string: str) -> list:
+    """
+    Convert a string to a pair of numbers specifying the window size.
+
+    Given a string of the form "[int][*][int]" where [*] is and non-numerical character,
+    returns a list [int, int]. If the provided string is None or cannot be interpreted,
+    returns the default window size [1920, 1080].
+    """
     default_size = [1920, 1080]
     if input_string is None:
         return default_size
 
     dimensions = [val for val in re.findall("\d*", input_string) if val != ""]
     if len(dimensions) != 2:
-        logging.WARNING("Unsupported resolution argument %s" % input_string)
+        logging.warning("Unsupported resolution argument %s" % input_string)
         return default_size
 
     try:
         dimensions = [int(val) for val in dimensions]
     except ValueError:
-        logging.WARNING(
-            "Resolution argument'%s' could not be interpreted as numerical values. Values must be integer numbers of pixels on x and y respectively, e.g. 1920x1080."
-            % input_string
+        logging.warning(
+            "Resolution argument'%s' could not be interpreted as numerical values."
+            "Values must be integer numbers of pixels on x and y respectively,"
+            "e.g. 1920x1080." % input_string
         )
         return default_size
 
@@ -476,17 +484,17 @@ def set_window_size(window, resolution: str = None, windowed: bool = False) -> i
     Set the size and position of the window.
 
     By default the window will be borderless, 1920x1080 pixels, and positioned at 0,0.
-    If the "windowed" argument is True, the window will be bordered.
-    If the "resolution" argument is provided and has the form '[int]*[int]' or '[int]x[int]', the ints will be interpreted to be the desired window size.
+    If the "windowed" argument is True, the window will be bordered. Uses
+    interpret_resolution to extract size parameters from the "resolution" string. If the
+    string cannot be interpreted, or the resolution argument is None, uses
+    interpret_resolution's default size.
     """
     window_size = interpret_resolution(resolution)
-
-    print(window_size)
-
     window.setFixedSize(*window_size)
-    window.move(0, 0)
 
-    window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+    if not windowed:
+        window.move(0, 0)
+        window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     return 0
 
 
