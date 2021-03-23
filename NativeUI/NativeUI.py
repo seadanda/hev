@@ -102,7 +102,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.iconpath = self.__find_icons()
 
         # initialise databases
-        plot_history_length = 500
+        plot_history_length = 1000
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
