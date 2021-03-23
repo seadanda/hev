@@ -66,6 +66,7 @@ class TabPlots(QtWidgets.QWidget):
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
+            plot.setMouseEnabled(x=False, y=False)
 
         # Set Range
         self.update_plot_time_range(61)

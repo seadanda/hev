@@ -104,6 +104,7 @@ class TabExpertPlots(QtWidgets.QWidget):
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
+            plot.setMouseEnabled(x=False, y=False)
 
         # Plot styles
         self.pressure_line = self.plot(
