@@ -19,6 +19,7 @@ __status__ = "Development"
 import logging
 
 from PySide2 import QtCore, QtGui, QtWidgets
+import math
 
 
 class Measurements_Block(QtWidgets.QWidget):
@@ -37,14 +38,25 @@ class Measurements_Block(QtWidgets.QWidget):
 
         widget_list = []
         for measurement in measurements:
-            widget_list.append(
-                MeasurementWidget(
-                    NativeUI,
-                    measurement[0],  # Label
-                    measurement[2],  # Keydir
-                    measurement[1],  # Key
+            if len(measurement) > 3:
+                widget_list.append(
+                    MeasurementWidget(
+                        NativeUI,
+                        measurement[0],  # Label
+                        measurement[2],  # Keydir
+                        measurement[1],  # Key
+                        measurement[3],  # Format
+                    )
                 )
-            )
+            else:
+                widget_list.append(
+                    MeasurementWidget(
+                        NativeUI,
+                        measurement[0],  # Label
+                        measurement[2],  # Keydir
+                        measurement[1],  # Key
+                    )
+                )
 
         # Compute max number of items per column
         max_col_length = int(len(widget_list) / (columns))
@@ -81,12 +93,12 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     Optional Parameters
     -------------------
-        width
-        height
+        width (int): the width of the widget in pixels
+        height (int): the height of the widget in pixels
 
     Methods
     -------
-        update_value() :
+        update_value():
     """
 
     def __init__(
@@ -95,6 +107,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         label: str,
         keydir: str,
         key: str,
+        format: str = "{:.1f}",
         width: int = 250,
         height: int = 120,
         *args,
@@ -107,6 +120,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         self.NativeUI = NativeUI
         self.keydir = keydir
         self.key = key
+        self.format = format
 
         # Layout and widgets
         layout = QtWidgets.QVBoxLayout()
@@ -144,9 +158,9 @@ class MeasurementWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         self.setFixedSize(QtCore.QSize(width, height))
 
-    def update_value(self):
+    def update_value(self) -> int:
         """
-        Placeholder function to be overwritten by subclasses
+        Poll the database in NativeUI and update the displayed value.
         """
         if self.key is None:  # widget can be created without assigning a parameter
             self.value_display.setText("-")
@@ -157,8 +171,24 @@ class MeasurementWidget(QtWidgets.QWidget):
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_db(self.keydir)[self.key])
+        self.value_display.setText(
+            self.__format_value(self.NativeUI.get_db(self.keydir)[self.key])
+        )
         return 0
+
+    def __format_value(self, number):
+        if self.format is "ratio":
+            n_digits = 2
+            vals = number.as_integer_ratio()
+            order_of_mag = math.floor(math.log(vals[0], 10))
+            if order_of_mag > n_digits:
+                vals = [
+                    round(val / (10 ** (order_of_mag - (n_digits - 1)))) for val in vals
+                ]
+
+            # print(number, vals[0], vals[1], vals[0]/vals[1])
+            return "{:.0f}:{:.0f}".format(*vals)
+        return self.format.format(number)
 
 
 class TabMeasurements(Measurements_Block):
@@ -193,7 +223,7 @@ class TabExpertMeasurements(Measurements_Block):
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
             ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
-            ("I:E", "inhale_exhale_ratio", "readback"),
+            ("I:E", "inhale_exhale_ratio", "readback", "ratio"),
             (
                 "P<sub>PEAK</sub> [cmH<sub>2</sub>O]",
                 "peak_inspiratory_pressure",
