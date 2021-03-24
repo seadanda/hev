@@ -33,9 +33,19 @@ class Measurements_Block(QtWidgets.QWidget):
 
         super(Measurements_Block, self).__init__(*args, **kwargs)
 
-        # layout = QtWidgets.QVBoxLayout()
         layout = QtWidgets.QGridLayout(self)
 
+        # Create "Measurements" Title
+        title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"])
+        title_label.setStyleSheet(
+            "font-size:" + NativeUI.text_size + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
+            "background-color: white;"
+        )
+        # title_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        # title_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Create Muasurement widgets
         widget_list = []
         for measurement in measurements:
             if len(measurement) > 3:
@@ -63,13 +73,18 @@ class Measurements_Block(QtWidgets.QWidget):
         if len(widget_list) % (columns) != 0:
             max_col_length += 1
 
-        i_row = 0
+        # Arrange layout widgets in rows and columns
+        layout.addWidget(
+            title_label, columnspan=columns, alignment=QtCore.Qt.AlignHCenter
+        )
+        i_row_min = 1  # first row for measurement widgets below the label
+        i_row = i_row_min
         i_col = 0
         for widget in widget_list:
             layout.addWidget(widget, i_row, i_col)
             i_row += 1
-            if i_row == max_col_length:
-                i_row = 0
+            if i_row == max_col_length + i_row_min:
+                i_row = i_row_min
                 i_col += 1
 
         self.setLayout(layout)
@@ -186,7 +201,6 @@ class MeasurementWidget(QtWidgets.QWidget):
                     round(val / (10 ** (order_of_mag - (n_digits - 1)))) for val in vals
                 ]
 
-            # print(number, vals[0], vals[1], vals[0]/vals[1])
             return "{:.0f}:{:.0f}".format(*vals)
         return self.format.format(number)
 
@@ -204,7 +218,12 @@ class TabMeasurements(Measurements_Block):
             ("RR", "respiratory_rate", "cycle"),
             ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
-            ("MVE [<sup>L</sup>/<sub>min</sub>]", "exhaled_minute_volume", "cycle"),
+            (
+                "MVE [<sup>L</sup>/<sub>min</sub>]",
+                "exhaled_minute_volume",
+                "cycle",
+                "{:.0f}",
+            ),
             ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
         ]
 
@@ -235,7 +254,7 @@ class TabExpertMeasurements(Measurements_Block):
             ("VTI [mL]", "inhaled_tidal_volume", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
             ("MVI [L/min]", "inhaled_minute_volume", "cycle"),
-            ("MVE [L/min]", "exhaled_minute_volume", "cycle"),
+            ("MVE [L/min]", "exhaled_minute_volume", "cycle", "{:.0f}"),
         ]
 
         super().__init__(
