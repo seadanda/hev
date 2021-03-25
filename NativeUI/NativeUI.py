@@ -4,8 +4,9 @@
 NativeUI.py
 
 Command-line arguments:
--d, --debug    : set the level of debug output.Include once for INFO, twice for DEBUG
--w, --windowed : run the user interface in windowed mode.
+-d, --debug      : set the level of debug output.Include once for INFO, twice for DEBUG
+-w, --windowed   : run the user interface in windowed mode.
+-r, --resolution : set the window size in pixels. E.g. -r 1920x1080
 """
 
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
