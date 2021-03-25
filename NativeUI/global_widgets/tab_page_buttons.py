@@ -98,25 +98,33 @@ class TabPageButtons(QtWidgets.QWidget):
         self.button_settings.pressed.connect(self.settings_pressed)
 
     def mainview_pressed(self):
-        self.NativeUI.stack.setCurrentWidget(self.NativeUI.main_view)
+        self.NativeUI.widgets.page_stack.setCurrentWidget(
+            self.NativeUI.widgets.main_page
+        )
         for button in self.__buttons:
             button.setEnabled(True)
         self.button_mainview.setEnabled(False)
 
     def settings_pressed(self):
-        self.NativeUI.stack.setCurrentWidget(self.NativeUI.settings_view)
+        self.NativeUI.widgets.page_stack.setCurrentWidget(
+            self.NativeUI.widgets.settings_page
+        )
         for button in self.__buttons:
             button.setEnabled(True)
         self.button_settings.setEnabled(False)
 
     def alarms_pressed(self):
-        self.NativeUI.stack.setCurrentWidget(self.NativeUI.alarms_view)
+        self.NativeUI.widgets.page_stack.setCurrentWidget(
+            self.NativeUI.widgets.alarms_page
+        )
         for button in self.__buttons:
             button.setEnabled(True)
         self.button_alarms.setEnabled(False)
 
     def fancon_pressed(self):
-        self.NativeUI.stack.setCurrentWidget(self.NativeUI.modes_view)
+        self.NativeUI.widgets.page_stack.setCurrentWidget(
+            self.NativeUI.widgets.modes_page
+        )
         for button in self.__buttons:
             button.setEnabled(True)
         self.button_fancon.setEnabled(False)

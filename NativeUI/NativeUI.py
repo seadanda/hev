@@ -28,27 +28,18 @@ import re
 import numpy as np
 
 # from alarm_widgets.tab_alarms import TabAlarm
-from global_widgets.tab_top_bar import TabTopBar
+# from global_widgets.tab_top_bar import TabTopBar
 from global_widgets.tab_left_bar import TabLeftBar
 from global_widgets.global_sendconfirm_popup import confirmPopup
-from hev_main import MainView
-from hev_settings import SettingsView
-from hev_alarms import AlarmView
-from hev_modes import ModeView
 from hevclient import HEVClient
+
+from ui_layout import Layout, Widgets
 
 from threading import Lock
 
-from PySide2.QtCore import QDateTime, Signal, Slot
+from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QPalette
-from PySide2.QtWidgets import (
-    QApplication,
-    QHBoxLayout,
-    QMainWindow,
-    QStackedWidget,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -131,38 +122,17 @@ class NativeUI(HEVClient, QMainWindow):
             "__personal",
         ]
 
-        # bars
-        self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self)
-
-        # Views
-        self.stack = QStackedWidget(self)
-        self.main_view = MainView(self)
-        self.stack.addWidget(self.main_view)
-        self.settings_view = SettingsView(self)
-        self.stack.addWidget(self.settings_view)
-        self.alarms_view = AlarmView(self)
-        self.stack.addWidget(self.alarms_view)
-        self.modes_view = ModeView(self)
-        self.stack.addWidget(self.modes_view)
+        self.widgets = Widgets(self)  # Create all the widgets we'll need
+        self.layouts = Layout(self, self.widgets)  #
 
         self.confirmPopup = confirmPopup(
             self, self
         )  # one is passed as an argument, the other becomes parent
         self.confirmPopup.show()
 
-        # Layout
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(self.leftBar)
-        hlayout.addWidget(self.stack)
-
-        vlayout = QVBoxLayout()
-        vlayout.addWidget(self.topBar)
-        vlayout.addLayout(hlayout)
-
         # Set Central
         self.centralWidget = QWidget(self)
-        self.centralWidget.setLayout(vlayout)
+        self.centralWidget.setLayout(self.layouts.global_layout())
         self.setCentralWidget(self.centralWidget)
 
         self.statusBar().showMessage("Waiting for data")
@@ -175,7 +145,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.setAutoFillBackground(True)
 
         # Update page buttons to match the shown view
-        self.leftBar.tab_page_buttons.mainview_pressed()
+        self.widgets.tab_page_buttons.mainview_pressed()
 
         # self.main_view.alarmHandler.show()
 
@@ -508,7 +478,7 @@ if __name__ == "__main__":
     )
 
     # Connect top-level signals
-    dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
+    dep.battery_signal.connect(dep.widgets.tab_battery.update_value)
 
     dep.show()
     app.exec_()
