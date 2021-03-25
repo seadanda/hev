@@ -193,7 +193,7 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     def __format_value(self, number):
         if self.format is "ratio":
-            n_digits = 2
+            n_digits = 1
             vals = number.as_integer_ratio()
             order_of_mag = math.floor(math.log(vals[0], 10))
             if order_of_mag > n_digits:
