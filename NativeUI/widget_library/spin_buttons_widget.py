@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_spin_buttons.py
+spin_buttons_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -114,9 +114,9 @@ class SpinButton(QtWidgets.QFrame):
                 self.simpleSpin.style().polish(self.simpleSpin)
 
 
-class TabSpinButtons(QtWidgets.QWidget):
+class SpinButtonsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
-        super(TabSpinButtons, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.NativeUI = NativeUI
         # self.setStyleSheet("background-color:blue;")
         self.liveUpdating = True

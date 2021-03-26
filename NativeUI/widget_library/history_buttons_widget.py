@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_history_buttons.py
+history_buttons_widget.py
 
 Part of NativeUI. Defines the HistoryButton class to control the lookback time
 of plots, and constructs the TabHistoryButtons widget to contain the requisite
@@ -20,7 +20,7 @@ from PySide2 import QtWidgets
 from PySide2.QtCore import QSize, Signal, Slot
 
 
-class TabHistoryButtons(QtWidgets.QWidget):
+class HistoryButtonsWidget(QtWidgets.QWidget):
     """
     Widget to hold the HistoryButtons.
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_measurements.py
+measurements_widget.py
 
 Part of NativeUI. Defines the MeasurementWidget class to display current
 parameters, and constructs the TabMeasurements widget to display the requisite
@@ -22,7 +22,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import math
 
 
-class Measurements_Block(QtWidgets.QWidget):
+class MeasurementsBlockWidget(QtWidgets.QWidget):
     """
     Block of widgets displaying various measurement parameters
     """
@@ -31,7 +31,7 @@ class Measurements_Block(QtWidgets.QWidget):
         self, NativeUI, *args, measurements: list = None, columns: int = 1, **kwargs
     ):
 
-        super(Measurements_Block, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         layout = QtWidgets.QGridLayout(self)
 
@@ -205,7 +205,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         return self.format.format(number)
 
 
-class TabMeasurements(Measurements_Block):
+class NormalMeasurementsBlockWidget(MeasurementsBlockWidget):
     """
     Widget to contain the measurements for the standard page. Essentially a
     wrapper for the Measurements_Block class that specifies the measurements
@@ -232,7 +232,7 @@ class TabMeasurements(Measurements_Block):
         )
 
 
-class TabExpertMeasurements(Measurements_Block):
+class ExpertMeasurementsBloackWidget(MeasurementsBlockWidget):
     """
     Widget to contain the measurements for the standard page. Essentially a
     wrapper for the Measurements_Block class that specifies the measurements

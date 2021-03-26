@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_plots.py
+plot_widget.py
 
 Part of NativeUI.
 """
@@ -22,9 +22,9 @@ from pyqtgraph import mkColor
 from PySide2 import QtCore, QtWidgets
 
 
-class TabPlots(QtWidgets.QWidget):
+class TimePlotsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, port=54322, *args, **kwargs):
-        super(TabPlots, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
         self.time_range = 30
@@ -133,7 +133,7 @@ class TabPlots(QtWidgets.QWidget):
         return 0
 
 
-class TabCirclePlots(QtWidgets.QWidget):
+class CirclePlotsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, port=54322, *args, **kwargs):
         super().__init__(*args, **kwargs)
 

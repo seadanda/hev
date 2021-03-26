@@ -23,17 +23,23 @@ from global_widgets.tab_page_buttons import TabPageButtons
 from global_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
 from alarm_widgets.tab_alarms import TabAlarm
 from alarm_widgets.tab_clinical import TabClinical
+
 from widget_library.switchable_stack_widget import SwitchableStackWidget
+from widget_library.history_buttons_widget import HistoryButtonsWidget
+from widget_library.measurements_widget import (
+    NormalMeasurementsBlockWidget,
+    ExpertMeasurementsBloackWidget,
+)
+from widget_library.plot_widget import TimePlotsWidget, CirclePlotsWidget
+from widget_library.spin_buttons_widget import SpinButtonsWidget
 
 # from hev_main import MainView
 # from hev_settings import SettingsView
-from main_widgets.tab_measurements import TabMeasurements, TabExpertMeasurements
-from main_widgets.tab_plots import TabPlots
-from main_widgets.tab_spin_buttons import TabSpinButtons
-from main_widgets.tab_measurements import TabMeasurements
-from main_widgets.tab_plots import TabPlots, TabCirclePlots
-from main_widgets.tab_spin_buttons import TabSpinButtons
-from main_widgets.tab_history_buttons import TabHistoryButtons
+# from main_widgets.tab_measurements import TabMeasurements, TabExpertMeasurements
+# from main_widgets.tab_spin_buttons import TabSpinButtons
+# from main_widgets.tab_measurements import TabMeasurements
+# from main_widgets.tab_spin_buttons import TabSpinButtons
+# from main_widgets.tab_history_buttons import TabHistoryButtons
 from settings_widgets.tab_charts import TabChart
 from settings_widgets.tab_expert import TabExpert
 from mode_widgets.tab_modes import TabModes
@@ -118,13 +124,13 @@ class Layout:
         page_main_bottom_layout = QtWidgets.QHBoxLayout()
 
         tab_main_normal = self.layout_tab_main_normal(
-            [self.widgets.tab_normal_plots, self.widgets.tab_normal_measurements]
+            [self.widgets.normal_plots, self.widgets.normal_measurements]
         )
         tab_main_detailed = self.layout_tab_main_detailed(
             [
-                self.widgets.tab_detailed_plots,
-                self.widgets.tab_detailed_measurements,
-                self.widgets.tab_circle_plots,
+                self.widgets.detailed_plots,
+                self.widgets.detailed_measurements,
+                self.widgets.circle_plots,
             ]
         )
 
@@ -138,7 +144,7 @@ class Layout:
         )
 
         center_widgets = [plot_stack]
-        bottom_widgets = [self.widgets.tab_history_buttons, self.widgets.tab_spin]
+        bottom_widgets = [self.widgets.history_buttons, self.widgets.spin_buttons]
 
         for widget in center_widgets:
             page_main_center_layout.addWidget(widget)
@@ -259,13 +265,13 @@ class Widgets:
         )
 
         # Main Page Widgets
-        self.tab_spin = TabSpinButtons(NativeUI)
-        self.tab_history_buttons = TabHistoryButtons(NativeUI)
-        self.tab_normal_plots = TabPlots(NativeUI)
-        self.tab_detailed_plots = TabPlots(NativeUI)
-        self.tab_normal_measurements = TabMeasurements(NativeUI)
-        self.tab_circle_plots = TabCirclePlots(NativeUI)
-        self.tab_detailed_measurements = TabExpertMeasurements(NativeUI)
+        self.spin_buttons = SpinButtonsWidget(NativeUI)
+        self.history_buttons = HistoryButtonsWidget(NativeUI)
+        self.normal_plots = TimePlotsWidget(NativeUI)
+        self.detailed_plots = TimePlotsWidget(NativeUI)
+        self.normal_measurements = NormalMeasurementsBlockWidget(NativeUI)
+        self.circle_plots = CirclePlotsWidget(NativeUI)
+        self.detailed_measurements = ExpertMeasurementsBloackWidget(NativeUI)
 
         # Alarm Page Widgets
         self.alarmTab = TabAlarm(NativeUI)
