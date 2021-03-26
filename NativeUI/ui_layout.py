@@ -42,7 +42,7 @@ from mode_widgets.tab_personal import TabPersonal
 # from main_widgets.tab_expert_plots import TabExpertPlots
 
 # from hev_alarms import AlarmView
-from hev_modes import ModeView
+# fro\m hev_modes import ModeView
 
 
 class Layout:
@@ -215,7 +215,11 @@ class Layout:
         return page_settings
 
     def layout_page_modes(self) -> QtWidgets.QWidget:
-        page_modes = ModeView(self.NativeUI)
+        page_modes = SwitchableStackWidget(
+            self.NativeUI,
+            [self.widgets.mode_settings_tab, self.widgets.mode_personal_tab],
+            ["Mode Settings", "Personal Settings"],
+        )
         return page_modes
 
     def __make_stack(self, widgets):
