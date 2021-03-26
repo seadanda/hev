@@ -479,6 +479,9 @@ if __name__ == "__main__":
 
     # Connect top-level signals
     dep.battery_signal.connect(dep.widgets.tab_battery.update_value)
+    for button in dep.widgets.tab_history_buttons.buttons:
+        for widget in [dep.widgets.tab_normal_plots, dep.widgets.tab_detailed_plots]:
+            button.HistoryButtonPressed.connect(widget.update_plot_time_range)
 
     dep.show()
     app.exec_()

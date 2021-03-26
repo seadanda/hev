@@ -24,16 +24,18 @@ from global_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
 from alarm_widgets.tab_alarms import TabAlarm
 from alarm_widgets.tab_clinical import TabClinical
 from widget_library.switchable_stack_widget import SwitchableStackWidget
-from hev_main import MainView
+
+# from hev_main import MainView
 from hev_settings import SettingsView
-from main_widgets.tab_measurements import TabMeasurements
+from main_widgets.tab_measurements import TabMeasurements, TabExpertMeasurements
 from main_widgets.tab_plots import TabPlots
 from main_widgets.tab_spin_buttons import TabSpinButtons
 from main_widgets.tab_measurements import TabMeasurements
-from main_widgets.tab_plots import TabPlots
+from main_widgets.tab_plots import TabPlots, TabCirclePlots
 from main_widgets.tab_spin_buttons import TabSpinButtons
 from main_widgets.tab_history_buttons import TabHistoryButtons
-from main_widgets.tab_expert_plots import TabExpertPlots
+
+# from main_widgets.tab_expert_plots import TabExpertPlots
 
 # from hev_alarms import AlarmView
 from hev_modes import ModeView
@@ -59,7 +61,13 @@ class Layout:
                             self.widgets.tab_normal_measurements,
                         ]
                     ),
-                    self.layout_tab_main_detailed([]),
+                    self.layout_tab_main_detailed(
+                        [
+                            self.widgets.tab_detailed_plots,
+                            self.widgets.tab_detailed_measurements,
+                            self.widgets.tab_circle_plots,
+                        ]
+                    ),
                 ],
                 ["Normal", "Detailed"],
             ),
@@ -216,16 +224,17 @@ class Widgets:
         self.tab_spin = TabSpinButtons(NativeUI)
         self.tab_history_buttons = TabHistoryButtons(NativeUI)
         self.tab_normal_plots = TabPlots(NativeUI)
+        self.tab_detailed_plots = TabPlots(NativeUI)
         self.tab_normal_measurements = TabMeasurements(NativeUI)
-        # self.tab_circle_plots =
-        # self.tab_detailed_measurements =
+        self.tab_circle_plots = TabCirclePlots(NativeUI)
+        self.tab_detailed_measurements = TabExpertMeasurements(NativeUI)
 
         # Alarm Page Widgets
         self.alarmTab = TabAlarm(NativeUI)
         self.clinicalTab = TabClinical(NativeUI)
 
         # Pages
-        self.main_page = MainView(self.NativeUI)
+        # self.main_page = MainView(self.NativeUI)
         self.settings_page = SettingsView(self.NativeUI)
         self.alarms_page = SwitchableStackWidget(
             self.NativeUI,
