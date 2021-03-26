@@ -13,7 +13,9 @@ __email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
 from PySide2 import QtWidgets, QtGui, QtCore
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+
+# from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 import sys
 import os
 
@@ -50,11 +52,11 @@ class SetConfirmPopup(
 
         buttonHLayout = QtWidgets.QHBoxLayout()
 
-        self.okButton = okButton(self.NativeUI)
+        self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.ok_button_pressed)
         buttonHLayout.addWidget(self.okButton)
 
-        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancel_button_pressed)
         buttonHLayout.addWidget(self.cancelButton)
 

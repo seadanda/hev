@@ -15,7 +15,7 @@ __status__ = "Prototype"
 from PySide2 import QtCore, QtGui, QtWidgets
 import os
 
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 
 # from main_widgets.customPopup import customPopup
 
@@ -56,10 +56,10 @@ class TypeValuePopup(QtWidgets.QDialog):
         # self.lineEdit.textEdited.connect(self.setTextColour(1))
         grid.addWidget(self.lineEdit, 0, 0, 1, 2)
 
-        self.okButton = okButton(NativeUI)
+        self.okButton = OkButtonWidget(NativeUI)
         grid.addWidget(self.okButton, 1, 0)
 
-        self.cancelButton = cancelButton(NativeUI)
+        self.cancelButton = CancelButtonWidget(NativeUI)
         grid.addWidget(self.cancelButton, 1, 1)
 
         self.setLayout(grid)

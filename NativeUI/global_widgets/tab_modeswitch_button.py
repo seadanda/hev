@@ -13,7 +13,9 @@ __email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
 from PySide2 import QtCore, QtGui, QtWidgets
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+
+# from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 
 
 class TabModeswitchButton(QtWidgets.QWidget):
@@ -110,9 +112,9 @@ class modeswitchPopup(QtWidgets.QDialog):
         ## Ok Cancel Buttons
 
         hbuttonlayout = QtWidgets.QHBoxLayout()
-        self.okbutton = okButton(NativeUI)
+        self.okbutton = OkButtonWidget(NativeUI)
         self.okbutton.pressed.connect(self.ok_button_pressed)
-        self.cancelbutton = cancelButton(NativeUI)
+        self.cancelbutton = CancelButtonWidget(NativeUI)
         self.cancelbutton.pressed.connect(self.cancel_button_pressed)
         hbuttonlayout.addWidget(self.okbutton)
         hbuttonlayout.addWidget(self.cancelbutton)

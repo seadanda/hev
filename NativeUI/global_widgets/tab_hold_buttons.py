@@ -14,7 +14,9 @@ __status__ = "Prototype"
 
 import logging
 from PySide2 import QtCore, QtGui, QtWidgets
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+
+# from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 import time
 
 
@@ -54,9 +56,9 @@ class timerConfirmPopup(QtWidgets.QWidget):
         self.completeLabel = QtWidgets.QLabel("confirm it")
 
         buttonLayout = QtWidgets.QHBoxLayout()
-        self.okButton = okButton(NativeUI)
+        self.okButton = OkButtonWidget(NativeUI)
         buttonLayout.addWidget(self.okButton)
-        self.cancelButton = cancelButton(NativeUI)
+        self.cancelButton = CancelButtonWidget(NativeUI)
         buttonLayout.addWidget(self.cancelButton)
 
         self.completeLayout.addWidget(self.completeLabel)

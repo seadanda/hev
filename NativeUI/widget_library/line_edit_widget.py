@@ -2,7 +2,7 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_typeval_popup import TypeValuePopup
 
 
-class signallingLineEdit(QtWidgets.QLineEdit):
+class SignallingLineEditWidget(QtWidgets.QLineEdit):
     manualChanged = QtCore.Signal()
 
     def __init__(self, NativeUI):
@@ -32,9 +32,9 @@ class signallingLineEdit(QtWidgets.QLineEdit):
         return False
 
 
-class labelledLineEdit(QtWidgets.QWidget):
+class LabelledLineEditWidget(QtWidgets.QWidget):
     def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
-        super(labelledLineEdit, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         # print(infoArray)
         self.NativeUI = NativeUI
         self.template = template
@@ -60,7 +60,7 @@ class labelledLineEdit(QtWidgets.QWidget):
             self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
             widgetList.append(self.nameLabel)
 
-        self.simpleSpin = signallingLineEdit(NativeUI)
+        self.simpleSpin = SignallingLineEditWidget(NativeUI)
         self.simpleSpin.setText("")
         self.simpleSpin.setStyleSheet(
             """QDoubleSpinBox{ width:100px; font:16pt}
@@ -92,7 +92,7 @@ class labelledLineEdit(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def update_personal_value(self):
-        newVal = self.NativeUI.get_db('personal')
+        newVal = self.NativeUI.get_db("personal")
         if newVal == {}:
             a = 1  # do nothing
         else:

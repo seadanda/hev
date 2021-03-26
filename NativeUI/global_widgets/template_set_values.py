@@ -16,8 +16,12 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
 from global_widgets.global_select_button import selectorButton
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
-from global_widgets.global_lineEdit import labelledLineEdit
+
+# from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+from widget_library.line_edit_widget import LabelledLineEditWidget
+
+# from global_widgets.global_lineEdit import labelledLineEdit
 
 
 class TemplateSetValues(QtWidgets.QWidget):
@@ -219,7 +223,9 @@ class TemplateSetValues(QtWidgets.QWidget):
         vOptionLayout = QtWidgets.QVBoxLayout()
         for info in settingsList:
             if info[0] in textBoxes:
-                self.spinDict[info[0]] = labelledLineEdit(self, self.NativeUI, info)
+                self.spinDict[info[0]] = LabelledLineEditWidget(
+                    self, self.NativeUI, info
+                )
             else:
                 self.spinDict[info[0]] = labelledSpin(self, self.NativeUI, info)
             vOptionLayout.addWidget(self.spinDict[info[0]])
@@ -227,11 +233,11 @@ class TemplateSetValues(QtWidgets.QWidget):
 
     def addButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
-        self.okButton = okButton(self.NativeUI)
+        self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.okButtonPressed)
         hlayout.addWidget(self.okButton)
 
-        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancelButtonPressed)
         hlayout.addWidget(self.cancelButton)
         self.layoutList.append(hlayout)

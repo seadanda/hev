@@ -17,7 +17,9 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_typeval_popup import TypeValuePopup
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+
+# from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 from global_widgets.global_spinbox import signallingSpinBox
 from global_widgets.global_send_popup import SetConfirmPopup
 
@@ -145,11 +147,11 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
 
-        self.okButton = okButton(self.NativeUI)
+        self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.ok_button_pressed)
         self.buttonLayout.addWidget(self.okButton)
 
-        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancel_button_pressed)
         self.buttonLayout.addWidget(self.cancelButton)
 

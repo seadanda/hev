@@ -33,7 +33,8 @@ import numpy as np
 from global_widgets.global_sendconfirm_popup import confirmPopup
 from hevclient import HEVClient
 
-from ui_layout import Layout, Widgets
+from ui_layout import Layout
+from ui_widgets import Widgets
 
 from threading import Lock
 
