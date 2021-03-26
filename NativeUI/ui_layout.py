@@ -59,13 +59,13 @@ class Layout:
         self.widgets = widgets
         self.construct_page_widgets()
 
-    def construct_page_widgets(self):
+    def construct_page_widgets(self) -> int:
+        """
+        Build all of the main pages
+        """
         self.widgets.add_widget(self.layout_page_main(), "main_page")
-
         self.widgets.add_widget(self.layout_page_alarms(), "alarms_page")
-
         self.widgets.add_widget(self.layout_page_settings(), "settings_page")
-
         self.widgets.add_widget(self.layout_page_modes(), "modes_page")
 
         return 0
@@ -111,32 +111,6 @@ class Layout:
         vlayout.addLayout(hlayout)
         return vlayout
 
-    def layout_top_bar(self, widgets: list) -> QtWidgets.QWidget:
-        """
-        Construct the layout for the global top bar
-        """
-        assert len(widgets) > 0
-
-        top_bar = QtWidgets.QWidget()
-        top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
-        for widget in widgets:
-            top_bar_layout.addWidget(widget)
-        top_bar.setLayout(top_bar_layout)
-        return top_bar
-
-    def layout_left_bar(self, widgets: list) -> QtWidgets.QWidget:
-        """
-        Construct the layout for the global left bar
-        """
-        left_bar = QtWidgets.QWidget()
-        left_bar_layout = QtWidgets.QVBoxLayout(left_bar)
-        for widget in widgets:
-            left_bar_layout.addWidget(widget)
-        left_bar_layout.setSpacing(0)
-        left_bar_layout.setContentsMargins(0, 0, 0, 0)
-        left_bar.setLayout(left_bar_layout)
-        return left_bar
-
     def layout_page_main(self) -> QtWidgets.QWidget:
         page_main = QtWidgets.QWidget()
         page_main_layout = QtWidgets.QVBoxLayout()
@@ -176,22 +150,6 @@ class Layout:
         page_main.setLayout(page_main_layout)
         return page_main
 
-    def layout_tab_main_normal(self, widgets: list) -> QtWidgets.QWidget:
-        tab_main_normal = QtWidgets.QWidget()
-        tab_main_normal_layout = QtWidgets.QHBoxLayout(tab_main_normal)
-        for widget in widgets:
-            tab_main_normal_layout.addWidget(widget)
-        tab_main_normal.setLayout(tab_main_normal_layout)
-        return tab_main_normal
-
-    def layout_tab_main_detailed(self, widgets: list) -> QtWidgets.QWidget:
-        tab_main_detailed = QtWidgets.QWidget()
-        tab_main_detailed_layout = QtWidgets.QHBoxLayout(tab_main_detailed)
-        for widget in widgets:
-            tab_main_detailed_layout.addWidget(widget)
-        tab_main_detailed.setLayout(tab_main_detailed_layout)
-        return tab_main_detailed
-
     def layout_page_alarms(self) -> QtWidgets.QWidget:
         """
         Layout for the alarms page.
@@ -221,6 +179,48 @@ class Layout:
             ["Mode Settings", "Personal Settings"],
         )
         return page_modes
+
+    def layout_top_bar(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the global top bar
+        """
+        assert len(widgets) > 0
+
+        top_bar = QtWidgets.QWidget()
+        top_bar_layout = QtWidgets.QHBoxLayout(top_bar)
+        for widget in widgets:
+            top_bar_layout.addWidget(widget)
+        top_bar.setLayout(top_bar_layout)
+        return top_bar
+
+    def layout_left_bar(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the global left bar
+        """
+        left_bar = QtWidgets.QWidget()
+        left_bar_layout = QtWidgets.QVBoxLayout(left_bar)
+        for widget in widgets:
+            left_bar_layout.addWidget(widget)
+        left_bar_layout.setSpacing(0)
+        left_bar_layout.setContentsMargins(0, 0, 0, 0)
+        left_bar.setLayout(left_bar_layout)
+        return left_bar
+
+    def layout_tab_main_normal(self, widgets: list) -> QtWidgets.QWidget:
+        tab_main_normal = QtWidgets.QWidget()
+        tab_main_normal_layout = QtWidgets.QHBoxLayout(tab_main_normal)
+        for widget in widgets:
+            tab_main_normal_layout.addWidget(widget)
+        tab_main_normal.setLayout(tab_main_normal_layout)
+        return tab_main_normal
+
+    def layout_tab_main_detailed(self, widgets: list) -> QtWidgets.QWidget:
+        tab_main_detailed = QtWidgets.QWidget()
+        tab_main_detailed_layout = QtWidgets.QHBoxLayout(tab_main_detailed)
+        for widget in widgets:
+            tab_main_detailed_layout.addWidget(widget)
+        tab_main_detailed.setLayout(tab_main_detailed_layout)
+        return tab_main_detailed
 
     def __make_stack(self, widgets):
         """
