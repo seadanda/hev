@@ -26,6 +26,8 @@ class TabPageButtons(QtWidgets.QWidget):
     Button colors may be dictated by setting the colors dict, wherein
     foreground and background colors are provided in QColor types. If button
     colors are not set they default to red.
+
+    TODO: move connections to NativeUI
     """
 
     def __init__(self, NativeUI, *args, size: QSize = None, **kwargs):

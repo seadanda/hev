@@ -15,7 +15,7 @@ __status__ = "Prototype"
 from PySide2 import QtWidgets, QtCore
 
 
-class TabPersonal(QtWidgets.QWidget):
+class TabPersonalDisplay(QtWidgets.QWidget):
     """
     Display the current status of the personal information database
     """

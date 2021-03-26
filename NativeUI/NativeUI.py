@@ -87,6 +87,8 @@ class NativeUI(HEVClient, QMainWindow):
             "plot_line_label_flow_volume": "Flow - Volume",
             "plot_line_label_volume_pressure": "Volume - Airway Pressure",
             "layout_label_measurements": "Measurements",
+            "button_label_main_normal": "Normal",
+            "button_label_main_detailed": "Detailed",
         }
         self.iconpath = self.__find_icons()
 
