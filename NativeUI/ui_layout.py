@@ -16,11 +16,10 @@ __status__ = "Prototype"
 
 from PySide2 import QtWidgets
 from PySide2.QtCore import QSize
-from global_widgets.tab_battery import TabBattery
-from global_widgets.tab_personal import TabPersonalDisplay
+
 from global_widgets.tab_modeswitch_button import TabModeswitchButton
-from global_widgets.tab_page_buttons import TabPageButtons
-from global_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
+
+# from global_widgets.tab_start_stop_buttons import TabStartStopStandbyButtons
 from alarm_widgets.tab_alarms import TabAlarm
 from alarm_widgets.tab_clinical import TabClinical
 
@@ -32,23 +31,17 @@ from widget_library.measurements_widget import (
 )
 from widget_library.plot_widget import TimePlotsWidget, CirclePlotsWidget
 from widget_library.spin_buttons_widget import SpinButtonsWidget
+from widget_library.page_buttons_widget import PageButtonsWidget
+from widget_library.personal_display_widget import PersonalDisplayWidget
+from widget_library.battery_display_widget import BatteryDisplayWidget
+from widget_library.ventilator_start_stop_buttons_widget import (
+    VentilatorStartStopButtonsWidget,
+)
 
-# from hev_main import MainView
-# from hev_settings import SettingsView
-# from main_widgets.tab_measurements import TabMeasurements, TabExpertMeasurements
-# from main_widgets.tab_spin_buttons import TabSpinButtons
-# from main_widgets.tab_measurements import TabMeasurements
-# from main_widgets.tab_spin_buttons import TabSpinButtons
-# from main_widgets.tab_history_buttons import TabHistoryButtons
 from settings_widgets.tab_charts import TabChart
 from settings_widgets.tab_expert import TabExpert
 from mode_widgets.tab_modes import TabModes
 from mode_widgets.tab_personal import TabPersonal
-
-# from main_widgets.tab_expert_plots import TabExpertPlots
-
-# from hev_alarms import AlarmView
-# fro\m hev_modes import ModeView
 
 
 class Layout:
@@ -96,7 +89,10 @@ class Layout:
         # Populate the Left Bar
         hlayout.addWidget(
             self.layout_left_bar(
-                [self.widgets.tab_page_buttons, self.widgets.tab_start_stop_buttons]
+                [
+                    self.widgets.page_buttons,
+                    self.widgets.ventilator_start_stop_buttons_widget,
+                ]
             )
         )
 
@@ -109,7 +105,7 @@ class Layout:
                 [
                     self.widgets.tab_modeswitch,
                     self.widgets.tab_personal,
-                    self.widgets.tab_battery,
+                    self.widgets.battery_display,
                 ]
             )
         )
@@ -252,14 +248,14 @@ class Widgets:
 
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
-        self.tab_battery = TabBattery(NativeUI)
-        self.tab_personal = TabPersonalDisplay(NativeUI)
+        self.battery_display = BatteryDisplayWidget(NativeUI)
+        self.tab_personal = PersonalDisplayWidget(NativeUI)
 
         # Left Bar widgets
-        self.tab_page_buttons = TabPageButtons(
+        self.page_buttons = PageButtonsWidget(
             self.NativeUI, size=QSize(self.left_button_width, self.left_button_width)
         )
-        self.tab_start_stop_buttons = TabStartStopStandbyButtons(
+        self.ventilator_start_stop_buttons_widget = VentilatorStartStopButtonsWidget(
             self.NativeUI,
             size=QSize(self.left_button_width, int(self.left_button_width / 3)),
         )

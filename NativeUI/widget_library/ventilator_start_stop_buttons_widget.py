@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_start_stop_buttons.py
+ventialtor_start_stop_buttons_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -18,13 +18,13 @@ from PySide2.QtCore import QSize
 from global_widgets.tab_hold_buttons import holdButton
 
 
-class TabStartStopStandbyButtons(QtWidgets.QWidget):
+class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
     """
     TODO
     """
 
     def __init__(self, NativeUI, *args, size: QSize = None, **kwargs):
-        super(TabStartStopStandbyButtons, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
 
@@ -57,16 +57,3 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
             button.setFixedSize(self.__button_size)
 
         self.setLayout(layout)
-
-    # def __interpret_colors(self, colors):
-    #     try:
-    #         _, _ = colors["foreground"], colors["background"]
-    #         return colors
-    #     except TypeError:
-    #         logging.warning("Color dict not set")
-    #     except KeyError:
-    #         logging.warning("missing key in color dict: %" % colors)
-    #     return {
-    #         "foreground": QtGui.QColor.fromRgb(255, 0, 0),
-    #         "background": QtGui.QColor.fromRgb(0, 255, 0),
-    #     }

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_personal.py
+personal_display_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -15,7 +15,7 @@ __status__ = "Prototype"
 from PySide2 import QtWidgets, QtCore
 
 
-class TabPersonalDisplay(QtWidgets.QWidget):
+class PersonalDisplayWidget(QtWidgets.QWidget):
     """
     Display the current status of the personal information database
     """

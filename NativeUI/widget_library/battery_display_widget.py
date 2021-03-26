@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_battery.py
+battery_display_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -18,14 +18,14 @@ import os
 from PySide2 import QtCore, QtGui, QtWidgets
 
 
-class TabBattery(QtWidgets.QWidget):
+class BatteryDisplayWidget(QtWidgets.QWidget):
     """
     Widget that contains both the battery icon and a text readout of the current
     battery charge.
     """
 
     def __init__(self, NativeUI, *args, **kwargs):
-        super(TabBattery, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.NativeUI = NativeUI
 
         layout = QtWidgets.QHBoxLayout(self)

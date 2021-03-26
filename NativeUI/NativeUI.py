@@ -29,7 +29,7 @@ import numpy as np
 
 # from alarm_widgets.tab_alarms import TabAlarm
 # from global_widgets.tab_top_bar import TabTopBar
-from global_widgets.tab_left_bar import TabLeftBar
+# from global_widgets.tab_left_bar import TabLeftBar
 from global_widgets.global_sendconfirm_popup import confirmPopup
 from hevclient import HEVClient
 
@@ -147,7 +147,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.setAutoFillBackground(True)
 
         # Update page buttons to match the shown view
-        self.widgets.tab_page_buttons.mainview_pressed()
+        self.widgets.page_buttons.mainview_pressed()
 
         # self.main_view.alarmHandler.show()
 
@@ -480,7 +480,7 @@ if __name__ == "__main__":
     )
 
     # Connect top-level signals
-    dep.battery_signal.connect(dep.widgets.tab_battery.update_value)
+    dep.battery_signal.connect(dep.widgets.battery_display.update_value)
     for button in dep.widgets.history_buttons.buttons:
         for widget in [dep.widgets.normal_plots, dep.widgets.detailed_plots]:
             button.HistoryButtonPressed.connect(widget.update_plot_time_range)
