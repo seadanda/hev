@@ -51,9 +51,9 @@ class modeswitchPopup(QtWidgets.QDialog):
         super(modeswitchPopup, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.settingsList = self.NativeUI.widgets.modes_page.settingsList
+        self.settingsList = self.NativeUI.widgets.mode_settings_tab.settingsList
         modeList = self.NativeUI.modeList
-        self.spinDict = self.NativeUI.widgets.modes_page.spinDict
+        self.spinDict = self.NativeUI.widgets.mode_settings_tab.spinDict
 
         vradioLayout = QtWidgets.QVBoxLayout()
         groupBox = QtWidgets.QGroupBox()
