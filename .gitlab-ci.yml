@@ -1,5 +1,6 @@
 stages:
   - setup
+  - install
   - build
   - test
 
@@ -12,9 +13,7 @@ create_pi_user:
     - mkdir -p /home/pi/Downloads
 
 install_packages:
-  stage: build
-  dependencies:
-    - create_pi_user
+  stage: install
   script:
     - apt -y autoremove
     - apt -y update
@@ -26,8 +25,6 @@ install_packages:
 
 ui_installation:
   stage: build
-  dependencies:
-    - install_packages
   script:
     - ls -a
     - pwd
