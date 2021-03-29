@@ -9,6 +9,7 @@ create_pi:
     - groupadd pi
     - useradd -u 1000 -g pi -m -p raspberry pi
     - usermod -aG sudo pi
+    - mkdir -p /home/pi/Downloads
 
 install_packages:
   stage: build
