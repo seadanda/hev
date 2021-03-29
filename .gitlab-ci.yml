@@ -4,13 +4,11 @@ stages:
   - build
   - test
 
-create_pi_user:
-  stage: setup
-  script:
-    - groupadd pi
-    - useradd -u 1000 -g pi -m -p raspberry pi
-    - usermod -aG sudo pi
-    - mkdir -p /home/pi/Downloads
+before_script:
+  - groupadd pi
+  - useradd -u 1000 -g pi -m -p raspberry pi
+  - usermod -aG sudo pi
+  - mkdir -p /home/pi/Downloads
 
 install_packages:
   stage: install
