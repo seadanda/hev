@@ -5,12 +5,17 @@ stages:
 install_packages:
   stage: build
   script:
+    - useradd -u 1000 -g pi -m -p raspberry pi
+    # - adduser --disabled-password pi
+    - usermod -aG sudo pi
+    # - su pi
+    - apt -y autoremove
     - apt -y update
     - apt -y upgrade
-    - apt -y install python3.7
-    - apt -y install software-properties-common
-    - apt -y install python3-pip
-    - apt -y install git-all
+    - apt -y install python3.7 software-properties-common python3-pip git-all raspi-config
+    # - apt -y install software-properties-common
+    # - apt -y install python3-pip
+    # - apt -y install git-all
     - python3 --version
     - pip3 install ansible
     - ansible --version
