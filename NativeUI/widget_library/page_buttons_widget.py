@@ -14,7 +14,7 @@ __status__ = "Prototype"
 
 import os
 from PySide2 import QtGui, QtWidgets
-from PySide2.QtCore import QSize
+from PySide2.QtCore import QSize, Signal, Slot
 import logging
 
 
@@ -41,33 +41,29 @@ class PageButtonsWidget(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.button_mainview = QtWidgets.QPushButton("")
-        self.button_alarms = QtWidgets.QPushButton("")
-        self.button_fancon = QtWidgets.QPushButton("")
-        self.button_settings = QtWidgets.QPushButton("")
-
-        self.__buttons = [
-            self.button_mainview,
-            self.button_alarms,
-            self.button_fancon,
-            self.button_settings,
+        self.buttons = [
+            PageButton(
+                NativeUI,
+                "",
+                signal_value="main_page",
+                icon=NativeUI.icons["button_main_page"],
+            ),
+            PageButton(
+                "",
+                signal_value="alarms_page",
+                icon=NativeUI.icons["button_alarms_page"],
+            ),
+            PageButton(
+                "", signal_value="modes_page", icon=NativeUI.icons["button_modes_page"]
+            ),
+            PageButton(
+                "",
+                signal_value="settings_page",
+                icon=NativeUI.icons["button_settings_page"],
+            ),
         ]
-        self.__icons = [
-            "user-md-solid",
-            "exclamation-triangle-solid",
-            "fan-solid",
-            "sliders-h-solid",
-        ]
-        self.__icons = [ic + ".png" for ic in self.__icons]
 
-        for button, icon in zip(self.__buttons, self.__icons):
-            pixmap = QtGui.QPixmap(os.path.join(self.NativeUI.iconpath, icon))
-
-            # set icon color
-            mask = pixmap.mask()  # mask from alpha
-            pixmap.fill(NativeUI.colors["page_foreground"])  # fill with color
-            pixmap.setMask(mask)  # reapply mask
-
+        for button in self.buttons:
             # set button appearance
             button.setStyleSheet(
                 "QPushButton{"
@@ -84,47 +80,55 @@ class PageButtonsWidget(QtWidgets.QWidget):
                 "    border:none"
                 "}"
             )
+            button.setIconColor(NativeUI.colors["page_foreground"])
             button.setFixedSize(self.__button_size)
-
-            button.setIcon(QtGui.QIcon(pixmap))
             button.setIconSize(self.__iconsize)
+
             layout.addWidget(button)
 
         self.setLayout(layout)
 
-        self.button_mainview.pressed.connect(self.mainview_pressed)
-        self.button_alarms.pressed.connect(self.alarms_pressed)
-        self.button_fancon.pressed.connect(self.fancon_pressed)
-        self.button_settings.pressed.connect(self.settings_pressed)
+        # Connect the buttons so that pressing one enables all of the others
+        for pressed_button in self.buttons:
+            for unpressed_button in self.buttons:
+                if pressed_button == unpressed_button:
+                    continue
+                pressed_button.pressed.connect(unpressed_button.enable)
 
-    def mainview_pressed(self):
-        self.NativeUI.widgets.page_stack.setCurrentWidget(
-            self.NativeUI.widgets.main_page
-        )
-        for button in self.__buttons:
-            button.setEnabled(True)
-        self.button_mainview.setEnabled(False)
 
-    def settings_pressed(self):
-        self.NativeUI.widgets.page_stack.setCurrentWidget(
-            self.NativeUI.widgets.settings_page
-        )
-        for button in self.__buttons:
-            button.setEnabled(True)
-        self.button_settings.setEnabled(False)
+class PageButton(QtWidgets.QPushButton):
+    PageButtonPressed = Signal(str)
 
-    def alarms_pressed(self):
-        self.NativeUI.widgets.page_stack.setCurrentWidget(
-            self.NativeUI.widgets.alarms_page
-        )
-        for button in self.__buttons:
-            button.setEnabled(True)
-        self.button_alarms.setEnabled(False)
+    def __init__(
+        self, NativeUI, *args, signal_value: str = None, icon: str = None, **kwargs
+    ):
+        super().__init__(*args, **kwargs)
+        self.__signal_value = signal_value
+        self.__icon_path = icon
+        self.setIconColor("white")
 
-    def fancon_pressed(self):
-        self.NativeUI.widgets.page_stack.setCurrentWidget(
-            self.NativeUI.widgets.modes_page
-        )
-        for button in self.__buttons:
-            button.setEnabled(True)
-        self.button_fancon.setEnabled(False)
+        self.pressed.connect(self.on_press)
+
+    def setIconColor(self, color):
+        """
+        Change the color of the icon to the specified color.
+        """
+        pixmap = QtGui.QPixmap(self.__icon_path)
+        mask = pixmap.mask()  # mask from alpha
+        pixmap.fill(color)  # fill with color
+        pixmap.setMask(mask)  # reapply mask
+        self.setIcon(QtGui.QIcon(pixmap))
+        return 0
+
+    @Slot()
+    def enable(self):
+        self.setEnabled(True)
+        return 0
+
+    def on_press(self):
+        """
+        When the button is pressed, disable it and emit the PageButtonPressed signal.
+        """
+        self.setEnabled(False)
+        self.PageButtonPressed.emit(self.__signal_value)
+        return 0

@@ -17,6 +17,8 @@ __status__ = "Prototype"
 from PySide2 import QtWidgets
 from widget_library.switchable_stack_widget import SwitchableStackWidget
 
+# from widget_library.page_stack_widget import PageStackWidget
+
 
 class Layout:
     """
@@ -206,4 +208,5 @@ class Layout:
         stack = QtWidgets.QStackedWidget()
         for widget in widgets:
             stack.addWidget(widget)
+
         return stack

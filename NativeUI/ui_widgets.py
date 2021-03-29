@@ -14,6 +14,7 @@ __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
 from PySide2.QtCore import QSize
+from PySide2.QtWidgets import QWidget
 from global_widgets.tab_modeswitch_button import TabModeswitchButton
 from widget_library.history_buttons_widget import HistoryButtonsWidget
 from widget_library.measurements_widget import (
@@ -85,3 +86,6 @@ class Widgets:
     def add_widget(self, widget, name) -> int:
         setattr(self, name, widget)
         return 0
+
+    def get_widget(self, name) -> QWidget:
+        return getattr(self, name)

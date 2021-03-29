@@ -91,7 +91,18 @@ class NativeUI(HEVClient, QMainWindow):
             "button_label_main_normal": "Normal",
             "button_label_main_detailed": "Detailed",
         }
-        self.iconpath = self.__find_icons()
+        self.icons = {
+            "button_main_page": "user-md-solid",
+            "button_alarms_page": "exclamation-triangle-solid",
+            "button_modes_page": "fan-solid",
+            "button_settings_page": "sliders-h-solid",
+        }
+        self.iconext = "png"
+        self.iconpath = self.__find_icons(self.iconext)
+        for key in self.icons:
+            self.icons[key] = os.path.join(
+                self.iconpath, self.icons[key] + "." + self.iconext
+            )
 
         # initialise databases
         plot_history_length = 1000
@@ -148,10 +159,15 @@ class NativeUI(HEVClient, QMainWindow):
         self.setAutoFillBackground(True)
 
         # Update page buttons to match the shown view
-        self.widgets.page_buttons.mainview_pressed()
+        self.widgets.page_buttons.buttons[0].on_press()
 
         # Connect widgets
         self.__define_connections()
+
+    @Slot(str)
+    def change_page(self, page_to_show: str):
+        self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
+        return 0
 
     def __define_connections(self):
         # Battery Display should update when we get battery info
@@ -161,6 +177,9 @@ class NativeUI(HEVClient, QMainWindow):
         for button in self.widgets.history_buttons.buttons:
             for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
                 button.HistoryButtonPressed.connect(widget.update_plot_time_range)
+
+        for button in self.widgets.page_buttons.buttons:
+            button.PageButtonPressed.connect(self.change_page)
 
         # Plot data should update on a timer
         # TODO: make this actuallg grab the data and send it to the plots, rather than
@@ -375,7 +394,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_personal(personal=personal)
         return 0
 
-    def __find_icons(self) -> str:
+    def __find_icons(self, iconext: str) -> str:
         """
         Locate the icons firectory and return its path.
 
@@ -386,7 +405,7 @@ class NativeUI(HEVClient, QMainWindow):
         rootdir = git.Repo(os.getcwd(), search_parent_directories=True).git.rev_parse(
             "--show-toplevel"
         )
-        icondir = os.path.join(rootdir, "hev-display", "assets", "png")
+        icondir = os.path.join(rootdir, "hev-display", "assets", iconext)
         if not os.path.isdir(icondir):
             raise FileNotFoundError("Could not find icon directory at %s" % icondir)
 

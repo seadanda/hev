@@ -23,8 +23,6 @@ from PySide2.QtCore import QSize, Signal, Slot
 class HistoryButtonsWidget(QtWidgets.QWidget):
     """
     Widget to hold the HistoryButtons.
-
-    TODO: restrict the spacing so that the buttons are tightly packed.
     """
 
     def __init__(self, NativeUI, *args, **kwargs):
@@ -34,15 +32,11 @@ class HistoryButtonsWidget(QtWidgets.QWidget):
         button_size = 60
         self.__button_size = QSize(button_size, button_size)
 
-        self.button_sixty = HistoryButton("60s", signal_value=61)
-        self.button_thirty = HistoryButton("30s", signal_value=31)
-        self.button_fifteen = HistoryButton("15s", signal_value=15)
-        self.button_five = HistoryButton("5s", signal_value=5)
         self.buttons = [
-            self.button_sixty,
-            self.button_thirty,
-            self.button_fifteen,
-            self.button_five,
+            HistoryButton("60s", signal_value=61),
+            HistoryButton("30s", signal_value=31),
+            HistoryButton("15s", signal_value=15),
+            HistoryButton("5s", signal_value=5),
         ]
 
         # Button Appearance
@@ -78,9 +72,17 @@ class HistoryButtonsWidget(QtWidgets.QWidget):
 
         self.setLayout(grid)
         self.setSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+
+        # Connect the buttons so that pressing one enables all of the others
+        for pressed_button in self.buttons:
+            for unpressed_button in self.buttons:
+                if pressed_button == unpressed_button:
+                    continue
+                pressed_button.pressed.connect(unpressed_button.enable)
+
         # self.resize(110, 110)
 
-        self.button_sixty.on_press()
+        self.buttons[0].on_press()
 
 
 class HistoryButton(QtWidgets.QPushButton):
@@ -98,21 +100,16 @@ class HistoryButton(QtWidgets.QPushButton):
         self.__signal_value = signal_value
         self.pressed.connect(self.on_press)
 
+    @Slot()
+    def enable(self):
+        self.setEnabled(True)
+        return 0
+
     def on_press(self):
         """
-        when pressed enable all linked buttons and disable this button, then emit the
-        HistoryButtonPressed signal.
+        When the button is pressed, disable it and emit the HistoryButtonPressed signal.
         """
-        try:
-            _ = self.parent().buttons
-        except AttributeError:
-            raise Exception(
-                "HistoryButton could not find parent().buttons list. You may want to be using a QPushButton instead."
-            )
-
-        for button in self.parent().buttons:
-            if button != self:
-                button.setEnabled(True)
 
         self.setEnabled(False)
         self.HistoryButtonPressed.emit(self.__signal_value)
+        return 0
