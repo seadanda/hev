@@ -45,8 +45,7 @@ class Widgets:
         Widgets are grouped by pages for convenience, however this class deliberately
         contains no layout logic.
         """
-        self.NativeUI = NativeUI
-        self.left_button_width = 150
+        # self.NativeUI = NativeUI
 
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
@@ -54,12 +53,9 @@ class Widgets:
         self.tab_personal = PersonalDisplayWidget(NativeUI)
 
         # Left Bar widgets
-        self.page_buttons = PageButtonsWidget(
-            self.NativeUI, size=QSize(self.left_button_width, self.left_button_width)
-        )
+        self.page_buttons = PageButtonsWidget(NativeUI)
         self.ventilator_start_stop_buttons_widget = VentilatorStartStopButtonsWidget(
-            self.NativeUI,
-            size=QSize(self.left_button_width, int(self.left_button_width / 3)),
+            NativeUI
         )
 
         # Main Page Widgets

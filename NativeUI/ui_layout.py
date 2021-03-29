@@ -86,6 +86,8 @@ class Layout:
             )
         )
 
+        self.widgets.battery_display.set_size(300, 75)
+
         vlayout.addLayout(hlayout)
         return vlayout
 
