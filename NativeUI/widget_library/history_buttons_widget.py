@@ -4,7 +4,7 @@
 history_buttons_widget.py
 
 Part of NativeUI. Defines the HistoryButton class to control the lookback time
-of plots, and constructs the TabHistoryButtons widget to contain the requisite
+of plots, and constructs the HistoryButtonsWidget to contain the requisite
 historybuttons.
 """
 
