@@ -146,6 +146,7 @@ class Layout:
             [self.widgets.settings_expert_tab, self.widgets.settings_chart_tab],
             ["Expert", "Charts"],
         )
+        self.NativeUI.widgets.add_widget(page_settings, "setting_stack")
         return page_settings
 
     def layout_page_modes(self) -> QtWidgets.QWidget:

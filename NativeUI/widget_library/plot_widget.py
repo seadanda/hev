@@ -96,11 +96,6 @@ class TimePlotsWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.update_plot_data)
-        self.timer.start()
-
         self.update_plot_data()
 
     def plot(self, canvas, x, y, plotname, color):

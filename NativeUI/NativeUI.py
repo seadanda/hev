@@ -150,7 +150,26 @@ class NativeUI(HEVClient, QMainWindow):
         # Update page buttons to match the shown view
         self.widgets.page_buttons.mainview_pressed()
 
-        # self.main_view.alarmHandler.show()
+        # Connect widgets
+        self.__define_connections()
+
+    def __define_connections(self):
+        # Battery Display should update when we get battery info
+        self.battery_signal.connect(self.widgets.battery_display.update_value)
+
+        # Plots should update when we press the history buttons
+        for button in self.widgets.history_buttons.buttons:
+            for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
+                button.HistoryButtonPressed.connect(widget.update_plot_time_range)
+
+        # Plot data should update on a timer
+        # TODO: make this actuallg grab the data and send it to the plots, rather than
+        # having the plots reach to NativeUI for the data.
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(16)  # just faster than 60Hz
+        self.timer.timeout.connect(self.widgets.normal_plots.update_plot_data)
+        self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
+        self.timer.start()
 
     def get_db(self, database_name: str):
         """
@@ -479,12 +498,6 @@ if __name__ == "__main__":
         resolution=command_line_args.resolution,
         windowed=command_line_args.windowed,
     )
-
-    # Connect top-level signals
-    dep.battery_signal.connect(dep.widgets.battery_display.update_value)
-    for button in dep.widgets.history_buttons.buttons:
-        for widget in [dep.widgets.normal_plots, dep.widgets.detailed_plots]:
-            button.HistoryButtonPressed.connect(widget.update_plot_time_range)
 
     dep.show()
     app.exec_()
