@@ -1,10 +1,10 @@
 stages:
-  - runner-setup
+  - setup
   - build
   - test
 
-create_pi:
-  stage: runner-setup
+create_pi_user:
+  stage: setup
   script:
     - groupadd pi
     - useradd -u 1000 -g pi -m -p raspberry pi
@@ -14,7 +14,7 @@ create_pi:
 install_packages:
   stage: build
   dependencies:
-    - runner-setup
+    - create_pi_user
   script:
     - apt -y autoremove
     - apt -y update
@@ -23,17 +23,17 @@ install_packages:
     - python3 --version
     - pip3 install ansible
     - ansible --version
-    - ls
-    - pwd
-    - ./setup.sh CI
 
 ui_installation:
   stage: build
   dependencies:
-    - build
+    - install_packages
   script:
-    - pwd
     - ls -a
+    - pwd
+    - cd /home/pi/hev
+    - source .hev_env/bin/activate
+    - ./setup.sh CI
 
 ui_test:
   stage: test
