@@ -13,7 +13,8 @@ create_pi:
 
 install_packages:
   stage: build
-  dependencies: runner-setup
+  dependencies:
+    - runner-setup
   script:
     - apt -y autoremove
     - apt -y update
@@ -28,7 +29,8 @@ install_packages:
 
 ui_installation:
   stage: build
-  dependencies: build
+  dependencies:
+    - build
   script:
     - pwd
     - ls -a
