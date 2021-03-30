@@ -96,12 +96,6 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(16)  # just faster than 60Hz
-        for widget in self.widget_list:
-            self.timer.timeout.connect(widget.update_value)
-        self.timer.start()
-
     def set_size(
         self, x: int, y: int, spacing: int = 10, widget_size_ratio: float = 2.5
     ) -> int:
@@ -163,6 +157,11 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
         for widget in self.widget_list:
             widget.value_display.setFont(font)
         return 0
+
+    @QtCore.Slot()
+    def update_value(self) -> int:
+        for widget in self.widget_list:
+            widget.update_value()
 
 
 class MeasurementWidget(QtWidgets.QWidget):

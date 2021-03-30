@@ -180,12 +180,14 @@ class NativeUI(HEVClient, QMainWindow):
             button.PageButtonPressed.connect(self.change_page)
 
         # Plot data should update on a timer
-        # TODO: make this actuallg grab the data and send it to the plots, rather than
+        # TODO: make this actually grab the data and send it to the plots, rather than
         # having the plots reach to NativeUI for the data.
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
         self.timer.timeout.connect(self.widgets.normal_plots.update_plot_data)
         self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
+        self.timer.timeout.connect(self.widgets.normal_measurements.update_value)
+        self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
         self.timer.start()
 
     def get_db(self, database_name: str):
