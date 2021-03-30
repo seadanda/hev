@@ -49,14 +49,16 @@ class TabHistoryButtons(QtWidgets.QWidget):
         for button in self.buttons:
             button.setStyleSheet(
                 "QPushButton{"
-                "   background-color: " + NativeUI.colors["background"].name() + ";"
-                "   border-color: " + NativeUI.colors["background"].name() + ";"
-                "   color: " + NativeUI.colors["foreground"].name() + ";"
+                "   background-color: "
+                + NativeUI.colors["page_background"].name()
+                + ";"
+                "   border-color: " + NativeUI.colors["page_background"].name() + ";"
+                "   color: " + NativeUI.colors["page_foreground"].name() + ";"
                 "   font-size: " + NativeUI.text_size + ";"
                 "}"
                 "QPushButton:disabled{"
                 "   background-color: "
-                + NativeUI.colors["background-disabled"].name()
+                + NativeUI.colors["background_disabled"].name()
                 + ";"
                 "}"
             )

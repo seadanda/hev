@@ -2,27 +2,37 @@ stages:
   - build
   - test
 
-install_packages:
-  stage: build
-  script:
-    - apt -y update
-    - apt -y upgrade
-    - apt -y install python3.7
-    - apt -y install software-properties-common
-    - apt -y install python3-pip
-    - apt -y install git-all
-    - python3 --version
-    - pip3 install ansible
-    - ansible --version
-    - ls
-    - pwd
-    - ./setup.sh CI
+before_script:
+  - groupadd pi
+  - useradd -u 1000 -g pi -m -p raspberry pi
+  - usermod -aG sudo pi
+  - mkdir -p /home/pi/Downloads
+  - apt -y autoremove
+  - apt -y update
+  - apt -y upgrade
+  - apt -y install python3.7 software-properties-common python3-pip git-all raspi-config
+  - python3 --version
+  - pip3 install ansible
+  - ansible --version
+
+# install_packages:
+#   stage: install
+#   script:
+#     - apt -y autoremove
+#     - apt -y update
+#     - apt -y upgrade
+#     - apt -y install python3.7 software-properties-common python3-pip git-all raspi-config
+#     - python3 --version
+#     - pip3 install ansible
+#     - ansible --version
 
 ui_installation:
   stage: build
   script:
-    - pwd
     - ls -a
+    - pwd
+    - cd /home/pi/hev
+    - ./setup.sh CI
 
 ui_test:
   stage: test

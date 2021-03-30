@@ -65,25 +65,23 @@ class TabPageButtons(QtWidgets.QWidget):
 
             # set icon color
             mask = pixmap.mask()  # mask from alpha
-            pixmap.fill(NativeUI.colors["foreground"])  # fill with color
+            pixmap.fill(NativeUI.colors["page_foreground"])  # fill with color
             pixmap.setMask(mask)  # reapply mask
 
             # set button appearance
             button.setStyleSheet(
                 "QPushButton{"
-                "background-color: "
-                + NativeUI.colors["background-enabled"].name()
+                "    background-color:"
+                + NativeUI.colors["background_enabled"].name()
                 + ";"
-                + "border-color: "
-                + NativeUI.colors["background"].name()
-                + ";"
-                + "border:none;"
+                "    border-color: " + NativeUI.colors["page_background"].name() + ";"
+                "    border:3px;"
                 "}"
                 "QPushButton:disabled{"
-                "background-color: "
-                + NativeUI.colors["background-disabled"].name()
+                "    background-color: "
+                + NativeUI.colors["background_disabled"].name()
                 + ";"
-                + "border:none"
+                "    border:none"
                 "}"
             )
             button.setFixedSize(self.__button_size)

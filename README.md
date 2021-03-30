@@ -51,7 +51,7 @@ pip3 install ansible
 For ansible to work, you need to create an ssh keypair with your Raspberry Pi / VM. On your local PC generate a ssh keypair and copy it over to the pi:
 
 ```bash
-ssh keygen
+ssh-keygen
 ssh-copy-id pi@IP-ADDRESS
 ```
 
@@ -142,6 +142,15 @@ Running the HEV UI requires three separate python process running in the same vi
     source .hev_env/bin/activate
     ./NativeUI/NativeUI.py
     ```
+
+### Command-Line Arguments
+NativeUI.py accepts the following command line arguments:
+
+| Command | Pattern(s) | Effect | Example |
+|---------|------------|--------|---------|
+| Windowed | -w, --windowed | Create the user interface in windowed mode | ```./NativeUI/NativeUI.py -w``` |
+| Debug | -d, --debug | Set the logging output level. By default only log messages of ERROR or higher priority will be displayed. The debug flag changes this to messages of INFO or higher if provided once, or DEBUG or higher if provided twice. | ```./NativeUI/NativeUI.py -dd```|
+| Resolution | -r , --resolution | Takes the following string as specifying the desired size of the UI in pixels. Resolutions should be two integers separated by a non-numerical character. | ```./NativeUI/NativeUI.py -r 1600x900```
 
 ## Testing
 

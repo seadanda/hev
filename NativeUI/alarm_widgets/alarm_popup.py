@@ -115,8 +115,8 @@ class alarmPopup(QtWidgets.QDialog):
         self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
         return 0
 
-    # def resetTimer(self, alarmPayload):
-    #     self.alarmDict[alarmPayload["alarm_code"]].timer.start()
+    def resetTimer(self, alarmPayload):
+        self.alarmDict[alarmPayload["alarm_code"]].timer.start()
 
     def location_on_window(self):
         """Position the popup as defined here"""

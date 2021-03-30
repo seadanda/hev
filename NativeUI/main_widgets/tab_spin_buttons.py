@@ -183,6 +183,10 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.timer.timeout.connect(self.update_targets)
         self.timer.start()
 
+    def colourButtons(self):
+        self.okButton.setColour(1)
+        self.cancelButton.setColour(1)
+
     def update_targets(self):
         """Update values on all spinboxes"""
         for spin in self.spinDict:

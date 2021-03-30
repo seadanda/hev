@@ -16,13 +16,13 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
 from global_widgets.global_select_button import selectorButton
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from global_widgets.global_ok_cancel_buttons import okButton, okSendButton, cancelButton
+from global_widgets.global_lineEdit import labelledLineEdit
 
 
 class TemplateSetValues(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TemplateSetValues, self).__init__(*args, **kwargs)
-        self.liveUpdating = True
         self.layoutList = []
         self.spinDict = {}
         self.NativeUI = NativeUI
@@ -45,7 +45,7 @@ class TemplateSetValues(QtWidgets.QWidget):
     def addSpinSingleCol(self, settingsList):
         vOptionLayout = QtWidgets.QVBoxLayout()
         for info in settingsList:
-            self.spinDict[info[0]] = labelledSpin(self, self.NativeUI, info)
+            self.spinDict[info[0]] = labelledSpin(self.NativeUI, info)
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
 
@@ -59,10 +59,10 @@ class TemplateSetValues(QtWidgets.QWidget):
 
             if "_Low" in info[0]:
                 self.spinDict[info[0]] = labelledSpin(
-                    self, self.NativeUI, [info[0], "", info[2]]
+                    self.NativeUI, [info[0], "", info[2]]
                 )
                 self.spinDict[info[0] + "_2"] = labelledSpin(
-                    self, self.NativeUI, ["", info[1], info[2]]
+                    self.NativeUI, ["", info[1], info[2]]
                 )
                 # hlayout = QtWidgets.QHBoxLayout()
                 # hlayout.setSpacing(0)
@@ -77,7 +77,7 @@ class TemplateSetValues(QtWidgets.QWidget):
                     self.spinDict[info[0] + "_2"], int(i / 2), 2 * (i % 2) + 1, 1, 1
                 )
             else:
-                self.spinDict[info[0]] = labelledSpin(self, self.NativeUI, info)
+                self.spinDict[info[0]] = labelledSpin(self.NativeUI, info)
                 # if (i%2) == 0:
                 #     vlayout.addWidget(self.spinDict[info[0]])
                 # else:
@@ -90,101 +90,61 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList.append(grid)
 
     def addExpertControls(self, controlDict):
-        grid = QtWidgets.QGridLayout()
+        vlayout = QtWidgets.QVBoxLayout()
         i = 0
         for section in controlDict.keys():
 
             self.titleLabel = QtWidgets.QLabel(section)
             self.titleLabel.setStyleSheet(
-                "background-color:" + self.NativeUI.colors["background"].name() + ";"
-                "color:" + self.NativeUI.colors["foreground"].name() + ";"
+                "background-color:"
+                + self.NativeUI.colors["page_background"].name()
+                + ";"
+                "color:" + self.NativeUI.colors["page_foreground"].name() + ";"
                 "font-size: " + self.NativeUI.text_size + ";"
             )
             self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
-            grid.addWidget(self.titleLabel, i, 0, 1, 6)
+            vlayout.addWidget(self.titleLabel)
+
+            grid = QtWidgets.QGridLayout()
+            grid.setMargin(0)
+            grid.setSpacing(0)
+            widg = QtWidgets.QFrame()
+            widg.setStyleSheet(
+                "QFrame{"
+                "    border: 2px solid"
+                + self.NativeUI.colors["page_foreground"].name()
+                + ";"
+                "}"
+                "QLabel{"
+                "    border:none;"
+                "} "
+            )
             j = -1
             for boxInfo in controlDict[section]:
                 j = j + 1
-                # label, units = boxInfo, controlDict[section][boxInfo]
-                self.spinDict[boxInfo[0]] = labelledSpin(self, self.NativeUI, boxInfo)
-                # self.spinInfo.append(boxInfo)
+
+                self.spinDict[boxInfo[0]] = labelledSpin(self.NativeUI, boxInfo)
+
                 grid.addWidget(
                     self.spinDict[boxInfo[0]], i + 1 + int(j / 3), 2 * (j % 3), 1, 2
                 )
 
+            widg.setLayout(grid)
+
+            vlayout.addWidget(widg)
+
             i = i + 1 + int(j / 3) + 1
-        self.layoutList.append(grid)
-
-    def addModeStack(self, settingsList):
-        hlayout = QtWidgets.QHBoxLayout()
-        hlayout.setSpacing(0)
-        self.pcacButton = selectorButton(self.NativeUI, "PC/AC")
-        self.pcacButton.setProperty("selected", "1")
-        self.pcacEnable = [1, 0, 1, 1, 0, 1, 0, 1]
-        self.pcacVals = [1, 2, 3, 4, 5, 6, 7, 8]
-
-        self.prvcButton = selectorButton(self.NativeUI, "PC/AC-PRVC")
-        self.prvcEnable = [1, 1, 0, 1, 0, 1, 1, 1]
-        self.prvcVals = [2, 3, 4, 5, 6, 7, 8, 9]
-
-        self.psvButton = selectorButton(self.NativeUI, "PC-PSV")
-        self.psvEnable = [1, 1, 0, 1, 0, 1, 0, 1]
-        self.psvVals = [3, 4, 5, 6, 7, 8, 9, 1]
-
-        self.cpapButton = selectorButton(self.NativeUI, "CPAP")
-        self.cpapEnable = [1, 0, 1, 1, 0, 1, 0, 1]
-        self.cpapVals = [4, 5, 6, 7, 8, 9, 1, 2]
-
-        self.buttonWidgets = [
-            self.pcacButton,
-            self.prvcButton,
-            self.psvButton,
-            self.cpapButton,
-        ]
-        enableMetaList = [
-            self.pcacEnable,
-            self.prvcEnable,
-            self.psvEnable,
-            self.cpapEnable,
-        ]
-        self.valsMetaList = [self.pcacVals, self.prvcVals, self.psvVals, self.cpapVals]
-        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
-        self.pageList = []
-        self.stack = QtWidgets.QStackedWidget()
-
-        for button, enableList, valsList, mode in zip(
-            self.buttonWidgets, enableMetaList, self.valsMetaList, self.modeList
-        ):
-            hlayout.addWidget(button)
-            vOptionLayout = QtWidgets.QVBoxLayout()
-            for info, enable, vals in zip(settingsList, enableList, valsList):
-                info[3] = "SET_TARGET_" + mode
-                self.spinDict[mode + info[0]] = labelledSpin(self, self.NativeUI, info)
-                vOptionLayout.addWidget(self.spinDict[mode + info[0]])
-                self.spinDict[mode + info[0]].simpleSpin.setEnabled(enable)
-                if enable == 1:
-                    self.spinDict[mode + info[0]].simpleSpin.setProperty(
-                        "bgColour", "0"
-                    )
-                if enable == 0:
-                    self.spinDict[mode + info[0]].simpleSpin.setProperty(
-                        "bgColour", "1"
-                    )
-                self.spinDict[mode + info[0]].simpleSpin.style().polish(
-                    self.spinDict[mode + info[0]].simpleSpin
-                )
-                self.spinDict[mode + info[0]].simpleSpin.setValue(vals)
-            widget = QtWidgets.QWidget()
-            widget.setLayout(vOptionLayout)
-            self.pageList.append(widget)
-            self.stack.addWidget(widget)
-
-            button.pressed.connect(lambda i=button: self._setColour(i))
-        self.stack.setCurrentWidget(self.pageList[0])
-        self.layoutList.append(hlayout)
-        vlayout = QtWidgets.QVBoxLayout()
-        vlayout.addWidget(self.stack)
         self.layoutList.append(vlayout)
+
+    def addPersonalCol(self, settingsList, textBoxes):
+        vOptionLayout = QtWidgets.QVBoxLayout()
+        for info in settingsList:
+            if info[0] in textBoxes:
+                self.spinDict[info[0]] = labelledLineEdit(self.NativeUI, info)
+            else:
+                self.spinDict[info[0]] = labelledSpin(self.NativeUI, info)
+            vOptionLayout.addWidget(self.spinDict[info[0]])
+        self.layoutList.append(vOptionLayout)
 
     def addButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
@@ -195,15 +155,45 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.cancelButton = cancelButton(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancelButtonPressed)
         hlayout.addWidget(self.cancelButton)
+        self.buttonsList = [self.okButton, self.cancelButton]
         self.layoutList.append(hlayout)
 
+        for spin in self.spinDict:
+            self.spinDict[spin].simpleSpin.manualChanged.connect(self.colourButtons)
+
+    def addModeButtons(self):
+        hlayout = QtWidgets.QHBoxLayout()
+        self.okButton = okButton(self.NativeUI)
+        self.okButton.pressed.connect(self.okButtonPressed)
+        hlayout.addWidget(self.okButton)
+
+        self.okSendButton = okSendButton(self.NativeUI)
+        self.okSendButton.pressed.connect(self.okSendButtonPressed)
+        hlayout.addWidget(self.okSendButton)
+
+        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton.pressed.connect(self.cancelButtonPressed)
+        hlayout.addWidget(self.cancelButton)
+        self.buttonsList = [self.okButton, self.okSendButton, self.cancelButton]
+        self.layoutList.append(hlayout)
+
+        for spin in self.spinDict:
+            self.spinDict[spin].simpleSpin.manualChanged.connect(self.colourButtons)
+
+    def colourButtons(self):
+        for button in self.buttonsList:
+            button.setColour(1)
+
     def update_settings_data(self):
-        if self.liveUpdating:
-            for widget in self.spinDict:
-                if self.packet == "target":
-                    self.spinDict[widget].update_targets_value() # pass database
-                elif self.packet == "readback":
-                    self.spinDict[widget].update_readback_value()
+        for widget in self.spinDict:
+            if self.packet == "target":
+                self.spinDict[
+                    widget
+                ].update_targets_value()  # pass database                elif self.packet == "readback":
+            elif self.packet == "readback":
+                self.spinDict[widget].update_readback_value()
+            elif self.packet == "personal":
+                self.spinDict[widget].update_personal_value()
 
     def okButtonPressed(self):
         message, command = [], []
@@ -222,13 +212,37 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.popup.okButton.pressed.connect(self.commandSent)
         self.popup.show()
 
-    def commandSent(self):
+    def okSendButtonPressed(self):
+        message, command = [], []
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
-                self.spinDict[widget].manuallyUpdated = False
+                setVal = self.spinDict[widget].simpleSpin.value()
+                message.append("set" + widget + " to " + str(setVal))
+                command.append(
+                    [
+                        self.spinDict[widget].cmd_type,
+                        self.spinDict[widget].cmd_code,
+                        setVal,
+                    ]
+                )
+        self.popUp = SetConfirmPopup(self, self.NativeUI, message, command)
+        self.popUp.ok_button_pressed()
+        self.NativeUI.q_send_cmd("SET_MODE", self.mode)
+        self.NativeUI.currentMode = self.mode
+        self.NativeUI.topBar.tab_modeswitch.switchButton.setText(self.mode)
+        self.NativeUI.topBar.tab_modeswitch.mode_popup.radioButtons[self.mode].click()
+        self.popUp.setParent(None)
+        self.commandSent()
+
+    def commandSent(self):
+        for button in self.buttonsList:
+            button.setColour(0)
+        for widget in self.spinDict:
+            self.spinDict[widget].manuallyUpdated = False
 
     def cancelButtonPressed(self):
+        for button in self.buttonsList:
+            button.setColour(0)
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 self.spinDict[widget].manuallyUpdated = False
-        self.liveUpdating = True

@@ -14,6 +14,7 @@ __status__ = "Prototype"
 
 from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_typeval_popup import TypeValuePopup
+from CommsCommon import ReadbackFormat
 
 
 class signallingSpinBox(QtWidgets.QDoubleSpinBox):
@@ -28,10 +29,14 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
     def __init__(self, NativeUI):
         super().__init__()
         self.lineEdit().installEventFilter(self)
+        self.editable = True
 
         self.popUp = TypeValuePopup(NativeUI)
         self.popUp.okButton.clicked.connect(self.okButtonPressed)
         self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
+
+    def setEditability(self, setBool):
+        self.editable = setBool
 
     def okButtonPressed(self):
         """Ok button press applies changes in popup to the spin box, closes the popup, and emits a signal"""
@@ -59,6 +64,8 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
             source is self.lineEdit()
             and event.type() == QtCore.QEvent.MouseButtonDblClick
         ):
+            if not self.editable:
+                return
             self.popUp.lineEdit.setText(str(self.value()))
             self.popUp.show()
             return True
@@ -70,11 +77,13 @@ class labelledSpin(QtWidgets.QWidget):
     It is created by an information array which indicates labels, units, command type and code for value setting,
     and the range of permitted values"""
 
-    def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, infoArray, *args, **kwargs):
         super(labelledSpin, self).__init__(*args, **kwargs)
         # print(infoArray)
+        # a = ReadbackFormat()
+        # print(a)
+
         self.NativeUI = NativeUI
-        self.template = template
         self.cmd_type, self.cmd_code = "", ""
         self.min, self.max, self.step = 0, 10000, 0.3
         self.decPlaces = 2
@@ -87,15 +96,14 @@ class labelledSpin(QtWidgets.QWidget):
         elif len(infoArray) == 3:
             self.label, self.units, self.tag = infoArray
         self.manuallyUpdated = False
-        layout = QtWidgets.QHBoxLayout()
-        widgetList = []
+
+        self.layout = QtWidgets.QHBoxLayout()
         textStyle = "color:white;" "font-size: " + NativeUI.text_size + ";"
 
-        if self.label != "":
-            self.nameLabel = QtWidgets.QLabel(self.label)
-            self.nameLabel.setStyleSheet(textStyle)
-            self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
-            widgetList.append(self.nameLabel)
+        # if self.label != "":
+        self.nameLabel = QtWidgets.QLabel(self.label)
+        self.nameLabel.setStyleSheet(textStyle)
+        self.nameLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
         self.simpleSpin.setRange(self.min, self.max)
@@ -103,28 +111,33 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.setDecimals(self.decPlaces)
         self.simpleSpin.setStyleSheet(
             "QDoubleSpinBox{"
-            "   width: 100px"
-            "   font-size: " + NativeUI.text_size + ";"
+            "    width:100px;"  # TODO: unhardcode
+            "    font:" + NativeUI.text_size + ";"
             "}"
             "QDoubleSpinBox[bgColour='0']{"
-            "   background-color:white;"
+            "    background-color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
             "QDoubleSpinBox[bgColour='1']{"
-            "   background-color:grey;"
+            "    background-color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='0']{"
-            "   color:black"
+            "    color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='1']{"
-            "   color:red"
+            "    color:" + NativeUI.colors["page_foreground"].name() + ";"
+            "}"
+            "QDoubleSpinBox[textColour='2']{"
+            "    color:" + NativeUI.colors["baby_blue"].name() + ";"
             "}"
             "QDoubleSpinBox::up-button{"
-            "   width:20;"
-            "   border:solid white;"
-            "   color:black"
+            "width:20; "
+            "background-color:white;"
+            "color:black;"
             "}"
             "QDoubleSpinBox::down-button{"
-            "   width:20;"
+            "width:20px;"
+            "height:20px; "
+            "border:none;"
             "}"
         )
         self.simpleSpin.setProperty("textColour", "0")
@@ -135,19 +148,20 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
         if self.cmd_type == "":
             self.simpleSpin.setReadOnly(True)
-            self.simpleSpin.setProperty("bgColour", "1")
-        widgetList.append(self.simpleSpin)
+            # self.simpleSpin.setProperty("bgColour", "1")
+            # self.simpleSpin.setProperty("textColour", "2")
+            self.simpleSpin.setEditability(False)
+            self.simpleSpin.style().polish(self.simpleSpin)
 
-        if self.units != "":
-            self.unitLabel = QtWidgets.QLabel(self.units)
-            self.unitLabel.setStyleSheet(textStyle)
-            self.unitLabel.setAlignment(QtCore.Qt.AlignLeft)
-            widgetList.append(self.unitLabel)
+        self.unitLabel = QtWidgets.QLabel(self.units)
+        self.unitLabel.setStyleSheet(textStyle)
+        self.unitLabel.setAlignment(QtCore.Qt.AlignLeft | QtCore.Qt.AlignVCenter)
 
-        for widget in widgetList:
-            layout.addWidget(widget)
+        self.widgetList = [self.nameLabel, self.simpleSpin, self.unitLabel]
+        for widget in self.widgetList:
+            self.layout.addWidget(widget)
 
-        self.setLayout(layout)
+        self.setLayout(self.layout)
         self.simpleSpin.manualChanged.connect(self.manualStep)
         # self.simpleSpin.valueChanged.connect(self.valChange)
 
@@ -155,7 +169,6 @@ class labelledSpin(QtWidgets.QWidget):
         """Handle changes in value. Change colour if different to set value, set updating values."""
         if self.manuallyUpdated != True:
             self.oldValue = self.simpleSpin.prevValue
-        self.template.liveUpdating = False
         self.manuallyUpdated = True
         if self.simpleSpin.value() != self.oldValue:
             self.simpleSpin.setProperty("textColour", "1")
@@ -166,7 +179,7 @@ class labelledSpin(QtWidgets.QWidget):
 
     def update_readback_value(self):
         newVal = self.NativeUI.get_db("readback")
-        if newVal == {}:
+        if newVal == {} or self.manuallyUpdated:
             a = 1  # do nothing
         else:
             self.simpleSpin.setValue(newVal[self.tag])
@@ -175,9 +188,28 @@ class labelledSpin(QtWidgets.QWidget):
 
     def update_targets_value(self):
         newVal = self.NativeUI.get_db("targets")
+        if (newVal == {}) or (self.tag == "") or self.manuallyUpdated:
+            a = 1  # do nothing
+        else:
+            self.simpleSpin.setValue(newVal[self.tag])
+            self.simpleSpin.setProperty("textColour", "0")
+            self.simpleSpin.style().polish(self.simpleSpin)
+
+    def update_personal_value(self):
+        newVal = self.NativeUI.get_db("personal")
         if (newVal == {}) or (self.tag == ""):
             a = 1  # do nothing
         else:
             self.simpleSpin.setValue(newVal[self.tag])
             self.simpleSpin.setProperty("textColour", "0")
             self.simpleSpin.style().polish(self.simpleSpin)
+
+    def insertWidget(self, widget, position):
+        self.insertedWidget = widget
+        self.widgetList.insert(position, widget)
+        for i in reversed(range(self.layout.count())):
+            self.layout.itemAt(i).widget().setParent(None)
+        # newLayout = QtWidgets.QHBoxLayout()
+        for widget in self.widgetList:
+            self.layout.addWidget(widget)
+        self.setLayout(self.layout)

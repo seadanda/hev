@@ -48,12 +48,10 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
             button.popUp.completeLabel.setText("Ventilation " + text)
             layout.addWidget(button)
             button.setStyleSheet(
-                "background-color: "
-                + NativeUI.colors["background-enabled"].name()
-                + ";"
-                "border-color: " + NativeUI.colors["foreground"].name() + ";"
-                "font-size: " + NativeUI.text_size + ";"
-                "color: " + NativeUI.colors["foreground"].name() + ";"
+                "background-color:" + NativeUI.colors["background_enabled"].name() + ";"
+                "border-color:" + NativeUI.colors["page_foreground"].name() + ";"
+                "font-size:" + NativeUI.text_size + ";"
+                "color:" + NativeUI.colors["page_foreground"].name() + ";"
                 "border:none"
             )
             button.setFixedSize(self.__button_size)

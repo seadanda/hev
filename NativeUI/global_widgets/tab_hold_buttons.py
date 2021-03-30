@@ -12,6 +12,7 @@ __maintainer__ = "Tiago Sarmento"
 __email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
+import logging
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 import time
@@ -30,9 +31,9 @@ class timerConfirmPopup(QtWidgets.QWidget):
         )  # ensures focus is not stolen by alarm or confirmation
 
         self.setStyleSheet(
-            "background-color: " + NativeUI.colors["background-enabled"].name() + ";"
-            "color: " + NativeUI.colors["foreground"].name() + ";"
-            "border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "background-color: " + NativeUI.colors["background_enabled"].name() + ";"
+            "color: " + NativeUI.colors["page_foreground"].name() + ";"
+            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
             "border:none"
         )
 
@@ -119,7 +120,7 @@ class holdButton(QtWidgets.QPushButton):
         if self.isDown():
             if self.pressTime == self.timeOut:
                 self.complete = True
-                print(self.now - self.initial)
+                logging.debug(self.now - self.initial)
                 self.popUp.stack.setCurrentWidget(self.popUp.completeWidg)
 
             self.pressTime = self.pressTime + self.timeStep
@@ -128,17 +129,19 @@ class holdButton(QtWidgets.QPushButton):
             self.popUp.progressBar.update()
         else:
             self.pressTime = 0
-            print("aa")
-            print(self.complete)
-            print(self.state)
+            logging.debug(
+                "holdButton.handleClick():\nself.complete: %s\nself.state: %s"
+                % (self.complete, self.state)
+            )
             if self.state == 1:
-                print("released")
+                logging.debug("holdButton released")
             if not self.complete:
                 self.popUp.close()
             self.state = 0
 
     def okButtonPressed(self):
         """Respond to ok button press by sending command corresponding to button type"""
+        logging.debug(self.text())
         self.NativeUI.q_send_cmd("GENERAL", self.text()) # text is stand stop or standby
         self.closePopup()
         return 0

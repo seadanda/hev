@@ -4,8 +4,9 @@
 NativeUI.py
 
 Command-line arguments:
--d, --debug    : set the level of debug output.Include once for INFO, twice for DEBUG
--w, --windowed : run the user interface in windowed mode.
+-d, --debug      : set the level of debug output.Include once for INFO, twice for DEBUG
+-w, --windowed   : run the user interface in windowed mode.
+-r, --resolution : set the window size in pixels. E.g. -r 1920x1080
 """
 
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
@@ -22,7 +23,7 @@ import logging
 import sys
 import os
 from PySide2 import QtCore
-from PySide2 import QtGui
+import re
 
 import numpy as np
 
@@ -38,7 +39,7 @@ from hevclient import HEVClient
 
 from threading import Lock
 
-from PySide2.QtCore import Signal, Slot
+from PySide2.QtCore import QDateTime, Signal, Slot
 from PySide2.QtGui import QColor, QPalette
 from PySide2.QtWidgets import (
     QApplication,
@@ -62,18 +63,20 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-        self.setFixedSize(1920, 1080)
-        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+
+        # self.setFixedSize(1920, 1080)
+        self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
-        PID_I_plot_scale = 3
-
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-            "background": QColor.fromRgb(30, 30, 30),
-            "foreground": QColor.fromRgb(200, 200, 200),
-            "background-enabled": QColor.fromRgb(50, 50, 50),
-            "background-disabled": QColor.fromRgb(15, 15, 15),
-            "foreground-disabled": QColor.fromRgb(100, 100, 100),
+            "page_background": QColor.fromRgb(30, 30, 30),
+            "page_foreground": QColor.fromRgb(200, 200, 200),
+            "background_enabled": QColor.fromRgb(50, 50, 50),
+            "background_disabled": QColor.fromRgb(15, 15, 15),
+            "foreground_disabled": QColor.fromRgb(100, 100, 100),
+            "baby_blue": QColor.fromRgb(144, 231, 211),
+            "red": QColor.fromRgb(200, 0, 0),
+            "green": QColor.fromRgb(0, 200, 0),
             "pressure_plot": QColor.fromRgb(0, 114, 178),
             "volume_plot": QColor.fromRgb(0, 158, 115),
             "flow_plot": QColor.fromRgb(240, 228, 66),
@@ -85,9 +88,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.text = {
             "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
             "plot_axis_label_flow": "Flow [L/min]",
-            "plot_axis_label_volume": "Volume [mL/10<sup>"
-            + str(PID_I_plot_scale)
-            + "</sup>]",
+            "plot_axis_label_volume": "Volume [mL]",
             "plot_axis_label_time": "Time [s]",
             "plot_line_label_pressure": "Airway Pressure",
             "plot_line_label_flow": "Flow",
@@ -95,11 +96,12 @@ class NativeUI(HEVClient, QMainWindow):
             "plot_line_label_pressure_flow": "Airway Pressure - Flow",
             "plot_line_label_flow_volume": "Flow - Volume",
             "plot_line_label_volume_pressure": "Volume - Airway Pressure",
+            "layout_label_measurements": "Measurements",
         }
         self.iconpath = self.__find_icons()
 
         # initialise databases
-        plot_history_length = 500
+        plot_history_length = 1000
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
@@ -111,12 +113,10 @@ class NativeUI(HEVClient, QMainWindow):
             "pressure": list(0 for _ in range(plot_history_length)),
             "flow": list(0 for _ in range(plot_history_length)),
             "volume": list(0 for _ in range(plot_history_length)),
-            "PID_I_scale": PID_I_plot_scale,
             "pressure_axis_range": [0, 20],
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
         }
-        self.__plots["data"][:, 0] = np.arange(500)  # fill timestamp with 0-499
         self.__alarms = []
         self.__targets = {}
         self.__personal = {}
@@ -132,10 +132,6 @@ class NativeUI(HEVClient, QMainWindow):
             "__personal",
         ]
 
-        # bars
-        self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self)
-
         # Views
         self.stack = QStackedWidget(self)
         self.main_view = MainView(self)
@@ -146,6 +142,10 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
+
+        # bars
+        self.topBar = TabTopBar(self)
+        self.leftBar = TabLeftBar(self)
 
         self.confirmPopup = confirmPopup(
             self, self
@@ -167,11 +167,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.setCentralWidget(self.centralWidget)
 
         self.statusBar().showMessage("Waiting for data")
-        self.statusBar().setStyleSheet("color:" + self.colors["foreground"].name())
+        self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
         palette = self.palette()
-        palette.setColor(QPalette.Window, self.colors["background"])
+        palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
@@ -283,13 +283,9 @@ class NativeUI(HEVClient, QMainWindow):
                 np.subtract(self.__plots["data"][:, 0], self.__plots["data"][-1, 0]),
                 1000,
             )
-
             self.__plots["pressure"] = self.__plots["data"][:, 1]
             self.__plots["flow"] = self.__plots["data"][:, 2]
-            self.__plots["volume"] = [
-                v / (10 ** self.__plots["PID_I_scale"])
-                for v in self.__plots["data"][:, 3]
-            ]
+            self.__plots["volume"] = self.__plots["data"][:, 3]
 
             self.__update_plot_ranges()
         return 0
@@ -369,21 +365,24 @@ class NativeUI(HEVClient, QMainWindow):
             logging.warning(f"Invalid payload: {payload}")
 
     @Slot(str, str, float)
-    def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> None:
+    def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
         """send command to hevserver via socket"""
         check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
         if check:
             self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
+        return 0
 
     @Slot(str)
-    def q_ack_alarm(self, alarm: str):
+    def q_ack_alarm(self, alarm: str) -> int:
         """acknowledge an alarm in the hevserver"""
         self.ack_alarm(alarm=alarm)
+        return 0
 
     @Slot(str)
-    def q_send_personal(self, personal: str):
+    def q_send_personal(self, personal: str) -> int:
         """send personal details to hevserver"""
         self.send_personal(personal=personal)
+        return 0
 
     def __find_icons(self) -> str:
         """
@@ -423,6 +422,9 @@ def parse_command_line_arguments() -> argparse.Namespace:
         default=False,
         help="Run the UI in wondowed mode",
     )
+    parser.add_argument(
+        "-r", "--resolution", action="store", dest="resolution", type=str
+    )
     return parser.parse_args()
 
 
@@ -442,21 +444,51 @@ def set_logging_level(debug_level: int) -> int:
     return 0
 
 
-def set_window_size(window, windowed: bool = False) -> int:
+def interpret_resolution(input_string: str) -> list:
+    """
+    Convert a string to a pair of numbers specifying the window size.
+
+    Given a string of the form "[int][*][int]" where [*] is and non-numerical character,
+    returns a list [int, int]. If the provided string is None or cannot be interpreted,
+    returns the default window size [1920, 1080].
+    """
+    default_size = [1920, 1080]
+    if input_string is None:
+        return default_size
+
+    dimensions = [val for val in re.findall("\d*", input_string) if val != ""]
+    if len(dimensions) != 2:
+        logging.warning("Unsupported resolution argument %s" % input_string)
+        return default_size
+
+    try:
+        dimensions = [int(val) for val in dimensions]
+    except ValueError:
+        logging.warning(
+            "Resolution argument'%s' could not be interpreted as numerical values."
+            "Values must be integer numbers of pixels on x and y respectively,"
+            "e.g. 1920x1080." % input_string
+        )
+        return default_size
+
+    return dimensions
+
+
+def set_window_size(window, resolution: str = None, windowed: bool = False) -> int:
     """
     Set the size and position of the window.
 
     By default the window will be borderless, 1920x1080 pixels, and positioned at 0,0.
-    If the "windowed" argument is True, the window will be bordered, and 30% smaller on
-    each side.
+    If the "windowed" argument is True, the window will be bordered. Uses
+    interpret_resolution to extract size parameters from the "resolution" string. If the
+    string cannot be interpreted, or the resolution argument is None, uses
+    interpret_resolution's default size.
     """
-    window_size = [1920, 1080]
-    if windowed:
-        rescale = 0.7
-        window.setGeometry(0, 0, rescale * window_size[0], rescale * window_size[1])
-    else:
-        window.setFixedSize(*window_size)
-        window.setGeometry(0, 0, window_size[0], window_size[1])
+    window_size = interpret_resolution(resolution)
+    window.setFixedSize(*window_size)
+
+    if not windowed:
+        window.move(0, 0)
         window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
     return 0
 
@@ -464,12 +496,17 @@ def set_window_size(window, windowed: bool = False) -> int:
 if __name__ == "__main__":
     # parse args and setup logging
     command_line_args = parse_command_line_arguments()
+    print(command_line_args)
     set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
     dep = NativeUI()
-    set_window_size(dep, windowed=command_line_args.windowed)
+    set_window_size(
+        dep,
+        resolution=command_line_args.resolution,
+        windowed=command_line_args.windowed,
+    )
 
     # Connect top-level signals
     dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
