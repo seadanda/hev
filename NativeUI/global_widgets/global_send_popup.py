@@ -68,7 +68,6 @@ class SetConfirmPopup(
         self.setWindowOpacity(0.5)
 
     def ok_button_pressed(self):
-        self.parentTemplate.liveUpdating = True
         for command in self.commandList:
             self.NativeUI.q_send_cmd(*command)
         self.close()

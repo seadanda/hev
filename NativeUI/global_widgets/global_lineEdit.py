@@ -33,11 +33,10 @@ class signallingLineEdit(QtWidgets.QLineEdit):
 
 
 class labelledLineEdit(QtWidgets.QWidget):
-    def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, infoArray, *args, **kwargs):
         super(labelledLineEdit, self).__init__(*args, **kwargs)
         # print(infoArray)
         self.NativeUI = NativeUI
-        self.template = template
         self.cmd_type, self.cmd_code = "", ""
         self.min, self.max, self.step = 0, 10000, 0.3
         self.decPlaces = 2
@@ -92,7 +91,7 @@ class labelledLineEdit(QtWidgets.QWidget):
         self.setLayout(layout)
 
     def update_personal_value(self):
-        newVal = self.NativeUI.get_db('personal')
+        newVal = self.NativeUI.get_db("personal")
         if newVal == {}:
             a = 1  # do nothing
         else:

@@ -63,21 +63,21 @@ class NativeUI(HEVClient, QMainWindow):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
 
-        #self.setFixedSize(1920, 1080)
-        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+        # self.setFixedSize(1920, 1080)
+        self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
         PID_I_plot_scale = 3
 
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
             "background-enabled": QColor.fromRgb(50, 50, 50),
             "background-disabled": QColor.fromRgb(15, 15, 15),
             "foreground-disabled": QColor.fromRgb(100, 100, 100),
             "baby-blue": QColor.fromRgb(144, 231, 211),
-            "modified-text": QColor.fromRgb(200, 0, 0),
+            "green": QColor.fromRgb(0, 150, 0),
+            "red": QColor.fromRgb(200, 0, 0),
             "pressure_plot": QColor.fromRgb(0, 114, 178),
             "volume_plot": QColor.fromRgb(0, 158, 115),
             "flow_plot": QColor.fromRgb(240, 228, 66),
@@ -136,10 +136,6 @@ class NativeUI(HEVClient, QMainWindow):
             "__personal",
         ]
 
-        # bars
-        self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self)
-
         # Views
         self.stack = QStackedWidget(self)
         self.main_view = MainView(self)
@@ -150,6 +146,10 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
+
+        # bars
+        self.topBar = TabTopBar(self)
+        self.leftBar = TabLeftBar(self)
 
         self.confirmPopup = confirmPopup(
             self, self
@@ -454,9 +454,9 @@ def set_window_size(window, windowed: bool = False) -> int:
     If the "windowed" argument is True, the window will be bordered, and 30% smaller on
     each side.
     """
-    window_size = [1920, 1080]
+    window_size = [1920, 900]
     if windowed:
-        rescale = 0.7
+        rescale = 0.5
         window.setGeometry(0, 0, rescale * window_size[0], rescale * window_size[1])
     else:
         window.setFixedSize(*window_size)
