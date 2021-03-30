@@ -20,7 +20,9 @@ import os
 
 class SetConfirmPopup(
     QtWidgets.QDialog
-):  # chose QWidget ov   er QDialog family because easier to modify
+):
+    """Popup called when user wants to send new values to microcontroller.
+    This popup shows changes and asks for confirmation"""
     def __init__(self, parentTemplate, NativeUI, setList, commandList, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
@@ -63,18 +65,22 @@ class SetConfirmPopup(
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)  # no window title
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)  # no window title
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
         self.setWindowOpacity(0.5)
 
     def ok_button_pressed(self):
+        """Send commands when ok button is clicked"""
         self.parentTemplate.liveUpdating = True
         for command in self.commandList:
             self.NativeUI.q_send_cmd(*command)
         self.close()
+        return 0
 
     def cancel_button_pressed(self):
+        """Close popup when cancel button is clicked"""
         self.close()
+        return 0
 
 
 if __name__ == "__main__":

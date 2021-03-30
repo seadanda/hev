@@ -17,11 +17,14 @@ from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class alarmWidget(QtWidgets.QWidget):
+    """Object containing information particular to one alarm.
+    Created when alarm received from microcontroller, timeout after alarm signal stops.
+    Is contained within alarmPopup"""
     def __init__(self, NativeUI, alarmPayload, alarmCarrier, *args, **kwargs):
         super(alarmWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.alarmCarrier = alarmCarrier
+        self.alarmCarrier = alarmCarrier # Needs to refer to its containing object
 
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(0)
@@ -56,15 +59,19 @@ class alarmWidget(QtWidgets.QWidget):
         self.timer.start()
 
     def checkAlarm(self):
+        """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
         self.ongoingAlarms = self.NativeUI.ongoingAlarms
         for alarm in self.ongoingAlarms:
             if self.alarmPayload["alarm_code"] == alarm["alarm_code"]:
                 return
         self.alarmCarrier.alarmDict.pop(self.alarmPayload["alarm_code"])
         self.setParent(None) # delete self
+        return 0
 
 
 class alarmPopup(QtWidgets.QDialog):
+    """Container class for alarm widgets. Handles ordering and positioning of alarms.
+    Needs to adjust its size whenever a widget is deleted"""
     def __init__(self, NativeUI, *args, **kwargs):
         super(alarmPopup, self).__init__(*args, **kwargs)
 
@@ -73,13 +80,12 @@ class alarmPopup(QtWidgets.QDialog):
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
-        # self.setStyleSheet('background-color:green; width:100px;')
         self.layout.setMargin(0)
         self.setLayout(self.layout)
 
         self.location_on_window()
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog
+            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
 
         self.shadow = QtWidgets.QGraphicsDropShadowEffect()
@@ -93,24 +99,29 @@ class alarmPopup(QtWidgets.QDialog):
         self.timer.start()
 
     def clearAlarms(self):
+        """Wipe all alarms out and clear dictionary"""
         for i in reversed(range(self.layout.count())):
             self.layout.itemAt(i).widget().setParent(None)
         self.adjustSize()
         self.setLayout(self.layout)
         self.alarmDict = {}
+        return 0
 
     def addAlarm(self, alarmPayload):
+        """Creates a new alarmWidget and adds it to the container"""
         self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(
             self.NativeUI, alarmPayload, self
         )
         self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
+        return 0
 
-    def resetTimer(self, alarmPayload):
-        self.alarmDict[alarmPayload["alarm_code"]].timer.start()
+    # def resetTimer(self, alarmPayload):
+    #     self.alarmDict[alarmPayload["alarm_code"]].timer.start()
 
     def location_on_window(self):
+        """Position the popup as defined here"""
         screen = QtWidgets.QDesktopWidget().screenGeometry()
-
         x = screen.width() - screen.width() / 2
         y = 0  # screen.height() - widget.height()
         self.move(x, y)
+        return 0

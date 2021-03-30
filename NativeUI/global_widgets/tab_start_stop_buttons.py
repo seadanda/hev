@@ -20,7 +20,7 @@ from global_widgets.tab_hold_buttons import holdButton
 
 class TabStartStopStandbyButtons(QtWidgets.QWidget):
     """
-    TODO
+    Combine holdButtons into Start, Stop, and Standby buttons in the left bar.
     """
 
     def __init__(self, NativeUI, *args, size: QSize = None, **kwargs):
@@ -60,15 +60,3 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-    # def __interpret_colors(self, colors):
-    #     try:
-    #         _, _ = colors["foreground"], colors["background"]
-    #         return colors
-    #     except TypeError:
-    #         logging.warning("Color dict not set")
-    #     except KeyError:
-    #         logging.warning("missing key in color dict: %" % colors)
-    #     return {
-    #         "foreground": QtGui.QColor.fromRgb(255, 0, 0),
-    #         "background": QtGui.QColor.fromRgb(0, 255, 0),
-    #     }

@@ -62,17 +62,13 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
         self.setWindowTitle("HEV NativeUI")
-<<<<<<< HEAD
         self.setFixedSize(1920, 1080)
         self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
         self.currentMode = self.modeList[0]
-        self.colors = {
-=======
 
         PID_I_plot_scale = 3
 
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
->>>>>>> 1f8b6a54bd7eb2210e264627325cf5099c05d68e
             "background": QColor.fromRgb(30, 30, 30),
             "foreground": QColor.fromRgb(200, 200, 200),
             "background-enabled": QColor.fromRgb(50, 50, 50),

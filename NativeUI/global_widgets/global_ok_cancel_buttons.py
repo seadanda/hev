@@ -18,7 +18,7 @@ import os
 
 class okButton(
     QtWidgets.QPushButton
-):  # chose QWidget over QDialog family because easier to modify
+):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_check = os.path.join(NativeUI.iconpath, "check-solid.png")
@@ -45,7 +45,7 @@ class okButton(
 
 class cancelButton(
     QtWidgets.QPushButton
-):  # chose QWidget over QDialog family because easier to modify
+):  
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")

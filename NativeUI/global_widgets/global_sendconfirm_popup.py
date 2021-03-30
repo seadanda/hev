@@ -41,6 +41,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.setLayout(self.hlayout)
         self.setFixedHeight(50)
 
+
         self.timer = QtCore.QTimer()
         self.timer.setInterval(10000)
         self.timer.timeout.connect(self.confirmTimeout)
@@ -52,6 +53,9 @@ class confirmWidget(QtWidgets.QWidget):
 
 
 class confirmPopup(QtWidgets.QWidget):
+    """Popup when a command is confirmed by microcontroller.
+    This popup is a frame containing a confirmWidget object for
+    each successful command."""
     def __init__(self, NativeUI, *args, **kwargs):
         super(confirmPopup, self).__init__(*args, **kwargs)
 
@@ -65,24 +69,26 @@ class confirmPopup(QtWidgets.QWidget):
 
         self.location_on_window()
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog
+            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
 
         self.setStyleSheet("background-color:green;")
 
-        self.shadow = QtWidgets.QGraphicsDropShadowEffect()
-        self.shadow.setBlurRadius(20)
-        self.shadow.setXOffset(10)
-        self.shadow.setYOffset(10)
-
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)
-        self.timer.timeout.connect(self.adjustSize)
-        self.timer.start()
+        # self.shadow = QtWidgets.QGraphicsDropShadowEffect()
+        # self.shadow.setBlurRadius(20)
+        # self.shadow.setXOffset(10)
+        # self.shadow.setYOffset(10)
+        #
+        # self.timer = QtCore.QTimer()
+        # self.timer.setInterval(100)
+        # self.timer.timeout.connect(self.adjustSize)
+        # self.timer.start()
 
     def addConfirmation(self, confirmMessage):
-        self.confirmDict[confirmMessage] = confirmWidget(self.NativeUI, confirmMessage)
+        """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
+        self.confirmDict[confirmMessage] = confirmWidget(self.NativeUI, confirmMessage) # record in dictionary so it can be accessed and deleted
         self.vlayout.addWidget(self.confirmDict[confirmMessage])
+        return 0
 
     def location_on_window(self):
         screen = QtWidgets.QDesktopWidget().screenGeometry()
