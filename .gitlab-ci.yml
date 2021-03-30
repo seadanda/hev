@@ -1,28 +1,34 @@
 stages:
+  - setup
+  - install
   - build
   - test
 
+before_script:
+  - groupadd pi
+  - useradd -u 1000 -g pi -m -p raspberry pi
+  - usermod -aG sudo pi
+  - mkdir -p /home/pi/Downloads
+
 install_packages:
-  stage: build
+  stage: install
   script:
+    - apt -y autoremove
     - apt -y update
     - apt -y upgrade
-    - apt -y install python3.7
-    - apt -y install software-properties-common
-    - apt -y install python3-pip
-    - apt -y install git-all
+    - apt -y install python3.7 software-properties-common python3-pip git-all raspi-config
     - python3 --version
     - pip3 install ansible
     - ansible --version
-    - ls
-    - pwd
-    - ./setup.sh CI
 
 ui_installation:
   stage: build
   script:
-    - pwd
     - ls -a
+    - pwd
+    - cd /home/pi/hev
+    - source .hev_env/bin/activate
+    - ./setup.sh CI
 
 ui_test:
   stage: test
