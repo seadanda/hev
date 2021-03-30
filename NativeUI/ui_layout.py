@@ -88,17 +88,21 @@ class Layout:
 
         # Set Sizes
         top_bar_height = 75
-        top_bar_width = 1920
+        bottom_bar_height = 150
         left_bar_width = 150
-        left_bar_height = 1080 - top_bar_height
 
-        self.widgets.battery_display.set_size(top_bar_width / 3, top_bar_height)
+        # Top bar
+        self.widgets.battery_display.set_size(400, top_bar_height)
         self.widgets.battery_display.setFont(self.NativeUI.text_font)
+        # Left Bar
         self.widgets.page_buttons.set_size(left_bar_width, None)
         self.widgets.ventilator_start_stop_buttons_widget.set_size(left_bar_width, None)
         self.widgets.ventilator_start_stop_buttons_widget.setFont(
             self.NativeUI.text_font
         )
+        # Main Page Bottom Bar
+        self.widgets.history_buttons.set_size(None, bottom_bar_height)
+        self.widgets.history_buttons.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
         return vlayout

@@ -121,6 +121,13 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
         return 0.0
 
     def set_size(self, x: int, y: int) -> int:
+        """
+        Set the size of the battery display widget. Due to the way that the text_display
+        needs to resize itself, both the x and y sizes must be specified.
+        """
+        assert isinstance(x, int)
+        assert isinstance(y, int)
+
         self.setFixedSize(x, y)
         self.icon_display.set_size(y, y)
         self.text_display.set_size(x - y, y)
@@ -165,15 +172,29 @@ class BatteryText(QtWidgets.QLabel):
         return 0
 
     def set_size(self, x: int, y: int) -> int:
+        """
+        Set the default size of the widget.
+
+        As the widget needs to resize when displaying an empty string, we store its
+        default size in the __size attribute so that this can be reapplied later.
+        """
         self.__size = (x, y)
         self.__apply_default_size()
         return 0
 
     def __apply_default_size(self) -> int:
+        """
+        Set the size of the widget to the default size as defined in the __size
+        attribute.
+        """
         self.setFixedSize(*self.__size)
         return 0
 
     def __apply_temp_size(self, x, y) -> int:
+        """
+        Temporarily set the size of the widget to the specified dimensions. This change
+        can be undone by calling the __apply_default_size method.
+        """
         self.setFixedSize(x, y)
         return 0
 

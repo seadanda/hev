@@ -60,7 +60,7 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
         """
         Set the size of the widget and its subwidgets.
 
-        Spacing is computed on the assumption that the buttons should be as large as
+        Sizing is computed on the assumption that the buttons should be as large as
         possible.
 
         If both x and y are set, VentilatorStartStopButtonsWidget will have size x by y,
