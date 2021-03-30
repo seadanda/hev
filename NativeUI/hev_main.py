@@ -123,17 +123,17 @@ class TabNormalExpertButtons(QWidget):
         for button in self.buttons:
             button.setStyleSheet(
                 "QPushButton{"
-                "   color: " + NativeUI.colors["foreground"].name() + ";"
+                "   color: " + NativeUI.colors["page_foreground"].name() + ";"
                 "   font-size: " + NativeUI.text_size + ";"
-                "   background-color: "
-                + NativeUI.colors["background-enabled"].name()
+                "   background-color:"
+                + NativeUI.colors["background_enabled"].name()
                 + ";"
-                "   border-color: " + NativeUI.colors["background"].name() + ";"
+                "   border-color: " + NativeUI.colors["page_background"].name() + ";"
                 "   border:none"
                 "}"
                 "QPushButton:disabled{"
-                "   background-color: "
-                + NativeUI.colors["background-disabled"].name()
+                "   background-color:"
+                + NativeUI.colors["background_disabled"].name()
                 + ";"
                 "   border:none"
                 "}"

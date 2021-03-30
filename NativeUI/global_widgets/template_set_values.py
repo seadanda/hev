@@ -96,8 +96,10 @@ class TemplateSetValues(QtWidgets.QWidget):
 
             self.titleLabel = QtWidgets.QLabel(section)
             self.titleLabel.setStyleSheet(
-                "background-color:" + self.NativeUI.colors["background"].name() + ";"
-                "color:" + self.NativeUI.colors["foreground"].name() + ";"
+                "background-color:"
+                + self.NativeUI.colors["page_background"].name()
+                + ";"
+                "color:" + self.NativeUI.colors["page_foreground"].name() + ";"
                 "font-size: " + self.NativeUI.text_size + ";"
             )
             self.titleLabel.setAlignment(QtCore.Qt.AlignCenter)
@@ -108,9 +110,14 @@ class TemplateSetValues(QtWidgets.QWidget):
             grid.setSpacing(0)
             widg = QtWidgets.QFrame()
             widg.setStyleSheet(
-                "QFrame{border: 2px solid "
-                + self.NativeUI.colors["foreground"].name()
-                + ";} QLabel{border:none} "
+                "QFrame{"
+                "    border: 2px solid"
+                + self.NativeUI.colors["page_foreground"].name()
+                + ";"
+                "}"
+                "QLabel{"
+                "    border:none;"
+                "} "
             )
             j = -1
             for boxInfo in controlDict[section]:

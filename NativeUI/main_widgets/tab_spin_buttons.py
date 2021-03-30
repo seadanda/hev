@@ -119,6 +119,15 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(5)
 
+<<<<<<< HEAD
+=======
+        #        self.spinInsp = SpinButton(NativeUI)
+        #       self.spinRR = SpinButton(NativeUI)
+        #      self.spinFIo2 = SpinButton(NativeUI)
+        #     self.spinInhaleT = SpinButton(NativeUI)
+
+        # self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
         self.__labels = ["P_insp [cm H2O]", "RR", "FIO2 [%]", "Inhale Time [s]"]
         self.__codes = [
             "inspiratory_pressure",
@@ -126,7 +135,11 @@ class TabSpinButtons(QtWidgets.QWidget):
             "fiO2_percent",
             "inhale_time",
         ]
+<<<<<<< HEAD
 
+=======
+        # self.cmd_code = [code.upper() for code in self.__codes]
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
         self.spinDict = {}
         for label, code in zip(self.__labels, self.__codes):
             self.spinDict[code] = SpinButton(NativeUI, label, code)
@@ -160,6 +173,22 @@ class TabSpinButtons(QtWidgets.QWidget):
     def update_targets(self):
         for widget in self.spinDict:
             self.spinDict[widget].update_targets_value()  # pass database
+<<<<<<< HEAD
+=======
+        # targets = self.NativeUI.get_db("targets")
+        # if targets == {}:
+        #     return
+        # if targets["mode"] == "CURRENT":
+        #     for spin, code in zip(self.__spins, self.__codes):
+        #         if spin.simpleSpin.value() != float(targets[code]):
+        #             if spin.liveUpdating:
+        #                 spin.simpleSpin.setValue(float(targets[code]))
+        #                 spin.setTextColour("2")
+        #             else:
+        #                 spin.setTextColour("0")
+        #         else:
+        #             spin.setTextColour("2")
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
 
     def ok_button_pressed(self):
         message, command = [], []

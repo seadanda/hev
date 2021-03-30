@@ -130,10 +130,10 @@ class BatteryText(QtWidgets.QWidget):
         layout.addWidget(self.label)
 
         self.label.setStyleSheet(
-            "background-color:" + NativeUI.colors["background"].name() + ";"
+            "background-color:" + NativeUI.colors["page_background"].name() + ";"
             "border: none;"
             "font:" + NativeUI.text_size + ";"
-            "color:" + NativeUI.colors["foreground"].name() + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
         )
 
         self.setLayout(layout)
@@ -175,7 +175,7 @@ class BatteryIcon(QtWidgets.QWidget):
 
         self.icon_display.setEnabled(False)
         self.icon_display.setStyleSheet(
-            "background-color:" + NativeUI.colors["background"].name() + ";"
+            "background-color:" + NativeUI.colors["page_background"].name() + ";"
             "border: none"
         )
 

@@ -95,8 +95,8 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.right_graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
 
         # Set background to match global background
-        self.left_graph_widget.setBackground(self.NativeUI.colors["background"])
-        self.right_graph_widget.setBackground(self.NativeUI.colors["background"])
+        self.left_graph_widget.setBackground(self.NativeUI.colors["page_background"])
+        self.right_graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add Grid, hide the autoscale button, and add the legend
         for plot in self.plots + self.circleplots:
@@ -104,6 +104,7 @@ class TabExpertPlots(QtWidgets.QWidget):
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
+            plot.setMouseEnabled(x=False, y=False)
 
         # Plot styles
         self.pressure_line = self.plot(

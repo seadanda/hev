@@ -141,11 +141,12 @@ class modeswitchPopup(QtWidgets.QWidget):
         self.setLayout(vlayout)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         # self.radioButtons[self.NativeUI.currentMode].click()  # 1st button clicked by default
+        # self.radioButtons[0].click()  # 1st button clicked by default
         # self.update_settings_data(radioButtons[0])
 
         self.setStyleSheet(
-            "background-color:" + NativeUI.colors["background"].name() + ";"
-            "color:" + NativeUI.colors["foreground"].name() + ";"
+            "background-color:" + NativeUI.colors["page_background"].name() + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
             "font: 16pt bold;"
         )
         self.radioButtons[self.NativeUI.currentMode].click()

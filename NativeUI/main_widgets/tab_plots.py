@@ -58,7 +58,7 @@ class TabPlots(QtWidgets.QWidget):
         self.plots = [self.pressure_plot, self.flow_plot, self.volume_plot]
         self.graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
 
-        self.graph_widget.setBackground(self.NativeUI.colors["background"])
+        self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add grid, hide the autoscale button, and add the legend
         for plot in self.plots:
@@ -66,6 +66,7 @@ class TabPlots(QtWidgets.QWidget):
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
+            plot.setMouseEnabled(x=False, y=False)
 
         # Set Range
         self.update_plot_time_range(61)

@@ -6,9 +6,6 @@ tab_measurements.py
 Part of NativeUI. Defines the MeasurementWidget class to display current
 parameters, and constructs the TabMeasurements widget to display the requisite
 MeasurementWidgets.
-
-TODO: Create a second widget constructor that shows the widgets for the expert
-plots page.
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -22,6 +19,7 @@ __status__ = "Development"
 import logging
 
 from PySide2 import QtCore, QtGui, QtWidgets
+import math
 
 
 class Measurements_Block(QtWidgets.QWidget):
@@ -35,50 +33,58 @@ class Measurements_Block(QtWidgets.QWidget):
 
         super(Measurements_Block, self).__init__(*args, **kwargs)
 
-        # layout = QtWidgets.QVBoxLayout()
         layout = QtWidgets.QGridLayout(self)
 
+        # Create "Measurements" Title
+        title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"])
+        title_label.setStyleSheet(
+            "font-size:" + NativeUI.text_size + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
+            "background-color: white;"
+        )
+        # title_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
+        # title_label.setAlignment(QtCore.Qt.AlignCenter)
+
+        # Create Muasurement widgets
         widget_list = []
         for measurement in measurements:
-            if measurement[2] == "cycle":
+            if len(measurement) > 3:
                 widget_list.append(
-                    CycleMeasurementWidget(NativeUI, measurement[0], measurement[1])
-                )
-            elif measurement[2] == "readback":
-                widget_list.append(
-                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
-                )
-            elif (
-                measurement[2] is None
-            ):  # Create a placeholder widget for testing & dev
-                widget_list.append(
-                    ReadbackMeasurementWidget(NativeUI, measurement[0], measurement[1])
+                    MeasurementWidget(
+                        NativeUI,
+                        measurement[0],  # Label
+                        measurement[2],  # Keydir
+                        measurement[1],  # Key
+                        measurement[3],  # Format
+                    )
                 )
             else:
-                raise AttributeError(
-                    "measurement type %s is not a recognised parameter" % measurement[2]
+                widget_list.append(
+                    MeasurementWidget(
+                        NativeUI,
+                        measurement[0],  # Label
+                        measurement[2],  # Keydir
+                        measurement[1],  # Key
+                    )
                 )
-
-        # label = QtWidgets.QLabel("Measurements")
-        # label.setAlignment(QtCore.Qt.AlignCenter)
-        # label.setStyleSheet(
-        #     "color: grey;"
-        #     "font-size: " + NativeUI.text_size + ";"
-        # )
-        # layout.addWidget(label)
 
         # Compute max number of items per column
         max_col_length = int(len(widget_list) / (columns))
         if len(widget_list) % (columns) != 0:
             max_col_length += 1
 
-        i_row = 0
+        # Arrange layout widgets in rows and columns
+        layout.addWidget(
+            title_label, columnspan=columns, alignment=QtCore.Qt.AlignHCenter
+        )
+        i_row_min = 1  # first row for measurement widgets below the label
+        i_row = i_row_min
         i_col = 0
         for widget in widget_list:
             layout.addWidget(widget, i_row, i_col)
             i_row += 1
-            if i_row == max_col_length:
-                i_row = 0
+            if i_row == max_col_length + i_row_min:
+                i_row = i_row_min
                 i_col += 1
 
         self.setLayout(layout)
@@ -96,37 +102,40 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     Parameters
     ----------
-        label
-        keydir
-        key
+        label (str): the measuremnt label as displayed to the user (can include html).
+        keydir (str): the data dict in which the quantity to be displayed is stored.
+        key (str): the key for the measurement as used in keydir
 
     Optional Parameters
     -------------------
-        width
-        height
+        width (int): the width of the widget in pixels
+        height (int): the height of the widget in pixels
 
     Methods
     -------
-        update_value() :
+        update_value():
     """
 
     def __init__(
         self,
         NativeUI,
         label: str,
+        keydir: str,
         key: str,
-        width: int = 140,
-        height: int = 60,
+        format: str = "{:.1f}",
+        width: int = 250,
+        height: int = 120,
         *args,
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
-        width = 250
-        height = 120
-        labelheight = 35
+
+        labelheight = int(height / 3.0)
 
         self.NativeUI = NativeUI
+        self.keydir = keydir
         self.key = key
+        self.format = format
 
         # Layout and widgets
         layout = QtWidgets.QVBoxLayout()
@@ -140,9 +149,9 @@ class MeasurementWidget(QtWidgets.QWidget):
         # Appearance
         self.name_display.setAlignment(QtCore.Qt.AlignCenter)
         self.name_display.setStyleSheet(
-            "color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "color: " + self.NativeUI.colors["page_foreground"].name() + ";"
             "background-color:"
-            + self.NativeUI.colors["background-enabled"].name()
+            + self.NativeUI.colors["background_enabled"].name()
             + ";"
             "border: none;"
             "font-size: " + NativeUI.text_size + ";"
@@ -152,8 +161,8 @@ class MeasurementWidget(QtWidgets.QWidget):
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
-            "color: black;"
-            "background-color: " + self.NativeUI.colors["foreground"].name() + ";"
+            "color: " + self.NativeUI.colors["page_background"].name() + ";"
+            "background-color: " + self.NativeUI.colors["page_foreground"].name() + ";"
             "border: none;"
         )
         self.value_display.setFixedSize(width, height - labelheight)
@@ -164,57 +173,36 @@ class MeasurementWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         self.setFixedSize(QtCore.QSize(width, height))
 
-    def update_value(self):
+    def update_value(self) -> int:
         """
-        Placeholder function to be overwritten by subclasses
+        Poll the database in NativeUI and update the displayed value.
         """
-        pass
-
-
-class CycleMeasurementWidget(MeasurementWidget):
-    """
-    Widget to display a measurement in real time whose value is contained in
-    Cycle payloads.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def update_value(self):
         if self.key is None:  # widget can be created without assigning a parameter
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_db("cycle")
+        data = self.NativeUI.get_db(self.keydir)
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setNum(self.NativeUI.get_db("cycle")[self.key])
+        self.value_display.setText(
+            self.__format_value(self.NativeUI.get_db(self.keydir)[self.key])
+        )
         return 0
 
+    def __format_value(self, number):
+        if self.format is "ratio":
+            n_digits = 1
+            vals = number.as_integer_ratio()
+            order_of_mag = math.floor(math.log(vals[0], 10))
+            if order_of_mag > n_digits:
+                vals = [
+                    round(val / (10 ** (order_of_mag - (n_digits - 1)))) for val in vals
+                ]
 
-class ReadbackMeasurementWidget(MeasurementWidget):
-    """
-    Widget to display a measurement in real time whose value is contained in
-    Readback payloads.
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-    def update_value(self):
-        if self.key is None:  # widget can be created without assigning a parameter
-            self.value_display.setText("-")
-            return 0
-
-        data = self.NativeUI.get_db("readback")
-        if len(data) == 0:  # means that the db hasn't been populated yet
-            self.value_display.setText("-")
-            return 0
-
-        self.value_display.setNum(self.NativeUI.get_db("readback")[self.key])
-        return 0
+            return "{:.0f}:{:.0f}".format(*vals)
+        return self.format.format(number)
 
 
 class TabMeasurements(Measurements_Block):
@@ -230,7 +218,12 @@ class TabMeasurements(Measurements_Block):
             ("RR", "respiratory_rate", "cycle"),
             ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
-            ("MVE [<sup>L</sup>/<sub>min</sub>]", "exhaled_minute_volume", "cycle"),
+            (
+                "MVE [<sup>L</sup>/<sub>min</sub>]",
+                "exhaled_minute_volume",
+                "cycle",
+                "{:.0f}",
+            ),
             ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
         ]
 
@@ -244,16 +237,12 @@ class TabExpertMeasurements(Measurements_Block):
     Widget to contain the measurements for the standard page. Essentially a
     wrapper for the Measurements_Block class that specifies the measurements
     and number of columns.
-
-    TODO: update the measurements list.
     """
-
-    # TODO: check that these are correct
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
             ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
-            ("I:E", "inhale_exhale_ratio", "readback"),
+            ("I:E", "inhale_exhale_ratio", "readback", "ratio"),
             (
                 "P<sub>PEAK</sub> [cmH<sub>2</sub>O]",
                 "peak_inspiratory_pressure",
@@ -265,7 +254,7 @@ class TabExpertMeasurements(Measurements_Block):
             ("VTI [mL]", "inhaled_tidal_volume", "cycle"),
             ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
             ("MVI [L/min]", "inhaled_minute_volume", "cycle"),
-            ("MVE [L/min]", "exhaled_minute_volume", "cycle"),
+            ("MVE [L/min]", "exhaled_minute_volume", "cycle", "{:.0f}"),
         ]
 
         super().__init__(
