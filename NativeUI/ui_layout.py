@@ -15,6 +15,7 @@ __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
 from PySide2 import QtWidgets
+from PySide2.QtGui import QFont
 from widget_library.switchable_stack_widget import SwitchableStackWidget
 
 # from widget_library.page_stack_widget import PageStackWidget
@@ -88,8 +89,10 @@ class Layout:
 
         # Set Sizes
         top_bar_height = 75
-        bottom_bar_height = 150
         left_bar_width = 150
+        main_page_bottom_bar_height = 150
+        main_page_normal_measurements_width = 250
+        main_page_detailed_measurement_width = main_page_normal_measurements_width * 2
 
         # Top bar
         self.widgets.battery_display.set_size(400, top_bar_height)
@@ -100,8 +103,25 @@ class Layout:
         self.widgets.ventilator_start_stop_buttons_widget.setFont(
             self.NativeUI.text_font
         )
-        # Main Page Bottom Bar
-        self.widgets.history_buttons.set_size(None, bottom_bar_height)
+        # MAIN PAGE
+        # Central Stack Widget
+        self.widgets.plot_stack.setFont(self.NativeUI.text_font)
+        # Normal View
+        self.widgets.normal_measurements.set_size(
+            main_page_normal_measurements_width, None, widget_size_ratio=(1 / 0.46)
+        )
+        self.widgets.normal_measurements.set_label_font(self.NativeUI.text_font)
+        self.widgets.normal_measurements.set_value_font(
+            QFont("sans serif", 40)
+        )  # TODO: move definition to NativeUI
+        # Detailed View
+        self.widgets.detailed_measurements.set_size(
+            main_page_detailed_measurement_width, None, widget_size_ratio=(1 / 0.46)
+        )
+        self.widgets.detailed_measurements.set_label_font(self.NativeUI.text_font)
+        self.widgets.detailed_measurements.set_value_font(QFont("sans serif", 40))
+        # Bottom Bar
+        self.widgets.history_buttons.set_size(None, main_page_bottom_bar_height)
         self.widgets.history_buttons.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
@@ -124,16 +144,19 @@ class Layout:
             ]
         )
 
-        plot_stack = SwitchableStackWidget(
-            self.NativeUI,
-            [tab_main_normal, tab_main_detailed],
-            [
-                self.NativeUI.text["button_label_main_normal"],
-                self.NativeUI.text["button_label_main_detailed"],
-            ],
+        self.widgets.add_widget(
+            SwitchableStackWidget(
+                self.NativeUI,
+                [tab_main_normal, tab_main_detailed],
+                [
+                    self.NativeUI.text["button_label_main_normal"],
+                    self.NativeUI.text["button_label_main_detailed"],
+                ],
+            ),
+            "plot_stack",
         )
 
-        center_widgets = [plot_stack]
+        center_widgets = [self.widgets.plot_stack]
         bottom_widgets = [self.widgets.history_buttons, self.widgets.spin_buttons]
 
         for widget in center_widgets:

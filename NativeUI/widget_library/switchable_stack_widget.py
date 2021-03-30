@@ -2,6 +2,7 @@
 New version of what was template_main_pages.
 """
 from PySide2 import QtWidgets
+from PySide2.QtGui import QFont
 
 
 class SwitchableStackWidget(QtWidgets.QWidget):
@@ -85,23 +86,36 @@ class SwitchableStackWidget(QtWidgets.QWidget):
         self.setTab(self.button_list[0])
         return 0
 
+    def setFont(self, font: QFont) -> int:
+        for button in self.button_list:
+            button.setFont(font)
+
+    def setButtonSize(self, x: int, y: int, spacing: int = 10) -> int:
+        if x is not None and y is not None:
+            for button in self.button_list:
+                button.setFixedSize(x - spacing, y)
+        elif x is not None and y is None:
+            for button in self.button_list:
+                button.setFixedWidth(x - spacing)
+        elif x is None and y is not None:
+            for button in self.button_list:
+                button.setFixedHeight(y)
+        else:
+            raise AttributeError("setButtonSize called without usable size information")
+        return 0
+
 
 class SelectorButtonWidget(QtWidgets.QPushButton):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         style = (
-            "QPushButton{"
-            "   font-size: " + NativeUI.text_size + ";"
-            "}"
             "QPushButton[selected='0']{"
-            "   font-size: " + NativeUI.text_size + ";"
             "   color: " + NativeUI.colors["page_foreground"].name() + ";"
             "   background-color: " + NativeUI.colors["background_enabled"].name() + ";"
             "   border:none"
             "}"
             "QPushButton[selected='1']{"
-            "   font-size: " + NativeUI.text_size + ";"
             "   color: " + NativeUI.colors["page_background"].name() + ";"
             "   background-color:" + NativeUI.colors["foreground_disabled"].name() + ";"
             "   border:none"
