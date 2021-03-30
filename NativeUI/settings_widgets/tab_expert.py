@@ -23,7 +23,6 @@ from global_widgets.template_set_values import TemplateSetValues
 class TabExpert(TemplateSetValues):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TabExpert, self).__init__(NativeUI, *args, **kwargs)
-        self.liveUpdating = True
         self.setPacketType("readback")
 
         controlDict = {
@@ -91,8 +90,3 @@ class TabExpert(TemplateSetValues):
         self.addExpertControls(controlDict)
         self.addButtons()
         self.finaliseLayout()
-
-    # def update_settings_data(self):
-    #     if self.liveUpdating:
-    #         for widget in self.spinDict:
-    #             self.spinDict[widget].update_readback_value()

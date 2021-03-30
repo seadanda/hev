@@ -37,9 +37,16 @@ class okButton(
             "font-size: " + NativeUI.text_size + ";"
             "border:none"
         )
+        self.setProperty("bgColour", "0")
+        self.setEnabled(False)
 
         self.setFixedHeight(50)
         # self.setFixedSize(QtCore.QSize(150, 50))
+
+    def setColour(self, option):
+        self.setEnabled(bool(float(option)))
+        self.setProperty("bgColour", str(option))
+        self.style().polish(self)
 
 
 class cancelButton(
@@ -57,13 +64,70 @@ class cancelButton(
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "background-color: " + NativeUI.colors["page_foreground"].name() + ";"
-            "color: " + NativeUI.colors["page_background"].name() + ";"
-            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
+<<<<<<< HEAD
+            "QPushButton[bgColour='0']{background-color: "
+            + NativeUI.colors["foreground"].name()
+            + ";}"
+            "QPushButton[bgColour='1']{background-color: "
+            + NativeUI.colors["red"].name()
+            + ";}"
+            "QPushButton{color: " + NativeUI.colors["background"].name() + ";"
+            "border-color: " + NativeUI.colors["foreground"].name() + ";"
             "font-size: " + NativeUI.text_size + ";"
             "border-radius: 8px;"
-            "border:none"
+            "border:none}"
         )
+        self.setProperty("bgColour", "0")
+        self.setEnabled(False)
 
         self.setFixedHeight(50)
         # self.setFixedSize(QtCore.QSize(150, 50))
+
+    def setColour(self, option):
+        self.setEnabled(bool(float(option)))
+        self.setProperty("bgColour", str(option))
+        self.style().polish(self)
+
+
+class okSendButton(
+    QtWidgets.QPushButton
+):  # chose QWidget over QDialog family because easier to modify
+    def __init__(self, NativeUI, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        iconpath_play = os.path.join(NativeUI.iconpath, "play-solid.png")
+
+        # set icon color
+        pixmap = QtGui.QPixmap(iconpath_play)
+        mask = pixmap.mask()
+        pixmap.fill(NativeUI.colors["background"])
+        pixmap.setMask(mask)
+        self.setIcon(QtGui.QIcon(pixmap))
+
+        self.setStyleSheet(
+            "QPushButton[bgColour='0']{background-color: "
+            + NativeUI.colors["foreground"].name()
+            + ";}"
+            "QPushButton[bgColour='1']{background-color: "
+            + NativeUI.colors["green"].name()
+            + ";}"
+            "QPushButton{color: " + NativeUI.colors["background"].name() + ";"
+            "border-color: " + NativeUI.colors["foreground"].name() + ";"
+=======
+            "background-color: " + NativeUI.colors["page_foreground"].name() + ";"
+            "color: " + NativeUI.colors["page_background"].name() + ";"
+            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
+            "font-size: " + NativeUI.text_size + ";"
+            "border-radius: 8px;"
+            "border:none}"
+        )
+        self.setProperty("bgColour", "0")
+        self.setEnabled(False)
+
+        self.setFixedHeight(50)
+        # self.setFixedSize(QtCore.QSize(150, 50))
+
+    def setColour(self, option):
+        self.setEnabled(bool(float(option)))
+        self.setProperty("bgColour", str(option))
+        self.style().polish(self)

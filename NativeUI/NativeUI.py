@@ -65,7 +65,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.setWindowTitle("HEV NativeUI")
 
         # self.setFixedSize(1920, 1080)
-        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+        self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
@@ -131,10 +131,6 @@ class NativeUI(HEVClient, QMainWindow):
             "__personal",
         ]
 
-        # bars
-        self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self)
-
         # Views
         self.stack = QStackedWidget(self)
         self.main_view = MainView(self)
@@ -145,6 +141,10 @@ class NativeUI(HEVClient, QMainWindow):
         self.stack.addWidget(self.alarms_view)
         self.modes_view = ModeView(self)
         self.stack.addWidget(self.modes_view)
+
+        # bars
+        self.topBar = TabTopBar(self)
+        self.leftBar = TabLeftBar(self)
 
         self.confirmPopup = confirmPopup(
             self, self

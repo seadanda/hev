@@ -26,7 +26,6 @@ class SpinButton(QtWidgets.QFrame):
     def __init__(self, NativeUI, label, code):
         super().__init__()
         self.NativeUI = NativeUI
-        self.liveUpdating = True
         self.manuallyUpdated = False
         # self.setStyleSheet("background-color:blue;")
         self.code = code
@@ -93,8 +92,6 @@ class SpinButton(QtWidgets.QFrame):
         self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
 
     def manualChanged(self):
-        print("manui")
-        self.liveUpdating = False
         self.manuallyUpdated = True
         self.setTextColour("2")
 
@@ -119,16 +116,18 @@ class TabSpinButtons(QtWidgets.QWidget):
         super(TabSpinButtons, self).__init__(*args, **kwargs)
         self.NativeUI = NativeUI
         # self.setStyleSheet("background-color:blue;")
-        self.liveUpdating = True
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(5)
 
+<<<<<<< HEAD
+=======
         #        self.spinInsp = SpinButton(NativeUI)
         #       self.spinRR = SpinButton(NativeUI)
         #      self.spinFIo2 = SpinButton(NativeUI)
         #     self.spinInhaleT = SpinButton(NativeUI)
 
         # self.__spins = [self.spinInsp, self.spinRR, self.spinFIo2, self.spinInhaleT]
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
         self.__labels = ["P_insp [cm H2O]", "RR", "FIO2 [%]", "Inhale Time [s]"]
         self.__codes = [
             "inspiratory_pressure",
@@ -136,10 +135,15 @@ class TabSpinButtons(QtWidgets.QWidget):
             "fiO2_percent",
             "inhale_time",
         ]
+<<<<<<< HEAD
+
+=======
         # self.cmd_code = [code.upper() for code in self.__codes]
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
         self.spinDict = {}
         for label, code in zip(self.__labels, self.__codes):
             self.spinDict[code] = SpinButton(NativeUI, label, code)
+            self.spinDict[code].simpleSpin.manualChanged.connect(self.colourButtons)
             self.layout.addWidget(self.spinDict[code])
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
@@ -159,12 +163,18 @@ class TabSpinButtons(QtWidgets.QWidget):
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(160)
-        self.timer.timeout.connect(self.updatetargets)
+        self.timer.timeout.connect(self.update_targets)
         self.timer.start()
 
-    def updatetargets(self):
+    def colourButtons(self):
+        self.okButton.setColour(1)
+        self.cancelButton.setColour(1)
+
+    def update_targets(self):
         for widget in self.spinDict:
             self.spinDict[widget].update_targets_value()  # pass database
+<<<<<<< HEAD
+=======
         # targets = self.NativeUI.get_db("targets")
         # if targets == {}:
         #     return
@@ -178,6 +188,7 @@ class TabSpinButtons(QtWidgets.QWidget):
         #                 spin.setTextColour("0")
         #         else:
         #             spin.setTextColour("2")
+>>>>>>> 0c27f0b0cc2468eee3298a8eb46342b7f507a4c4
 
     def ok_button_pressed(self):
         message, command = [], []
@@ -195,13 +206,16 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.popup.show()
 
     def commandSent(self):
+        self.okButton.setColour(0)
+        self.cancelButton.setColour(0)
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 self.spinDict[widget].manuallyUpdated = False
             self.spinDict[widget].setTextColour("1")
 
     def cancel_button_pressed(self):
+        self.okButton.setColour(0)
+        self.cancelButton.setColour(0)
         for spin in self.spinDict:
-            self.spinDict[spin].liveUpdating = True
             self.spinDict[spin].manuallyUpdated = False
             self.spinDict[spin].setTextColour("1")
