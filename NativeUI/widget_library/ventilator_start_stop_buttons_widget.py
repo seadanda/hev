@@ -50,10 +50,73 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
             button.setStyleSheet(
                 "background-color:" + NativeUI.colors["background_enabled"].name() + ";"
                 "border-color:" + NativeUI.colors["page_foreground"].name() + ";"
-                "font-size:" + NativeUI.text_size + ";"
                 "color:" + NativeUI.colors["page_foreground"].name() + ";"
                 "border:none"
             )
-            button.setFixedSize(self.__button_size)
 
         self.setLayout(layout)
+
+    def set_size(self, x: int, y: int, spacing: int = 10) -> int:
+        """
+        Set the size of the widget and its subwidgets.
+
+        Spacing is computed on the assumption that the buttons should be as large as
+        possible.
+
+        If both x and y are set, VentilatorStartStopButtonsWidget will have size x by y,
+        and buttons will be size (x - spacing) by MIN(x - spacing, y/n - spacing) where
+        n is the number of buttons.
+
+        If x alone is set, VentilatorStartStopButtonsWidget will have width x, and
+        buttons will have width x-spacing. Both will expand to fill the available
+        vertical space.
+
+        If y alone is set, VentilatorStartStopButtonsWidget will have height y, and
+        buttons will have height (y/n - spacing). Both will expand to fill the available
+        horizontal space.
+        """
+        n_buttons = len(self.__buttons)
+
+        x_set, y_set = False, False
+        if x is not None:
+            x_set = True
+        if y is not None:
+            y_set = True
+
+        if x_set and y_set:
+            self.setFixedSize(x, y)
+            x_button = x - spacing
+            y_button = min([x, int(y / n_buttons)]) - spacing
+            for button in self.__buttons:
+                button.setFixedSize(x_button, y_button)
+                button.setSizePolicy(
+                    QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed
+                )
+        elif x_set and not y_set:
+            self.setFixedWidth(x)
+            for button in self.__buttons:
+                button.setFixedWidth(x - spacing)
+                button.setSizePolicy(
+                    QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Expanding
+                )
+        elif y_set and not x_set:
+            self.setFixedHeight(y)
+            y_button = int(y / n_buttons)
+            for button in self.__buttons:
+                button.setFixedHeight(y_button)
+                button.setSizePolicy(
+                    QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+                )
+        else:
+            raise ValueError("set_size called with no size information")
+
+        return 0
+
+    def setFont(self, font: QtGui.QFont) -> int:
+        """
+        Overrides the existing setFont method in order to propogate the change to
+        subwidgets.
+        """
+        for button in self.__buttons:
+            button.setFont(font)
+        return 0

@@ -28,16 +28,10 @@ class PageButtonsWidget(QtWidgets.QWidget):
     colors are not set they default to red.
     """
 
-    def __init__(self, NativeUI, *args, size: QSize = None, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-
-        if size is not None:
-            self.__button_size = size
-        else:
-            self.__button_size = QSize(100, 100)
-        self.__iconsize = self.__button_size * 0.8
 
         layout = QtWidgets.QVBoxLayout()
 
@@ -63,26 +57,23 @@ class PageButtonsWidget(QtWidgets.QWidget):
             ),
         ]
 
+        stylesheet = (
+            "QPushButton{"
+            "    background-color:" + NativeUI.colors["background_enabled"].name() + ";"
+            "    border:none"
+            "}"
+            "QPushButton:disabled{"
+            "    background-color: "
+            + NativeUI.colors["background_disabled"].name()
+            + ";"
+            "    border:none"
+            "}"
+        )
+
         for button in self.buttons:
             # set button appearance
-            button.setStyleSheet(
-                "QPushButton{"
-                "    background-color:"
-                + NativeUI.colors["background_enabled"].name()
-                + ";"
-                "    border-color: " + NativeUI.colors["page_background"].name() + ";"
-                "    border:3px;"
-                "}"
-                "QPushButton:disabled{"
-                "    background-color: "
-                + NativeUI.colors["background_disabled"].name()
-                + ";"
-                "    border:none"
-                "}"
-            )
+            button.setStyleSheet(stylesheet)
             button.setIconColor(NativeUI.colors["page_foreground"])
-            button.setFixedSize(self.__button_size)
-            button.setIconSize(self.__iconsize)
 
             layout.addWidget(button)
 
@@ -94,6 +85,56 @@ class PageButtonsWidget(QtWidgets.QWidget):
                 if pressed_button == unpressed_button:
                     continue
                 pressed_button.pressed.connect(unpressed_button.enable)
+
+    def set_size(self, x: int, y: int, spacing: int = 10) -> int:
+        """
+        Set the size of the widget and its subwidgets.
+
+        Spacing is computed on the assumption that the buttons should be square.
+
+        If both x and y are set, buttons will be size (x - spacing) by MIN(x - spacing,
+        y/n - spacing) where n is the number of buttons, and the PageButtonsWidget will
+        have size x by y
+
+        If x alone is set, buttons will be size (x-spacing) by (x-spacing), and the
+        PageButtonsWidget will be size x by n*x where n is the number of buttons.
+
+        If y alone is set, buttons will be size (y/n - spacing) by (y/n - spacing) where
+        n is the number of buttons, and the PageButtonsWidget will have size y/n by y.
+
+
+        """
+        button_border = int(x / 3)
+        n_buttons = len(self.buttons)
+
+        x_set, y_set = False, False
+        if x is not None:
+            x_set = True
+        if y is not None:
+            y_set = True
+
+        if x_set and y_set:
+            self.setFixedSize(x, y)
+            x_button = x - spacing
+            y_button = min([x, int(y / n_buttons)]) - spacing
+        elif x_set and not y_set:
+            self.setFixedSize(x, n_buttons * x)
+            x_button = x - spacing
+            y_button = x - spacing
+        elif y_set and not x_set:
+            x_button = int(y / n_buttons)
+            self.setFixedSize(x_button, y)
+            y_button = x_button
+        else:
+            raise ValueError("set_size called with no size information")
+
+        for button in self.buttons:
+            button.setFixedSize(x_button, y_button)
+            button.setIconSize(
+                QSize(x_button - button_border, y_button - button_border)
+            )
+
+        return 0
 
 
 class PageButton(QtWidgets.QPushButton):

@@ -27,9 +27,6 @@ import re
 
 import numpy as np
 
-# from alarm_widgets.tab_alarms import TabAlarm
-# from global_widgets.tab_top_bar import TabTopBar
-# from global_widgets.tab_left_bar import TabLeftBar
 from global_widgets.global_sendconfirm_popup import confirmPopup
 from hevclient import HEVClient
 
@@ -39,7 +36,7 @@ from ui_widgets import Widgets
 from threading import Lock
 
 from PySide2.QtCore import Signal, Slot
-from PySide2.QtGui import QColor, QPalette
+from PySide2.QtGui import QColor, QFont, QPalette
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 
 logging.basicConfig(
@@ -75,7 +72,8 @@ class NativeUI(HEVClient, QMainWindow):
             "flow_volume_plot": QColor.fromRgb(204, 121, 167),
             "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
         }
-        self.text_size = "20pt"
+        self.text_font = QFont("Sans Serif", 20)
+        self.text_size = "20pt"  # TODO: remove in favour of self.text_font
         self.text = {
             "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
             "plot_axis_label_flow": "Flow [L/min]",

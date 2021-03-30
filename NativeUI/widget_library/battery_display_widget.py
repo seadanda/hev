@@ -126,6 +126,14 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
         self.text_display.set_size(x - y, y)
         return 0
 
+    def setFont(self, font: QtGui.QFont) -> int:
+        """
+        Overrides the existing setFont method in order to propogate the change to
+        subwidgets.
+        """
+        self.text_display.setFont(font)
+        return 0
+
 
 class BatteryText(QtWidgets.QLabel):
     """
@@ -139,7 +147,6 @@ class BatteryText(QtWidgets.QLabel):
         self.setStyleSheet(
             "background-color:" + NativeUI.colors["page_background"].name() + ";"
             "border: none;"
-            "font:" + NativeUI.text_size + ";"
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
         )
 
