@@ -33,6 +33,17 @@ class Layout:
     def __init__(self, NativeUI, widgets, *args, **kwargs):
         self.NativeUI = NativeUI
         self.widgets = widgets
+
+        # Define sizes
+        self.top_bar_height = 75
+        self.left_bar_width = 150
+        self.main_page_bottom_bar_height = 150
+        self.main_page_normal_measurements_width = 250
+        self.main_page_detailed_measurement_width = (
+            self.main_page_normal_measurements_width * 2
+        )
+        self.measurement_widget_size_ratio = 1 / 0.46
+
         self.construct_page_widgets()
 
     def construct_page_widgets(self) -> int:
@@ -62,6 +73,7 @@ class Layout:
             ),
             "page_stack",
         )
+        self.widgets.plot_stack.setFont(self.NativeUI.text_font)
 
         # Populate the Left Bar
         hlayout.addWidget(
@@ -71,6 +83,13 @@ class Layout:
                     self.widgets.ventilator_start_stop_buttons_widget,
                 ]
             )
+        )
+        self.widgets.page_buttons.set_size(self.left_bar_width, None)
+        self.widgets.ventilator_start_stop_buttons_widget.set_size(
+            self.left_bar_width, None
+        )
+        self.widgets.ventilator_start_stop_buttons_widget.setFont(
+            self.NativeUI.text_font
         )
 
         # Add the page stack
@@ -86,56 +105,34 @@ class Layout:
                 ]
             )
         )
-
-        # Set Sizes
-        top_bar_height = 75
-        left_bar_width = 150
-        main_page_bottom_bar_height = 150
-        main_page_normal_measurements_width = 250
-        main_page_detailed_measurement_width = main_page_normal_measurements_width * 2
-
-        # Top bar
-        self.widgets.battery_display.set_size(400, top_bar_height)
+        self.widgets.battery_display.set_size(400, self.top_bar_height)
         self.widgets.battery_display.setFont(self.NativeUI.text_font)
-        # Left Bar
-        self.widgets.page_buttons.set_size(left_bar_width, None)
-        self.widgets.ventilator_start_stop_buttons_widget.set_size(left_bar_width, None)
-        self.widgets.ventilator_start_stop_buttons_widget.setFont(
-            self.NativeUI.text_font
-        )
-        # MAIN PAGE
-        # Central Stack Widget
-        self.widgets.plot_stack.setFont(self.NativeUI.text_font)
-        # Normal View
-        self.widgets.normal_measurements.set_size(
-            main_page_normal_measurements_width, None, widget_size_ratio=(1 / 0.46)
-        )
-        self.widgets.normal_measurements.set_label_font(self.NativeUI.text_font)
-        self.widgets.normal_measurements.set_value_font(
-            QFont("sans serif", 40)
-        )  # TODO: move definition to NativeUI
-        # Detailed View
-        self.widgets.detailed_measurements.set_size(
-            main_page_detailed_measurement_width, None, widget_size_ratio=(1 / 0.46)
-        )
-        self.widgets.detailed_measurements.set_label_font(self.NativeUI.text_font)
-        self.widgets.detailed_measurements.set_value_font(QFont("sans serif", 40))
-        # Bottom Bar
-        self.widgets.history_buttons.set_size(None, main_page_bottom_bar_height)
-        self.widgets.history_buttons.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
         return vlayout
 
     def layout_page_main(self) -> QtWidgets.QWidget:
-        page_main = QtWidgets.QWidget()
-        page_main_layout = QtWidgets.QVBoxLayout()
-        page_main_center_layout = QtWidgets.QHBoxLayout()
-        page_main_bottom_layout = QtWidgets.QHBoxLayout()
+        """
+        Define the page_main widget layout, populate it, and set the sizes of the
+        various widgets contained.
 
+        Setting size for subwidgets is done here so as to keep the layouts in
+        layout_tab_main_normal and layout_tab_main_detailed abstracted.
+
+        """
+        # Create the normal view
         tab_main_normal = self.layout_tab_main_normal(
             [self.widgets.normal_plots, self.widgets.normal_measurements]
         )
+        self.widgets.normal_measurements.set_size(  # Fix the size of the measurements
+            self.main_page_normal_measurements_width,  # but allow plots to expand to
+            None,  # fill the available space.
+            widget_size_ratio=self.measurement_widget_size_ratio,
+        )
+        self.widgets.normal_measurements.set_label_font(self.NativeUI.text_font)
+        self.widgets.normal_measurements.set_value_font(self.NativeUI.value_font)
+
+        # Create the detailed view
         tab_main_detailed = self.layout_tab_main_detailed(
             [
                 self.widgets.detailed_plots,
@@ -143,7 +140,15 @@ class Layout:
                 self.widgets.circle_plots,
             ]
         )
+        self.widgets.detailed_measurements.set_size(
+            self.main_page_detailed_measurement_width,
+            None,
+            widget_size_ratio=self.measurement_widget_size_ratio,
+        )
+        self.widgets.detailed_measurements.set_label_font(self.NativeUI.text_font)
+        self.widgets.detailed_measurements.set_value_font(self.NativeUI.value_font)
 
+        # Put the normal and detailed views into a switchable stack
         self.widgets.add_widget(
             SwitchableStackWidget(
                 self.NativeUI,
@@ -156,8 +161,17 @@ class Layout:
             "plot_stack",
         )
 
+        # Create and populate the full page layout
+        page_main = QtWidgets.QWidget()
+        page_main_layout = QtWidgets.QVBoxLayout()
+        page_main_center_layout = QtWidgets.QHBoxLayout()
+        page_main_bottom_layout = QtWidgets.QHBoxLayout()
+
         center_widgets = [self.widgets.plot_stack]
         bottom_widgets = [self.widgets.history_buttons, self.widgets.spin_buttons]
+        self.widgets.history_buttons.set_size(None, self.main_page_bottom_bar_height)
+        self.widgets.history_buttons.setFont(self.NativeUI.text_font)
+        # TODO spin_buttons sizes
 
         for widget in center_widgets:
             page_main_center_layout.addWidget(widget)
@@ -166,6 +180,7 @@ class Layout:
 
         page_main_layout.addLayout(page_main_center_layout)
         page_main_layout.addLayout(page_main_bottom_layout)
+
         page_main.setLayout(page_main_layout)
         return page_main
 
@@ -178,6 +193,7 @@ class Layout:
             [self.widgets.alarmTab, self.widgets.clinicalTab],
             ["List of Alarms", "Clinical Limits"],
         )
+        page_alarms.setFont(self.NativeUI.text_font)
         return page_alarms
 
     def layout_page_settings(self) -> QtWidgets.QWidget:
@@ -189,15 +205,27 @@ class Layout:
             [self.widgets.settings_expert_tab, self.widgets.settings_chart_tab],
             ["Expert", "Charts"],
         )
-        self.NativeUI.widgets.add_widget(page_settings, "setting_stack")
+        page_settings.setFont(self.NativeUI.text_font)
+        self.widgets.add_widget(page_settings, "setting_stack")
         return page_settings
 
     def layout_page_modes(self) -> QtWidgets.QWidget:
+
+        # self.widgets.add_widget(
+        #     SwitchableStackWidget(
+        #         self.NativeUI,
+        #         [QtWidgets.QLabel("1"), QtWidgets.QLabel("2"), QtWidgets.QLabel("3"), QtWidgets.QLabel("4")],
+        #         ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
+        #     ),
+        #     "mode_settings_tab"
+        # )
+
         page_modes = SwitchableStackWidget(
             self.NativeUI,
             [self.widgets.mode_settings_tab, self.widgets.mode_personal_tab],
             ["Mode Settings", "Personal Settings"],
         )
+        page_modes.setFont(self.NativeUI.text_font)
         return page_modes
 
     def layout_top_bar(self, widgets: list) -> QtWidgets.QWidget:
