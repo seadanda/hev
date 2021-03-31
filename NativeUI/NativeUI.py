@@ -76,6 +76,9 @@ class NativeUI(HEVClient, QMainWindow):
             "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
             "flow_volume_plot": QColor.fromRgb(204, 121, 167),
             "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
+            "red": QColor.fromRgb(255, 0, 0),
+            "green": QColor.fromRgb(0, 255, 0),
+            "baby-blue": QColor.fromRgb(0, 0, 200),
         }
         self.text_font = QFont("Sans Serif", 20)
         self.value_font = QFont("Sans Serif", 40)
@@ -142,10 +145,6 @@ class NativeUI(HEVClient, QMainWindow):
 
         self.widgets = Widgets(self)  # Create all the widgets we'll need
         self.layouts = Layout(self, self.widgets)  #
-
-        # bars
-        self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self)
 
         self.confirmPopup = confirmPopup(
             self, self

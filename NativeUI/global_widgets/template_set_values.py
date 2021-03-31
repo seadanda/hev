@@ -148,9 +148,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         vOptionLayout = QtWidgets.QVBoxLayout()
         for info in settingsList:
             if info[0] in textBoxes:
-                self.spinDict[info[0]] = LabelledLineEditWidget(
-                    self, self.NativeUI, info
-                )
+                self.spinDict[info[0]] = LabelledLineEditWidget(self.NativeUI, info)
             else:
                 self.spinDict[info[0]] = labelledSpin(self.NativeUI, info)
             vOptionLayout.addWidget(self.spinDict[info[0]])
@@ -173,15 +171,15 @@ class TemplateSetValues(QtWidgets.QWidget):
 
     def addModeButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
-        self.okButton = okButton(self.NativeUI)
+        self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.okButtonPressed)
         hlayout.addWidget(self.okButton)
 
-        self.okSendButton = okSendButton(self.NativeUI)
+        self.okSendButton = OkSendButtonWidget(self.NativeUI)
         self.okSendButton.pressed.connect(self.okSendButtonPressed)
         hlayout.addWidget(self.okSendButton)
 
-        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancelButtonPressed)
         hlayout.addWidget(self.cancelButton)
         self.buttonsList = [self.okButton, self.okSendButton, self.cancelButton]

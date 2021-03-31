@@ -64,17 +64,21 @@ class CancelButtonWidget(
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "QPushButton[bgColour='0']{background-color: "
-            + NativeUI.colors["foreground"].name()
-            + ";}"
-            "QPushButton[bgColour='1']{background-color: "
-            + NativeUI.colors["red"].name()
-            + ";}"
-            "QPushButton{color: " + NativeUI.colors["background"].name() + ";"
-            "border-color: " + NativeUI.colors["foreground"].name() + ";"
-            "font-size: " + NativeUI.text_size + ";"
-            "border-radius: 8px;"
-            "border:none}"
+            "QPushButton[bgColour='0']{"
+            "   background-color:"
+            + NativeUI.colors["button_foreground_enabled"].name()
+            + ";"
+            "}"
+            "QPushButton[bgColour='1']{"
+            "background-color:" + NativeUI.colors["red"].name() + ";"
+            "}"
+            "QPushButton{"
+            "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
+            # "   border-color: " + NativeUI.colors["button_foreground_enabled"].name() + ";"
+            "   font-size: " + NativeUI.text_size + ";"
+            # "   border-radius: 8px;"
+            "   border:none;"
+            "}"
         )
         self.setProperty("bgColour", "0")
         self.setEnabled(False)
@@ -98,22 +102,26 @@ class OkSendButtonWidget(
         # set icon color
         pixmap = QtGui.QPixmap(iconpath_play)
         mask = pixmap.mask()
-        pixmap.fill(NativeUI.colors["background"])
+        pixmap.fill(NativeUI.colors["button_background_enabled"])
         pixmap.setMask(mask)
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "QPushButton[bgColour='0']{background-color: "
-            + NativeUI.colors["foreground"].name()
-            + ";}"
-            "QPushButton[bgColour='1']{background-color: "
-            + NativeUI.colors["green"].name()
-            + ";}"
-            "QPushButton{color: " + NativeUI.colors["background"].name() + ";"
-            "border-color: " + NativeUI.colors["foreground"].name() + ";"
-            "font-size: " + NativeUI.text_size + ";"
-            "border-radius: 8px;"
-            "border:none}"
+            "QPushButton[bgColour='0']{"
+            "   background-color: "
+            + NativeUI.colors["button_foreground_enabled"].name()
+            + ";"
+            "}"
+            "QPushButton[bgColour='1']{"
+            "   background-color:" + NativeUI.colors["green"].name() + ";"
+            "}"
+            "QPushButton{"
+            "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
+            # "   border-color: " + NativeUI.colors["foreground"].name() + ";"
+            "   font-size: " + NativeUI.text_size + ";"
+            # "   border-radius: 8px;"
+            "   border:none"
+            "}"
         )
         self.setProperty("bgColour", "0")
         self.setEnabled(False)

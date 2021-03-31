@@ -35,26 +35,29 @@ class PageButtonsWidget(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
+        self.main_button = PageButton(
+            NativeUI,
+            "",
+            signal_value="main_page",
+            icon=NativeUI.icons["button_main_page"],
+        )
+        self.alarms_button = PageButton(
+            "", signal_value="alarms_page", icon=NativeUI.icons["button_alarms_page"]
+        )
+        self.modes_button = PageButton(
+            "", signal_value="modes_page", icon=NativeUI.icons["button_modes_page"]
+        )
+        self.settings_button = PageButton(
+            "",
+            signal_value="settings_page",
+            icon=NativeUI.icons["button_settings_page"],
+        )
+
         self.buttons = [
-            PageButton(
-                NativeUI,
-                "",
-                signal_value="main_page",
-                icon=NativeUI.icons["button_main_page"],
-            ),
-            PageButton(
-                "",
-                signal_value="alarms_page",
-                icon=NativeUI.icons["button_alarms_page"],
-            ),
-            PageButton(
-                "", signal_value="modes_page", icon=NativeUI.icons["button_modes_page"]
-            ),
-            PageButton(
-                "",
-                signal_value="settings_page",
-                icon=NativeUI.icons["button_settings_page"],
-            ),
+            self.main_button,
+            self.alarms_button,
+            self.modes_button,
+            self.settings_button,
         ]
 
         stylesheet = (
@@ -90,6 +93,23 @@ class PageButtonsWidget(QtWidgets.QWidget):
                 if pressed_button == unpressed_button:
                     continue
                 pressed_button.pressed.connect(unpressed_button.enable)
+
+    def set_pressed(self, pressed: str) -> int:
+        """
+        Set the specified buttons to enabled (unpressed) or disabled (pressed) states.
+        By default, all buttons in self.buttons will be made enabled except those in the
+        "pressed" list.
+
+        pressed can be str or list of str.
+        """
+        if isinstance(pressed, str):
+            pressed = [pressed]
+        for button in self.buttons:
+            button.setEnabled(True)
+        for button_name in pressed:
+            button = getattr(self, button_name)
+            button.setEnabled(False)
+        return 0
 
     def set_size(self, x: int, y: int, spacing: int = 10) -> int:
         """

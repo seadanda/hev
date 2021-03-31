@@ -220,13 +220,14 @@ class Layout:
         #     "mode_settings_tab"
         # )
 
-        page_modes = SwitchableStackWidget(
+        modes_stack = SwitchableStackWidget(
             self.NativeUI,
             [self.widgets.mode_settings_tab, self.widgets.mode_personal_tab],
             ["Mode Settings", "Personal Settings"],
         )
-        page_modes.setFont(self.NativeUI.text_font)
-        return page_modes
+        modes_stack.setFont(self.NativeUI.text_font)
+        self.widgets.add_widget(modes_stack, "modes_stack")
+        return modes_stack
 
     def layout_top_bar(self, widgets: list) -> QtWidgets.QWidget:
         """

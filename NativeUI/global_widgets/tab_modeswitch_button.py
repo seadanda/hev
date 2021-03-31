@@ -31,7 +31,7 @@ class TabModeswitchButton(QtWidgets.QWidget):
         layout.addWidget(self.switchButton)
         self.setLayout(layout)
 
-        self.mode_popup = modeswitchPopup(self.NativeUI)
+        self.mode_popup = False
         self.switchButton.pressed.connect(self.switch_button_pressed)
 
     def switch_button_pressed(self):
@@ -123,7 +123,6 @@ class modeswitchPopup(QtWidgets.QWidget):
         hlayout.addLayout(valuesLayout)
 
         ## Ok Cancel Buttons
-
         hbuttonlayout = QtWidgets.QHBoxLayout()
         self.okbutton = OkButtonWidget(NativeUI)
         self.okbutton.setEnabled(True)
@@ -153,9 +152,14 @@ class modeswitchPopup(QtWidgets.QWidget):
         self.radioButtons[self.NativeUI.currentMode].click()
 
     def goToPressed(self, mode):
-        self.NativeUI.stack.setCurrentWidget(self.NativeUI.modes_view)
-        self.NativeUI.modes_view.modeButton.click()
-        for button in self.NativeUI.modes_view.modeTab.buttonWidgets:
+        # Switch to the modes page
+        self.NativeUI.widgets.page_stack.setCurrentWidget(
+            self.NativeUI.widgets.modes_page
+        )
+        self.NativeUI.widgets.page_buttons.set_pressed(["modes_button"])
+
+        # Switch to the specific mode tab
+        for button in self.NativeUI.widgets.mode_settings_tab.buttonWidgets:
             print(button.text())
             print(mode)
             if mode in button.text():
@@ -163,10 +167,11 @@ class modeswitchPopup(QtWidgets.QWidget):
                 print(mode)
                 button.click()
 
+        # Close the popup
         self.close()
 
     def update_settings_data(self, button):
-        self.spinDict = self.NativeUI.modes_view.modeTab.spinDict
+        self.spinDict = self.NativeUI.widgets.mode_settings_tab.spinDict
         self.mode = button.text().replace("/", "_").replace("-", "_")
 
         data = self.NativeUI.get_db("targets")
