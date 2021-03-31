@@ -128,6 +128,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
             "fiO2_percent",
             "inhale_time",
         ]
+
         self.spinDict = {}
         for label, code in zip(self.__labels, self.__codes):
             self.spinDict[code] = SpinButton(NativeUI, label, code)
@@ -161,6 +162,20 @@ class SpinButtonsWidget(QtWidgets.QWidget):
     def update_targets(self):
         for widget in self.spinDict:
             self.spinDict[widget].update_targets_value()  # pass database
+
+        # targets = self.NativeUI.get_db("targets")
+        # if targets == {}:
+        #     return
+        # if targets["mode"] == "CURRENT":
+        #     for spin, code in zip(self.__spins, self.__codes):
+        #         if spin.simpleSpin.value() != float(targets[code]):
+        #             if spin.liveUpdating:
+        #                 spin.simpleSpin.setValue(float(targets[code]))
+        #                 spin.setTextColour("2")
+        #             else:
+        #                 spin.setTextColour("0")
+        #         else:
+        #             spin.setTextColour("2")
 
     def ok_button_pressed(self):
         message, command = [], []

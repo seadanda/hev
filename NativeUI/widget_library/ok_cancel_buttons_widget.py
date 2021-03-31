@@ -74,9 +74,7 @@ class CancelButtonWidget(
             "}"
             "QPushButton{"
             "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
-            # "   border-color: " + NativeUI.colors["button_foreground_enabled"].name() + ";"
             "   font-size: " + NativeUI.text_size + ";"
-            # "   border-radius: 8px;"
             "   border:none;"
             "}"
         )
@@ -117,11 +115,11 @@ class OkSendButtonWidget(
             "}"
             "QPushButton{"
             "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
-            # "   border-color: " + NativeUI.colors["foreground"].name() + ";"
             "   font-size: " + NativeUI.text_size + ";"
-            # "   border-radius: 8px;"
             "   border:none"
             "}"
+            "font-size: " + NativeUI.text_size + ";"
+            "border:none;"
         )
         self.setProperty("bgColour", "0")
         self.setEnabled(False)

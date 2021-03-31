@@ -142,6 +142,7 @@ class modeswitchPopup(QtWidgets.QWidget):
         self.setLayout(vlayout)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         # self.radioButtons[self.NativeUI.currentMode].click()  # 1st button clicked by default
+        # self.radioButtons[0].click()  # 1st button clicked by default
         # self.update_settings_data(radioButtons[0])
 
         self.setStyleSheet(
