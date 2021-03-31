@@ -31,7 +31,7 @@ class TabModeswitchButton(QtWidgets.QWidget):
         layout.addWidget(self.switchButton)
         self.setLayout(layout)
 
-        self.mode_popup = False
+        self.mode_popup = modeswitchPopup(self.NativeUI)
         self.switchButton.pressed.connect(self.switch_button_pressed)
 
     def switch_button_pressed(self):
@@ -46,22 +46,35 @@ class TabModeswitchButton(QtWidgets.QWidget):
         self.switchButton.setText(self.mode_popup.mode)
 
 
-class modeswitchPopup(QtWidgets.QDialog):
+class modeswitchPopup(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(modeswitchPopup, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.settingsList = self.NativeUI.widgets.mode_settings_tab.settingsList
+        self.settingsList = [
+            "Respiratory Rate",
+            "Inhale Time",
+            "IE Ratio",
+            "Inhale Trigger Sensitivity",
+            "Exhale Trigger Sensitivity",
+            "Inhale Pressure",
+            "Inhale Volume",
+            "Percentage O2",
+        ]  # self.NativeUI.modes_view.modeTab.settingsList
         modeList = self.NativeUI.modeList
-        self.spinDict = self.NativeUI.widgets.mode_settings_tab.spinDict
 
         vradioLayout = QtWidgets.QVBoxLayout()
         groupBox = QtWidgets.QGroupBox()
         self.radioButtons = {}
         for mode in modeList:
             button = QtWidgets.QRadioButton(mode)
+            goToButton = QtWidgets.QPushButton(mode)
+            goToButton.pressed.connect(lambda j=mode: self.goToPressed(j))
+            hlayout = QtWidgets.QHBoxLayout()
+            hlayout.addWidget(button)
+            hlayout.addWidget(goToButton)
             self.radioButtons[mode] = button
-            vradioLayout.addWidget(button)
+            vradioLayout.addLayout(hlayout)
             button.pressed.connect(lambda i=button: self.update_settings_data(i))
         groupBox.setLayout(vradioLayout)
 
@@ -86,7 +99,7 @@ class modeswitchPopup(QtWidgets.QDialog):
         vlayout2.addWidget(initVal)
         vlayout3.addWidget(newVal)
         for settings in self.settingsList:
-            namelabel = QtWidgets.QLabel(settings[0])
+            namelabel = QtWidgets.QLabel(settings)
             namelabel.setAlignment(QtCore.Qt.AlignRight)
             vlayout1.addWidget(namelabel)
 
@@ -113,8 +126,10 @@ class modeswitchPopup(QtWidgets.QDialog):
 
         hbuttonlayout = QtWidgets.QHBoxLayout()
         self.okbutton = OkButtonWidget(NativeUI)
+        self.okbutton.setEnabled(True)
         self.okbutton.pressed.connect(self.ok_button_pressed)
         self.cancelbutton = CancelButtonWidget(NativeUI)
+        self.cancelbutton.setEnabled(True)
         self.cancelbutton.pressed.connect(self.cancel_button_pressed)
         hbuttonlayout.addWidget(self.okbutton)
         hbuttonlayout.addWidget(self.cancelbutton)
@@ -127,7 +142,7 @@ class modeswitchPopup(QtWidgets.QDialog):
 
         self.setLayout(vlayout)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        # self.radioButtons[0].click()  # 1st button clicked by default
+        # self.radioButtons[self.NativeUI.currentMode].click()  # 1st button clicked by default
         # self.update_settings_data(radioButtons[0])
 
         self.setStyleSheet(
@@ -135,26 +150,39 @@ class modeswitchPopup(QtWidgets.QDialog):
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
             "font: 16pt bold;"
         )
-
         self.radioButtons[self.NativeUI.currentMode].click()
-        # self.update_settings_data(self.radioButtons[0]) # should update according to the mode we're in
+
+    def goToPressed(self, mode):
+        self.NativeUI.stack.setCurrentWidget(self.NativeUI.modes_view)
+        self.NativeUI.modes_view.modeButton.click()
+        for button in self.NativeUI.modes_view.modeTab.buttonWidgets:
+            print(button.text())
+            print(mode)
+            if mode in button.text():
+                print("match!")
+                print(mode)
+                button.click()
+
+        self.close()
 
     def update_settings_data(self, button):
-        self.mode = button.text()
+        self.spinDict = self.NativeUI.modes_view.modeTab.spinDict
+        self.mode = button.text().replace("/", "_").replace("-", "_")
+
         data = self.NativeUI.get_db("targets")
-        for label, settings in zip(self.labelList, self.settingsList):
-            currentVal = data[settings[2]]
-            setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
-            label.update_values(currentVal, setVal)
+        for settings, currentLabel, newLabel in zip(
+            self.settingsList, self.currentLabelList, self.newLabelList
+        ):
+            currentVal = self.spinDict[
+                self.NativeUI.currentMode.replace("/", "_").replace("-", "_")
+            ][settings].simpleSpin.value()
+            currentLabel.setText(str(round(currentVal, 4)))
+            setVal = self.spinDict[self.mode][settings].simpleSpin.value()
+            newLabel.setText(str(round(setVal, 4)))
 
     def ok_button_pressed(self):
         self.NativeUI.q_send_cmd("SET_MODE", self.mode)
         self.NativeUI.currentMode = self.mode
-        # need to decide whetehr this sets individual values or just mode
-        # for label,settings in zip(self.labelList,self.settingsList):
-        #     currentVal = data[settings[2]]
-        #     setVal = self.spinDict[self.mode + settings[0]].simpleSpin.value()
-        #     label.update_values(currentVal, setVal)
         self.close()
 
     def cancel_button_pressed(self):

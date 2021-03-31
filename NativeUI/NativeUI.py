@@ -54,7 +54,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.setWindowTitle("HEV NativeUI")
 
         # self.setFixedSize(1920, 1080)
-        self.modeList = ["PC_AC", "PC_AC_PRVC", "PC_PSV", "CPAP"]
+        self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
@@ -66,6 +66,8 @@ class NativeUI(HEVClient, QMainWindow):
             "button_foreground_disabled": QColor.fromRgb(30, 30, 30),
             "label_background": QColor.fromRgb(0, 0, 0),
             "label_foreground": QColor.fromRgb(200, 200, 200),
+            "display_background": QColor.fromRgb(200, 200, 200),
+            "display_foreground": QColor.fromRgb(0, 0, 0),
             "baby_blue": QColor.fromRgb(144, 231, 211),
             "modified_text": QColor.fromRgb(200, 0, 0),
             "pressure_plot": QColor.fromRgb(0, 114, 178),
@@ -140,6 +142,10 @@ class NativeUI(HEVClient, QMainWindow):
 
         self.widgets = Widgets(self)  # Create all the widgets we'll need
         self.layouts = Layout(self, self.widgets)  #
+
+        # bars
+        self.topBar = TabTopBar(self)
+        self.leftBar = TabLeftBar(self)
 
         self.confirmPopup = confirmPopup(
             self, self

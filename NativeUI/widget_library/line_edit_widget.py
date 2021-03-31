@@ -33,11 +33,10 @@ class SignallingLineEditWidget(QtWidgets.QLineEdit):
 
 
 class LabelledLineEditWidget(QtWidgets.QWidget):
-    def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, infoArray, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # print(infoArray)
         self.NativeUI = NativeUI
-        self.template = template
         self.cmd_type, self.cmd_code = "", ""
         self.min, self.max, self.step = 0, 10000, 0.3
         self.decPlaces = 2
