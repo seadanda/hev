@@ -26,13 +26,17 @@ class selectorButton(QtWidgets.QPushButton):
             "QPushButton[selected='0']{"
             "   font-size: " + NativeUI.text_size + ";"
             "   color: " + NativeUI.colors["page_foreground"].name() + ";"
-            "   background-color: " + NativeUI.colors["background_enabled"].name() + ";"
+            "   background-color: "
+            + NativeUI.colors["button_background_enabled"].name()
+            + ";"
             "   border:none"
             "}"
             "QPushButton[selected='1']{"
             "   font-size: " + NativeUI.text_size + ";"
             "   color: " + NativeUI.colors["page_background"].name() + ";"
-            "   background-color:" + NativeUI.colors["foreground_disabled"].name() + ";"
+            "   background-color:"
+            + NativeUI.colors["button_foreground_disabled"].name()
+            + ";"
             "   border:none"
             "}"
         )

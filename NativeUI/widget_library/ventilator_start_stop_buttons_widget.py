@@ -48,9 +48,10 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
             button.popUp.completeLabel.setText("Ventilation " + text)
             layout.addWidget(button)
             button.setStyleSheet(
-                "background-color:" + NativeUI.colors["background_enabled"].name() + ";"
-                "border-color:" + NativeUI.colors["page_foreground"].name() + ";"
-                "color:" + NativeUI.colors["page_foreground"].name() + ";"
+                "background-color:"
+                + NativeUI.colors["button_background_enabled"].name()
+                + ";"
+                "color:" + NativeUI.colors["button_foreground_enabled"].name() + ";"
                 "border:none"
             )
 

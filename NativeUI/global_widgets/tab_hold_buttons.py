@@ -30,9 +30,10 @@ class timerConfirmPopup(QtWidgets.QWidget):
         )  # ensures focus is not stolen by alarm or confirmation
 
         self.setStyleSheet(
-            "background-color: " + NativeUI.colors["background_enabled"].name() + ";"
-            "color: " + NativeUI.colors["page_foreground"].name() + ";"
-            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
+            "background-color: "
+            + NativeUI.colors["button_background_enabled"].name()
+            + ";"
+            "color: " + NativeUI.colors["button_foreground_disabled"].name() + ";"
             "border:none"
         )
 

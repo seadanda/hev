@@ -60,9 +60,12 @@ class NativeUI(HEVClient, QMainWindow):
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             "page_background": QColor.fromRgb(30, 30, 30),
             "page_foreground": QColor.fromRgb(200, 200, 200),
-            "background_enabled": QColor.fromRgb(50, 50, 50),
-            "background_disabled": QColor.fromRgb(15, 15, 15),
-            "foreground_disabled": QColor.fromRgb(100, 100, 100),
+            "button_background_enabled": QColor.fromRgb(50, 50, 50),
+            "button_background_disabled": QColor.fromRgb(100, 100, 100),
+            "button_foreground_enabled": QColor.fromRgb(200, 200, 200),
+            "button_foreground_disabled": QColor.fromRgb(30, 30, 30),
+            "label_background": QColor.fromRgb(0, 0, 0),
+            "label_foreground": QColor.fromRgb(200, 200, 200),
             "baby_blue": QColor.fromRgb(144, 231, 211),
             "modified_text": QColor.fromRgb(200, 0, 0),
             "pressure_plot": QColor.fromRgb(0, 114, 178),
@@ -73,6 +76,7 @@ class NativeUI(HEVClient, QMainWindow):
             "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
         }
         self.text_font = QFont("Sans Serif", 20)
+        self.value_font = QFont("Sans Serif", 40)
         self.text_size = "20pt"  # TODO: remove in favour of self.text_font
         self.text = {
             "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",

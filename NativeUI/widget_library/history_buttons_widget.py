@@ -41,12 +41,17 @@ class HistoryButtonsWidget(QtWidgets.QWidget):
         # Button Appearance
         stylesheet = (
             "QPushButton{"
-            "   background-color:" + NativeUI.colors["background_enabled"].name() + ";"
-            "   color: " + NativeUI.colors["page_foreground"].name() + ";"
+            "   background-color:"
+            + NativeUI.colors["button_background_enabled"].name()
+            + ";"
+            "   color: " + NativeUI.colors["button_foreground_enabled"].name() + ";"
             "   border: none;"
             "}"
             "QPushButton:disabled{"
-            "   background-color:" + NativeUI.colors["background_disabled"].name() + ";"
+            "   background-color:"
+            + NativeUI.colors["button_background_disabled"].name()
+            + ";"
+            "   color: " + NativeUI.colors["button_foreground_enabled"].name() + ";"
             "   border: none;"
             "}"
         )

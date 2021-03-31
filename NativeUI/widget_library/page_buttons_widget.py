@@ -59,12 +59,17 @@ class PageButtonsWidget(QtWidgets.QWidget):
 
         stylesheet = (
             "QPushButton{"
-            "    background-color:" + NativeUI.colors["background_enabled"].name() + ";"
             "    border:none"
             "}"
             "QPushButton:disabled{"
-            "    background-color: "
-            + NativeUI.colors["background_disabled"].name()
+            "    background-color:"
+            + NativeUI.colors["button_background_disabled"].name()
+            + ";"
+            "    border:none"
+            "}"
+            "QPushButton:enabled{"
+            "    background-color:"
+            + NativeUI.colors["button_background_enabled"].name()
             + ";"
             "    border:none"
             "}"
