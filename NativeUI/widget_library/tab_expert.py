@@ -12,17 +12,17 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Development"
 
-from PySide2 import QtWidgets, QtGui, QtCore
+# from PySide2 import QtWidgets, QtGui, QtCore
 
 # from global_widgets.global_spinbox import simpleSpin
-from global_widgets.global_select_button import selectorButton
-from global_widgets.global_send_popup import SetConfirmPopup
+# from global_widgets.global_select_button import selectorButton
+# from global_widgets.global_send_popup import SetConfirmPopup
 from global_widgets.template_set_values import TemplateSetValues
 
 
 class TabExpert(TemplateSetValues):
     def __init__(self, NativeUI, *args, **kwargs):
-        super(TabExpert, self).__init__(NativeUI, *args, **kwargs)
+        super().__init__(NativeUI, *args, **kwargs)
         self.setPacketType("readback")
 
         controlDict = {

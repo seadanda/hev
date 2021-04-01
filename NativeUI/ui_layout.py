@@ -190,7 +190,7 @@ class Layout:
         """
         page_alarms = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.alarmTab, self.widgets.clinicalTab],
+            [self.widgets.alarm_tab, self.widgets.clinical_tab],
             ["List of Alarms", "Clinical Limits"],
         )
         page_alarms.setFont(self.NativeUI.text_font)
@@ -210,7 +210,9 @@ class Layout:
         return page_settings
 
     def layout_page_modes(self) -> QtWidgets.QWidget:
-
+        """
+        Layout for the Modes page.
+        """
         # self.widgets.add_widget(
         #     SwitchableStackWidget(
         #         self.NativeUI,
@@ -256,6 +258,9 @@ class Layout:
         return left_bar
 
     def layout_tab_main_normal(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the 'normal' plots and measurements display.
+        """
         tab_main_normal = QtWidgets.QWidget()
         tab_main_normal_layout = QtWidgets.QHBoxLayout(tab_main_normal)
         for widget in widgets:
@@ -264,6 +269,9 @@ class Layout:
         return tab_main_normal
 
     def layout_tab_main_detailed(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the 'detailed' plots and measurements display.
+        """
         tab_main_detailed = QtWidgets.QWidget()
         tab_main_detailed_layout = QtWidgets.QHBoxLayout(tab_main_detailed)
         for widget in widgets:
@@ -278,5 +286,4 @@ class Layout:
         stack = QtWidgets.QStackedWidget()
         for widget in widgets:
             stack.addWidget(widget)
-
         return stack
