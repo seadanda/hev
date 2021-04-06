@@ -14,13 +14,54 @@ __status__ = "Prototype"
 
 import os
 from PySide2 import QtCore, QtGui, QtWidgets
+from datetime import datetime
+
+
+class abstractAlarm(QtWidgets.QWidget):
+
+    alarmExpired = QtCore.Signal()
+
+    def __init__(self, NativeUI, alarmPayload, *args, **kwargs):
+        super(abstractAlarm, self).__init__(*args, **kwargs)
+        self.NativeUI = NativeUI
+        self.alarmPayload = alarmPayload
+
+        self.startTime = datetime.now()
+        self.duration = datetime.now() - self.startTime
+        self.finishTime = -1
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(1500)  # just faster than 60Hz
+        self.timer.timeout.connect(self.timeoutDelete)
+        self.timer.start()
+
+    def timeoutDelete(self):
+        # """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
+        self.alarmExpired.emit()
+        self.setParent(None) # delete self
+        return 0
+
+    def resetTimer(self):
+        self.timer.start()
+        return 0
+
+    def freezeTimer(self):
+        self.timer.stop()
+        return 0
+
+    def recordFinishTime(self):
+        self.finishTime = datetime.now()
+        self.duration = self.finishTime - self.startTime
+
+    def calculateDuration(self):
+        self.duration = datetime.now() - self.startTime
 
 
 class alarmWidget(QtWidgets.QWidget):
     """Object containing information particular to one alarm.
     Created when alarm received from microcontroller, timeout after alarm signal stops.
     Is contained within alarmPopup"""
-    def __init__(self, NativeUI, alarmPayload, alarmCarrier, *args, **kwargs):
+    def __init__(self, NativeUI, abstractAlarm, alarmCarrier, *args, **kwargs):
         super(alarmWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
@@ -29,7 +70,7 @@ class alarmWidget(QtWidgets.QWidget):
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(0)
         self.layout.setMargin(0)
-        self.alarmPayload = alarmPayload
+        self.alarmPayload = abstractAlarm.alarmPayload
 
         iconLabel = QtWidgets.QLabel()
         iconpath_check = os.path.join(
@@ -39,34 +80,41 @@ class alarmWidget(QtWidgets.QWidget):
         iconLabel.setPixmap(pixmap)
         self.layout.addWidget(iconLabel)
 
-        textLabel = QtWidgets.QLabel()
-        textLabel.setText(self.alarmPayload["alarm_code"])
-        textLabel.setFixedWidth(150)
-        textLabel.setAlignment(QtCore.Qt.AlignCenter)
-        textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
-        self.layout.addWidget(textLabel)
+        self.textLabel = QtWidgets.QLabel()
+        self.textLabel.setText(self.alarmPayload['alarm_type']+ ' - ' + self.alarmPayload["alarm_code"])
+        self.textLabel.setFixedWidth(400)
+        self.textLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
+        self.layout.addWidget(self.textLabel)
 
         self.setFixedHeight(40)
         self.setLayout(self.layout)
-        if alarmPayload["alarm_type"] == "PRIORITY_HIGH":
+        if self.alarmPayload["alarm_type"] == "PRIORITY_HIGH":
             self.setStyleSheet("background-color:red;")
-        elif alarmPayload["alarm_type"] == "PRIORITY_MEDIUM":
+        elif self.alarmPayload["alarm_type"] == "PRIORITY_MEDIUM":
             self.setStyleSheet("background-color:orange;")
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(500)  # just faster than 60Hz
-        self.timer.timeout.connect(self.checkAlarm)
-        self.timer.start()
+        # self.timer = QtCore.QTimer()
+        # self.timer.setInterval(500)  # just faster than 60Hz
+        # self.timer.timeout.connect(self.checkAlarm)
+        # self.timer.start()
+        # self.installEventFilter(self)
 
-    def checkAlarm(self):
-        """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
-        self.ongoingAlarms = self.NativeUI.ongoingAlarms
-        for alarm in self.ongoingAlarms:
-            if self.alarmPayload["alarm_code"] == alarm["alarm_code"]:
-                return
-        self.alarmCarrier.alarmDict.pop(self.alarmPayload["alarm_code"])
-        self.setParent(None) # delete self
-        return 0
+    def eventFilter(self, source, event):
+        if (event.type() == QtCore.QEvent.MouseButtonPress):
+            self.NativeUI.leftBar.tab_page_buttons.button_alarms.click()
+            self.NativeUI.alarms_view.alarmButton.click()
+        return False
+
+    # def checkAlarm(self):
+    #     """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
+    #     self.ongoingAlarms = self.NativeUI.ongoingAlarms
+    #     for alarm in self.ongoingAlarms:
+    #         if self.alarmPayload["alarm_code"] == alarm["alarm_code"]:
+    #             return
+    #     self.alarmCarrier.alarmDict.pop(self.alarmPayload["alarm_code"])
+    #     self.setParent(None) # delete self
+    #     return 0
 
 
 class alarmPopup(QtWidgets.QDialog):
@@ -107,16 +155,23 @@ class alarmPopup(QtWidgets.QDialog):
         self.alarmDict = {}
         return 0
 
-    def addAlarm(self, alarmPayload):
+    def addAlarm(self, abstractAlarm):
         """Creates a new alarmWidget and adds it to the container"""
-        self.alarmDict[alarmPayload["alarm_code"]] = alarmWidget(
-            self.NativeUI, alarmPayload, self
+        self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]] = alarmWidget(
+            self.NativeUI, abstractAlarm, self
         )
-        self.layout.addWidget(self.alarmDict[alarmPayload["alarm_code"]])
+        self.layout.addWidget(self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]])
         return 0
 
-    def resetTimer(self, alarmPayload):
-        self.alarmDict[alarmPayload["alarm_code"]].timer.start()
+    def removeAlarm(self, abstractAlarm):
+        """Creates a new alarmWidget and adds it to the container"""
+        self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]].setParent(None)
+        self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
+
+        return 0
+
+    # def resetTimer(self, alarmPayload):
+    #     self.alarmDict[alarmPayload["alarm_code"]].timer.start()
 
     def location_on_window(self):
         """Position the popup as defined here"""

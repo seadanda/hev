@@ -14,7 +14,7 @@ __status__ = "Prototype"
 
 import sys
 
-from alarm_widgets.alarm_popup import alarmPopup
+from alarm_widgets.alarm_popup import alarmPopup, abstractAlarm
 from alarm_widgets.alarm_list import alarmList
 from PySide2 import QtCore, QtGui, QtWidgets
 
@@ -23,6 +23,8 @@ class TabAlarm(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(TabAlarm, self).__init__(*args, **kwargs)
         self.NativeUI = NativeUI
+
+        #self.alarmDict = {}
 
         self.popup = alarmPopup(NativeUI, self)
         self.popup.show()
@@ -37,21 +39,32 @@ class TabAlarm(QtWidgets.QWidget):
 
         self.setLayout(vlayout)
         # fdd
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(160)
-        self.timer.timeout.connect(self.updateAlarms)
-        self.timer.start()
+        # self.timer = QtCore.QTimer()
+        # self.timer.setInterval(160)
+        # self.timer.timeout.connect(self.updateAlarms)
+        # self.timer.start()
 
     def acknowledge_pressed(self):
         self.popup.clearAlarms()
         self.list.acknowledge_all()
 
-    def updateAlarms(self):
-        newAlarm = self.NativeUI.get_db("alarms")
-        if newAlarm == []:
-            return
-        if newAlarm["alarm_code"] in self.popup.alarmDict:
-            self.popup.resetTimer(newAlarm)
-        else:
-            self.popup.addAlarm(newAlarm)
-            self.list.addAlarm(newAlarm)
+    # def updateAlarms(self):
+    #     newAlarmPayload = self.NativeUI.get_db("alarms")
+    #     if newAlarmPayload == []:
+    #         return
+    #     if newAlarmPayload["alarm_code"] in self.alarmDict:
+    #         a = 1
+    #         #self.alarmDict[newAlarmPayload["alarm_code"]].resetTimer()
+    #         #self.popup.resetTimer(newAlarm)
+    #     else:
+    #         newAbstractAlarm = abstractAlarm(self.NativeUI, newAlarmPayload)
+    #         self.alarmDict[newAlarmPayload["alarm_code"]] = newAbstractAlarm
+    #         newAbstractAlarm.alarmExpired.connect(lambda i = newAbstractAlarm: self.handleAlarmExpiry(i))
+    #         self.popup.addAlarm(newAbstractAlarm)
+    #         self.list.addAlarm(newAbstractAlarm)
+
+    # def handleAlarmExpiry(self, abstractAlarm):
+    #     abstractAlarm.freezeTimer()
+    #     self.popup.removeAlarm(abstractAlarm)
+    #     self.list.removeAlarm(abstractAlarm)
+    #     abstractAlarm.recordFinishTime()

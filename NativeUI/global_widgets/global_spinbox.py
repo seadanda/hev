@@ -127,7 +127,7 @@ class labelledSpin(QtWidgets.QWidget):
             "    color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='2']{"
-            "    color:" + NativeUI.colors["baby_blue"].name() + ";"
+            "    color:" + NativeUI.colors["red"].name() + ";"
             "}"
             "QDoubleSpinBox::up-button{"
             "width:20; "
@@ -167,42 +167,58 @@ class labelledSpin(QtWidgets.QWidget):
 
     def manualStep(self):
         """Handle changes in value. Change colour if different to set value, set updating values."""
-        if self.manuallyUpdated != True:
-            self.oldValue = self.simpleSpin.prevValue
-        self.manuallyUpdated = True
-        if self.simpleSpin.value() != self.oldValue:
-            self.simpleSpin.setProperty("textColour", "1")
-        else:
-            self.simpleSpin.setProperty("textColour", "0")
-            self.manuallyUpdated = False
-        self.simpleSpin.style().polish(self.simpleSpin)
+        if not self.manuallyUpdated:
+            self.simpleSpin.setProperty("textColour", "2")
+            self.manuallyUpdated = True
+            self.simpleSpin.style().polish(self.simpleSpin)
+        return 0
 
-    def update_readback_value(self):
-        newVal = self.NativeUI.get_db("readback")
-        if newVal == {} or self.manuallyUpdated:
+    def update_value(self,db):
+        if (self.tag == "") :
             a = 1  # do nothing
         else:
-            self.simpleSpin.setValue(newVal[self.tag])
-            self.simpleSpin.setProperty("textColour", "0")
-            self.simpleSpin.style().polish(self.simpleSpin)
+            newVal = db[self.tag]
+            if self.manuallyUpdated:
+                roundVal = round(newVal,self.decPlaces)
+                if self.decPlaces == 0:
+                    roundVal = int(roundVal)
+                if self.simpleSpin.value() == roundVal:
+                    self.manuallyUpdated = False
+                    self.simpleSpin.setProperty("textColour", "0")
+                    self.simpleSpin.style().polish(self.simpleSpin)
+                    print('reverting back')
+                    
+            else:
+                self.simpleSpin.setValue(newVal)
+                self.simpleSpin.setProperty("textColour", "0")
+                self.simpleSpin.style().polish(self.simpleSpin)
 
-    def update_targets_value(self):
-        newVal = self.NativeUI.get_db("targets")
-        if (newVal == {}) or (self.tag == "") or self.manuallyUpdated:
-            a = 1  # do nothing
-        else:
-            self.simpleSpin.setValue(newVal[self.tag])
-            self.simpleSpin.setProperty("textColour", "0")
-            self.simpleSpin.style().polish(self.simpleSpin)
+    # def update_readback_value(self):
+    #     newVal = self.NativeUI.get_db("readback")
+    #     if newVal == {} or self.manuallyUpdated:
+    #         a = 1  # do nothing
+    #     else:
+    #         self.simpleSpin.setValue(newVal[self.tag])
+    #         self.simpleSpin.setProperty("textColour", "0")
+    #         self.simpleSpin.style().polish(self.simpleSpin)
 
-    def update_personal_value(self):
-        newVal = self.NativeUI.get_db("personal")
-        if (newVal == {}) or (self.tag == ""):
-            a = 1  # do nothing
-        else:
-            self.simpleSpin.setValue(newVal[self.tag])
-            self.simpleSpin.setProperty("textColour", "0")
-            self.simpleSpin.style().polish(self.simpleSpin)
+    # def update_targets_value(self):
+    #     newVal = self.NativeUI.get_db("targets")
+    #     if (newVal == {}) or (self.tag == "") or self.manuallyUpdated:
+    #         a = 1  # do nothing
+    #     else:
+    #         self.simpleSpin.setValue(newVal[self.tag])
+    #         self.simpleSpin.setProperty("textColour", "0")
+    #         self.simpleSpin.style().polish(self.simpleSpin)
+
+    # def update_personal_value(self):
+    #     newVal = self.NativeUI.get_db("personal")
+    #     if (newVal == {}) or (self.tag == ""):
+    #         a = 1  # do nothing
+    #     else:
+    #         self.simpleSpin.setValue(newVal[self.tag])
+    #         self.simpleSpin.setProperty("textColour", "0")
+    #         self.simpleSpin.style().polish(self.simpleSpin)
 
     def insertWidget(self, widget, position):
         self.insertedWidget = widget
@@ -213,3 +229,6 @@ class labelledSpin(QtWidgets.QWidget):
         for widget in self.widgetList:
             self.layout.addWidget(widget)
         self.setLayout(self.layout)
+
+    def get_value(self):
+        return self.simpleSpin.value()

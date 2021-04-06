@@ -26,7 +26,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList = []
         self.spinDict = {}
         self.NativeUI = NativeUI
-        self.packet = "target"
+        self.packet = "targets"
 
         self.timer = QtCore.QTimer()
         self.timer.setInterval(500)  # just faster than 60Hz
@@ -141,8 +141,10 @@ class TemplateSetValues(QtWidgets.QWidget):
         for info in settingsList:
             if info[0] in textBoxes:
                 self.spinDict[info[0]] = labelledLineEdit(self.NativeUI, info)
+                self.spinDict[info[0]].simpleSpin.textChanged.connect(lambda textignore, i=1: self.colourButtons(i))
             else:
                 self.spinDict[info[0]] = labelledSpin(self.NativeUI, info)
+                self.spinDict[info[0]].simpleSpin.manualChanged.connect(lambda i=1: self.colourButtons(i))
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
 
@@ -159,7 +161,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList.append(hlayout)
 
         for spin in self.spinDict:
-            self.spinDict[spin].simpleSpin.manualChanged.connect(self.colourButtons)
+            self.spinDict[spin].simpleSpin.manualChanged.connect(lambda i=1:self.colourButtons(i))
 
     def addModeButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
@@ -178,28 +180,29 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList.append(hlayout)
 
         for spin in self.spinDict:
-            self.spinDict[spin].simpleSpin.manualChanged.connect(self.colourButtons)
+            self.spinDict[spin].simpleSpin.manualChanged.connect(lambda i=1:self.colourButtons(i))
 
-    def colourButtons(self):
+    def colourButtons(self, option):
         for button in self.buttonsList:
-            button.setColour(1)
+            button.setColour(str(option))
 
     def update_settings_data(self):
-        for widget in self.spinDict:
-            if self.packet == "target":
-                self.spinDict[
-                    widget
-                ].update_targets_value()  # pass database                elif self.packet == "readback":
-            elif self.packet == "readback":
-                self.spinDict[widget].update_readback_value()
-            elif self.packet == "personal":
-                self.spinDict[widget].update_personal_value()
+        liveUpdatingCheck = True
+        db = self.NativeUI.get_db(self.packet)
+        if db == {}:
+            return 0 # do nothing
+        else:
+            for widget in self.spinDict:
+                self.spinDict[widget].update_value(db)
+                liveUpdatingCheck = liveUpdatingCheck and not self.spinDict[widget].manuallyUpdated
+            if liveUpdatingCheck:
+                self.colourButtons(0)
 
     def okButtonPressed(self):
         message, command = [], []
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
-                setVal = self.spinDict[widget].simpleSpin.value()
+                setVal = self.spinDict[widget].get_value()
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [
@@ -216,7 +219,7 @@ class TemplateSetValues(QtWidgets.QWidget):
         message, command = [], []
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
-                setVal = self.spinDict[widget].simpleSpin.value()
+                setVal = self.spinDict[widget].get_value()
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [

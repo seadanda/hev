@@ -174,9 +174,9 @@ class modeswitchPopup(QtWidgets.QWidget):
         ):
             currentVal = self.spinDict[
                 self.NativeUI.currentMode.replace("/", "_").replace("-", "_")
-            ][settings].simpleSpin.value()
+            ][settings].get_value()
             currentLabel.setText(str(round(currentVal, 4)))
-            setVal = self.spinDict[self.mode][settings].simpleSpin.value()
+            setVal = self.spinDict[self.mode][settings].get_value()
             newLabel.setText(str(round(setVal, 4)))
 
     def ok_button_pressed(self):

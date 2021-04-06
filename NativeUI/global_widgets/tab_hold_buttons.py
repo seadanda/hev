@@ -59,8 +59,10 @@ class timerConfirmPopup(QtWidgets.QWidget):
 
         buttonLayout = QtWidgets.QHBoxLayout()
         self.okButton = okButton(NativeUI)
+        self.okButton.setEnabled(True)
         buttonLayout.addWidget(self.okButton)
         self.cancelButton = cancelButton(NativeUI)
+        self.cancelButton.setEnabled(True)
         buttonLayout.addWidget(self.cancelButton)
 
         self.completeLayout.addWidget(self.completeLabel)

@@ -57,9 +57,11 @@ class TypeValuePopup(QtWidgets.QDialog):
         grid.addWidget(self.lineEdit, 0, 0, 1, 2)
 
         self.okButton = okButton(NativeUI)
+        self.okButton.setEnabled(True)
         grid.addWidget(self.okButton, 1, 0)
 
         self.cancelButton = cancelButton(NativeUI)
+        self.cancelButton.setEnabled(True)
         grid.addWidget(self.cancelButton, 1, 1)
 
         self.setLayout(grid)

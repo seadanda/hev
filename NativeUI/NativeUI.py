@@ -30,7 +30,7 @@ import numpy as np
 # from alarm_widgets.tab_alarms import TabAlarm
 from global_widgets.tab_top_bar import TabTopBar
 from global_widgets.tab_left_bar import TabLeftBar
-from global_widgets.global_sendconfirm_popup import confirmPopup
+from global_widgets.global_send_popup import confirmPopup
 from hev_main import MainView
 from hev_settings import SettingsView
 from hev_alarms import AlarmView

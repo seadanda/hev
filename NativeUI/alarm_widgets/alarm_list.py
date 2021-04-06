@@ -15,11 +15,10 @@ __status__ = "Prototype"
 import sys
 import os
 from PySide2 import QtCore, QtGui, QtWidgets
+from datetime import datetime
 
-path = "/home/pi/Documents/hev/hev-display/assets/svg/"
 
-
-class alarmList(QtWidgets.QWidget):
+class alarmList(QtWidgets.QListWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(alarmList, self).__init__(*args, **kwargs)
 
@@ -37,29 +36,26 @@ class alarmList(QtWidgets.QWidget):
         self.solidBell = QtGui.QIcon(iconpath_bell)
         self.regularBell = QtGui.QIcon(iconpath_bellReg)
 
-        self.vlayout = QtWidgets.QVBoxLayout()
-        self.alarmList = QtWidgets.QListWidget()
-        self.alarmList.addItem("ring the alarm")
-        self.alarmList.addItem("alarm the ring")
-        self.vlayout.addWidget(self.alarmList)
-        self.setLayout(self.vlayout)
+        newItem = QtWidgets.QListWidgetItem(' ')
+        self.addItem(newItem)
 
-    #     self.alarmList.itemClicked.connect(self.selected)
-
-    # def selected(self):
-    #     items = self.test.selectedItems()
-    #     for item in items:
-    #         item.setText("newtestText")
-    #         item.setIcon(self.regularBell)
 
     def acknowledge_all(self):
-        for x in range(self.alarmList.count() - 1):
-            self.alarmList.item(x).setText("acknowledgedAlarm")
-            self.alarmList.item(x).setIcon(self.regularBell)
+        for x in range(self.count() - 1):
+            self.item(x).setText("acknowledgedAlarm")
+            self.item(x).setIcon(self.regularBell)
 
-    def addAlarm(self, alarmPayload):
-        newItem = QtWidgets.QListWidgetItem(self.solidBell, alarmPayload["alarm_code"])
-        self.alarmList.insertItem(0, newItem)  # add to the top
+    def addAlarm(self, abstractAlarm):
+        timestamp = str(abstractAlarm.startTime)[:-3]
+        newItem = QtWidgets.QListWidgetItem(self.solidBell, timestamp + ': ' + abstractAlarm.alarmPayload['alarm_type'] + ' - ' + abstractAlarm.alarmPayload["alarm_code"])
+        self.insertItem(0, newItem)  # add to the top
+        #self.labelList
+
+    def removeAlarm(self, abstractAlarm):
+        for x in range(self.count() - 1):
+            if abstractAlarm.alarmPayload["alarm_code"] in self.item(x).text():
+                self.takeItem(x)
+
 
 
 if __name__ == "__main__":

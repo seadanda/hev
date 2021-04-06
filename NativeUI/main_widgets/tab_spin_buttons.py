@@ -161,6 +161,7 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.spinDict = {}
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
+            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda i=1: self.colourButtons(i))
             self.layout.addWidget(self.spinDict[settings[0]])
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
@@ -183,10 +184,18 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.timer.timeout.connect(self.update_targets)
         self.timer.start()
 
+    def colourButtons(self,option):
+        self.okButton.setColour(str(option))
+        self.cancelButton.setColour(str(option))
+
     def update_targets(self):
         """Update values on all spinboxes"""
+        liveUpdatingCheck = True
         for spin in self.spinDict:
             self.spinDict[spin].update_targets_value()
+            liveUpdatingCheck = liveUpdatingCheck and self.spinDict[spin].liveUpdating
+        if liveUpdatingCheck:
+            self.colourButtons(0)
         return 0
 
     def ok_button_pressed(self):
@@ -213,12 +222,14 @@ class TabSpinButtons(QtWidgets.QWidget):
         for spin in self.spinDict:
             self.spinDict[spin].liveUpdating = True
             self.spinDict[spin].setTextColour("1")
+        self.colourButtons(0)
 
     def cancel_button_pressed(self):
         """Respond to cancel button pressed by changing text colour and liveUpdating to True"""
         for spin in self.spinDict:
             self.spinDict[spin].liveUpdating = True
             self.spinDict[spin].setTextColour("1")
+        self.colourButtons(0)
 
         # targets = self.NativeUI.get_targets_db()
         # if targets == {}:
