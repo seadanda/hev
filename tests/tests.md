@@ -1,10 +1,13 @@
 # Tests Documentation
 
-# Unit Tests
+## Unit Tests
 
 TODO
-# Integration Tests
-## Template
+
+Percentage coverage:
+
+## Integration Tests
+### Template
 
 Status is marked in the test title with:
 * :x: for not started
@@ -15,7 +18,7 @@ RiskID | Domain | Functional Area | Standard Reference | Assignee
 ------ | ------ | --------------- | ------------------ | --------
 SW | Software-GUI | Alarms | ISO-XX | Tim Powell
 
-### Scenario: <EXAMPLE>
+#### Scenario: <EXAMPLE>
 
     GIVEN the <EVENT>
     WHEN the <CAUSE>
@@ -23,13 +26,13 @@ SW | Software-GUI | Alarms | ISO-XX | Tim Powell
 
 ---
 
-## Low Battery Alarm (10 minutes) :x:
+### Low Battery Alarm (10 minutes) :x:
 
 RiskID | Domain | Functional Area | Standard Reference | Assignee
 ------ | ------ | --------------- | ------------------ | --------
 SW8 | Software-GUI | Alarms | ISO80601-2-12:2020 | Tim Powell
 
-### Scenario: There is only 10 minutes of battery life left
+#### Scenario: There is only 10 minutes of battery life left
 
     GIVEN the alarm payload comes in
     WHEN the alarm is about the battery
@@ -38,13 +41,13 @@ SW8 | Software-GUI | Alarms | ISO80601-2-12:2020 | Tim Powell
 
 ---
 
-## High Pressure Alarm to be HIGH Priority :large_orange_diamond:
+### High Pressure Alarm to be HIGH Priority :large_orange_diamond:
 
 RiskID | Domain | Functional Area | Standard Reference | Assignee
 ------ | ------ | --------------- | ------------------ | --------
 SW11 | Software-GUI | Alarms | ISO80601-2-12:2020 | Tim Powell
 
-### Scenario: Excessive airway pressure applied
+#### Scenario: Excessive airway pressure applied
 
     GIVEN the alarm payload received
     WHEN the alarm_code: 7
