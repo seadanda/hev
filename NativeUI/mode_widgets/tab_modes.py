@@ -108,7 +108,7 @@ class TabModes(
                     )
                     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonTime, 1)
                     tab.buttonGroup.addButton(tab.radioButtonTime)
-                    
+
                 if tab.spinDict[labelledSpin].label == "IE Ratio":
                     tab.radioButtonRat = QtWidgets.QRadioButton()
                     tab.radioButtonRat.setChecked(bool(enable[2]))
@@ -119,7 +119,7 @@ class TabModes(
                     )
                     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
                     tab.buttonGroup.addButton(tab.radioButtonRat)
-                    
+
             tab.addModeButtons()
             tab.finaliseLayout()
             self._setEnabled(tab, enable, vals)

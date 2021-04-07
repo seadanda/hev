@@ -107,4 +107,3 @@ class LabelledLineEditWidget(QtWidgets.QWidget):
 
     def get_value(self):
         return self.simpleSpin.text()
-

@@ -57,4 +57,3 @@ class TabStartStopStandbyButtons(QtWidgets.QWidget):
             button.setFixedSize(self.__button_size)
 
         self.setLayout(layout)
-

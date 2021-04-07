@@ -57,7 +57,7 @@ class OkButtonWidget(
 
 class CancelButtonWidget(
     QtWidgets.QPushButton
-):  
+):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")

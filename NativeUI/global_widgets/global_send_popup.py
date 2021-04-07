@@ -20,11 +20,10 @@ import sys
 import os
 
 
-class SetConfirmPopup(
-    QtWidgets.QDialog
-):
+class SetConfirmPopup(QtWidgets.QDialog):
     """Popup called when user wants to send new values to microcontroller.
     This popup shows changes and asks for confirmation"""
+
     def __init__(self, parentTemplate, NativeUI, setList, commandList, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
@@ -69,11 +68,11 @@ class SetConfirmPopup(
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
-        self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)  # no window title
+        self.setWindowFlags(
+            QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
+        )  # no window title
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
         self.setWindowOpacity(0.5)
-
-        
 
     def ok_button_pressed(self):
         """Send commands when ok button is clicked"""
@@ -87,8 +86,6 @@ class SetConfirmPopup(
         """Close popup when cancel button is clicked"""
         self.close()
         return 0
-
-
 
 
 class confirmWidget(QtWidgets.QWidget):
@@ -115,14 +112,15 @@ class confirmWidget(QtWidgets.QWidget):
         self.setLayout(self.hlayout)
         self.setFixedHeight(50)
 
-
         self.timer = QtCore.QTimer()
         self.timer.setInterval(10000)
         self.timer.timeout.connect(self.confirmTimeout)
         self.timer.start()
 
     def confirmTimeout(self):
-        self.parent().confirmDict.pop(self.confirmMessage.replace("/", "_").replace("-", "_"))
+        self.parent().confirmDict.pop(
+            self.confirmMessage.replace("/", "_").replace("-", "_")
+        )
         self.setParent(None)
 
 
@@ -130,6 +128,7 @@ class confirmPopup(QtWidgets.QWidget):
     """Popup when a command is confirmed by microcontroller.
     This popup is a frame containing a confirmWidget object for
     each successful command."""
+
     def __init__(self, NativeUI, *args, **kwargs):
         super(confirmPopup, self).__init__(*args, **kwargs)
 
@@ -143,7 +142,9 @@ class confirmPopup(QtWidgets.QWidget):
 
         self.location_on_window()
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint
+            QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.Dialog
+            | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
 
         self.setStyleSheet("background-color:green;")
@@ -153,10 +154,11 @@ class confirmPopup(QtWidgets.QWidget):
         self.timer.timeout.connect(self.adjustSize)
         self.timer.start()
 
-
     def addConfirmation(self, confirmMessage):
         """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
-        self.confirmDict[confirmMessage] = confirmWidget(self.NativeUI, confirmMessage) # record in dictionary so it can be accessed and deleted
+        self.confirmDict[confirmMessage] = confirmWidget(
+            self.NativeUI, confirmMessage
+        )  # record in dictionary so it can be accessed and deleted
         self.vlayout.addWidget(self.confirmDict[confirmMessage])
         return 0
 
@@ -166,9 +168,6 @@ class confirmPopup(QtWidgets.QWidget):
         x = screen.width() - screen.width() / 2
         y = 0  # screen.height() - widget.height()
         self.move(x, y)
-
-
-
 
 
 if __name__ == "__main__":

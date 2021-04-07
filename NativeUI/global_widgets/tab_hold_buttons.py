@@ -27,7 +27,9 @@ class timerConfirmPopup(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super(timerConfirmPopup, self).__init__(*args, **kwargs)
 
-        self.setAttribute(QtCore.Qt.WA_ShowWithoutActivating) # keep the main page activated to maintain button hold
+        self.setAttribute(
+            QtCore.Qt.WA_ShowWithoutActivating
+        )  # keep the main page activated to maintain button hold
         self.setWindowFlags(
             QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint
         )  # ensures focus is not stolen by alarm or confirmation
@@ -85,12 +87,13 @@ class timerConfirmPopup(QtWidgets.QWidget):
         centerPoint = QtWidgets.QDesktopWidget().availableGeometry().center()
         qtRectangle.moveCenter(centerPoint)
         self.move(qtRectangle.topLeft())
-        #self.move(QtGui.QApplication.desktop().screen().rect().center() - self.rect().center())
+        # self.move(QtGui.QApplication.desktop().screen().rect().center() - self.rect().center())
 
 
 class holdButton(QtWidgets.QPushButton):
     """Subclass push button to count press time and update progress bar. handleClick() is overridden.
     Popup with progress bar appears on click, fills as button is held."""
+
     def __init__(self, NativeUI, *args, **kwargs):
         super(holdButton, self).__init__(*args, **kwargs)
 
@@ -147,7 +150,9 @@ class holdButton(QtWidgets.QPushButton):
     def okButtonPressed(self):
         """Respond to ok button press by sending command corresponding to button type"""
         logging.debug(self.text())
-        self.NativeUI.q_send_cmd("GENERAL", self.text()) # text is stand stop or standby
+        self.NativeUI.q_send_cmd(
+            "GENERAL", self.text()
+        )  # text is stand stop or standby
         self.closePopup()
         return 0
 

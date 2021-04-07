@@ -20,6 +20,7 @@ from global_widgets.template_main_pages import TemplateMainPages
 from alarm_widgets.alarm_popup import abstractAlarm
 from PySide2 import QtCore
 
+
 class AlarmView(TemplateMainPages):
     """Subclasses TemplateMainPages to display alarms."""
 
@@ -31,27 +32,33 @@ class AlarmView(TemplateMainPages):
         self.alarmButton = selectorButton(NativeUI, "List of Alarms")
         self.alarmTableButton = selectorButton(NativeUI, "Alarm Table")
         self.clinicalButton = selectorButton(NativeUI, "Clinical Limits")
-        #self.techButton = selectorButton(NativeUI, "Technical Limits")
+        # self.techButton = selectorButton(NativeUI, "Technical Limits")
 
-        self.buttonWidgets = [self.alarmButton, self.alarmTableButton, self.clinicalButton]#, self.techButton]
+        self.buttonWidgets = [
+            self.alarmButton,
+            self.alarmTableButton,
+            self.clinicalButton,
+        ]  # , self.techButton]
 
         self.alarmTab = TabAlarm(NativeUI)
         self.alarmTableTab = TabAlarmTable(NativeUI)
         self.clinicalTab = TabClinical(NativeUI)
-        #self.technicalTab = TabClinical(NativeUI)
-        self.tabsList = [self.alarmTab, self.alarmTableTab, self.clinicalTab]#, self.technicalTab]
+        # self.technicalTab = TabClinical(NativeUI)
+        self.tabsList = [
+            self.alarmTab,
+            self.alarmTableTab,
+            self.clinicalTab,
+        ]  # , self.technicalTab]
         self.buildPage(self.buttonWidgets, self.tabsList)
 
-               
         self.alarmDict = {}
         self.timer = QtCore.QTimer()
         self.timer.setInterval(300)
         self.timer.timeout.connect(self.updateAlarms)
         self.timer.start()
 
-
     def updateAlarms(self):
-        print('attempting new alarms')
+        print("attempting new alarms")
         newAlarmPayload = self.NativeUI.get_db("alarms")
         if newAlarmPayload == []:
             return
@@ -62,7 +69,9 @@ class AlarmView(TemplateMainPages):
         else:
             newAbstractAlarm = abstractAlarm(self.NativeUI, newAlarmPayload)
             self.alarmDict[newAlarmPayload["alarm_code"]] = newAbstractAlarm
-            newAbstractAlarm.alarmExpired.connect(lambda i = newAbstractAlarm: self.handleAlarmExpiry(i))
+            newAbstractAlarm.alarmExpired.connect(
+                lambda i=newAbstractAlarm: self.handleAlarmExpiry(i)
+            )
             self.alarmTab.popup.addAlarm(newAbstractAlarm)
             self.alarmTab.list.addAlarm(newAbstractAlarm)
             self.alarmTableTab.table.addAlarmRow(newAbstractAlarm)

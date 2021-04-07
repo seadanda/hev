@@ -17,6 +17,7 @@ from PySide2 import QtWidgets, QtGui, QtCore
 
 class selectorButton(QtWidgets.QPushButton):
     """A button styled with two colour options, to use for tab selection"""
+
     def __init__(self, NativeUI, *args, **kwargs):
         super(selectorButton, self).__init__(*args, **kwargs)
 

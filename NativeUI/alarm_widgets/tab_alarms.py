@@ -24,7 +24,7 @@ class TabAlarm(QtWidgets.QWidget):
         super(TabAlarm, self).__init__(*args, **kwargs)
         self.NativeUI = NativeUI
 
-        #self.alarmDict = {}
+        # self.alarmDict = {}
 
         self.popup = alarmPopup(NativeUI, self)
         self.popup.show()
@@ -60,7 +60,9 @@ class TabAlarm(QtWidgets.QWidget):
         else:
             newAbstractAlarm = abstractAlarm(self.NativeUI, newAlarmPayload)
             self.alarmDict[newAlarmPayload["alarm_code"]] = newAbstractAlarm
-            newAbstractAlarm.alarmExpired.connect(lambda i = newAbstractAlarm: self.handleAlarmExpiry(i))
+            newAbstractAlarm.alarmExpired.connect(
+                lambda i=newAbstractAlarm: self.handleAlarmExpiry(i)
+            )
             self.popup.addAlarm(newAbstractAlarm)
             self.list.addAlarm(newAbstractAlarm)
             self.NativeUI.widgets.alarm_table_tab.table.addAlarmRow(newAbstractAlarm)

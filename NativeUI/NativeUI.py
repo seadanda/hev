@@ -201,9 +201,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
 
-
-
-
     def get_db(self, database_name: str):
         """
         Return the contents of the specified database dict, assuming that it is present

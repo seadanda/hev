@@ -149,11 +149,15 @@ class TemplateSetValues(QtWidgets.QWidget):
         for info in settingsList:
             if info[0] in textBoxes:
                 self.spinDict[info[0]] = LabelledLineEditWidget(self.NativeUI, info)
-                #self.spinDict[info[0]] = labelledLineEdit(self.NativeUI, info)
-                self.spinDict[info[0]].simpleSpin.textChanged.connect(lambda textignore, i=1: self.colourButtons(i))
+                # self.spinDict[info[0]] = labelledLineEdit(self.NativeUI, info)
+                self.spinDict[info[0]].simpleSpin.textChanged.connect(
+                    lambda textignore, i=1: self.colourButtons(i)
+                )
             else:
                 self.spinDict[info[0]] = labelledSpin(self.NativeUI, info)
-                self.spinDict[info[0]].simpleSpin.manualChanged.connect(lambda i=1: self.colourButtons(i))
+                self.spinDict[info[0]].simpleSpin.manualChanged.connect(
+                    lambda i=1: self.colourButtons(i)
+                )
             vOptionLayout.addWidget(self.spinDict[info[0]])
         self.layoutList.append(vOptionLayout)
 
@@ -170,7 +174,9 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList.append(hlayout)
 
         for spin in self.spinDict:
-            self.spinDict[spin].simpleSpin.manualChanged.connect(lambda i=1:self.colourButtons(i))
+            self.spinDict[spin].simpleSpin.manualChanged.connect(
+                lambda i=1: self.colourButtons(i)
+            )
 
     def addModeButtons(self):
         hlayout = QtWidgets.QHBoxLayout()
@@ -189,7 +195,9 @@ class TemplateSetValues(QtWidgets.QWidget):
         self.layoutList.append(hlayout)
 
         for spin in self.spinDict:
-            self.spinDict[spin].simpleSpin.manualChanged.connect(lambda i=1:self.colourButtons(i))
+            self.spinDict[spin].simpleSpin.manualChanged.connect(
+                lambda i=1: self.colourButtons(i)
+            )
 
     def colourButtons(self, option):
         for button in self.buttonsList:
@@ -199,11 +207,13 @@ class TemplateSetValues(QtWidgets.QWidget):
         liveUpdatingCheck = True
         db = self.NativeUI.get_db(self.packet)
         if db == {}:
-            return 0 # do nothing
+            return 0  # do nothing
         else:
             for widget in self.spinDict:
                 self.spinDict[widget].update_value(db)
-                liveUpdatingCheck = liveUpdatingCheck and not self.spinDict[widget].manuallyUpdated
+                liveUpdatingCheck = (
+                    liveUpdatingCheck and not self.spinDict[widget].manuallyUpdated
+                )
             if liveUpdatingCheck:
                 self.colourButtons(0)
 
@@ -239,10 +249,12 @@ class TemplateSetValues(QtWidgets.QWidget):
                 )
         self.popUp = SetConfirmPopup(self, self.NativeUI, message, command)
         self.popUp.ok_button_pressed()
-        self.NativeUI.q_send_cmd("SET_MODE", self.mode.replace("/", "_").replace("-", "_"))
+        self.NativeUI.q_send_cmd(
+            "SET_MODE", self.mode.replace("/", "_").replace("-", "_")
+        )
         self.NativeUI.currentMode = self.mode
         self.NativeUI.topBar.tab_modeswitch.switchButton.setText(self.mode)
-        #self.NativeUI.topBar.tab_modeswitch.mode_popup.radioButtons[self.mode].click()
+        # self.NativeUI.topBar.tab_modeswitch.mode_popup.radioButtons[self.mode].click()
         self.popUp.setParent(None)
         self.commandSent()
 

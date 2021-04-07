@@ -23,8 +23,10 @@ from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButton
 from global_widgets.global_spinbox import signallingSpinBox
 from global_widgets.global_send_popup import SetConfirmPopup
 
+
 class SpinButton(QtWidgets.QFrame):
     """TO DO: Implement command sending"""
+
     def __init__(self, NativeUI, settings):
         super().__init__()
 
@@ -162,13 +164,15 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         ]
         self.spinDict = {}
         self.spinStack = QtWidgets.QStackedWidget()
-        stackedNames = ['Inhale Time','IE Ratio']
+        stackedNames = ["Inhale Time", "IE Ratio"]
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
-            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda i=1: self.colourButtons(i))
+            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(
+                lambda i=1: self.colourButtons(i)
+            )
             if settings[0] in stackedNames:
                 self.spinStack.addWidget(self.spinDict[settings[0]])
-            else: 
+            else:
                 self.layout.addWidget(self.spinDict[settings[0]])
         self.layout.addWidget(self.spinStack)
 
@@ -195,7 +199,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
     def setStackWidget(self, label):
         self.spinStack.setCurrentWidget(self.spinDict[label])
 
-    def colourButtons(self,option):
+    def colourButtons(self, option):
         self.okButton.setColour(str(option))
         self.cancelButton.setColour(str(option))
 

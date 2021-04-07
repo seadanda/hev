@@ -18,9 +18,9 @@ import os
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 
 
-
 class TypeValuePopup(QtWidgets.QDialog):
     """Popup takes user input to put in spin box. """
+
     def __init__(self, NativeUI):
         super().__init__()
 
@@ -71,4 +71,3 @@ class TypeValuePopup(QtWidgets.QDialog):
 
     def getValue(self):
         return self.lineEdit.text()
-
