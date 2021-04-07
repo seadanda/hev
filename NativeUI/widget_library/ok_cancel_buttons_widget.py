@@ -18,7 +18,7 @@ import os
 
 class OkButtonWidget(
     QtWidgets.QPushButton
-):  # chose QWidget over QDialog family because easier to modify
+):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_check = os.path.join(NativeUI.iconpath, "check-solid.png")
@@ -31,11 +31,17 @@ class OkButtonWidget(
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "background-color: " + NativeUI.colors["page_foreground"].name() + ";"
-            "color: " + NativeUI.colors["page_background"].name() + ";"
+            "QPushButton[bgColour='0']{background-color: "
+            + NativeUI.colors["page_foreground"].name()
+            + ";}"
+            "QPushButton[bgColour='1']{background-color: "
+            + NativeUI.colors["green"].name()
+            + ";}"
+            "QPushButton{color: " + NativeUI.colors["page_background"].name() + ";"
             "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
             "font-size: " + NativeUI.text_size + ";"
-            "border:none"
+            "border-radius: 8px;"
+            "border:none}"
         )
         self.setProperty("bgColour", "0")
         self.setEnabled(False)
@@ -51,7 +57,7 @@ class OkButtonWidget(
 
 class CancelButtonWidget(
     QtWidgets.QPushButton
-):  # chose QWidget over QDialog family because easier to modify
+):  
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")

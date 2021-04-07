@@ -27,7 +27,7 @@ import re
 
 import numpy as np
 
-from global_widgets.global_sendconfirm_popup import confirmPopup
+from global_widgets.global_send_popup import confirmPopup
 from hevclient import HEVClient
 
 from ui_layout import Layout
@@ -69,7 +69,8 @@ class NativeUI(HEVClient, QMainWindow):
             "display_background": QColor.fromRgb(200, 200, 200),
             "display_foreground": QColor.fromRgb(0, 0, 0),
             "baby_blue": QColor.fromRgb(144, 231, 211),
-            "modified_text": QColor.fromRgb(200, 0, 0),
+            "red": QColor.fromRgb(200, 0, 0),
+            "green": QColor.fromRgb(0, 200, 0),
             "pressure_plot": QColor.fromRgb(0, 114, 178),
             "volume_plot": QColor.fromRgb(0, 158, 115),
             "flow_plot": QColor.fromRgb(240, 228, 66),
@@ -197,7 +198,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
         self.timer.timeout.connect(self.widgets.normal_measurements.update_value)
         self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
+        self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
+
+
+
 
     def get_db(self, database_name: str):
         """

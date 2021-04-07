@@ -33,6 +33,7 @@ class TabModeswitchButton(QtWidgets.QWidget):
 
         self.mode_popup = False
         self.switchButton.pressed.connect(self.switch_button_pressed)
+        #self.mode_popup.okbutton.pressed.connect(self.changeText)
 
     def switch_button_pressed(self):
         if self.mode_popup == False:
@@ -150,7 +151,7 @@ class modeswitchPopup(QtWidgets.QWidget):
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
             "font: 16pt bold;"
         )
-        self.radioButtons[self.NativeUI.currentMode].click()
+        #self.radioButtons[self.NativeUI.currentMode].click()
 
     def goToPressed(self, mode):
         # Switch to the modes page
@@ -164,8 +165,6 @@ class modeswitchPopup(QtWidgets.QWidget):
             print(button.text())
             print(mode)
             if mode in button.text():
-                print("match!")
-                print(mode)
                 button.click()
 
         # Close the popup
@@ -173,23 +172,35 @@ class modeswitchPopup(QtWidgets.QWidget):
 
     def update_settings_data(self, button):
         self.spinDict = self.NativeUI.widgets.mode_settings_tab.spinDict
-        self.mode = button.text().replace("/", "_").replace("-", "_")
-
+        self.mode = button.text()#.replace("/", "_").replace("-", "_")
         data = self.NativeUI.get_db("targets")
         for settings, currentLabel, newLabel in zip(
             self.settingsList, self.currentLabelList, self.newLabelList
         ):
             currentVal = self.spinDict[
-                self.NativeUI.currentMode.replace("/", "_").replace("-", "_")
-            ][settings].simpleSpin.value()
+                self.NativeUI.currentMode#.replace("/", "_").replace("-", "_")
+            ][settings].get_value()
             currentLabel.setText(str(round(currentVal, 4)))
-            setVal = self.spinDict[self.mode][settings].simpleSpin.value()
+            setVal = self.spinDict[self.mode][settings].get_value()
             newLabel.setText(str(round(setVal, 4)))
 
     def ok_button_pressed(self):
-        self.NativeUI.q_send_cmd("SET_MODE", self.mode)
-        self.NativeUI.currentMode = self.mode
-        self.close()
+        if self.NativeUI.currentMode == self.mode:
+            a = 1 # do nothing
+        else:
+            self.NativeUI.q_send_cmd("SET_MODE", self.mode.replace("/", "_").replace("-", "_"))
+            self.NativeUI.currentMode = self.mode
+            self.close()
+            # ensure main page buttons display IE Ratio or Inhale Time as enabled
+            if self.NativeUI.widgets.mode_settings_tab.tabsDict[self.mode].radioButtonRat.isChecked():
+                #self.NativeUI.main_view.tab_spin.setStackWidget("IE Ratio")
+                self.NativeUI.widgets.spin_buttons.setStackWidget("IE Ratio")
+            else:
+               # self.NativeUI.main_view.tab_spin.setStackWidget("Inhale Time")
+                self.NativeUI.widgets.spin_buttons.setStackWidget("Inhale Time")
+            return 0
+            
 
     def cancel_button_pressed(self):
         self.close()
+        return 0

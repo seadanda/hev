@@ -3,7 +3,21 @@
   <component name="CsvFileAttributes">
     <option name="attributeMap">
       <map>
+        <entry key="\NativeUI\alarm_widgets\alarm_popup.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
         <entry key="\NativeUI\global_widgets\global_spinbox.py">
+          <value>
+            <Attribute>
+              <option name="separator" value="," />
+            </Attribute>
+          </value>
+        </entry>
+        <entry key="\NativeUI\global_widgets\tab_hold_buttons.py">
           <value>
             <Attribute>
               <option name="separator" value="," />

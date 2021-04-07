@@ -78,18 +78,18 @@ class TabModes(
             self.cpapButton,
         ]
         enableList = [self.pcacEnable, self.prvcEnable, self.psvEnable, self.cpapEnable]
-        self.tabsList = [self.pcacPage, self.prvcPage, self.psvPage, self.cpapPage]
+        self.tabsDict = { 'PC/AC':self.pcacPage, 'PC/AC-PRVC':self.prvcPage, 'PC-PSV':self.psvPage, 'CPAP':self.cpapPage}
         self.valsList = [self.pcacVals, self.prvcVals, self.psvVals, self.cpapVals]
         self.modeList = self.NativeUI.modeList
         self.spinDict = {}
         for tab, mode, enable, vals in zip(
-            self.tabsList, self.modeList, enableList, self.valsList
+            self.tabsDict.values(), self.modeList, enableList, self.valsList
         ):
-            mode = mode.replace("/", "_")
-            mode = mode.replace("-", "_")
+            #mode = mode.replace("/", "_")
+            #mode = mode.replace("-", "_")
             tempSettingsList = [
                 [
-                    target.replace("SET_TARGET_", "SET_TARGET_" + mode)
+                    target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_"))
                     for target in spinInfo
                 ]
                 for spinInfo in self.settingsList
@@ -100,58 +100,60 @@ class TabModes(
             for labelledSpin in tab.spinDict:
                 if tab.spinDict[labelledSpin].label == "Inhale Time":
                     tab.radioButtonTime = QtWidgets.QRadioButton()
+                    tab.radioButtonTime.setChecked(bool(enable[1]))
                     tab.radioButtonTime.toggled.connect(
                         lambda i=tab.radioButtonTime, j=tab.spinDict[
                             labelledSpin
-                        ]: self.radioPressed(i, j)
+                        ], k=tab.mode: self.radioPressed(i, j, k)
                     )
                     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonTime, 1)
                     tab.buttonGroup.addButton(tab.radioButtonTime)
-                    tab.radioButtonTime.setChecked(bool(enable[1]))
+                    
                 if tab.spinDict[labelledSpin].label == "IE Ratio":
                     tab.radioButtonRat = QtWidgets.QRadioButton()
+                    tab.radioButtonRat.setChecked(bool(enable[2]))
                     tab.radioButtonRat.toggled.connect(
                         lambda i=tab.radioButtonRat, j=tab.spinDict[
                             labelledSpin
-                        ]: self.radioPressed(i, j)
+                        ], k=tab.mode: self.radioPressed(i, j, k)
                     )
                     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
                     tab.buttonGroup.addButton(tab.radioButtonRat)
-                    tab.radioButtonRat.setChecked(bool(enable[2]))
+                    
             tab.addModeButtons()
             tab.finaliseLayout()
             self._setEnabled(tab, enable, vals)
             self.spinDict[mode] = tab.spinDict
 
         # self.addRadioButtons()
-
+        self.tabsList = self.tabsDict.values()
         self.buildPage(self.buttonWidgets, self.tabsList)
 
-    def addRadioButtons(self):
-        for tab in self.tabsList:
-            tab.buttonGroup = QtWidgets.QButtonGroup()
-            for labelledSpin in tab.spinDict:
-                if tab.spinDict[labelledSpin].label == "Inhale Time":
-                    tab.radioButtonTime = QtWidgets.QRadioButton()
-                    tab.radioButtonTime.toggled.connect(
-                        lambda i=tab.radioButtonTime, j=tab.spinDict[
-                            labelledSpin
-                        ]: self.radioPressed(i, j)
-                    )
-                    tab.spinDict[labelledSpin].insertWidget(tab.radioButtonTime, 1)
-                    tab.buttonGroup.addButton(tab.radioButtonTime)
+    # def addRadioButtons(self):
+    #     for tab in self.tabsList:
+    #         tab.buttonGroup = QtWidgets.QButtonGroup()
+    #         for labelledSpin in tab.spinDict:
+    #             if tab.spinDict[labelledSpin].label == "Inhale Time":
+    #                 tab.radioButtonTime = QtWidgets.QRadioButton()
+    #                 tab.radioButtonTime.toggled.connect(
+    #                     lambda i=tab.radioButtonTime, j=tab.spinDict[
+    #                         labelledSpin
+    #                     ], k=tab.mode: self.radioPressed(i, j, k)
+    #                 )
+    #                 tab.spinDict[labelledSpin].insertWidget(tab.radioButtonTime, 1)
+    #                 tab.buttonGroup.addButton(tab.radioButtonTime)
 
-                if tab.spinDict[labelledSpin].label == "IE Ratio":
-                    tab.radioButtonRat = QtWidgets.QRadioButton()
-                    tab.radioButtonRat.toggled.connect(
-                        lambda i=tab.radioButtonRat, j=tab.spinDict[
-                            labelledSpin
-                        ]: self.radioPressed(i, j)
-                    )
-                    tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
-                    tab.buttonGroup.addButton(tab.radioButtonRat)
+    #             if tab.spinDict[labelledSpin].label == "IE Ratio":
+    #                 tab.radioButtonRat = QtWidgets.QRadioButton()
+    #                 tab.radioButtonRat.toggled.connect(
+    #                     lambda i=tab.radioButtonRat, j=tab.spinDict[
+    #                         labelledSpin
+    #                     ]: self.radioPressed(i, j, k)
+    #                 )
+    #                 tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
+    #                 tab.buttonGroup.addButton(tab.radioButtonRat)
 
-    def radioPressed(self, radioButtonState, labelledSpin):
+    def radioPressed(self, radioButtonState, labelledSpin, tabMode):
         labelledSpin.simpleSpin.setEnabled(radioButtonState)
         labelledSpin.simpleSpin.setProperty("bgColour", str(int(not radioButtonState)))
         labelledSpin.simpleSpin.setProperty(
@@ -160,6 +162,10 @@ class TabModes(
 
         labelledSpin.simpleSpin.style().unpolish(labelledSpin.simpleSpin)
         labelledSpin.simpleSpin.style().polish(labelledSpin.simpleSpin)
+
+        if tabMode == self.NativeUI.currentMode:
+            a=1
+            self.NativeUI.widgets.spin_buttons.setStackWidget(labelledSpin.label)
 
     def _setColour(self, buttonWidg):
         for button, box in zip(self.buttonWidgets, self.pageList):

@@ -74,6 +74,7 @@ class LabelledLineEditWidget(QtWidgets.QWidget):
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.setProperty("bgColour", "0")
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
+        self.simpleSpin.textChanged.connect(self.textUpdate)
         if self.cmd_type == "":
             self.simpleSpin.setReadOnly(True)
             self.simpleSpin.setProperty("bgColour", "1")
@@ -90,11 +91,20 @@ class LabelledLineEditWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-    def update_personal_value(self):
+    def textUpdate(self):
+        self.manuallyUpdated = True
+
+
+    def update_value(self,placeholdertemp):
         newVal = self.NativeUI.get_db("personal")
         if newVal == {}:
             a = 1  # do nothing
         else:
+            print('got a personal db')
             self.simpleSpin.setText(newVal[self.tag])
             self.simpleSpin.setProperty("textColour", "0")
             self.simpleSpin.style().polish(self.simpleSpin)
+
+    def get_value(self):
+        return self.simpleSpin.text()
+

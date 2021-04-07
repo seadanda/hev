@@ -3,6 +3,8 @@ stages:
   - test
 
 before_script:
+  - pwd
+  - echo 'test'
   - groupadd pi
   - useradd -u 1000 -g pi -m -p raspberry pi
   - usermod -aG sudo pi

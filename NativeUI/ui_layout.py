@@ -190,8 +190,8 @@ class Layout:
         """
         page_alarms = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.alarm_tab, self.widgets.clinical_tab],
-            ["List of Alarms", "Clinical Limits"],
+            [self.widgets.alarm_tab, self.widgets.alarm_table_tab, self.widgets.clinical_tab],
+            ["List of Alarms", "Alarm Table", "Clinical Limits"],
         )
         page_alarms.setFont(self.NativeUI.text_font)
         return page_alarms

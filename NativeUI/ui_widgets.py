@@ -34,6 +34,7 @@ from widget_library.tab_charts import TabChart
 from mode_widgets.tab_modes import TabModes
 from mode_widgets.tab_personal import TabPersonal
 from alarm_widgets.tab_alarms import TabAlarm
+from alarm_widgets.tab_alarm_table import TabAlarmTable
 from alarm_widgets.tab_clinical import TabClinical
 
 
@@ -69,6 +70,7 @@ class Widgets:
 
         # Alarm Page Widgets
         self.alarm_tab = TabAlarm(NativeUI)
+        self.alarm_table_tab = TabAlarmTable(NativeUI)
         self.clinical_tab = TabClinical(NativeUI)
 
         # Settings Page Widgets
