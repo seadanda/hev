@@ -230,7 +230,7 @@ class TemplateSetValues(QtWidgets.QWidget):
                 )
         self.popUp = SetConfirmPopup(self, self.NativeUI, message, command)
         self.popUp.ok_button_pressed()
-        self.NativeUI.q_send_cmd("SET_MODE", self.mode)
+        self.NativeUI.q_send_cmd("SET_MODE", self.mode.replace("/", "_").replace("-", "_"))
         self.NativeUI.currentMode = self.mode
         self.NativeUI.topBar.tab_modeswitch.switchButton.setText(self.mode)
         self.NativeUI.topBar.tab_modeswitch.mode_popup.radioButtons[self.mode].click()

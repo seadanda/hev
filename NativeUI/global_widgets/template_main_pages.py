@@ -17,12 +17,12 @@ from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class TemplateMainPages(QtWidgets.QWidget):
-    def buildPage(self, buttonList, tabList, *args, **kwargs):
+    def buildPage(self, buttonList, tabsList, *args, **kwargs):
         vlayout = QtWidgets.QVBoxLayout()
         hButtonLayout = QtWidgets.QHBoxLayout()
 
         self.stack = QtWidgets.QStackedWidget()
-        for button, tab in zip(buttonList, tabList):
+        for button, tab in zip(buttonList, tabsList):
             hButtonLayout.addWidget(button)
             self.stack.addWidget(tab)
             button.pressed.connect(lambda i=button: self.setTab(i))

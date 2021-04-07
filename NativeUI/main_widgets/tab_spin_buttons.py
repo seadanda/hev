@@ -159,10 +159,16 @@ class TabSpinButtons(QtWidgets.QWidget):
             ["Percentage O2", "", "fiO2_percent", "SET_TARGET_CURRENT", "FIO2_PERCENT"],
         ]
         self.spinDict = {}
+        self.spinStack = QtWidgets.QStackedWidget()
+        stackedNames = ['Inhale Time','IE Ratio']
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
             self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda i=1: self.colourButtons(i))
-            self.layout.addWidget(self.spinDict[settings[0]])
+            if settings[0] in stackedNames:
+                self.spinStack.addWidget(self.spinDict[settings[0]])
+            else: 
+                self.layout.addWidget(self.spinDict[settings[0]])
+        self.layout.addWidget(self.spinStack)
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
@@ -183,6 +189,9 @@ class TabSpinButtons(QtWidgets.QWidget):
         self.timer.setInterval(160)
         self.timer.timeout.connect(self.update_targets)
         self.timer.start()
+
+    def setStackWidget(self, label):
+        self.spinStack.setCurrentWidget(self.spinDict[label])
 
     def colourButtons(self,option):
         self.okButton.setColour(str(option))

@@ -71,6 +71,8 @@ class SetConfirmPopup(
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
         self.setWindowOpacity(0.5)
 
+        
+
     def ok_button_pressed(self):
         """Send commands when ok button is clicked"""
         self.parentTemplate.liveUpdating = True
@@ -118,7 +120,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.timer.start()
 
     def confirmTimeout(self):
-        self.parent().confirmDict.pop(self.confirmMessage)
+        self.parent().confirmDict.pop(self.confirmMessage.replace("/", "_").replace("-", "_"))
         self.setParent(None)
 
 
@@ -144,15 +146,11 @@ class confirmPopup(QtWidgets.QWidget):
 
         self.setStyleSheet("background-color:green;")
 
-        # self.shadow = QtWidgets.QGraphicsDropShadowEffect()
-        # self.shadow.setBlurRadius(20)
-        # self.shadow.setXOffset(10)
-        # self.shadow.setYOffset(10)
-        #
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(100)
-        # self.timer.timeout.connect(self.adjustSize)
-        # self.timer.start()
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(100)  # just faster than 60Hz
+        self.timer.timeout.connect(self.adjustSize)
+        self.timer.start()
+
 
     def addConfirmation(self, confirmMessage):
         """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
