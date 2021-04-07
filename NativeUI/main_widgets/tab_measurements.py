@@ -36,7 +36,7 @@ class Measurements_Block(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout(self)
 
         # Create "Measurements" Title
-        title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"])
+        title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"]) # 
         title_label.setStyleSheet(
             "font-size:" + NativeUI.text_size + ";"
             "color:" + NativeUI.colors["page_foreground"].name() + ";"

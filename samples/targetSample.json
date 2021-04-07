@@ -1,7 +1,7 @@
 {
     "version": 182,
     "timestamp": 544077,
-    "payload_type": "TARGET",
+    "type": "TARGET",
     "mode": "CURRENT",
     "inspiratory_pressure": 17.0,
     "ie_ratio": 0.33779263496398926,

@@ -1,7 +1,7 @@
 {
     "version": 182,
     "timestamp": 815263,
-    "payload_type": "READBACK",
+    "type": "READBACK",
     "duration_pre_calibration": 6000,
     "duration_calibration": 4000,
     "duration_buff_purge": 600,
