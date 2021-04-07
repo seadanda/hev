@@ -100,6 +100,7 @@ class TabModes(
             for labelledSpin in tab.spinDict:
                 if tab.spinDict[labelledSpin].label == "Inhale Time":
                     tab.radioButtonTime = QtWidgets.QRadioButton()
+                    tab.radioButtonTime.setChecked(bool(enable[1]))
                     tab.radioButtonTime.toggled.connect(
                         lambda i=tab.radioButtonTime, j=tab.spinDict[
                             labelledSpin
@@ -107,9 +108,10 @@ class TabModes(
                     )
                     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonTime, 1)
                     tab.buttonGroup.addButton(tab.radioButtonTime)
-                    tab.radioButtonTime.setChecked(bool(enable[1]))
+
                 if tab.spinDict[labelledSpin].label == "IE Ratio":
                     tab.radioButtonRat = QtWidgets.QRadioButton()
+                    tab.radioButtonRat.setChecked(bool(enable[2]))
                     tab.radioButtonRat.toggled.connect(
                         lambda i=tab.radioButtonRat, j=tab.spinDict[
                             labelledSpin
@@ -117,7 +119,7 @@ class TabModes(
                     )
                     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
                     tab.buttonGroup.addButton(tab.radioButtonRat)
-                    tab.radioButtonRat.setChecked(bool(enable[2]))
+
             tab.addModeButtons()
             tab.finaliseLayout()
             self._setEnabled(tab, enable, vals)
@@ -162,7 +164,8 @@ class TabModes(
         labelledSpin.simpleSpin.style().polish(labelledSpin.simpleSpin)
 
         if tabMode == self.NativeUI.currentMode:
-            self.NativeUI.main_view.tab_spin.setStackWidget(labelledSpin.label)
+            a=1
+            self.NativeUI.widgets.spin_buttons.setStackWidget(labelledSpin.label)
 
     def _setColour(self, buttonWidg):
         for button, box in zip(self.buttonWidgets, self.pageList):

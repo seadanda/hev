@@ -15,12 +15,12 @@ __status__ = "Prototype"
 from PySide2 import QtCore, QtGui, QtWidgets
 import os
 
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
-
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 
 
 class TypeValuePopup(QtWidgets.QDialog):
     """Popup takes user input to put in spin box. """
+
     def __init__(self, NativeUI):
         super().__init__()
 
@@ -56,11 +56,11 @@ class TypeValuePopup(QtWidgets.QDialog):
         # self.lineEdit.textEdited.connect(self.setTextColour(1))
         grid.addWidget(self.lineEdit, 0, 0, 1, 2)
 
-        self.okButton = okButton(NativeUI)
+        self.okButton = OkButtonWidget(NativeUI)
         self.okButton.setEnabled(True)
         grid.addWidget(self.okButton, 1, 0)
 
-        self.cancelButton = cancelButton(NativeUI)
+        self.cancelButton = CancelButtonWidget(NativeUI)
         self.cancelButton.setEnabled(True)
         grid.addWidget(self.cancelButton, 1, 1)
 
@@ -71,4 +71,3 @@ class TypeValuePopup(QtWidgets.QDialog):
 
     def getValue(self):
         return self.lineEdit.text()
-

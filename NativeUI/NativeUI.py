@@ -27,28 +27,17 @@ import re
 
 import numpy as np
 
-# from alarm_widgets.tab_alarms import TabAlarm
-from global_widgets.tab_top_bar import TabTopBar
-from global_widgets.tab_left_bar import TabLeftBar
 from global_widgets.global_send_popup import confirmPopup
-from hev_main import MainView
-from hev_settings import SettingsView
-from hev_alarms import AlarmView
-from hev_modes import ModeView
 from hevclient import HEVClient
+
+from ui_layout import Layout
+from ui_widgets import Widgets
 
 from threading import Lock
 
-from PySide2.QtCore import QDateTime, Signal, Slot
-from PySide2.QtGui import QColor, QPalette
-from PySide2.QtWidgets import (
-    QApplication,
-    QHBoxLayout,
-    QMainWindow,
-    QStackedWidget,
-    QVBoxLayout,
-    QWidget,
-)
+from PySide2.QtCore import Signal, Slot
+from PySide2.QtGui import QColor, QFont, QPalette
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -71,9 +60,14 @@ class NativeUI(HEVClient, QMainWindow):
         self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             "page_background": QColor.fromRgb(30, 30, 30),
             "page_foreground": QColor.fromRgb(200, 200, 200),
-            "background_enabled": QColor.fromRgb(50, 50, 50),
-            "background_disabled": QColor.fromRgb(15, 15, 15),
-            "foreground_disabled": QColor.fromRgb(100, 100, 100),
+            "button_background_enabled": QColor.fromRgb(50, 50, 50),
+            "button_background_disabled": QColor.fromRgb(100, 100, 100),
+            "button_foreground_enabled": QColor.fromRgb(200, 200, 200),
+            "button_foreground_disabled": QColor.fromRgb(30, 30, 30),
+            "label_background": QColor.fromRgb(0, 0, 0),
+            "label_foreground": QColor.fromRgb(200, 200, 200),
+            "display_background": QColor.fromRgb(200, 200, 200),
+            "display_foreground": QColor.fromRgb(0, 0, 0),
             "baby_blue": QColor.fromRgb(144, 231, 211),
             "red": QColor.fromRgb(200, 0, 0),
             "green": QColor.fromRgb(0, 200, 0),
@@ -83,8 +77,13 @@ class NativeUI(HEVClient, QMainWindow):
             "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
             "flow_volume_plot": QColor.fromRgb(204, 121, 167),
             "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
+            "red": QColor.fromRgb(255, 0, 0),
+            "green": QColor.fromRgb(0, 255, 0),
+            "baby-blue": QColor.fromRgb(0, 0, 200),
         }
-        self.text_size = "20pt"
+        self.text_font = QFont("Sans Serif", 20)
+        self.value_font = QFont("Sans Serif", 40)
+        self.text_size = "20pt"  # TODO: remove in favour of self.text_font
         self.text = {
             "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
             "plot_axis_label_flow": "Flow [L/min]",
@@ -97,8 +96,21 @@ class NativeUI(HEVClient, QMainWindow):
             "plot_line_label_flow_volume": "Flow - Volume",
             "plot_line_label_volume_pressure": "Volume - Airway Pressure",
             "layout_label_measurements": "Measurements",
+            "button_label_main_normal": "Normal",
+            "button_label_main_detailed": "Detailed",
         }
-        self.iconpath = self.__find_icons()
+        self.icons = {
+            "button_main_page": "user-md-solid",
+            "button_alarms_page": "exclamation-triangle-solid",
+            "button_modes_page": "fan-solid",
+            "button_settings_page": "sliders-h-solid",
+        }
+        self.iconext = "png"
+        self.iconpath = self.__find_icons(self.iconext)
+        for key in self.icons:
+            self.icons[key] = os.path.join(
+                self.iconpath, self.icons[key] + "." + self.iconext
+            )
 
         # initialise databases
         plot_history_length = 1000
@@ -132,38 +144,17 @@ class NativeUI(HEVClient, QMainWindow):
             "__personal",
         ]
 
-        # Views
-        self.stack = QStackedWidget(self)
-        self.main_view = MainView(self)
-        self.stack.addWidget(self.main_view)
-        self.settings_view = SettingsView(self)
-        self.stack.addWidget(self.settings_view)
-        self.alarms_view = AlarmView(self)
-        self.stack.addWidget(self.alarms_view)
-        self.modes_view = ModeView(self)
-        self.stack.addWidget(self.modes_view)
-
-        # bars
-        self.topBar = TabTopBar(self)
-        self.leftBar = TabLeftBar(self)
+        self.widgets = Widgets(self)  # Create all the widgets we'll need
+        self.layouts = Layout(self, self.widgets)  #
 
         self.confirmPopup = confirmPopup(
             self, self
         )  # one is passed as an argument, the other becomes parent
         self.confirmPopup.show()
 
-        # Layout
-        hlayout = QHBoxLayout()
-        hlayout.addWidget(self.leftBar)
-        hlayout.addWidget(self.stack)
-
-        vlayout = QVBoxLayout()
-        vlayout.addWidget(self.topBar)
-        vlayout.addLayout(hlayout)
-
         # Set Central
         self.centralWidget = QWidget(self)
-        self.centralWidget.setLayout(vlayout)
+        self.centralWidget.setLayout(self.layouts.global_layout())
         self.setCentralWidget(self.centralWidget)
 
         self.statusBar().showMessage("Waiting for data")
@@ -176,9 +167,39 @@ class NativeUI(HEVClient, QMainWindow):
         self.setAutoFillBackground(True)
 
         # Update page buttons to match the shown view
-        self.leftBar.tab_page_buttons.mainview_pressed()
+        self.widgets.page_buttons.buttons[0].on_press()
 
-        # self.main_view.alarmHandler.show()
+        # Connect widgets
+        self.__define_connections()
+
+    @Slot(str)
+    def change_page(self, page_to_show: str):
+        self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
+        return 0
+
+    def __define_connections(self):
+        # Battery Display should update when we get battery info
+        self.battery_signal.connect(self.widgets.battery_display.update_value)
+
+        # Plots should update when we press the history buttons
+        for button in self.widgets.history_buttons.buttons:
+            for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
+                button.HistoryButtonPressed.connect(widget.update_plot_time_range)
+
+        for button in self.widgets.page_buttons.buttons:
+            button.PageButtonPressed.connect(self.change_page)
+
+        # Plot data should update on a timer
+        # TODO: make this actually grab the data and send it to the plots, rather than
+        # having the plots reach to NativeUI for the data.
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(16)  # just faster than 60Hz
+        self.timer.timeout.connect(self.widgets.normal_plots.update_plot_data)
+        self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
+        self.timer.timeout.connect(self.widgets.normal_measurements.update_value)
+        self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
+        self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
+        self.timer.start()
 
     def get_db(self, database_name: str):
         """
@@ -384,7 +405,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_personal(personal=personal)
         return 0
 
-    def __find_icons(self) -> str:
+    def __find_icons(self, iconext: str) -> str:
         """
         Locate the icons firectory and return its path.
 
@@ -395,7 +416,7 @@ class NativeUI(HEVClient, QMainWindow):
         rootdir = git.Repo(os.getcwd(), search_parent_directories=True).git.rev_parse(
             "--show-toplevel"
         )
-        icondir = os.path.join(rootdir, "hev-display", "assets", "png")
+        icondir = os.path.join(rootdir, "hev-display", "assets", iconext)
         if not os.path.isdir(icondir):
             raise FileNotFoundError("Could not find icon directory at %s" % icondir)
 
@@ -507,9 +528,6 @@ if __name__ == "__main__":
         resolution=command_line_args.resolution,
         windowed=command_line_args.windowed,
     )
-
-    # Connect top-level signals
-    dep.battery_signal.connect(dep.topBar.tab_battery.update_value)
 
     dep.show()
     app.exec_()

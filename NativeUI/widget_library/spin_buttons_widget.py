@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_spin_buttons.py
+spin_buttons_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -17,12 +17,16 @@ import sys
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from global_widgets.global_typeval_popup import TypeValuePopup
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+
+# from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 from global_widgets.global_spinbox import signallingSpinBox
 from global_widgets.global_send_popup import SetConfirmPopup
 
+
 class SpinButton(QtWidgets.QFrame):
     """TO DO: Implement command sending"""
+
     def __init__(self, NativeUI, settings):
         super().__init__()
 
@@ -130,9 +134,9 @@ class SpinButton(QtWidgets.QFrame):
         return 0
 
 
-class TabSpinButtons(QtWidgets.QWidget):
+class SpinButtonsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
-        super(TabSpinButtons, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.NativeUI = NativeUI
         # self.setStyleSheet("background-color:blue;")
 
@@ -160,24 +164,26 @@ class TabSpinButtons(QtWidgets.QWidget):
         ]
         self.spinDict = {}
         self.spinStack = QtWidgets.QStackedWidget()
-        stackedNames = ['Inhale Time','IE Ratio']
+        stackedNames = ["Inhale Time", "IE Ratio"]
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
-            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda i=1: self.colourButtons(i))
+            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(
+                lambda i=1: self.colourButtons(i)
+            )
             if settings[0] in stackedNames:
                 self.spinStack.addWidget(self.spinDict[settings[0]])
-            else: 
+            else:
                 self.layout.addWidget(self.spinDict[settings[0]])
         self.layout.addWidget(self.spinStack)
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
 
-        self.okButton = okButton(self.NativeUI)
+        self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.ok_button_pressed)
         self.buttonLayout.addWidget(self.okButton)
 
-        self.cancelButton = cancelButton(self.NativeUI)
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancel_button_pressed)
         self.buttonLayout.addWidget(self.cancelButton)
 
@@ -193,19 +199,27 @@ class TabSpinButtons(QtWidgets.QWidget):
     def setStackWidget(self, label):
         self.spinStack.setCurrentWidget(self.spinDict[label])
 
-    def colourButtons(self,option):
+    def colourButtons(self, option):
         self.okButton.setColour(str(option))
         self.cancelButton.setColour(str(option))
 
     def update_targets(self):
-        """Update values on all spinboxes"""
-        liveUpdatingCheck = True
-        for spin in self.spinDict:
-            self.spinDict[spin].update_targets_value()
-            liveUpdatingCheck = liveUpdatingCheck and self.spinDict[spin].liveUpdating
-        if liveUpdatingCheck:
-            self.colourButtons(0)
-        return 0
+        for widget in self.spinDict:
+            self.spinDict[widget].update_targets_value()  # pass database
+
+        # targets = self.NativeUI.get_db("targets")
+        # if targets == {}:
+        #     return
+        # if targets["mode"] == "CURRENT":
+        #     for spin, code in zip(self.__spins, self.__codes):
+        #         if spin.simpleSpin.value() != float(targets[code]):
+        #             if spin.liveUpdating:
+        #                 spin.simpleSpin.setValue(float(targets[code]))
+        #                 spin.setTextColour("2")
+        #             else:
+        #                 spin.setTextColour("0")
+        #         else:
+        #             spin.setTextColour("2")
 
     def ok_button_pressed(self):
         """Respond to ok button pressed by changing text colour and liveUpdating to True"""

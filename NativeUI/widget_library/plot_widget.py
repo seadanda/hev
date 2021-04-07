@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 """
-tab_expert_plots.py
+plot_widget.py
+
+Part of NativeUI.
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -12,14 +14,15 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Development"
 
-from main_widgets.tab_measurements import TabExpertMeasurements
-from PySide2 import QtWidgets
-import pyqtgraph as pg
-from pyqtgraph.Qt import QtCore, QtGui
+import logging
+
 import numpy as np
+import pyqtgraph as pg
+from pyqtgraph import mkColor
+from PySide2 import QtCore, QtWidgets
 
 
-class TabExpertPlots(QtWidgets.QWidget):
+class TimePlotsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, port=54322, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -27,84 +30,46 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.time_range = 30
         self.port = port
 
-        #
-        layout = QtWidgets.QHBoxLayout()
-        self.left_graph_widget = pg.GraphicsLayoutWidget()
-        self.tab_expert_measurements = TabExpertMeasurements(NativeUI)
-        self.right_graph_widget = pg.GraphicsLayoutWidget()
-        layout.addWidget(self.left_graph_widget)
-        layout.addWidget(self.tab_expert_measurements)
-        layout.addWidget(self.right_graph_widget)
-
-        # Left column - value-time plots
-        self.pressure_plot = self.left_graph_widget.addPlot(
+        layout = QtWidgets.QVBoxLayout()
+        self.graph_widget = pg.GraphicsLayoutWidget()
+        layout.addWidget(self.graph_widget)
+        self.pressure_plot = self.graph_widget.addPlot(
             labels={"left": NativeUI.text["plot_axis_label_pressure"]}
         )
         self.pressure_plot.getAxis("bottom").setStyle(showValues=False)
-        self.left_graph_widget.nextRow()
+        self.graph_widget.nextRow()
 
-        self.flow_plot = self.left_graph_widget.addPlot(
+        self.flow_plot = self.graph_widget.addPlot(
             labels={"left": NativeUI.text["plot_axis_label_flow"]}
         )
-        self.flow_plot.setXLink(self.pressure_plot)
         self.flow_plot.getAxis("bottom").setStyle(showValues=False)
-        self.left_graph_widget.nextRow()
+        self.flow_plot.setXLink(self.pressure_plot)
+        self.graph_widget.nextRow()
 
-        self.volume_plot = self.left_graph_widget.addPlot(
+        self.volume_plot = self.graph_widget.addPlot(
             labels={
                 "left": NativeUI.text["plot_axis_label_volume"],
                 "bottom": NativeUI.text["plot_axis_label_time"],
             }
         )
         self.volume_plot.setXLink(self.pressure_plot)
-        self.left_graph_widget.nextRow()
+        self.graph_widget.nextRow()
 
         self.plots = [self.pressure_plot, self.flow_plot, self.volume_plot]
-        self.left_graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
+        self.graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
 
-        # Right column - circle plots
-        self.pressure_flow_plot = self.right_graph_widget.addPlot(
-            labels={
-                "bottom": NativeUI.text["plot_axis_label_flow"],
-                "left": NativeUI.text["plot_axis_label_pressure"],
-            }
-        )
-        self.right_graph_widget.nextRow()
+        self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
-        self.flow_volume_plot = self.right_graph_widget.addPlot(
-            labels={
-                "bottom": NativeUI.text["plot_axis_label_volume"],
-                "left": NativeUI.text["plot_axis_label_flow"],
-            }
-        )
-        self.right_graph_widget.nextRow()
-
-        self.volume_pressure_plot = self.right_graph_widget.addPlot(
-            labels={
-                "bottom": NativeUI.text["plot_axis_label_pressure"],
-                "left": NativeUI.text["plot_axis_label_volume"],
-            }
-        )
-        self.right_graph_widget.nextRow()
-
-        self.circleplots = [
-            self.pressure_flow_plot,
-            self.flow_volume_plot,
-            self.volume_pressure_plot,
-        ]
-        self.right_graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
-
-        # Set background to match global background
-        self.left_graph_widget.setBackground(self.NativeUI.colors["page_background"])
-        self.right_graph_widget.setBackground(self.NativeUI.colors["page_background"])
-
-        # Add Grid, hide the autoscale button, and add the legend
-        for plot in self.plots + self.circleplots:
+        # Add grid, hide the autoscale button, and add the legend
+        for plot in self.plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
             plot.setMouseEnabled(x=False, y=False)
+
+        # Set Range
+        self.update_plot_time_range(61)
 
         # Plot styles
         self.pressure_line = self.plot(
@@ -128,6 +93,98 @@ class TabExpertPlots(QtWidgets.QWidget):
             NativeUI.text["plot_line_label_volume"],
             NativeUI.colors["volume_plot"].name(),
         )
+
+        self.setLayout(layout)
+
+        self.update_plot_data()
+
+    def plot(self, canvas, x, y, plotname, color):
+        pen = pg.mkPen(color=color, width=3)
+        return canvas.plot(x, y, name=plotname, pen=pen)
+
+    def update_plot_data(self):
+        """
+        Get the current plots database and update the plots to match
+        """
+        plots = self.NativeUI.get_db("plots")
+
+        # Extend the non-time scales if we need to
+        self.pressure_plot.setYRange(*plots["pressure_axis_range"])
+        self.flow_plot.setYRange(*plots["flow_axis_range"])
+        self.volume_plot.setYRange(*plots["volume_axis_range"])
+
+        # Replot lines with new data
+        self.pressure_line.setData(plots["timestamp"], plots["pressure"])
+        self.flow_line.setData(plots["timestamp"], plots["flow"])
+        self.volume_line.setData(plots["timestamp"], plots["volume"])
+        return 0
+
+    @QtCore.Slot()
+    def update_plot_time_range(self, time_range: int):
+        self.time_range = time_range
+        for plot in self.plots:
+            plot.setXRange(self.time_range * (-1), 0, padding=0)
+            plot.enableAutoRange("y", True)
+        return 0
+
+
+class CirclePlotsWidget(QtWidgets.QWidget):
+    def __init__(self, NativeUI, port=54322, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.NativeUI = NativeUI
+        self.time_range = 30
+        self.port = port
+
+        layout = QtWidgets.QVBoxLayout()
+        self.graph_widget = pg.GraphicsLayoutWidget()
+        layout.addWidget(self.graph_widget)
+
+        self.pressure_flow_plot = self.graph_widget.addPlot(
+            labels={
+                "bottom": NativeUI.text["plot_axis_label_flow"],
+                "left": NativeUI.text["plot_axis_label_pressure"],
+            }
+        )
+        self.graph_widget.nextRow()
+
+        self.flow_volume_plot = self.graph_widget.addPlot(
+            labels={
+                "bottom": NativeUI.text["plot_axis_label_volume"],
+                "left": NativeUI.text["plot_axis_label_flow"],
+            }
+        )
+        self.graph_widget.nextRow()
+
+        self.volume_pressure_plot = self.graph_widget.addPlot(
+            labels={
+                "bottom": NativeUI.text["plot_axis_label_pressure"],
+                "left": NativeUI.text["plot_axis_label_volume"],
+            }
+        )
+        self.graph_widget.nextRow()
+
+        self.graph_widget.nextRow()
+
+        self.plots = [
+            self.pressure_flow_plot,
+            self.flow_volume_plot,
+            self.volume_pressure_plot,
+        ]
+        self.graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
+
+        # Set background to match global background
+        self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
+
+        # Add grid, hide the autoscale button, and add the legend
+        for plot in self.plots:
+            plot.showGrid(x=True, y=True)
+            plot.hideButtons()
+            l = plot.addLegend(offset=(-1, 1))
+            l.setLabelTextSize(self.NativeUI.text_size)
+            plot.setMouseEnabled(x=False, y=False)
+
+        # Plot styles
         self.pressure_flow_line = self.plot(
             self.pressure_flow_plot,
             [0, 0],
@@ -157,8 +214,6 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.timer.timeout.connect(self.update_plot_data)
         self.timer.start()
 
-        # Set Ranges
-        self.update_plot_time_range(61)
         self.update_plot_data()
 
     def plot(self, canvas, x, y, plotname, color):
@@ -172,9 +227,6 @@ class TabExpertPlots(QtWidgets.QWidget):
         plots = self.NativeUI.get_db("plots")
 
         # Extend the non-time scales if we need to
-        self.pressure_plot.setYRange(*plots["pressure_axis_range"])
-        self.flow_plot.setYRange(*plots["flow_axis_range"])
-        self.volume_plot.setYRange(*plots["volume_axis_range"])
         self.pressure_flow_plot.setXRange(*plots["flow_axis_range"])
         self.pressure_flow_plot.setYRange(*plots["pressure_axis_range"])
         self.flow_volume_plot.setXRange(*plots["volume_axis_range"])
@@ -183,13 +235,9 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.volume_pressure_plot.setYRange(*plots["volume_axis_range"])
 
         # Replot lines with new data
-        self.pressure_line.setData(plots["timestamp"], plots["pressure"])
-        self.flow_line.setData(plots["timestamp"], plots["flow"])
-        self.volume_line.setData(plots["timestamp"], plots["volume"])
         self.pressure_flow_line.setData(plots["flow"], plots["pressure"])
         self.flow_volume_line.setData(plots["volume"], plots["flow"])
         self.volume_pressure_line.setData(plots["pressure"], plots["volume"])
-
         return 0
 
     @QtCore.Slot()
@@ -197,5 +245,5 @@ class TabExpertPlots(QtWidgets.QWidget):
         self.time_range = time_range
         for plot in self.plots:
             plot.setXRange(self.time_range * (-1), 0, padding=0)
-        self.update_plot_data()
+            plot.enableAutoRange("y", True)
         return 0

@@ -12,8 +12,9 @@ __maintainer__ = "Tiago Sarmento"
 __email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2 import QtWidgets, QtGui, QtCore
-from global_widgets.global_send_popup import SetConfirmPopup
+from PySide2 import QtWidgets
+
+# from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class TemplateMainPages(QtWidgets.QWidget):

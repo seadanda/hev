@@ -24,7 +24,7 @@ class TabAlarm(QtWidgets.QWidget):
         super(TabAlarm, self).__init__(*args, **kwargs)
         self.NativeUI = NativeUI
 
-        #self.alarmDict = {}
+        # self.alarmDict = {}
 
         self.popup = alarmPopup(NativeUI, self)
         self.popup.show()
@@ -38,6 +38,7 @@ class TabAlarm(QtWidgets.QWidget):
         vlayout.addWidget(self.acknowledgeButton)
 
         self.setLayout(vlayout)
+        self.alarmDict = {}
         # fdd
         # self.timer = QtCore.QTimer()
         # self.timer.setInterval(160)
@@ -48,23 +49,27 @@ class TabAlarm(QtWidgets.QWidget):
         self.popup.clearAlarms()
         self.list.acknowledge_all()
 
-    # def updateAlarms(self):
-    #     newAlarmPayload = self.NativeUI.get_db("alarms")
-    #     if newAlarmPayload == []:
-    #         return
-    #     if newAlarmPayload["alarm_code"] in self.alarmDict:
-    #         a = 1
-    #         #self.alarmDict[newAlarmPayload["alarm_code"]].resetTimer()
-    #         #self.popup.resetTimer(newAlarm)
-    #     else:
-    #         newAbstractAlarm = abstractAlarm(self.NativeUI, newAlarmPayload)
-    #         self.alarmDict[newAlarmPayload["alarm_code"]] = newAbstractAlarm
-    #         newAbstractAlarm.alarmExpired.connect(lambda i = newAbstractAlarm: self.handleAlarmExpiry(i))
-    #         self.popup.addAlarm(newAbstractAlarm)
-    #         self.list.addAlarm(newAbstractAlarm)
+    def update_alarms(self):
+        newAlarmPayload = self.NativeUI.get_db("alarms")
+        if newAlarmPayload == []:
+            return
+        if newAlarmPayload["alarm_code"] in self.alarmDict:
+            a = 1
+            self.alarmDict[newAlarmPayload["alarm_code"]].resetTimer()
+            self.alarmDict[newAlarmPayload["alarm_code"]].calculateDuration()
+        else:
+            newAbstractAlarm = abstractAlarm(self.NativeUI, newAlarmPayload)
+            self.alarmDict[newAlarmPayload["alarm_code"]] = newAbstractAlarm
+            newAbstractAlarm.alarmExpired.connect(
+                lambda i=newAbstractAlarm: self.handleAlarmExpiry(i)
+            )
+            self.popup.addAlarm(newAbstractAlarm)
+            self.list.addAlarm(newAbstractAlarm)
+            self.NativeUI.widgets.alarm_table_tab.table.addAlarmRow(newAbstractAlarm)
 
-    # def handleAlarmExpiry(self, abstractAlarm):
-    #     abstractAlarm.freezeTimer()
-    #     self.popup.removeAlarm(abstractAlarm)
-    #     self.list.removeAlarm(abstractAlarm)
-    #     abstractAlarm.recordFinishTime()
+    def handleAlarmExpiry(self, abstractAlarm):
+        abstractAlarm.freezeTimer()
+        self.popup.removeAlarm(abstractAlarm)
+        self.list.removeAlarm(abstractAlarm)
+        self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
+        abstractAlarm.recordFinishTime()

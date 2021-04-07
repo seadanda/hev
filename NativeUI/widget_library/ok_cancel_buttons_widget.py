@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-global_ok_cancel_buttons.py
+ok_cancel_buttons_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -16,7 +16,7 @@ from PySide2 import QtWidgets, QtGui, QtCore
 import os
 
 
-class okButton(
+class OkButtonWidget(
     QtWidgets.QPushButton
 ):
     def __init__(self, NativeUI, *args, **kwargs):
@@ -55,9 +55,9 @@ class okButton(
         self.style().polish(self)
 
 
-class cancelButton(
+class CancelButtonWidget(
     QtWidgets.QPushButton
-):  
+):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")
@@ -70,17 +70,19 @@ class cancelButton(
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "QPushButton[bgColour='0']{background-color: "
-            + NativeUI.colors["page_foreground"].name()
-            + ";}"
-            "QPushButton[bgColour='1']{background-color: "
-            + NativeUI.colors["red"].name()
-            + ";}"
-            "QPushButton{color: " + NativeUI.colors["page_background"].name() + ";"
-            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
-            "font-size: " + NativeUI.text_size + ";"
-            "border-radius: 8px;"
-            "border:none}"
+            "QPushButton[bgColour='0']{"
+            "   background-color:"
+            + NativeUI.colors["button_foreground_enabled"].name()
+            + ";"
+            "}"
+            "QPushButton[bgColour='1']{"
+            "background-color:" + NativeUI.colors["red"].name() + ";"
+            "}"
+            "QPushButton{"
+            "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
+            "   font-size: " + NativeUI.text_size + ";"
+            "   border:none;"
+            "}"
         )
         self.setProperty("bgColour", "0")
         self.setEnabled(False)
@@ -94,7 +96,7 @@ class cancelButton(
         self.style().polish(self)
 
 
-class okSendButton(
+class OkSendButtonWidget(
     QtWidgets.QPushButton
 ):  # chose QWidget over QDialog family because easier to modify
     def __init__(self, NativeUI, *args, **kwargs):
@@ -104,22 +106,26 @@ class okSendButton(
         # set icon color
         pixmap = QtGui.QPixmap(iconpath_play)
         mask = pixmap.mask()
-        pixmap.fill(NativeUI.colors["page_background"])
+        pixmap.fill(NativeUI.colors["button_background_enabled"])
         pixmap.setMask(mask)
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "QPushButton[bgColour='0']{background-color: "
-            + NativeUI.colors["page_foreground"].name()
-            + ";}"
-            "QPushButton[bgColour='1']{background-color: "
-            + NativeUI.colors["green"].name()
-            + ";}"
-            "QPushButton{color: " + NativeUI.colors["page_background"].name() + ";"
-            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
+            "QPushButton[bgColour='0']{"
+            "   background-color: "
+            + NativeUI.colors["button_foreground_enabled"].name()
+            + ";"
+            "}"
+            "QPushButton[bgColour='1']{"
+            "   background-color:" + NativeUI.colors["green"].name() + ";"
+            "}"
+            "QPushButton{"
+            "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
+            "   font-size: " + NativeUI.text_size + ";"
+            "   border:none"
+            "}"
             "font-size: " + NativeUI.text_size + ";"
-            "border-radius: 8px;"
-            "border:none}"
+            "border:none;"
         )
         self.setProperty("bgColour", "0")
         self.setEnabled(False)
