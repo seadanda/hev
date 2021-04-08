@@ -16,12 +16,9 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.template_set_values import TemplateSetValues
 
 
-class TabClinical(
-    TemplateSetValues
-):  # chose QWidget over QDialog family because easier to modify
+class TabClinical(TemplateSetValues):
     def __init__(self, *args, **kwargs):
         super(TabClinical, self).__init__(*args, **kwargs)
-        self.liveUpdating = True
         clinicalList = [
             ["APNEA", "ms", ""],
             ["Check Pressure Patient", "ms", ""],

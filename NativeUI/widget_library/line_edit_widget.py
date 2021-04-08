@@ -2,7 +2,7 @@ from PySide2 import QtWidgets, QtGui, QtCore
 from global_widgets.global_typeval_popup import TypeValuePopup
 
 
-class signallingLineEdit(QtWidgets.QLineEdit):
+class SignallingLineEditWidget(QtWidgets.QLineEdit):
     manualChanged = QtCore.Signal()
 
     def __init__(self, NativeUI):
@@ -32,12 +32,11 @@ class signallingLineEdit(QtWidgets.QLineEdit):
         return False
 
 
-class labelledLineEdit(QtWidgets.QWidget):
-    def __init__(self, template, NativeUI, infoArray, *args, **kwargs):
-        super(labelledLineEdit, self).__init__(*args, **kwargs)
+class LabelledLineEditWidget(QtWidgets.QWidget):
+    def __init__(self, NativeUI, infoArray, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         # print(infoArray)
         self.NativeUI = NativeUI
-        self.template = template
         self.cmd_type, self.cmd_code = "", ""
         self.min, self.max, self.step = 0, 10000, 0.3
         self.decPlaces = 2
@@ -60,7 +59,7 @@ class labelledLineEdit(QtWidgets.QWidget):
             self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
             widgetList.append(self.nameLabel)
 
-        self.simpleSpin = signallingLineEdit(NativeUI)
+        self.simpleSpin = SignallingLineEditWidget(NativeUI)
         self.simpleSpin.setText("")
         self.simpleSpin.setStyleSheet(
             """QDoubleSpinBox{ width:100px; font:16pt}
@@ -75,6 +74,7 @@ class labelledLineEdit(QtWidgets.QWidget):
         self.simpleSpin.setProperty("textColour", "0")
         self.simpleSpin.setProperty("bgColour", "0")
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
+        self.simpleSpin.textChanged.connect(self.textUpdate)
         if self.cmd_type == "":
             self.simpleSpin.setReadOnly(True)
             self.simpleSpin.setProperty("bgColour", "1")
@@ -91,11 +91,19 @@ class labelledLineEdit(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-    def update_personal_value(self):
-        newVal = self.NativeUI.get_db('personal')
+    def textUpdate(self):
+        self.manuallyUpdated = True
+
+
+    def update_value(self,placeholdertemp):
+        newVal = self.NativeUI.get_db("personal")
         if newVal == {}:
             a = 1  # do nothing
         else:
+            print('got a personal db')
             self.simpleSpin.setText(newVal[self.tag])
             self.simpleSpin.setProperty("textColour", "0")
             self.simpleSpin.style().polish(self.simpleSpin)
+
+    def get_value(self):
+        return self.simpleSpin.text()

@@ -15,12 +15,12 @@ __status__ = "Prototype"
 from PySide2 import QtCore, QtGui, QtWidgets
 import os
 
-from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
-
-# from main_widgets.customPopup import customPopup
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 
 
 class TypeValuePopup(QtWidgets.QDialog):
+    """Popup takes user input to put in spin box. """
+
     def __init__(self, NativeUI):
         super().__init__()
 
@@ -56,10 +56,12 @@ class TypeValuePopup(QtWidgets.QDialog):
         # self.lineEdit.textEdited.connect(self.setTextColour(1))
         grid.addWidget(self.lineEdit, 0, 0, 1, 2)
 
-        self.okButton = okButton(NativeUI)
+        self.okButton = OkButtonWidget(NativeUI)
+        self.okButton.setEnabled(True)
         grid.addWidget(self.okButton, 1, 0)
 
-        self.cancelButton = cancelButton(NativeUI)
+        self.cancelButton = CancelButtonWidget(NativeUI)
+        self.cancelButton.setEnabled(True)
         grid.addWidget(self.cancelButton, 1, 1)
 
         self.setLayout(grid)
@@ -69,19 +71,3 @@ class TypeValuePopup(QtWidgets.QDialog):
 
     def getValue(self):
         return self.lineEdit.text()
-
-    # def setTextColour(self, option):
-    #     self.lineEdit.setProperty("colour", option)
-    #     self.lineEdit.style().unpolish(self.lineEdit)
-    #     self.lineEdit.style().polish(self.lineEdit)
-
-    # def eventFilter(self, source, event):
-    #     if event.type() == QtCore.QEvent.KeyPress and source is self.lineEdit:
-    #         if event.text() == "\r":  # enter
-    #             self.okButton.click()
-    #             return True
-    #         elif event.text() == "\x1b":  # Escape button
-    #             self.cancelButton.click()
-    #             return True
-    #         else:
-    #             return False  # think False means process normally

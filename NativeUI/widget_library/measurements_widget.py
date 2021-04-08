@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_measurements.py
+measurements_widget.py
 
 Part of NativeUI. Defines the MeasurementWidget class to display current
 parameters, and constructs the TabMeasurements widget to display the requisite
@@ -22,7 +22,7 @@ from PySide2 import QtCore, QtGui, QtWidgets
 import math
 
 
-class Measurements_Block(QtWidgets.QWidget):
+class MeasurementsBlockWidget(QtWidgets.QWidget):
     """
     Block of widgets displaying various measurement parameters
     """
@@ -31,25 +31,34 @@ class Measurements_Block(QtWidgets.QWidget):
         self, NativeUI, *args, measurements: list = None, columns: int = 1, **kwargs
     ):
 
-        super(Measurements_Block, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.__grid_columns = columns
 
         layout = QtWidgets.QGridLayout(self)
 
         # Create "Measurements" Title
+<<<<<<< HEAD:NativeUI/main_widgets/tab_measurements.py
         title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"]) # 
         title_label.setStyleSheet(
             "font-size:" + NativeUI.text_size + ";"
+=======
+        self.title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"])
+        self.title_label.setStyleSheet(
+            # "font-size:" + NativeUI.text_size + ";"
+>>>>>>> ui_dev:NativeUI/widget_library/measurements_widget.py
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
-            "background-color: white;"
+            "background-color:" + NativeUI.colors["page_background"].name() + ";"
         )
-        # title_label.setSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding)
-        # title_label.setAlignment(QtCore.Qt.AlignCenter)
+        self.title_label.setSizePolicy(
+            QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed
+        )
+        self.title_label.setAlignment(QtCore.Qt.AlignHCenter)
 
         # Create Muasurement widgets
-        widget_list = []
+        self.widget_list = []
         for measurement in measurements:
             if len(measurement) > 3:
-                widget_list.append(
+                self.widget_list.append(
                     MeasurementWidget(
                         NativeUI,
                         measurement[0],  # Label
@@ -59,7 +68,7 @@ class Measurements_Block(QtWidgets.QWidget):
                     )
                 )
             else:
-                widget_list.append(
+                self.widget_list.append(
                     MeasurementWidget(
                         NativeUI,
                         measurement[0],  # Label
@@ -69,31 +78,96 @@ class Measurements_Block(QtWidgets.QWidget):
                 )
 
         # Compute max number of items per column
-        max_col_length = int(len(widget_list) / (columns))
-        if len(widget_list) % (columns) != 0:
-            max_col_length += 1
+        self.__grid_rows = int(len(self.widget_list) / (self.__grid_columns))
+        if len(self.widget_list) % (self.__grid_columns) != 0:
+            self.__grid_rows += 1
 
         # Arrange layout widgets in rows and columns
         layout.addWidget(
-            title_label, columnspan=columns, alignment=QtCore.Qt.AlignHCenter
+            self.title_label,
+            columnspan=self.__grid_columns,
+            alignment=QtCore.Qt.AlignHCenter,
         )
         i_row_min = 1  # first row for measurement widgets below the label
         i_row = i_row_min
         i_col = 0
-        for widget in widget_list:
+        for widget in self.widget_list:
             layout.addWidget(widget, i_row, i_col)
             i_row += 1
-            if i_row == max_col_length + i_row_min:
+            if i_row == self.__grid_rows + i_row_min:
                 i_row = i_row_min
                 i_col += 1
 
+        layout.setAlignment(QtCore.Qt.AlignHCenter)
+
         self.setLayout(layout)
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(16)  # just faster than 60Hz
-        for widget in widget_list:
-            self.timer.timeout.connect(widget.update_value)
-        self.timer.start()
+    def set_size(
+        self, x: int, y: int, spacing: int = 10, widget_size_ratio: float = 2.5
+    ) -> int:
+        """
+        Set the size of the measurements block widget.
+
+        Sizes are computed on the assumption that the ratio of width to height for
+        individual measurement widgets is equal to widget_size_ratio.
+
+        If both x and y are set, MeasurementsBlockWidget will have size x by y, and
+        individual widgets will be size x/n_cols-spacing by MIN(y/n_rows,
+        x/(n_cols*widget_size_ratio))-spacing.
+
+        If x alone is set, individual widgets will have size x/n_cols-spacing by
+        (x/n_cols)/widget_size_ratio-spacing. MeasurementsBlockWidget will have size x
+        by ((x/n_cols)/widget_size_ratio)*n_rows (i.e. height expands to fit all of the
+        widgets).
+
+        If y alone is set, individual widgets will have size
+        (y/n_rows)*widget_size_ratio-spacing by y/n_rows-spacing.
+        MeasurementsBlockWidget will have size ((y/n_rows)*widget_size_ratio)*n_cols by
+        y (e.r. width expands to fit all of the widgets).
+        """
+
+        if x is not None and y is not None:
+            self.setFixedSize(x, y)
+            self.title_label.setFixedWidth(x)
+            x_widget = int(x / self.__grid_columns)
+            y_widget = min(int(y / self.__grid_rows), int(x_widget / widget_size_ratio))
+        elif x is not None and y is None:
+            self.title_label.setFixedWidth(x)
+            x_widget = int(x / self.__grid_columns)
+            y_widget = int(x_widget / widget_size_ratio)
+            self.setFixedSize(x, y_widget * self.__grid_rows)
+        elif x is None and y is not None:
+            y_widget = int(y / self.__grid_rows)
+            x_widget = int(y_widget * widget_size_ratio)
+            self.setFixedSize(x_widget * self.__grid_columns, y)
+        else:
+            raise ValueError("set_size called with no size information")
+
+        for widget in self.widget_list:
+            widget.set_size(x_widget - spacing, y_widget - spacing)
+        return 0
+
+    def set_label_font(self, font: QtGui.QFont) -> int:
+        """
+        Set the font of the title label and measurement names.
+        """
+        self.title_label.setFont(font)
+        for widget in self.widget_list:
+            widget.name_display.setFont(font)
+        return 0
+
+    def set_value_font(self, font: QtGui.QFont) -> int:
+        """
+        Set the font of the measurement value displays.
+        """
+        for widget in self.widget_list:
+            widget.value_display.setFont(font)
+        return 0
+
+    @QtCore.Slot()
+    def update_value(self) -> int:
+        for widget in self.widget_list:
+            widget.update_value()
 
 
 class MeasurementWidget(QtWidgets.QWidget):
@@ -123,14 +197,10 @@ class MeasurementWidget(QtWidgets.QWidget):
         keydir: str,
         key: str,
         format: str = "{:.1f}",
-        width: int = 250,
-        height: int = 120,
         *args,
         **kwargs
     ):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
-
-        labelheight = int(height / 3.0)
 
         self.NativeUI = NativeUI
         self.keydir = keydir
@@ -149,29 +219,23 @@ class MeasurementWidget(QtWidgets.QWidget):
         # Appearance
         self.name_display.setAlignment(QtCore.Qt.AlignCenter)
         self.name_display.setStyleSheet(
-            "color: " + self.NativeUI.colors["page_foreground"].name() + ";"
-            "background-color:"
-            + self.NativeUI.colors["background_enabled"].name()
-            + ";"
+            "color: " + self.NativeUI.colors["label_foreground"].name() + ";"
+            "background-color:" + self.NativeUI.colors["label_background"].name() + ";"
             "border: none;"
-            "font-size: " + NativeUI.text_size + ";"
+            # "font-size: " + NativeUI.text_size + ";"
         )
-        self.name_display.setFixedSize(width, labelheight)
-        # self.name_display.setFont(QtGui.QFont("SansSerif", 10))
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
         self.value_display.setStyleSheet(
-            "color: " + self.NativeUI.colors["page_background"].name() + ";"
-            "background-color: " + self.NativeUI.colors["page_foreground"].name() + ";"
+            "color: " + self.NativeUI.colors["label_background"].name() + ";"
+            "background-color: " + self.NativeUI.colors["label_foreground"].name() + ";"
             "border: none;"
         )
-        self.value_display.setFixedSize(width, height - labelheight)
-        self.value_display.setFont(QtGui.QFont("SansSerif", 40))
+        # self.value_display.setFont(QtGui.QFont("SansSerif", 40))
 
         # Layout
         layout.setSpacing(0)
         self.setLayout(layout)
-        self.setFixedSize(QtCore.QSize(width, height))
 
     def update_value(self) -> int:
         """
@@ -193,7 +257,7 @@ class MeasurementWidget(QtWidgets.QWidget):
 
     def __format_value(self, number):
         if self.format is "ratio":
-            n_digits = 2
+            n_digits = 1
             vals = number.as_integer_ratio()
             order_of_mag = math.floor(math.log(vals[0], 10))
             if order_of_mag > n_digits:
@@ -204,8 +268,14 @@ class MeasurementWidget(QtWidgets.QWidget):
             return "{:.0f}:{:.0f}".format(*vals)
         return self.format.format(number)
 
+    def set_size(self, x: int, y: int) -> int:
+        self.setFixedSize(x, y)
+        self.name_display.setFixedSize(x, int(y / 3))
+        self.value_display.setFixedSize(x, int(2 * y / 3))
+        return 0
 
-class TabMeasurements(Measurements_Block):
+
+class NormalMeasurementsBlockWidget(MeasurementsBlockWidget):
     """
     Widget to contain the measurements for the standard page. Essentially a
     wrapper for the Measurements_Block class that specifies the measurements
@@ -232,7 +302,7 @@ class TabMeasurements(Measurements_Block):
         )
 
 
-class TabExpertMeasurements(Measurements_Block):
+class ExpertMeasurementsBloackWidget(MeasurementsBlockWidget):
     """
     Widget to contain the measurements for the standard page. Essentially a
     wrapper for the Measurements_Block class that specifies the measurements

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 """
-tab_battery.py
+battery_display_widget.py
 """
 
 __author__ = ["Benjamin Mummery", "Tiago Sarmento"]
@@ -18,24 +18,27 @@ import os
 from PySide2 import QtCore, QtGui, QtWidgets
 
 
-class TabBattery(QtWidgets.QWidget):
+class BatteryDisplayWidget(QtWidgets.QWidget):
     """
     Widget that contains both the battery icon and a text readout of the current
     battery charge.
     """
 
     def __init__(self, NativeUI, *args, **kwargs):
-        super(TabBattery, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.NativeUI = NativeUI
 
         layout = QtWidgets.QHBoxLayout(self)
-        self.widgets = [BatteryIcon(NativeUI), BatteryText(NativeUI)]
+        self.icon_display = BatteryIcon(NativeUI)
+        self.text_display = BatteryText(NativeUI)
+        self.widgets = [self.icon_display, self.text_display]
 
         for widget in self.widgets:
-            layout.addWidget(widget)
+            layout.addWidget(widget, alignment=QtCore.Qt.AlignRight)
 
+        layout.setSpacing(0)
+        layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
-        self.setFixedSize(200, 75)
 
         self.battery_power = False
         self.mains_power = False
@@ -117,50 +120,94 @@ class TabBattery(QtWidgets.QWidget):
 
         return 0.0
 
+    def set_size(self, x: int, y: int) -> int:
+        """
+        Set the size of the battery display widget. Due to the way that the text_display
+        needs to resize itself, both the x and y sizes must be specified.
+        """
+        assert isinstance(x, int)
+        assert isinstance(y, int)
 
-class BatteryText(QtWidgets.QWidget):
+        self.setFixedSize(x, y)
+        self.icon_display.set_size(y, y)
+        self.text_display.set_size(x - y, y)
+        return 0
+
+    def setFont(self, font: QtGui.QFont) -> int:
+        """
+        Overrides the existing setFont method in order to propogate the change to
+        subwidgets.
+        """
+        self.text_display.setFont(font)
+        return 0
+
+
+class BatteryText(QtWidgets.QLabel):
     """
     """
 
     def __init__(self, NativeUI, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__("", *args, **kwargs)
 
-        layout = QtWidgets.QVBoxLayout()
-        self.label = QtWidgets.QLabel("0 %")
-        layout.addWidget(self.label)
+        self.__size = (0, 0)
 
-        self.label.setStyleSheet(
+        self.setStyleSheet(
             "background-color:" + NativeUI.colors["page_background"].name() + ";"
             "border: none;"
-            "font:" + NativeUI.text_size + ";"
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
         )
 
-        self.setLayout(layout)
-
     def update_value(self, status):
         """"""
+        self.__apply_default_size()
         if status["electrical_problem"] is not None:
-            self.label.setText(status["electrical_problem"])
+            self.setText(status["electrical_problem"])
             return 0
         if status["on_mains_power"]:
-            self.label.setText("")
+            self.setText("")
+            self.__apply_temp_size(0, self.__size[1])
             return 0
 
-        self.label.setText(str(status["battery_percent"]) + " %")
+        self.setText(str(status["battery_percent"]) + " %")
+        return 0
+
+    def set_size(self, x: int, y: int) -> int:
+        """
+        Set the default size of the widget.
+
+        As the widget needs to resize when displaying an empty string, we store its
+        default size in the __size attribute so that this can be reapplied later.
+        """
+        self.__size = (x, y)
+        self.__apply_default_size()
+        return 0
+
+    def __apply_default_size(self) -> int:
+        """
+        Set the size of the widget to the default size as defined in the __size
+        attribute.
+        """
+        self.setFixedSize(*self.__size)
+        return 0
+
+    def __apply_temp_size(self, x, y) -> int:
+        """
+        Temporarily set the size of the widget to the specified dimensions. This change
+        can be undone by calling the __apply_default_size method.
+        """
+        self.setFixedSize(x, y)
         return 0
 
 
-class BatteryIcon(QtWidgets.QWidget):
+class BatteryIcon(QtWidgets.QPushButton):
     """
     Widget to display the current battery icon
     """
 
     def __init__(self, NativeUI, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__("", *args, **kwargs)
 
         self.NativeUI = NativeUI
-        iconsize = QtCore.QSize(25, 25)
         self.__icon_list = self.__make_icon_list()
         self.__mains_icon = os.path.join(self.NativeUI.iconpath, "plug-solid.png")
         self.__alert_icon = os.path.join(
@@ -168,31 +215,24 @@ class BatteryIcon(QtWidgets.QWidget):
         )
         self.__icon_percentiles = self.__make_percentile_ranges()
 
-        layout = QtWidgets.QVBoxLayout()
-        self.icon_display = QtWidgets.QPushButton("")
-        self.icon_display.setIconSize(iconsize)
-        layout.addWidget(self.icon_display)
-
-        self.icon_display.setEnabled(False)
-        self.icon_display.setStyleSheet(
+        self.setEnabled(False)
+        self.setStyleSheet(
             "background-color:" + NativeUI.colors["page_background"].name() + ";"
             "border: none"
         )
-
-        self.setLayout(layout)
 
     def update_value(self, status):
         """
         Update the icon to match that of the specified battery percentage value.
         """
         if status["electrical_problem"] is not None:
-            self.icon_display.setIcon(QtGui.QIcon(self.__alert_icon))
+            self.setIcon(QtGui.QIcon(self.__alert_icon))
             return 0
         if status["on_mains_power"]:
-            self.icon_display.setIcon(QtGui.QIcon(self.__mains_icon))
+            self.setIcon(QtGui.QIcon(self.__mains_icon))
             return 0
 
-        self.icon_display.setIcon(
+        self.setIcon(
             QtGui.QIcon(
                 self.__icon_list[self.__get_range_index(status["battery_percent"])]
             )
@@ -245,3 +285,8 @@ class BatteryIcon(QtWidgets.QWidget):
         ]
         icon_list = [os.path.join(self.NativeUI.iconpath, icon) for icon in icon_list]
         return icon_list
+
+    def set_size(self, x: int, y: int) -> int:
+        self.setIconSize(QtCore.QSize(x, y))
+        self.setFixedSize(x, y)
+        return 0

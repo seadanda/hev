@@ -12,17 +12,18 @@ __maintainer__ = "Tiago Sarmento"
 __email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2 import QtWidgets, QtGui, QtCore
-from global_widgets.global_send_popup import SetConfirmPopup
+from PySide2 import QtWidgets
+
+# from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class TemplateMainPages(QtWidgets.QWidget):
-    def buildPage(self, buttonList, tabList, *args, **kwargs):
+    def buildPage(self, buttonList, tabsList, *args, **kwargs):
         vlayout = QtWidgets.QVBoxLayout()
         hButtonLayout = QtWidgets.QHBoxLayout()
 
         self.stack = QtWidgets.QStackedWidget()
-        for button, tab in zip(buttonList, tabList):
+        for button, tab in zip(buttonList, tabsList):
             hButtonLayout.addWidget(button)
             self.stack.addWidget(tab)
             button.pressed.connect(lambda i=button: self.setTab(i))

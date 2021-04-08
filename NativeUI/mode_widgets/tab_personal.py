@@ -23,12 +23,12 @@ class TabPersonal(TemplateSetValues):
     def __init__(self, *args, **kwargs):
         super(TabPersonal, self).__init__(*args, **kwargs)
         settingsList = [
-            ["Name", "/min", "respiratory_rate", "SET_PERSONAL", "NAME"],
-            ["Patient ID", "s", "inhale_time", "SET_PERSONAL", "PATIENT_ID"],
-            ["Age", "", "ie_ratio", "SET_PERSONAL", "AGE"],
-            ["Sex", "", "inhale_trigger_threshold", "SET_PERSONAL", "SEX"],
-            ["Weight", "", "exhale_trigger_threshold", "SET_PERSONAL", "WEIGHT"],
-            ["Height", "", "inspiratory_pressure", "SET_PERSONAL", "HEIGHT"],
+            ["Name", "/min", "name", "SET_PERSONAL", "NAME"],
+            ["Patient ID", "s", "patient_id", "SET_PERSONAL", "PATIENT_ID"],
+            ["Age", "", "age", "SET_PERSONAL", "AGE"],
+            ["Sex", "", "sex", "SET_PERSONAL", "SEX"],
+            ["Weight", "", "weight", "SET_PERSONAL", "WEIGHT"],
+            ["Height", "", "height", "SET_PERSONAL", "HEIGHT"],
         ]
         textBoxes = ["Name", "Patient ID", "Sex"]
         self.setPacketType("personal")
