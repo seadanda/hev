@@ -19,7 +19,7 @@ import os
 import sys
 from PySide2.QtWidgets import QApplication
 import time
-import threading
+import _thread
 
 current_path = os.path.abspath(os.getcwd())
 root_path = os.path.abspath(current_path + "/NativeUI")
@@ -33,12 +33,8 @@ import hevclient
 # Stub self.alarmTab.popup.addAlarm(newAbstractAlarm), self.alarmTab.list.addAlarm(newAbstractAlarm), self.alarmTableTab.table.addAlarmRow(newAbstractAlarm)
 
 
-def main():
-    hevclient.mmFileName = "tests/integration/fixtures/HEVClient_lastData.mmap"
-    app = QApplication()
-    myNativeUI = NativeUI()
-    x = threading.Thread(target=app.exec_)
-    x.start()
+def sw11(NativeUI):
+    myNativeUI = NativeUI
 
     # define vars
     popup_activated = False
@@ -78,20 +74,47 @@ def main():
 
     # __define_connections calls alarm_widgets.tab_alarms.update_alarms every 16ms and starts when NativeUI is initialized.
 
-    starttime = time.time_ns() // 1_000_000
-    while (time.time_ns() // 1_000_000) < (starttime + 5000):
+    wait_time = 5
+    count = 0
+    while count < wait_time:
+        print("waiting " + str(count + 1) + "s out of 5s")
+        count = count + 1
+        time.sleep(1)
         pass
 
     # (In Stubs) Capture newAbstractAlarm and query it for alarm code and priority set a flag if so.
+
+    print("\nRunning tests \n")
 
     # After wait, check for flags set.
     assert popup_activated is True, "popup.addAlarm(newAbstractAlarm) not called."
     assert list_activated is True, "list.addAlarm(newAbstractAlarm) not called."
     assert table_activated is True, "table.addAlarm(newAbstractAlarm) not called."
 
-    x.join()
+    return
+
+
+def main():
+    hevclient.mmFileName = "tests/integration/fixtures/HEVClient_lastData.mmap"
+
+    app = QApplication()
+    myNativeUI = NativeUI()
+
+    _thread.start_new_thread(sw11, (myNativeUI,))
+    app.exec_()
+
+    wait_time = 5
+    count = 0
+    while count < wait_time:
+        print("waiting " + str(count + 1) + "s out of 5s")
+        count = count + 1
+        time.sleep(1)
+        pass
+    _thread.exit()
+    sys.exit()
 
     return
 
 
-main()
+if __name__ == "__main__":
+    main()
