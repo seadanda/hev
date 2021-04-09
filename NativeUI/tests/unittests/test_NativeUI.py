@@ -6,6 +6,9 @@ import json
 from NativeUI import NativeUI
 from PySide2.QtWidgets import QApplication
 import numpy as np
+import hevclient
+
+hevclient.mmFileName = "NativeUI/tests/integration/fixtures/HEVClient_lastData.mmap"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -16,7 +19,9 @@ def widget():
 
 
 # Test default values of databases(no set method involved)
-def test_must_return_if_raises_attribute_error_when_false_db_item_is_got_from_get_db(widget):
+def test_must_return_if_raises_attribute_error_when_false_db_item_is_got_from_get_db(
+    widget,
+):
     with pytest.raises(AttributeError):
         widget.get_db("__false_db_item")
 
@@ -49,7 +54,10 @@ def test_must_return_correct_db_item_from_get_db_plots(widget):
         "flow_axis_range": [-40, 80],
         "volume_axis_range": [0, 80],
     }
-    assert widget.get_db("__plots").keys() == plot_dict.keys() and widget.get_db("plots").keys() == plot_dict.keys()
+    assert (
+        widget.get_db("__plots").keys() == plot_dict.keys()
+        and widget.get_db("plots").keys() == plot_dict.keys()
+    )
 
 
 def test_must_return_correct_db_item_from_get_db_alarms(widget):
@@ -125,8 +133,8 @@ def test_must_return_0_for_set_personal_db(widget):
 
 
 # Asyncio can handle event loops, but we need to add more interaction i think
-#@pytest.mark.asyncio
-#async def test_start_client(widget):
+# @pytest.mark.asyncio
+# async def test_start_client(widget):
 #    with pytest.raises(RuntimeError):
 #        widget.start_client()
 
@@ -138,10 +146,12 @@ def test_get_updates_data_payload(widget):
 
 
 def test_get_updates_wrong_payload(widget):
-    fake_payload = {"types": "Fake",
-                    "pressure": 1200000.,
-                    "flow": 777000.,
-                    "volume": 1.}
+    fake_payload = {
+        "types": "Fake",
+        "pressure": 1200000.0,
+        "flow": 777000.0,
+        "volume": 1.0,
+    }
     with pytest.raises(KeyError):
         widget.get_updates(fake_payload)
 
@@ -161,5 +171,4 @@ def test_must_return_0_when_q_send_personal_when_out_conection(widget):
 
 
 def test_must_return_0_when__find_icons_directory(widget):
-    assert widget.__find_icons() == '/home/pi/hev/hev-display/assets/png'
-
+    assert widget.__find_icons() == "/home/pi/hev/hev-display/assets/png"

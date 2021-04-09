@@ -7,6 +7,7 @@ TODO
 Percentage coverage:
 
 ## Integration Tests
+
 ### Template
 
 Status is marked in the test title with:
