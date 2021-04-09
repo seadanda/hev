@@ -130,7 +130,7 @@ class NativeUI(HEVClient, QMainWindow):
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
         }
-        self.__alarms = []
+        self.__alarms = {}
         self.__targets = {}
         self.__personal = {}
         self.ongoingAlarms = {}
@@ -235,16 +235,10 @@ class NativeUI(HEVClient, QMainWindow):
         """
         Set the contents of the specified database dict, assuming that it is present in
         __database_list. Uses lock to avoid race conditions.
-
-        TODO: the alarms workaround is a little janky - do alarms need to be a list or
-        can they be a dict in line with the other dbs?
         """
         temp = self.get_db(database_name)
         for key in payload:
-            if database_name in ["alarms", "__alarms"]:
-                temp = payload
-            else:
-                temp[key] = payload[key]
+            temp[key] = payload[key]
         with self.db_lock:
             setattr(
                 self,
