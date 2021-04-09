@@ -30,10 +30,16 @@ print(root_path)
 from NativeUI import NativeUI
 import hevclient
 
-# Stub self.alarmTab.popup.addAlarm(newAbstractAlarm), self.alarmTab.list.addAlarm(newAbstractAlarm), self.alarmTableTab.table.addAlarmRow(newAbstractAlarm)
+# TODO:
+# - Sort Threading: In order to test the UI, the PyQT app needs to be running. This is controlled by app.exec_() (line 110), however when the app is running the main thread is locked out of firing off any other functions (i.e. test_high_pressure_alarm_high_priority()). Currently, the test_high_pressure_alarm_high_priority() test function runs in a secondary thread which doesn't interact with the app running in the main thread.
+# - Assert that the __alarms DB is modified correctly (line 77-79)
 
 
-def sw11(NativeUI):
+def test_high_pressure_alarm_high_priority(NativeUI):
+    """
+    The intention of this test is to solve the risk with Risk ID: SW11.
+    When excessive airway pressure is applied the microcontroller should send a High Pressure Alarm at a High Priority. This integration test tests from the point when that payload is fed into the UI. It will test that the payload will propgate through NativeUI app correctly and create a popup and add the alarm to the list of alarms.
+    """
     myNativeUI = NativeUI
 
     # define vars
