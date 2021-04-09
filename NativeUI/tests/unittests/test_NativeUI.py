@@ -92,7 +92,7 @@ def test_must_return_0_for_set_readback_db(widget):
 
 
 def test_must_return_0_for_set_cycle_db(widget):
-    with open("/home/pi/hev/NativeUI/tests/cycleSample.json", "r") as f:
+    with open("/home/pi/hev/NativeUI/tests/unittests/fixtures/cycleSample.json", "r") as f:
         cycle_payload = json.load(f)
         assert widget.set_cycle_db(cycle_payload) == 0
 
@@ -127,7 +127,7 @@ def test_must_return_0_for_set_alarms_db(widget):
 
 
 def test_must_return_0_for_set_personal_db(widget):
-    with open("/home/pi/hev/NativeUI/tests/personalSample.json", "r") as f:
+    with open("/home/pi/hev/NativeUI/tests/unittests/fixtures/personalSample.json", "r") as f:
         personal_payload = json.load(f)
         assert widget.set_personal_db(personal_payload) == 0
 
