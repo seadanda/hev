@@ -40,7 +40,8 @@ from PySide2.QtGui import QColor, QFont, QPalette
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 
 logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s \n (%(pathname)s, %(lineno)s)",
 )
 
 
@@ -201,10 +202,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
 
-    def get_db(self, database_name: str):
+    def __check_db_name(self, database_name: str) -> str:
         """
-        Return the contents of the specified database dict, assuming that it is present
-        in __database_list.
+        Check that the specified name is an actual database in NativeUI.
         """
         # Add "__" to database_name if it isn't already present.
         if not database_name.startswith("__"):
@@ -217,67 +217,43 @@ class NativeUI(HEVClient, QMainWindow):
                 "%s is not a recognised database in NativeUI" % database_name
             )
 
-        # Return the database.
-        with self.db_lock:
-            # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
-            return getattr(self, "_%s%s" % (type(self).__name__, database_name))
+        return database_name
 
-    def set_data_db(self, payload):
+    def get_db(self, database_name: str):
         """
-        Set the contents of the __data database. Uses lock to avoid race
-        conditions.
+        Return the contents of the specified database dict, assuming that it is present
+        in __database_list.
         """
-        logging.debug("setting data db")
         with self.db_lock:
-            for key in payload:
-                self.__data[key] = payload[key]
+            return getattr(
+                self,
+                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
+            )
+        raise RuntimeError("Could not acquire database")
+
+    def __set_db(self, database_name: str, payload) -> int:
+        """
+        Set the contents of the specified database dict, assuming that it is present in
+        __database_list. Uses lock to avoid race conditions.
+
+        TODO: the alarms workaround is a little janky - do alarms need to be a list or
+        can they be a dict in line with the other dbs?
+        """
+        temp = self.get_db(database_name)
+        for key in payload:
+            if database_name in ["alarms", "__alarms"]:
+                temp = payload
+            else:
+                temp[key] = payload[key]
+        with self.db_lock:
+            setattr(
+                self,
+                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
+                temp,
+            )
         return 0
 
-    def set_targets_db(self, payload):
-        """
-        Set the contents of the __targets database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting targets db")
-        with self.db_lock:
-            for key in payload:
-                self.__targets[key] = payload[key]
-        return 0
-
-    def set_readback_db(self, payload):
-        """
-        Set the contents of the __readback database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting readback db")
-        with self.db_lock:
-            for key in payload:
-                self.__readback[key] = payload[key]
-        return 0
-
-    def set_cycle_db(self, payload):
-        """
-        Set the contents of the __cycle database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting cycle db")
-        with self.db_lock:
-            for key in payload:
-                self.__cycle[key] = payload[key]
-        return 0
-
-    def set_battery_db(self, payload):
-        """
-        Set the contents of the __battery database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting battery db")
-        with self.db_lock:
-            for key in payload:
-                self.__battery[key] = payload[key]
-        return 0
-
-    def set_plots_db(self, payload):
+    def __set_plots_db(self, payload):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
@@ -321,28 +297,7 @@ class NativeUI(HEVClient, QMainWindow):
             ]
         return 0
 
-    def set_alarms_db(self, payload):
-        """
-        Set the contents of the __alarms database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting alarms db")
-        with self.db_lock:
-            self.__alarms = payload
-        return 0
-
-    def set_personal_db(self, payload):
-        """
-        Set the contents of the __personal database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting personal db")
-        with self.db_lock:
-            for key in payload:
-                self.__personal[key] = payload[key]
-        return 0
-
-    def start_client(self):
+    def __start_client(self):
         """
         Poll the microcontroller for current settings information.
 
@@ -360,30 +315,31 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_cmd("GENERAL", "GET_PERSONAL")
         super().start_client()
 
-    def get_updates(self, payload: dict):
+    def get_updates(self, payload: dict) -> int:
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
-                self.set_data_db(payload["DATA"])
-                self.set_plots_db(payload["DATA"])
+                self.__set_db("data", payload["DATA"])
+                self.__set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
-                self.set_battery_db(payload["BATTERY"])
+                self.__set_db("battery", payload["BATTERY"])
                 self.battery_signal.emit()
             if payload["type"] == "ALARM":
-                self.set_alarms_db(payload["ALARM"])
+                self.__set_db("alarms", payload["ALARM"])
             if payload["type"] == "TARGET":
-                self.set_targets_db(payload["TARGET"])
+                self.__set_db("targets", payload["TARGET"])
             if payload["type"] == "READBACK":
-                self.set_readback_db(payload["READBACK"])
+                self.__set_db("readback", payload["READBACK"])
             if payload["type"] == "PERSONAL":
-                self.set_personal_db(payload["PERSONAL"])
+                self.__set_db("personal", payload["PERSONAL"])
             if payload["type"] == "CYCLE":
-                self.set_cycle_db(payload["CYCLE"])
+                self.__set_db("cycle", payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
+        return 0
 
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
