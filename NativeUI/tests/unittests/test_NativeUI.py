@@ -3,12 +3,14 @@
 import pytest
 import sys
 import json
-from NativeUI import NativeUI
 from PySide2.QtWidgets import QApplication
 import numpy as np
+
+sys.path.append("../..")
+from NativeUI import NativeUI
 import hevclient
 
-hevclient.mmFileName = "NativeUI/tests/integration/fixtures/HEVClient_lastData.mmap"
+hevclient.mmFileName = "/home/pi/hev/NativeUI/tests/integration/fixtures/HEVClient_lastData.mmap"
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -170,5 +172,15 @@ def test_must_return_0_when_q_send_personal_when_out_conection(widget):
         widget.q_send_personal(str)
 
 
-def test_must_return_0_when__find_icons_directory(widget):
-    assert widget.__find_icons() == "/home/pi/hev/hev-display/assets/png"
+def test_must_return_0_when__find_icons_png_directory(widget):
+    assert widget.__find_icons("png") == "/home/pi/hev/hev-display/assets/png"
+
+
+def test_must_return_0_when__find_icons_svg_directory(widget):
+    assert widget.__find_icons("svg") == "/home/pi/hev/hev-display/assets/svg"
+
+
+def test_must_return_0_when_cannot__find_icons_directory(widget):
+    with pytest.raises(FileNotFoundError):
+        widget.__find_icons("images")
+
