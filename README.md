@@ -154,7 +154,25 @@ NativeUI.py accepts the following command line arguments:
 
 ## Testing
 
-TO DO
+For full testing documentation please refer to the [testing README](NativeUI/tests/README.md).
+
+## Unit Tests
+
+To run the unit tests on a Raspberry Pi or VM, run the following:
+
+```bash
+source .hev_env/bin/activate
+pytest NativeUI
+```
+
+### Coverage
+
+To get pytest coverage run from the root of the repo:
+
+```bash
+pip install pytest-cov
+pytest --cov=NativeUI NativeUI
+```
 
 ## License
 

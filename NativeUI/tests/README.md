@@ -2,9 +2,21 @@
 
 ## Unit Tests
 
-TODO
+To run the unit tests on a Raspberry Pi or VM, run the following:
 
-Percentage coverage:
+```bash
+source .hev_env/bin/activate
+pytest NativeUI
+```
+
+### Coverage
+
+To get pytest coverage run from the root of the repo:
+
+```bash
+pip install pytest-cov
+pytest --cov=NativeUI NativeUI
+```
 
 ## Integration Tests
 
