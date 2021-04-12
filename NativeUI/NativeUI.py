@@ -18,27 +18,23 @@ __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
 import argparse
-import git
 import json
 import logging
-import sys
 import os
-from PySide2 import QtCore
 import re
-
-import numpy as np
-
-from global_widgets.global_send_popup import confirmPopup
-from hevclient import HEVClient
-
-from ui_layout import Layout
-from ui_widgets import Widgets
-
+import sys
 from threading import Lock
 
+import git
+import numpy as np
+from global_widgets.global_send_popup import confirmPopup
+from hevclient import HEVClient
+from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QFont, QPalette
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+from ui_layout import Layout
+from ui_widgets import Widgets
 
 logging.basicConfig(
     level=logging.INFO,
@@ -164,6 +160,12 @@ class NativeUI(HEVClient, QMainWindow):
 
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
+
+        for button in self.widgets.chart_buttons_widget.buttons:
+            button.ToggleButtonPressed.connect(self.widgets.charts_widget.show_line)
+            button.ToggleButtonReleased.connect(self.widgets.charts_widget.hide_line)
+            button.on_press()  # Ensure states of the plots match states of buttons.
+            button.toggle()
 
         # Plot data should update on a timer
         # TODO: make this actually grab the data and send it to the plots, rather than
