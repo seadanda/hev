@@ -19,7 +19,7 @@ import logging
 import numpy as np
 import pyqtgraph as pg
 from pyqtgraph import mkColor
-from PySide2 import QtCore, QtWidgets
+from PySide2 import QtCore, QtGui, QtWidgets
 
 
 class TimePlotsWidget(QtWidgets.QWidget):
@@ -246,4 +246,85 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         for plot in self.plots:
             plot.setXRange(self.time_range * (-1), 0, padding=0)
             plot.enableAutoRange("y", True)
+        return 0
+
+
+class ChartsPlotWidget(QtWidgets.QWidget):
+    def __init__(self, port=54322, *args, colors: dict = {}, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.port = port
+
+        layout = QtWidgets.QHBoxLayout()
+
+        # Set up the graph widget
+        self.graph_widget = pg.GraphicsLayoutWidget()
+        layout.addWidget(self.graph_widget)
+
+        # Add the plot axes to the graph widget
+        self.display_plot = self.graph_widget.addPlot(
+            labels={"left": "????", "bottom": "????"}
+        )
+        self.graph_widget.nextRow()
+
+        # Store plots in a list in case we need to add additional axes in the future.
+        plots = [self.display_plot]
+
+        # Create lines
+        self.lines = {
+            "pressure": self.plot(
+                self.display_plot, [0, 10], [5, -5], "pressure", (0, 0, 0, 0)
+            ),
+            "flow": self.plot(
+                self.display_plot,
+                [0, 2, 4, 6, 8, 10],
+                [3, 1, 4, 1, 5, 9],
+                "flow",
+                (0, 0, 0, 0),
+            ),
+        }
+
+        # Store the colors of the lines
+        self.colors = {"pressure": colors["pressure_plot"], "flow": colors["flow_plot"]}
+
+        self.graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
+        self.graph_widget.setBackground(colors["page_background"])
+        self.legends = []
+        for plot in plots:
+            plot.showGrid(x=True, y=True)
+            plot.hideButtons()
+            plot.setMouseEnabled(x=False, y=False)
+            self.legends.append(plot.addLegend(offset=(-1, 1)))
+
+        self.setLayout(layout)
+
+        self.hide_line("pressure")
+        self.show_line("pressure")
+
+    def setFont(self, font: QtGui.QFont) -> int:
+        for l in self.legends:
+            l.setFont(font)
+        return 0
+
+    def update_plot_data(self):
+        pass
+
+    def plot(self, canvas, x, y, plotname, color):
+        pen = pg.mkPen(color=color, width=3)
+        return canvas.plot(x, y, name=plotname, pen=pen)
+
+    @QtCore.Slot(str)
+    def show_line(self, key: str) -> int:
+        """
+        Show the specified line
+        """
+        self.lines[key].setPen(pg.mkPen(color=self.colors[key], width=3))
+        return 0
+
+    @QtCore.Slot(str)
+    def hide_line(self, key: str) -> int:
+        """
+        Hide the specified line
+        """
+        self.lines[key].setPen(pg.mkPen(color=(0, 0, 0, 0), width=0))
         return 0
