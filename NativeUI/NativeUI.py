@@ -45,7 +45,9 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    battery_signal = Signal(dict)
+    BatterySignal = Signal(dict)
+    PlotSignal = Signal(dict)
+    MeasurementSignal = Signal(dict, dict)
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
@@ -145,39 +147,100 @@ class NativeUI(HEVClient, QMainWindow):
         self.widgets.page_buttons.buttons[0].on_press()
 
     @Slot(str)
-    def change_page(self, page_to_show: str):
+    def change_page(self, page_to_show: str) -> int:
+        """
+        Change the page shown in page_stack.
+        """
         self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
         return 0
 
-    def __define_connections(self):
+    def __define_connections(self) -> int:
+        """
+        Connect the signals and slots necessary for the UI to function.
+
+        Connections defined here:
+
+        BatterySignal -> battery_display
+            BatterySignal is emitted in get_updates() in response to a battery payload.
+
+        HistoryButtonPressed -> normal_plots, detailed_plots
+            History buttons control the amount of time shown on the x axes of the
+            value-time plots on the main page. HistoryButtonPressed is emitted by the
+            history button when pressed.
+
+        PageButtonPressed -> change_page
+            Page buttons control which page is shown in the page_stack.
+            PageButtonPressed is emitted by the page button when pressed.
+
+        ToggleButtonPressed -> charts_widget.show_line
+        ToggleButtonPressed -> charts_widget.hide_line
+            Lines in the charts_widget are shown or hidden depending on whether the
+            relevent toggle button is in the checked or unchecked state.
+            ToggleButtonPressed is emitted by the toggle button when pressed.
+
+        PlotSignal -> normal_plots, detailed_plots, charts_widget
+            Data plotted in the normal, detailed, and charts plots is updated in
+            response to PlotSignal. PlotSignal is emitted in __emit_plots_signal() which
+            is triggered at timer.timeout.
+
+        MeasurementSignal -> normal_measurements, detailed_measurements
+            Data shown in the normal and detailed measurments widgets is updated in
+            response to MeasurementSignal. MeasurementSignal is emitted in
+            __emit_measurements_signal() which is triggered at timer.timeout.
+        """
         # Battery Display should update when we get battery info
-        self.battery_signal.connect(self.widgets.battery_display.update_value)
+        self.BatterySignal.connect(self.widgets.battery_display.update_value)
 
         # Plots should update when we press the history buttons
         for button in self.widgets.history_buttons.buttons:
             for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
                 button.HistoryButtonPressed.connect(widget.update_plot_time_range)
 
+        # The shown page should change when we press the page buttons
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
 
+        # Lines displayed on the charts page should update when the corresponding
+        # buttons are toggled.
         for button in self.widgets.chart_buttons_widget.buttons:
             button.ToggleButtonPressed.connect(self.widgets.charts_widget.show_line)
             button.ToggleButtonReleased.connect(self.widgets.charts_widget.hide_line)
             button.on_press()  # Ensure states of the plots match states of buttons.
             button.toggle()
 
-        # Plot data should update on a timer
-        # TODO: make this actually grab the data and send it to the plots, rather than
-        # having the plots reach to NativeUI for the data.
+        # Plot data and measurements should update on a timer
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.widgets.normal_plots.update_plot_data)
-        self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
-        self.timer.timeout.connect(self.widgets.normal_measurements.update_value)
-        self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
+        self.timer.timeout.connect(self.__emit_plots_signal)
+        self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
+
+        # When plot data is updated, plots should update
+        self.PlotSignal.connect(self.widgets.normal_plots.update_plot_data)
+        self.PlotSignal.connect(self.widgets.detailed_plots.update_plot_data)
+        self.PlotSignal.connect(self.widgets.charts_widget.update_plot_data)
+
+        # When measurement data is updated, measurement widgets shouldupdate
+        self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
+        self.MeasurementSignal.connect(self.widgets.detailed_measurements.update_value)
+
+        return 0
+
+    def __emit_plots_signal(self) -> int:
+        """
+        Get the current status of the 'plots' db and emit the plot_signal signal.
+        """
+        self.PlotSignal.emit(self.get_db("plots"))
+        return 0
+
+    def __emit_measurements_signal(self) -> int:
+        """
+        Get the current status of the 'cycle' and 'readback' dbs and emit the
+        measurements_signal signal.
+        """
+        self.MeasurementSignal.emit(self.get_db("cycle"), self.get_db("readback"))
+        return 0
 
     def __check_db_name(self, database_name: str) -> str:
         """
@@ -297,7 +360,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
                 self.__set_db("battery", payload["BATTERY"])
-                self.battery_signal.emit(self.get_db("battery"))
+                self.BatterySignal.emit(self.get_db("battery"))
             if payload["type"] == "ALARM":
                 self.__set_db("alarms", payload["ALARM"])
             if payload["type"] == "TARGET":

@@ -158,10 +158,10 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
             widget.value_display.setFont(font)
         return 0
 
-    @QtCore.Slot()
-    def update_value(self) -> int:
+    @QtCore.Slot(dict, dict)
+    def update_value(self, cycle: dict, readback: dict) -> int:
         for widget in self.widget_list:
-            widget.update_value()
+            widget.update_value({"cycle": cycle, "readback": readback})
 
 
 class MeasurementWidget(QtWidgets.QWidget):
@@ -231,7 +231,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         layout.setSpacing(0)
         self.setLayout(layout)
 
-    def update_value(self) -> int:
+    def update_value(self, db: dict) -> int:
         """
         Poll the database in NativeUI and update the displayed value.
         """
@@ -239,14 +239,12 @@ class MeasurementWidget(QtWidgets.QWidget):
             self.value_display.setText("-")
             return 0
 
-        data = self.NativeUI.get_db(self.keydir)
+        data = db[self.keydir]
         if len(data) == 0:  # means that the db hasn't been populated yet
             self.value_display.setText("-")
             return 0
 
-        self.value_display.setText(
-            self.__format_value(self.NativeUI.get_db(self.keydir)[self.key])
-        )
+        self.value_display.setText(self.__format_value(data[self.key]))
         return 0
 
     def __format_value(self, number):

@@ -96,17 +96,16 @@ class TimePlotsWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.update_plot_data()
-
     def plot(self, canvas, x, y, plotname, color):
         pen = pg.mkPen(color=color, width=3)
         return canvas.plot(x, y, name=plotname, pen=pen)
 
-    def update_plot_data(self):
+    @QtCore.Slot(dict)
+    def update_plot_data(self, plots: dict):
         """
         Get the current plots database and update the plots to match
         """
-        plots = self.NativeUI.get_db("plots")
+        # plots = self.NativeUI.get_db("plots")
 
         # Extend the non-time scales if we need to
         self.pressure_plot.setYRange(*plots["pressure_axis_range"])
@@ -209,22 +208,21 @@ class CirclePlotsWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.update_plot_data)
-        self.timer.start()
-
-        self.update_plot_data()
+        # self.timer = QtCore.QTimer()
+        # self.timer.setInterval(16)  # just faster than 60Hz
+        # self.timer.timeout.connect(self.update_plot_data)
+        # self.timer.start()
 
     def plot(self, canvas, x, y, plotname, color):
         pen = pg.mkPen(color=color, width=3)
         return canvas.plot(x, y, name=plotname, pen=pen)
 
-    def update_plot_data(self):
+    @QtCore.Slot(dict)
+    def update_plot_data(self, plots: dict):
         """
         Get the current plots database and update the plots to match
         """
-        plots = self.NativeUI.get_db("plots")
+        # plots = self.NativeUI.get_db("plots")
 
         # Extend the non-time scales if we need to
         self.pressure_flow_plot.setXRange(*plots["flow_axis_range"])
