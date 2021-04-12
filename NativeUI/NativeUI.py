@@ -47,7 +47,7 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    battery_signal = Signal()
+    battery_signal = Signal(dict)
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
@@ -371,7 +371,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
                 self.set_battery_db(payload["BATTERY"])
-                self.battery_signal.emit()
+                self.battery_signal.emit(self.get_db("battery"))
             if payload["type"] == "ALARM":
                 self.set_alarms_db(payload["ALARM"])
             if payload["type"] == "TARGET":
