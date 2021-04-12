@@ -19,6 +19,7 @@ __status__ = "Prototype"
 
 import argparse
 import git
+import json
 import logging
 import sys
 import os
@@ -52,54 +53,27 @@ class NativeUI(HEVClient, QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
-        self.setWindowTitle("HEV NativeUI")
+        config_path = "NativeUI/configs/"
 
         # self.setFixedSize(1920, 1080)
         self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
-        self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-            "page_background": QColor.fromRgb(30, 30, 30),
-            "page_foreground": QColor.fromRgb(200, 200, 200),
-            "button_background_enabled": QColor.fromRgb(50, 50, 50),
-            "button_background_disabled": QColor.fromRgb(100, 100, 100),
-            "button_foreground_enabled": QColor.fromRgb(200, 200, 200),
-            "button_foreground_disabled": QColor.fromRgb(30, 30, 30),
-            "label_background": QColor.fromRgb(0, 0, 0),
-            "label_foreground": QColor.fromRgb(200, 200, 200),
-            "display_background": QColor.fromRgb(200, 200, 200),
-            "display_foreground": QColor.fromRgb(0, 0, 0),
-            "baby_blue": QColor.fromRgb(144, 231, 211),
-            "red": QColor.fromRgb(200, 0, 0),
-            "green": QColor.fromRgb(0, 200, 0),
-            "pressure_plot": QColor.fromRgb(0, 114, 178),
-            "volume_plot": QColor.fromRgb(0, 158, 115),
-            "flow_plot": QColor.fromRgb(240, 228, 66),
-            "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
-            "flow_volume_plot": QColor.fromRgb(204, 121, 167),
-            "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
-            "red": QColor.fromRgb(255, 0, 0),
-            "green": QColor.fromRgb(0, 255, 0),
-            "baby-blue": QColor.fromRgb(0, 0, 200),
-        }
+        # Import settings from config files
+        with open(os.path.join(config_path, "colors.json")) as f:
+            # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
+            self.colors = json.load(f)
+
+        with open(os.path.join(config_path, "text_english.json")) as f:
+            self.text = json.load(f)
+
+        # convert colours to a PySide2-readble form
+        for key in self.colors:
+            self.colors[key] = QColor.fromRgb(*self.colors[key])
+
         self.text_font = QFont("Sans Serif", 20)
         self.value_font = QFont("Sans Serif", 40)
         self.text_size = "20pt"  # TODO: remove in favour of self.text_font
-        self.text = {
-            "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
-            "plot_axis_label_flow": "Flow [L/min]",
-            "plot_axis_label_volume": "Volume [mL]",
-            "plot_axis_label_time": "Time [s]",
-            "plot_line_label_pressure": "Airway Pressure",
-            "plot_line_label_flow": "Flow",
-            "plot_line_label_volume": "Volume",
-            "plot_line_label_pressure_flow": "Airway Pressure - Flow",
-            "plot_line_label_flow_volume": "Flow - Volume",
-            "plot_line_label_volume_pressure": "Volume - Airway Pressure",
-            "layout_label_measurements": "Measurements",
-            "button_label_main_normal": "Normal",
-            "button_label_main_detailed": "Detailed",
-        }
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -162,16 +136,16 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
+        self.setWindowTitle(self.text["ui_window_title"])
         palette = self.palette()
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
-        # Update page buttons to match the shown view
-        self.widgets.page_buttons.buttons[0].on_press()
-
         # Connect widgets
         self.__define_connections()
+
+        self.setWindowTitle("HEV NativeUI")
 
     @Slot(str)
     def change_page(self, page_to_show: str):
