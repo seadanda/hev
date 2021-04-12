@@ -100,13 +100,15 @@ class Layout:
             self.layout_top_bar(
                 [
                     self.widgets.tab_modeswitch,
-                    self.widgets.tab_personal,
+                    self.widgets.personal_display,
                     self.widgets.battery_display,
                 ]
             )
         )
         self.widgets.battery_display.set_size(400, self.top_bar_height)
+        self.widgets.personal_display.set_size(None, self.top_bar_height)
         self.widgets.battery_display.setFont(self.NativeUI.text_font)
+        self.widgets.personal_display.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
         return vlayout
@@ -190,7 +192,11 @@ class Layout:
         """
         page_alarms = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.alarm_tab, self.widgets.alarm_table_tab, self.widgets.clinical_tab],
+            [
+                self.widgets.alarm_tab,
+                self.widgets.alarm_table_tab,
+                self.widgets.clinical_tab,
+            ],
             ["List of Alarms", "Alarm Table", "Clinical Limits"],
         )
         page_alarms.setFont(self.NativeUI.text_font)

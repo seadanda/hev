@@ -51,7 +51,7 @@ class Widgets:
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
-        self.tab_personal = PersonalDisplayWidget(NativeUI)
+        self.personal_display = PersonalDisplayWidget(NativeUI)
 
         # Left Bar widgets
         self.page_buttons = PageButtonsWidget(NativeUI)
