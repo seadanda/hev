@@ -19,7 +19,6 @@ __status__ = "Prototype"
 
 import argparse
 import git
-import json
 import logging
 import sys
 import os
@@ -41,8 +40,7 @@ from PySide2.QtGui import QColor, QFont, QPalette
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 
 logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s \n (%(pathname)s, %(lineno)s)",
+    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
 )
 
 
@@ -53,27 +51,54 @@ class NativeUI(HEVClient, QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
-        config_path = "NativeUI/configs/"
+        self.setWindowTitle("HEV NativeUI")
 
         # self.setFixedSize(1920, 1080)
         self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
-        # Import settings from config files
-        with open(os.path.join(config_path, "colors.json")) as f:
-            # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-            self.colors = json.load(f)
-
-        with open(os.path.join(config_path, "text_english.json")) as f:
-            self.text = json.load(f)
-
-        # convert colours to a PySide2-readble form
-        for key in self.colors:
-            self.colors[key] = QColor.fromRgb(*self.colors[key])
-
+        self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
+            "page_background": QColor.fromRgb(30, 30, 30),
+            "page_foreground": QColor.fromRgb(200, 200, 200),
+            "button_background_enabled": QColor.fromRgb(50, 50, 50),
+            "button_background_disabled": QColor.fromRgb(100, 100, 100),
+            "button_foreground_enabled": QColor.fromRgb(200, 200, 200),
+            "button_foreground_disabled": QColor.fromRgb(30, 30, 30),
+            "label_background": QColor.fromRgb(0, 0, 0),
+            "label_foreground": QColor.fromRgb(200, 200, 200),
+            "display_background": QColor.fromRgb(200, 200, 200),
+            "display_foreground": QColor.fromRgb(0, 0, 0),
+            "baby_blue": QColor.fromRgb(144, 231, 211),
+            "red": QColor.fromRgb(200, 0, 0),
+            "green": QColor.fromRgb(0, 200, 0),
+            "pressure_plot": QColor.fromRgb(0, 114, 178),
+            "volume_plot": QColor.fromRgb(0, 158, 115),
+            "flow_plot": QColor.fromRgb(240, 228, 66),
+            "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
+            "flow_volume_plot": QColor.fromRgb(204, 121, 167),
+            "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
+            "red": QColor.fromRgb(255, 0, 0),
+            "green": QColor.fromRgb(0, 255, 0),
+            "baby-blue": QColor.fromRgb(0, 0, 200),
+        }
         self.text_font = QFont("Sans Serif", 20)
         self.value_font = QFont("Sans Serif", 40)
         self.text_size = "20pt"  # TODO: remove in favour of self.text_font
+        self.text = {
+            "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
+            "plot_axis_label_flow": "Flow [L/min]",
+            "plot_axis_label_volume": "Volume [mL]",
+            "plot_axis_label_time": "Time [s]",
+            "plot_line_label_pressure": "Airway Pressure",
+            "plot_line_label_flow": "Flow",
+            "plot_line_label_volume": "Volume",
+            "plot_line_label_pressure_flow": "Airway Pressure - Flow",
+            "plot_line_label_flow_volume": "Flow - Volume",
+            "plot_line_label_volume_pressure": "Volume - Airway Pressure",
+            "layout_label_measurements": "Measurements",
+            "button_label_main_normal": "Normal",
+            "button_label_main_detailed": "Detailed",
+        }
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -104,7 +129,7 @@ class NativeUI(HEVClient, QMainWindow):
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
         }
-        self.__alarms = {}
+        self.__alarms = []
         self.__targets = {}
         self.__personal = {}
         self.ongoingAlarms = {}
@@ -136,17 +161,16 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
-        self.setWindowTitle(self.text["ui_window_title"])
         palette = self.palette()
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
-        # Connect widgets
-        self.__define_connections()
-
         # Update page buttons to match the shown view
         self.widgets.page_buttons.buttons[0].on_press()
+
+        # Connect widgets
+        self.__define_connections()
 
     @Slot(str)
     def change_page(self, page_to_show: str):
@@ -177,9 +201,10 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
 
-    def __check_db_name(self, database_name: str) -> str:
+    def get_db(self, database_name: str):
         """
-        Check that the specified name is an actual database in NativeUI.
+        Return the contents of the specified database dict, assuming that it is present
+        in __database_list.
         """
         # Add "__" to database_name if it isn't already present.
         if not database_name.startswith("__"):
@@ -192,37 +217,67 @@ class NativeUI(HEVClient, QMainWindow):
                 "%s is not a recognised database in NativeUI" % database_name
             )
 
-        return database_name
-
-    def get_db(self, database_name: str):
-        """
-        Return the contents of the specified database dict, assuming that it is present
-        in __database_list.
-        """
+        # Return the database.
         with self.db_lock:
-            return getattr(
-                self,
-                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
-            )
-        raise RuntimeError("Could not acquire database")
+            # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
+            return getattr(self, "_%s%s" % (type(self).__name__, database_name))
 
-    def __set_db(self, database_name: str, payload) -> int:
+    def set_data_db(self, payload):
         """
-        Set the contents of the specified database dict, assuming that it is present in
-        __database_list. Uses lock to avoid race conditions.
+        Set the contents of the __data database. Uses lock to avoid race
+        conditions.
         """
-        temp = self.get_db(database_name)
-        for key in payload:
-            temp[key] = payload[key]
+        logging.debug("setting data db")
         with self.db_lock:
-            setattr(
-                self,
-                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
-                temp,
-            )
+            for key in payload:
+                self.__data[key] = payload[key]
         return 0
 
-    def __set_plots_db(self, payload):
+    def set_targets_db(self, payload):
+        """
+        Set the contents of the __targets database. Uses lock to avoid race
+        conditions.
+        """
+        logging.debug("setting targets db")
+        with self.db_lock:
+            for key in payload:
+                self.__targets[key] = payload[key]
+        return 0
+
+    def set_readback_db(self, payload):
+        """
+        Set the contents of the __readback database. Uses lock to avoid race
+        conditions.
+        """
+        logging.debug("setting readback db")
+        with self.db_lock:
+            for key in payload:
+                self.__readback[key] = payload[key]
+        return 0
+
+    def set_cycle_db(self, payload):
+        """
+        Set the contents of the __cycle database. Uses lock to avoid race
+        conditions.
+        """
+        logging.debug("setting cycle db")
+        with self.db_lock:
+            for key in payload:
+                self.__cycle[key] = payload[key]
+        return 0
+
+    def set_battery_db(self, payload):
+        """
+        Set the contents of the __battery database. Uses lock to avoid race
+        conditions.
+        """
+        logging.debug("setting battery db")
+        with self.db_lock:
+            for key in payload:
+                self.__battery[key] = payload[key]
+        return 0
+
+    def set_plots_db(self, payload):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
@@ -266,7 +321,28 @@ class NativeUI(HEVClient, QMainWindow):
             ]
         return 0
 
-    def __start_client(self):
+    def set_alarms_db(self, payload):
+        """
+        Set the contents of the __alarms database. Uses lock to avoid race
+        conditions.
+        """
+        logging.debug("setting alarms db")
+        with self.db_lock:
+            self.__alarms = payload
+        return 0
+
+    def set_personal_db(self, payload):
+        """
+        Set the contents of the __personal database. Uses lock to avoid race
+        conditions.
+        """
+        logging.debug("setting personal db")
+        with self.db_lock:
+            for key in payload:
+                self.__personal[key] = payload[key]
+        return 0
+
+    def start_client(self):
         """
         Poll the microcontroller for current settings information.
 
@@ -284,31 +360,30 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_cmd("GENERAL", "GET_PERSONAL")
         super().start_client()
 
-    def get_updates(self, payload: dict) -> int:
+    def get_updates(self, payload: dict):
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
-                self.__set_db("data", payload["DATA"])
-                self.__set_plots_db(payload["DATA"])
+                self.set_data_db(payload["DATA"])
+                self.set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
-                self.__set_db("battery", payload["BATTERY"])
+                self.set_battery_db(payload["BATTERY"])
                 self.battery_signal.emit(self.get_db("battery"))
             if payload["type"] == "ALARM":
-                self.__set_db("alarms", payload["ALARM"])
+                self.set_alarms_db(payload["ALARM"])
             if payload["type"] == "TARGET":
-                self.__set_db("targets", payload["TARGET"])
+                self.set_targets_db(payload["TARGET"])
             if payload["type"] == "READBACK":
-                self.__set_db("readback", payload["READBACK"])
+                self.set_readback_db(payload["READBACK"])
             if payload["type"] == "PERSONAL":
-                self.__set_db("personal", payload["PERSONAL"])
+                self.set_personal_db(payload["PERSONAL"])
             if payload["type"] == "CYCLE":
-                self.__set_db("cycle", payload["CYCLE"])
+                self.set_cycle_db(payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
-        return 0
 
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
