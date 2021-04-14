@@ -14,10 +14,10 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtCore
 from PySide2.QtGui import QFont
 from widget_library.switchable_stack_widget import SwitchableStackWidget
-
+import json
 # from widget_library.page_stack_widget import PageStackWidget
 
 
@@ -188,13 +188,24 @@ class Layout:
         """
         Layout for the alarms page.
         """
+        alarm_tab_widgets = [self.widgets.alarm_list, self.widgets.acknowledge_button]
+        
+        alarm_table_tab_widgets = [self.widgets.alarm_table]
+
         page_alarms = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.alarm_tab, self.widgets.alarm_table_tab, self.widgets.clinical_tab],
+            [self.layout_tab_alarm_list(alarm_tab_widgets), self.layout_tab_alarm_table(alarm_table_tab_widgets), self.widgets.clinical_tab],
             ["List of Alarms", "Alarm Table", "Clinical Limits"],
         )
         page_alarms.setFont(self.NativeUI.text_font)
         return page_alarms
+        # page_alarms = SwitchableStackWidget(
+        #     self.NativeUI,
+        #     [self.widgets.alarm_tab, self.widgets.alarm_table_tab, self.widgets.clinical_tab],
+        #     ["List of Alarms", "Alarm Table", "Clinical Limits"],
+        # )
+        # page_alarms.setFont(self.NativeUI.text_font)
+        # return page_alarms
 
     def layout_page_settings(self) -> QtWidgets.QWidget:
         """
@@ -202,7 +213,7 @@ class Layout:
         """
         page_settings = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.settings_expert_tab, self.widgets.settings_chart_tab],
+            [self.layout_settings_expert(), QtWidgets.QWidget()],#self.widgets.settings_chart_tab],
             ["Expert", "Charts"],
         )
         page_settings.setFont(self.NativeUI.text_font)
@@ -224,7 +235,7 @@ class Layout:
 
         modes_stack = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.mode_settings_tab, self.widgets.mode_personal_tab],
+            [self.layout_mode_settings(), self.layout_mode_personal()],#self.widgets.mode_personal_tab],
             ["Mode Settings", "Personal Settings"],
         )
         modes_stack.setFont(self.NativeUI.text_font)
@@ -287,3 +298,157 @@ class Layout:
         for widget in widgets:
             stack.addWidget(widget)
         return stack
+
+    def layout_tab_alarm_list(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the 'normal' plots and measurements display.
+        """
+        tab_alarm_list = QtWidgets.QWidget()
+        tab_alarm_list_layout = QtWidgets.QHBoxLayout(tab_alarm_list)
+        for widget in widgets:
+            tab_alarm_list_layout.addWidget(widget)
+        tab_alarm_list.setLayout(tab_alarm_list_layout)
+        return tab_alarm_list
+
+
+    def layout_tab_alarm_table(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the 'normal' plots and measurements display.
+        """
+        tab_alarm_table = QtWidgets.QWidget()
+        tab_alarm_table_layout = QtWidgets.QHBoxLayout(tab_alarm_table)
+        for widget in widgets:
+            tab_alarm_table_layout.addWidget(widget)
+        tab_alarm_table.setLayout(tab_alarm_table_layout)
+        return tab_alarm_table
+
+    def layout_mode_settings(self) -> QtWidgets.QWidget:
+        mode_pages = [] # enableDict may need to go elsewhere
+        enableDict = {'PC/AC':[1, 0, 1, 1, 0, 1, 0, 1], 'PC/AC-PRVC':[1, 1, 0, 1, 0, 1, 1, 1], 'PC-PSV':[1, 1, 0, 1, 0, 1, 0, 1], 'CPAP':[1, 0, 1, 1, 0, 1, 0, 1]}
+        for mode in self.NativeUI.modeList:
+            mode_pages.append(self.layout_mode_tab(mode, enableDict[mode]))
+
+        page_modes = SwitchableStackWidget(
+            self.NativeUI,
+            mode_pages,
+            self.NativeUI.modeList,
+        )
+        page_modes.setFont(self.NativeUI.text_font)
+        return page_modes
+
+    def layout_mode_tab(self, mode:str, enableList:list) -> QtWidgets.QWidget:
+        spinList = [ self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if ('spin_' + mode + '_') in attrName]
+        # consider subclassing labelledspinbox to have modespinbox with attribute mode
+        if len(spinList) != len(enableList):
+            print('lengths do not match, error!')
+            print(spinList)
+            print(enableList)
+        radioWidgets = ["Inhale Time", "IE Ratio"]
+        buttonGroup = QtWidgets.QButtonGroup()
+
+        vLayout = QtWidgets.QVBoxLayout()
+        for widget, enableBool in zip(spinList,enableList):
+            vLayout.addWidget(widget)
+        
+            if widget.label in radioWidgets:
+                self.NativeUI.widgets.get_widget('radio_' + mode + '_' +widget.tag).setChecked(bool(enableBool))
+                self.NativeUI.widgets.get_widget('spin_' + mode + '_' +widget.tag).insertWidget(self.NativeUI.widgets.get_widget('radio_' + mode + '_' +widget.tag), 1)
+
+        hButtonLayout = QtWidgets.QHBoxLayout()
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('ok_button_' + mode))
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('ok_send_button_' + mode))
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('cancel_button_' + mode))
+
+        vLayout.addLayout(hButtonLayout)
+
+        mode_tab = QtWidgets.QWidget()
+        mode_tab.setLayout(vLayout)
+        return mode_tab
+            # if "IE Ratio" in key:
+            #     tab.radioButtonRat = QtWidgets.QRadioButton()
+            #     tab.radioButtonRat.setChecked(bool(enable[2]))
+            #     tab.radioButtonRat.toggled.connect(
+            #         lambda i=tab.radioButtonRat, j=tab.spinDict[
+            #             labelledSpin
+            #         ], k=tab.mode: self.radioPressed(i, j, k)
+            #     )
+            #     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
+            #     tab.buttonGroup.addButton(tab.radioButtonRat)
+
+    def layout_mode_personal(self):
+        personalList = [self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if 'personal_edit' in attrName]
+        # consider subclassing labelledspinbox to have modespinbox with attribute mode
+
+        vLayout = QtWidgets.QVBoxLayout()
+        for widget in personalList:
+            vLayout.addWidget(widget)
+
+        hButtonLayout = QtWidgets.QHBoxLayout()
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('ok_button_personal'))
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('ok_send_button_personal'))
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('cancel_button_personal'))
+
+        vLayout.addLayout(hButtonLayout)
+
+        personal_tab = QtWidgets.QWidget()
+        personal_tab.setLayout(vLayout)
+        return personal_tab
+
+    def layout_settings_expert(self):
+        vlayout = QtWidgets.QVBoxLayout()
+        i = 0
+        with open('config/controlDict.json') as json_file:
+            controlDict = json.load(json_file)
+        for key in controlDict.keys():
+
+            titleLabel = self.NativeUI.widgets.get_widget('expert_label_' + key)
+            titleLabel.setStyleSheet(
+                "background-color:"
+                + self.NativeUI.colors["page_background"].name()
+                + ";"
+                "color:" + self.NativeUI.colors["page_foreground"].name() + ";"
+                "font-size: " + self.NativeUI.text_size + ";"
+            )
+            titleLabel.setAlignment(QtCore.Qt.AlignCenter)
+            vlayout.addWidget(titleLabel)
+
+            grid = QtWidgets.QGridLayout()
+            grid.setMargin(0)
+            grid.setSpacing(0)
+            widg = QtWidgets.QFrame()
+            widg.setStyleSheet(
+                "QFrame{"
+                "    border: 2px solid"
+                + self.NativeUI.colors["page_foreground"].name()
+                + ";"
+                "}"
+                "QLabel{"
+                "    border:none;"
+                "} "
+            )
+            j = -1
+            for boxInfo in controlDict[key]:
+                j = j + 1
+
+                #self.spinDict[boxInfo[0]] = labelledSpin(self.NativeUI, boxInfo)
+
+                grid.addWidget(
+                    self.NativeUI.widgets.get_widget('expert_spin_' + boxInfo[2]), i + 1 + int(j / 3), 2 * (j % 3), 1, 2
+                )
+
+            widg.setLayout(grid)
+
+            vlayout.addWidget(widg)
+
+            i = i + 1 + int(j / 3) + 1
+        expert_tab = QtWidgets.QWidget()
+        expert_tab.setLayout(vlayout)
+
+        hButtonLayout = QtWidgets.QHBoxLayout()
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('ok_button_expert'))
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('ok_send_button_expert'))
+        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget('cancel_button_expert'))
+
+        vlayout.addLayout(hButtonLayout)
+
+        return expert_tab

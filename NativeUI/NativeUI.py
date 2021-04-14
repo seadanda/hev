@@ -28,6 +28,8 @@ import re
 import numpy as np
 
 from global_widgets.global_send_popup import confirmPopup
+from global_widgets.global_spinbox import labelledSpin
+from widget_library.ok_cancel_buttons_widget import OkButtonWidget, OkSendButtonWidget, CancelButtonWidget
 from hevclient import HEVClient
 
 from ui_layout import Layout
@@ -37,7 +39,7 @@ from threading import Lock
 
 from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QFont, QPalette
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QRadioButton
 
 logging.basicConfig(
     level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -181,6 +183,7 @@ class NativeUI(HEVClient, QMainWindow):
         # Battery Display should update when we get battery info
         self.battery_signal.connect(self.widgets.battery_display.update_value)
 
+
         # Plots should update when we press the history buttons
         for button in self.widgets.history_buttons.buttons:
             for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
@@ -188,6 +191,36 @@ class NativeUI(HEVClient, QMainWindow):
 
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
+
+        #self.widgets.tab_modeswitch.
+        self.widgets.mode_handler.modeSwitched.connect(lambda i: self.set_current_mode(i))
+        self.widgets.mode_handler.modeSwitched.connect(lambda i: self.widgets.tab_modeswitch.update_mode(i))
+        self.widgets.mode_handler.modeSwitched.connect(self.widgets.mode_handler.refresh_button_colour)
+
+        self.widgets.tab_modeswitch.modeSwitched.connect(lambda i: self.set_current_mode(i))
+        self.widgets.tab_modeswitch.modeSwitched.connect(self.widgets.mode_handler.refresh_button_colour)
+        #spinList = any("abc" in s for s in some_list):
+        for key, spinWidget in self.widgets.mode_handler.spinDict.items():
+            spinWidget.simpleSpin.manualChanged.connect(lambda i=key: self.widgets.mode_handler.handle_manual_change(i))
+
+        for key, radioWidget in self.widgets.mode_handler.radioDict.items():
+            radioWidget.toggled.connect(lambda i, j=key: self.widgets.mode_handler.handle_radio_toggled(i, j))
+
+        for key, buttonWidget in self.widgets.mode_handler.buttonDict.items():
+            if isinstance(buttonWidget,OkButtonWidget) or isinstance(buttonWidget,OkSendButtonWidget):
+                buttonWidget.pressed.connect(lambda i=key: self.widgets.mode_handler.handle_okbutton_click(i))
+            elif isinstance(buttonWidget,CancelButtonWidget):
+                mode = self.widgets.mode_handler.get_mode(key)
+                buttonWidget.pressed.connect(lambda i=mode: self.widgets.mode_handler.commandSent(i))
+
+        for key, spinWidget in self.widgets.expert_handler.spinDict.items():
+            spinWidget.simpleSpin.manualChanged.connect(lambda i=key: self.widgets.expert_handler.handle_manual_change(i))
+
+        for key, buttonWidget in self.widgets.expert_handler.buttonDict.items():
+            if isinstance(buttonWidget, OkButtonWidget) or isinstance(buttonWidget, OkSendButtonWidget):
+                buttonWidget.pressed.connect(lambda i=key: self.widgets.expert_handler.handle_okbutton_click(i))
+            elif isinstance(buttonWidget, CancelButtonWidget):
+                buttonWidget.pressed.connect(lambda: self.widgets.expert_handler.commandSent())
 
         # Plot data should update on a timer
         # TODO: make this actually grab the data and send it to the plots, rather than
@@ -198,7 +231,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
         self.timer.timeout.connect(self.widgets.normal_measurements.update_value)
         self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
-        self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
+        self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
+        self.timer.timeout.connect(self.widgets.mode_handler.update_values)
+        self.timer.timeout.connect(self.widgets.expert_handler.update_values)
         self.timer.start()
 
     def get_db(self, database_name: str):
@@ -221,6 +256,11 @@ class NativeUI(HEVClient, QMainWindow):
         with self.db_lock:
             # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
             return getattr(self, "_%s%s" % (type(self).__name__, database_name))
+
+    def set_current_mode(self, mode):
+        print('setting native ui mode')
+        print(mode)
+        self.currentMode = mode
 
     def set_data_db(self, payload):
         """

@@ -18,9 +18,9 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from datetime import datetime
 
 
-class alarmTable(QtWidgets.QTableWidget):
+class AlarmTable(QtWidgets.QTableWidget):
     def __init__(self, NativeUI, *args, **kwargs):
-        super(alarmTable, self).__init__(*args, **kwargs)
+        super(AlarmTable, self).__init__(*args, **kwargs)
 
         self.alarmDict = {}
         self.setSizePolicy(

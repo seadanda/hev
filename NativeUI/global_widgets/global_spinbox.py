@@ -167,7 +167,15 @@ class labelledSpin(QtWidgets.QWidget):
 
     def manualStep(self):
         """Handle changes in value. Change colour if different to set value, set updating values."""
-        if not self.manuallyUpdated:
+        if self.manuallyUpdated:
+            roundVal = round(self.currentDbValue, self.decPlaces)
+            if self.decPlaces == 0:
+                roundVal = int(roundVal)
+            if self.simpleSpin.value() == roundVal:
+                self.simpleSpin.setProperty("textColour", "1")
+                self.manuallyUpdated = False
+                self.simpleSpin.style().polish(self.simpleSpin)
+        else:
             self.simpleSpin.setProperty("textColour", "2")
             self.manuallyUpdated = True
             self.simpleSpin.style().polish(self.simpleSpin)
@@ -179,16 +187,9 @@ class labelledSpin(QtWidgets.QWidget):
         else:
             newVal = db[self.tag]
             if self.manuallyUpdated:
-                roundVal = round(newVal,self.decPlaces)
-                if self.decPlaces == 0:
-                    roundVal = int(roundVal)
-                if self.simpleSpin.value() == roundVal:
-                    self.manuallyUpdated = False
-                    self.simpleSpin.setProperty("textColour", "0")
-                    self.simpleSpin.style().polish(self.simpleSpin)
-                    print('reverting back')
-                    
+                a=1 # do nothing
             else:
+                self.currentDbValue = newVal
                 self.simpleSpin.setValue(newVal)
                 self.simpleSpin.setProperty("textColour", "0")
                 self.simpleSpin.style().polish(self.simpleSpin)
