@@ -6,7 +6,7 @@ To run all unit tests in the `NativeUI/tests/unittests` dir on a Raspberry Pi or
 (adjust the full path to your NativeUI directory accordingly):
 
 ```bash
-source .hev_env/bin/activate
+. .hev_env/bin/activate
 export PYTHONPATH=/home/pi/hev/NativeUI
 pytest NativeUI/tests/unittests
 ```
@@ -23,7 +23,7 @@ To run all integration tests, the Arduino emulator and hevserver processes first
 then run all integrations tests in the `NativeUI/tests/integration` dir:
 
 ```bash
-source .hev_env/bin/activate
+. .hev_env/bin/activate
 export PYTHONPATH=/home/pi/hev/NativeUI
 ./raspberry-dataserver/ArduinoEmulator.py -f raspberry-dataserver/share/B6-20201207.dump &
 ./raspberry-dataserver/hevserver.py --use-dump-data &
