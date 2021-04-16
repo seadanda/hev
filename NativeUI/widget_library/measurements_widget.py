@@ -37,7 +37,7 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
         layout = QtWidgets.QGridLayout(self)
 
         # Create "Measurements" Title
-        self.title_label = QtWidgets.QLabel(NativeUI.text["layout_label_measurements"])
+        self.title_label = QtWidgets.QLabel()
         self.title_label.setStyleSheet(
             # "font-size:" + NativeUI.text_size + ";"
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
@@ -55,7 +55,7 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
                 self.widget_list.append(
                     MeasurementWidget(
                         NativeUI,
-                        measurement[0],  # Label
+                        measurement[0],  # Label key
                         measurement[2],  # Keydir
                         measurement[1],  # Key
                         measurement[3],  # Format
@@ -65,7 +65,7 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
                 self.widget_list.append(
                     MeasurementWidget(
                         NativeUI,
-                        measurement[0],  # Label
+                        measurement[0],  # Label key
                         measurement[2],  # Keydir
                         measurement[1],  # Key
                     )
@@ -95,6 +95,7 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
         layout.setAlignment(QtCore.Qt.AlignHCenter)
 
         self.setLayout(layout)
+        self.localise_text(NativeUI.text)
 
     def set_size(
         self, x: int, y: int, spacing: int = 10, widget_size_ratio: float = 2.5
@@ -158,6 +159,20 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
             widget.value_display.setFont(font)
         return 0
 
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict) -> int:
+        """
+        Update the text displayed on the title and all measurement labels.
+        """
+        # set the text for the title label
+        self.title_label.setText(text["layout_label_measurements"])
+
+        # Set the text for each of the measurement widgets
+        for widget in self.widget_list:
+            widget.localise_text(text)
+
+        return 0
+
     @QtCore.Slot(dict, dict)
     def update_value(self, cycle: dict, readback: dict) -> int:
         for widget in self.widget_list:
@@ -187,7 +202,7 @@ class MeasurementWidget(QtWidgets.QWidget):
     def __init__(
         self,
         NativeUI,
-        label: str,
+        label_key: str,
         keydir: str,
         key: str,
         format: str = "{:.1f}",
@@ -197,6 +212,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         super(MeasurementWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
+        self.label_key = label_key
         self.keydir = keydir
         self.key = key
         self.format = format
@@ -204,7 +220,7 @@ class MeasurementWidget(QtWidgets.QWidget):
         # Layout and widgets
         layout = QtWidgets.QVBoxLayout()
 
-        self.name_display = QtWidgets.QLabel(label)
+        self.name_display = QtWidgets.QLabel()
         self.value_display = QtWidgets.QLabel()
 
         layout.addWidget(self.name_display)
@@ -261,9 +277,22 @@ class MeasurementWidget(QtWidgets.QWidget):
         return self.format.format(number)
 
     def set_size(self, x: int, y: int) -> int:
+        """
+        Set the size of the widget to the specified x and y values in pixels.
+
+        The overall widget size is fixed to x by y pixels. Name and value displays have
+        width x, and height y/3 and 2y/3 respectively.
+        """
         self.setFixedSize(x, y)
         self.name_display.setFixedSize(x, int(y / 3))
         self.value_display.setFixedSize(x, int(2 * y / 3))
+        return 0
+
+    def localise_text(self, text: dict) -> int:
+        """
+        Set the name display text the relevent entry in the provided dictionary.
+        """
+        self.name_display.setText(text[self.label_key])
         return 0
 
 
@@ -276,17 +305,17 @@ class NormalMeasurementsBlockWidget(MeasurementsBlockWidget):
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("P<sub>PLATEAU</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
-            ("RR", "respiratory_rate", "cycle"),
-            ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
-            ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
+            ("measurement_label_plateau_pressure", "plateau_pressure", "cycle"),
+            ("measurement_label_respiratory_rate", "respiratory_rate", "cycle"),
+            ("measurement_label_fio2_percent", "fiO2_percent", "cycle"),
+            ("measurement_label_exhaled_tidal_volume", "exhaled_tidal_volume", "cycle"),
             (
-                "MVE [<sup>L</sup>/<sub>min</sub>]",
+                "measurement_label_exhaled_minute_volume",
                 "exhaled_minute_volume",
                 "cycle",
                 "{:.0f}",
             ),
-            ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
+            ("measurement_label_peep", "peep", "readback"),
         ]
 
         super().__init__(
@@ -303,20 +332,34 @@ class ExpertMeasurementsBloackWidget(MeasurementsBlockWidget):
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("FIO<sub>2</sub> [%]", "fiO2_percent", "cycle"),
-            ("I:E", "inhale_exhale_ratio", "readback", "ratio"),
+            ("measurement_label_fio2_percent", "fiO2_percent", "cycle"),
             (
-                "P<sub>PEAK</sub> [cmH<sub>2</sub>O]",
+                "measurement_label_inhale_exhale_ratio",
+                "inhale_exhale_ratio",
+                "readback",
+                "ratio",
+            ),
+            (
+                "measurement_label_peak_inspiratory_pressure",
                 "peak_inspiratory_pressure",
                 "cycle",
             ),
-            ("P<sub>PLATEAU</sub> [cmH<sub>2</sub>O]", "plateau_pressure", "cycle"),
-            ("P<sub>MEAN</sub> [cmH<sub>2</sub>O]", "mean_airway_pressure", "cycle"),
-            ("PEEP [cmH<sub>2</sub>O]", "peep", "readback"),
-            ("VTI [mL]", "inhaled_tidal_volume", "cycle"),
-            ("VTE [mL]", "exhaled_tidal_volume", "cycle"),
-            ("MVI [L/min]", "inhaled_minute_volume", "cycle"),
-            ("MVE [L/min]", "exhaled_minute_volume", "cycle", "{:.0f}"),
+            ("measurement_label_plateau_pressure", "plateau_pressure", "cycle"),
+            ("measurement_label_mean_airway_pressure", "mean_airway_pressure", "cycle"),
+            ("measurement_label_peep", "peep", "readback"),
+            ("measurement_label_inhaled_tidal_volume", "inhaled_tidal_volume", "cycle"),
+            ("measurement_label_exhaled_tidal_volume", "exhaled_tidal_volume", "cycle"),
+            (
+                "measurement_label_inhaled_minute_volume",
+                "inhaled_minute_volume",
+                "cycle",
+            ),
+            (
+                "measurement_label_exhaled_minute_volume",
+                "exhaled_minute_volume",
+                "cycle",
+                "{:.0f}",
+            ),
         ]
 
         super().__init__(

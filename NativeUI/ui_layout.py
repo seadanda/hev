@@ -101,6 +101,7 @@ class Layout:
                 [
                     self.widgets.tab_modeswitch,
                     self.widgets.personal_display,
+                    self.widgets.localisation_button,
                     self.widgets.battery_display,
                 ]
             )

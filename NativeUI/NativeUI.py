@@ -57,6 +57,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
+        self.localisation_files = ["text_english.json", "text_portuguese.json"]
+        self.localisation_files = [
+            os.path.join(config_path, file) for file in self.localisation_files
+        ]
+
         # Import settings from config files
         with open(os.path.join(config_path, "colors.json")) as f:
             # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
@@ -224,6 +229,11 @@ class NativeUI(HEVClient, QMainWindow):
         # When measurement data is updated, measurement widgets shouldupdate
         self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
         self.MeasurementSignal.connect(self.widgets.detailed_measurements.update_value)
+
+        # Localisation needs to update widgets
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.normal_measurements.localise_text
+        )
 
         return 0
 
