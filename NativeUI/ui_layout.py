@@ -100,13 +100,15 @@ class Layout:
             self.layout_top_bar(
                 [
                     self.widgets.tab_modeswitch,
-                    self.widgets.tab_personal,
+                    self.widgets.personal_display,
                     self.widgets.battery_display,
                 ]
             )
         )
         self.widgets.battery_display.set_size(400, self.top_bar_height)
+        self.widgets.personal_display.set_size(None, self.top_bar_height)
         self.widgets.battery_display.setFont(self.NativeUI.text_font)
+        self.widgets.personal_display.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
         return vlayout
@@ -189,7 +191,7 @@ class Layout:
         Layout for the alarms page.
         """
         alarm_tab_widgets = [self.widgets.alarm_list, self.widgets.acknowledge_button]
-        
+
         alarm_table_tab_widgets = [self.widgets.alarm_table]
 
         page_alarms = SwitchableStackWidget(
@@ -211,6 +213,14 @@ class Layout:
         """
         Layout for the settings page.
         """
+        # Create the Charts tab
+        tab_charts = self.layout_tab_charts(
+            [self.widgets.charts_widget, self.widgets.chart_buttons_widget]
+        )
+        self.widgets.chart_buttons_widget.setFont(self.NativeUI.text_font)
+        self.widgets.chart_buttons_widget.set_size(self.left_bar_width, None)
+
+        # Create the stack
         page_settings = SwitchableStackWidget(
             self.NativeUI,
             [self.layout_settings_expert(), QtWidgets.QWidget()],#self.widgets.settings_chart_tab],
@@ -290,6 +300,14 @@ class Layout:
         tab_main_detailed.setLayout(tab_main_detailed_layout)
         return tab_main_detailed
 
+    def layout_tab_charts(self, widgets: list) -> QtWidgets.QWidget:
+        tab_charts = QtWidgets.QWidget()
+        tab_charts_layout = QtWidgets.QHBoxLayout(tab_charts)
+        for widget in widgets:
+            tab_charts_layout.addWidget(widget)
+        tab_charts.setLayout(tab_charts_layout)
+        return tab_charts
+
     def __make_stack(self, widgets):
         """
         Make a stack of widgets
@@ -349,7 +367,7 @@ class Layout:
         vLayout = QtWidgets.QVBoxLayout()
         for widget, enableBool in zip(spinList,enableList):
             vLayout.addWidget(widget)
-        
+
             if widget.label in radioWidgets:
                 self.NativeUI.widgets.get_widget('radio_' + mode + '_' +widget.tag).setChecked(bool(enableBool))
                 self.NativeUI.widgets.get_widget('spin_' + mode + '_' +widget.tag).insertWidget(self.NativeUI.widgets.get_widget('radio_' + mode + '_' +widget.tag), 1)
@@ -397,7 +415,7 @@ class Layout:
     def layout_settings_expert(self):
         vlayout = QtWidgets.QVBoxLayout()
         i = 0
-        with open('config/controlDict.json') as json_file:
+        with open('NativeUI/config/controlDict.json') as json_file:
             controlDict = json.load(json_file)
         for key in controlDict.keys():
 

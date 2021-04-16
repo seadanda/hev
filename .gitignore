@@ -18,6 +18,7 @@ BM_SCRATCH
 .pre-commit-config.yaml
 .env
 ansible/playbooks/hosts
+.idea
 
 # python virtual env created using ansible
 .hev_env

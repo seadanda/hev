@@ -23,11 +23,20 @@ from widget_library.measurements_widget import (
     NormalMeasurementsBlockWidget,
     ExpertMeasurementsBloackWidget,
 )
-from widget_library.plot_widget import TimePlotsWidget, CirclePlotsWidget
-from widget_library.spin_buttons_widget import SpinButtonsWidget
+from widget_library.battery_display_widget import BatteryDisplayWidget
+
+# from widget_library.tab_charts import TabChart
+from widget_library.chart_buttons_widget import ChartButtonsWidget
+
 from widget_library.page_buttons_widget import PageButtonsWidget
 from widget_library.personal_display_widget import PersonalDisplayWidget
-from widget_library.battery_display_widget import BatteryDisplayWidget
+from widget_library.plot_widget import (
+    ChartsPlotWidget,
+    CirclePlotsWidget,
+    TimePlotsWidget,
+)
+from widget_library.spin_buttons_widget import SpinButtonsWidget
+from widget_library.tab_expert import TabExpert
 from widget_library.ventilator_start_stop_buttons_widget import (
     VentilatorStartStopButtonsWidget,
 )
@@ -64,7 +73,7 @@ class Widgets:
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
-        self.tab_personal = PersonalDisplayWidget(NativeUI)
+        self.personal_display = PersonalDisplayWidget(NativeUI)
 
         # Left Bar widgets
         self.page_buttons = PageButtonsWidget(NativeUI)
@@ -93,6 +102,10 @@ class Widgets:
         self.clinical_tab = QWidget()#TabClinical(NativeUI)
 
         # Settings Page Widgets
+        self.settings_expert_tab = TabExpert(NativeUI)
+        self.charts_widget = ChartsPlotWidget(colors=NativeUI.colors)
+        self.chart_buttons_widget = ChartButtonsWidget(colors=NativeUI.colors)
+        # self.settings_chart_tab = TabChart(NativeUI)
         #self.settings_expert_tab = TabExpert(NativeUI)
         #self.settings_chart_tab = TabChart(NativeUI)
 
@@ -157,7 +170,7 @@ class Widgets:
         self.expert_confirm_popup = SetConfirmPopup(NativeUI)
         self.expert_handler = ExpertHandler(NativeUI, self.expert_confirm_popup)
         print(os.listdir())
-        with open('config/controlDict.json') as json_file:
+        with open('NativeUI/config/controlDict.json') as json_file:
             controlDict = json.load(json_file)
 
         for key in controlDict:

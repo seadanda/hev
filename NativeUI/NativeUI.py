@@ -18,89 +18,62 @@ __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
 import argparse
-import git
+import json
 import logging
-import sys
 import os
-from PySide2 import QtCore
 import re
+import sys
+from threading import Lock
 
+import git
 import numpy as np
-
 from global_widgets.global_send_popup import confirmPopup
 from global_widgets.global_spinbox import labelledSpin
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, OkSendButtonWidget, CancelButtonWidget
 from hevclient import HEVClient
-
-from ui_layout import Layout
-from ui_widgets import Widgets
-
-from threading import Lock
-
+from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QFont, QPalette
+from ui_layout import Layout
+from ui_widgets import Widgets
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QRadioButton
 
 logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s \n (%(pathname)s, %(lineno)s)",
 )
 
 
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    battery_signal = Signal()
+    BatterySignal = Signal(dict)
+    PlotSignal = Signal(dict)
+    MeasurementSignal = Signal(dict, dict)
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
-        self.setWindowTitle("HEV NativeUI")
+        config_path = "NativeUI/configs/"
 
         # self.setFixedSize(1920, 1080)
         self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
-        self.colors = {  # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-            "page_background": QColor.fromRgb(30, 30, 30),
-            "page_foreground": QColor.fromRgb(200, 200, 200),
-            "button_background_enabled": QColor.fromRgb(50, 50, 50),
-            "button_background_disabled": QColor.fromRgb(100, 100, 100),
-            "button_foreground_enabled": QColor.fromRgb(200, 200, 200),
-            "button_foreground_disabled": QColor.fromRgb(30, 30, 30),
-            "label_background": QColor.fromRgb(0, 0, 0),
-            "label_foreground": QColor.fromRgb(200, 200, 200),
-            "display_background": QColor.fromRgb(200, 200, 200),
-            "display_foreground": QColor.fromRgb(0, 0, 0),
-            "baby_blue": QColor.fromRgb(144, 231, 211),
-            "red": QColor.fromRgb(200, 0, 0),
-            "green": QColor.fromRgb(0, 200, 0),
-            "pressure_plot": QColor.fromRgb(0, 114, 178),
-            "volume_plot": QColor.fromRgb(0, 158, 115),
-            "flow_plot": QColor.fromRgb(240, 228, 66),
-            "pressure_flow_plot": QColor.fromRgb(230, 159, 0),
-            "flow_volume_plot": QColor.fromRgb(204, 121, 167),
-            "volume_pressure_plot": QColor.fromRgb(86, 180, 233),
-            "red": QColor.fromRgb(255, 0, 0),
-            "green": QColor.fromRgb(0, 255, 0),
-            "baby-blue": QColor.fromRgb(0, 0, 200),
-        }
+        # Import settings from config files
+        with open(os.path.join(config_path, "colors.json")) as f:
+            # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
+            self.colors = json.load(f)
+
+        with open(os.path.join(config_path, "text_english.json")) as f:
+            self.text = json.load(f)
+
+        # convert colours to a PySide2-readble form
+        for key in self.colors:
+            self.colors[key] = QColor.fromRgb(*self.colors[key])
+
         self.text_font = QFont("Sans Serif", 20)
         self.value_font = QFont("Sans Serif", 40)
         self.text_size = "20pt"  # TODO: remove in favour of self.text_font
-        self.text = {
-            "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
-            "plot_axis_label_flow": "Flow [L/min]",
-            "plot_axis_label_volume": "Volume [mL]",
-            "plot_axis_label_time": "Time [s]",
-            "plot_line_label_pressure": "Airway Pressure",
-            "plot_line_label_flow": "Flow",
-            "plot_line_label_volume": "Volume",
-            "plot_line_label_pressure_flow": "Airway Pressure - Flow",
-            "plot_line_label_flow_volume": "Flow - Volume",
-            "plot_line_label_volume_pressure": "Volume - Airway Pressure",
-            "layout_label_measurements": "Measurements",
-            "button_label_main_normal": "Normal",
-            "button_label_main_detailed": "Detailed",
-        }
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -131,7 +104,7 @@ class NativeUI(HEVClient, QMainWindow):
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
         }
-        self.__alarms = []
+        self.__alarms = {}
         self.__targets = {}
         self.__personal = {}
         self.ongoingAlarms = {}
@@ -163,25 +136,62 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
+        self.setWindowTitle(self.text["ui_window_title"])
         palette = self.palette()
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
-        # Update page buttons to match the shown view
-        self.widgets.page_buttons.buttons[0].on_press()
-
         # Connect widgets
         self.__define_connections()
 
+        # Update page buttons to match the shown view
+        self.widgets.page_buttons.buttons[0].on_press()
+
     @Slot(str)
-    def change_page(self, page_to_show: str):
+    def change_page(self, page_to_show: str) -> int:
+        """
+        Change the page shown in page_stack.
+        """
         self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
         return 0
 
-    def __define_connections(self):
+    def __define_connections(self) -> int:
+        """
+        Connect the signals and slots necessary for the UI to function.
+
+        Connections defined here:
+
+        BatterySignal -> battery_display
+            BatterySignal is emitted in get_updates() in response to a battery payload.
+
+        HistoryButtonPressed -> normal_plots, detailed_plots
+            History buttons control the amount of time shown on the x axes of the
+            value-time plots on the main page. HistoryButtonPressed is emitted by the
+            history button when pressed.
+
+        PageButtonPressed -> change_page
+            Page buttons control which page is shown in the page_stack.
+            PageButtonPressed is emitted by the page button when pressed.
+
+        ToggleButtonPressed -> charts_widget.show_line
+        ToggleButtonPressed -> charts_widget.hide_line
+            Lines in the charts_widget are shown or hidden depending on whether the
+            relevent toggle button is in the checked or unchecked state.
+            ToggleButtonPressed is emitted by the toggle button when pressed.
+
+        PlotSignal -> normal_plots, detailed_plots, charts_widget
+            Data plotted in the normal, detailed, and charts plots is updated in
+            response to PlotSignal. PlotSignal is emitted in __emit_plots_signal() which
+            is triggered at timer.timeout.
+
+        MeasurementSignal -> normal_measurements, detailed_measurements
+            Data shown in the normal and detailed measurments widgets is updated in
+            response to MeasurementSignal. MeasurementSignal is emitted in
+            __emit_measurements_signal() which is triggered at timer.timeout.
+        """
         # Battery Display should update when we get battery info
-        self.battery_signal.connect(self.widgets.battery_display.update_value)
+        self.BatterySignal.connect(self.widgets.battery_display.update_value)
 
 
         # Plots should update when we press the history buttons
@@ -189,6 +199,7 @@ class NativeUI(HEVClient, QMainWindow):
             for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
                 button.HistoryButtonPressed.connect(widget.update_plot_time_range)
 
+        # The shown page should change when we press the page buttons
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
 
@@ -222,24 +233,55 @@ class NativeUI(HEVClient, QMainWindow):
             elif isinstance(buttonWidget, CancelButtonWidget):
                 buttonWidget.pressed.connect(lambda: self.widgets.expert_handler.commandSent())
 
-        # Plot data should update on a timer
-        # TODO: make this actually grab the data and send it to the plots, rather than
-        # having the plots reach to NativeUI for the data.
+
+        # Lines displayed on the charts page should update when the corresponding
+        # buttons are toggled.
+        for button in self.widgets.chart_buttons_widget.buttons:
+            button.ToggleButtonPressed.connect(self.widgets.charts_widget.show_line)
+            button.ToggleButtonReleased.connect(self.widgets.charts_widget.hide_line)
+            button.on_press()  # Ensure states of the plots match states of buttons.
+            button.toggle()
+
+        # Plot data and measurements should update on a timer
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.widgets.normal_plots.update_plot_data)
-        self.timer.timeout.connect(self.widgets.detailed_plots.update_plot_data)
-        self.timer.timeout.connect(self.widgets.normal_measurements.update_value)
         self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
         self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
         self.timer.timeout.connect(self.widgets.mode_handler.update_values)
         self.timer.timeout.connect(self.widgets.expert_handler.update_values)
+        self.timer.timeout.connect(self.__emit_plots_signal)
+        self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.start()
 
-    def get_db(self, database_name: str):
+        # When plot data is updated, plots should update
+        self.PlotSignal.connect(self.widgets.normal_plots.update_plot_data)
+        self.PlotSignal.connect(self.widgets.detailed_plots.update_plot_data)
+        self.PlotSignal.connect(self.widgets.charts_widget.update_plot_data)
+
+        # When measurement data is updated, measurement widgets shouldupdate
+        self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
+        self.MeasurementSignal.connect(self.widgets.detailed_measurements.update_value)
+
+        return 0
+
+    def __emit_plots_signal(self) -> int:
         """
-        Return the contents of the specified database dict, assuming that it is present
-        in __database_list.
+        Get the current status of the 'plots' db and emit the plot_signal signal.
+        """
+        self.PlotSignal.emit(self.get_db("plots"))
+        return 0
+
+    def __emit_measurements_signal(self) -> int:
+        """
+        Get the current status of the 'cycle' and 'readback' dbs and emit the
+        measurements_signal signal.
+        """
+        self.MeasurementSignal.emit(self.get_db("cycle"), self.get_db("readback"))
+        return 0
+
+    def __check_db_name(self, database_name: str) -> str:
+        """
+        Check that the specified name is an actual database in NativeUI.
         """
         # Add "__" to database_name if it isn't already present.
         if not database_name.startswith("__"):
@@ -252,10 +294,7 @@ class NativeUI(HEVClient, QMainWindow):
                 "%s is not a recognised database in NativeUI" % database_name
             )
 
-        # Return the database.
-        with self.db_lock:
-            # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
-            return getattr(self, "_%s%s" % (type(self).__name__, database_name))
+        return database_name
 
     def set_current_mode(self, mode):
         print('setting native ui mode')
@@ -266,58 +305,42 @@ class NativeUI(HEVClient, QMainWindow):
         """
         Set the contents of the __data database. Uses lock to avoid race
         conditions.
-        """
+                """
         logging.debug("setting data db")
         with self.db_lock:
             for key in payload:
                 self.__data[key] = payload[key]
         return 0
 
-    def set_targets_db(self, payload):
+    def get_db(self, database_name: str):
         """
-        Set the contents of the __targets database. Uses lock to avoid race
-        conditions.
+        Return the contents of the specified database dict, assuming that it is present
+        in __database_list.
         """
-        logging.debug("setting targets db")
         with self.db_lock:
-            for key in payload:
-                self.__targets[key] = payload[key]
+            return getattr(
+                self,
+                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
+            )
+        raise RuntimeError("Could not acquire database")
+
+    def __set_db(self, database_name: str, payload) -> int:
+        """
+        Set the contents of the specified database dict, assuming that it is present in
+        __database_list. Uses lock to avoid race conditions.
+        """
+        temp = self.get_db(database_name)
+        for key in payload:
+            temp[key] = payload[key]
+        with self.db_lock:
+            setattr(
+                self,
+                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
+                temp,
+            )
         return 0
 
-    def set_readback_db(self, payload):
-        """
-        Set the contents of the __readback database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting readback db")
-        with self.db_lock:
-            for key in payload:
-                self.__readback[key] = payload[key]
-        return 0
-
-    def set_cycle_db(self, payload):
-        """
-        Set the contents of the __cycle database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting cycle db")
-        with self.db_lock:
-            for key in payload:
-                self.__cycle[key] = payload[key]
-        return 0
-
-    def set_battery_db(self, payload):
-        """
-        Set the contents of the __battery database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting battery db")
-        with self.db_lock:
-            for key in payload:
-                self.__battery[key] = payload[key]
-        return 0
-
-    def set_plots_db(self, payload):
+    def __set_plots_db(self, payload):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
@@ -361,28 +384,7 @@ class NativeUI(HEVClient, QMainWindow):
             ]
         return 0
 
-    def set_alarms_db(self, payload):
-        """
-        Set the contents of the __alarms database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting alarms db")
-        with self.db_lock:
-            self.__alarms = payload
-        return 0
-
-    def set_personal_db(self, payload):
-        """
-        Set the contents of the __personal database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting personal db")
-        with self.db_lock:
-            for key in payload:
-                self.__personal[key] = payload[key]
-        return 0
-
-    def start_client(self):
+    def __start_client(self):
         """
         Poll the microcontroller for current settings information.
 
@@ -400,30 +402,31 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_cmd("GENERAL", "GET_PERSONAL")
         super().start_client()
 
-    def get_updates(self, payload: dict):
+    def get_updates(self, payload: dict) -> int:
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
-                self.set_data_db(payload["DATA"])
-                self.set_plots_db(payload["DATA"])
+                self.__set_db("data", payload["DATA"])
+                self.__set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
-                self.set_battery_db(payload["BATTERY"])
-                self.battery_signal.emit()
+                self.__set_db("battery", payload["BATTERY"])
+                self.BatterySignal.emit(self.get_db("battery"))
             if payload["type"] == "ALARM":
-                self.set_alarms_db(payload["ALARM"])
+                self.__set_db("alarms", payload["ALARM"])
             if payload["type"] == "TARGET":
-                self.set_targets_db(payload["TARGET"])
+                self.__set_db("targets", payload["TARGET"])
             if payload["type"] == "READBACK":
-                self.set_readback_db(payload["READBACK"])
+                self.__set_db("readback", payload["READBACK"])
             if payload["type"] == "PERSONAL":
-                self.set_personal_db(payload["PERSONAL"])
+                self.__set_db("personal", payload["PERSONAL"])
             if payload["type"] == "CYCLE":
-                self.set_cycle_db(payload["CYCLE"])
+                self.__set_db("cycle", payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
+        return 0
 
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:

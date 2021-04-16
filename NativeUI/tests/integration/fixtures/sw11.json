@@ -1,0 +1,11 @@
+{
+    "ALARM": {
+        "version": 182,
+        "timestamp": 816562,
+        "payload_type": "ALARM",
+        "alarm_type": "PRIORITY_MEDIUM",
+        "alarm_code": "HIGH_VTE",
+        "param": 24868.025390625
+    },
+    "type": "ALARM"
+}
