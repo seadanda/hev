@@ -2,11 +2,19 @@
 
 ## Unit Tests
 
-To run the unit tests on a Raspberry Pi or VM, run the following:
+To run all the unit tests in the `NativeUI` dir on a Raspberry Pi or VM, run the following 
+(adjust the full path to your NativeUI directory accordingly):
 
 ```bash
 source .hev_env/bin/activate
+export PYTHONPATH=/home/pi/hev/NativeUI
 pytest NativeUI
+```
+
+To run a single test file, set the environment as above and specify the test file:
+
+```bash
+pytest NativeUI/tests/unittests/test_hevclient.py
 ```
 
 ### Coverage
