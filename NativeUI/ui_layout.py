@@ -200,9 +200,17 @@ class Layout:
         """
         Layout for the settings page.
         """
+        # Create the Charts tab
+        tab_charts = self.layout_tab_charts(
+            [self.widgets.charts_widget, self.widgets.chart_buttons_widget]
+        )
+        self.widgets.chart_buttons_widget.setFont(self.NativeUI.text_font)
+        self.widgets.chart_buttons_widget.set_size(self.left_bar_width, None)
+
+        # Create the stack
         page_settings = SwitchableStackWidget(
             self.NativeUI,
-            [self.widgets.settings_expert_tab, self.widgets.settings_chart_tab],
+            [self.widgets.settings_expert_tab, tab_charts],
             ["Expert", "Charts"],
         )
         page_settings.setFont(self.NativeUI.text_font)
@@ -278,6 +286,14 @@ class Layout:
             tab_main_detailed_layout.addWidget(widget)
         tab_main_detailed.setLayout(tab_main_detailed_layout)
         return tab_main_detailed
+
+    def layout_tab_charts(self, widgets: list) -> QtWidgets.QWidget:
+        tab_charts = QtWidgets.QWidget()
+        tab_charts_layout = QtWidgets.QHBoxLayout(tab_charts)
+        for widget in widgets:
+            tab_charts_layout.addWidget(widget)
+        tab_charts.setLayout(tab_charts_layout)
+        return tab_charts
 
     def __make_stack(self, widgets):
         """

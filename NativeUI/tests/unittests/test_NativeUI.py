@@ -1,23 +1,29 @@
 #! /usr/bin/env python3
 
-import pytest
-import sys
+"""
+Unit tests for NativeUI
+"""
+
 import json
-from PySide2.QtWidgets import QApplication
+import sys
+
+import hevclient
 import numpy as np
+import pytest
+from PySide2.QtWidgets import QApplication
+
+from NativeUI import NativeUI
 
 sys.path.append("../..")
-from NativeUI import NativeUI
-import hevclient
-
-hevclient.mmFileName = "/home/pi/hev/NativeUI/tests/integration/fixtures/HEVClient_lastData.mmap"
+hevclient.mmFileName = (
+    "/home/pi/hev/NativeUI/tests/integration/fixtures/HEVClient_lastData.mmap"
+)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def widget():
     app = QApplication(sys.argv)
-    widget = NativeUI()
-    return widget
+    return NativeUI()
 
 
 # Test default values of databases(no set method involved)
@@ -63,7 +69,7 @@ def test_must_return_correct_db_item_from_get_db_plots(widget):
 
 
 def test_must_return_correct_db_item_from_get_db_alarms(widget):
-    assert widget.get_db("__alarms") == [] and widget.get_db("alarms") == []
+    assert widget.get_db("__alarms") == {} and widget.get_db("alarms") == {}
 
 
 def test_must_return_correct_db_item_from_get_db_targets(widget):
@@ -78,44 +84,46 @@ def test_must_return_correct_db_item_from_get_db_personal(widget):
 def test_must_return_0_for_set_data_db(widget):
     with open("/home/pi/hev/samples/dataSample.json", "r") as f:
         data_payload = json.load(f)
-        assert widget.set_data_db(data_payload) == 0
+        assert widget.__set_db("data", data_payload) == 0
 
 
 def test_must_return_0_for_set_targets_db(widget):
     with open("/home/pi/hev/samples/targetSample.json", "r") as g:
         target_payload = json.load(g)
-        assert widget.set_targets_db(target_payload) == 0
+        assert widget.__set_db("targets", target_payload) == 0
 
 
 def test_must_return_0_for_set_readback_db(widget):
     with open("/home/pi/hev/samples/readbackSample.json", "r") as f:
         readback_payload = json.load(f)
-        assert widget.set_readback_db(readback_payload) == 0
+        assert widget.__set_db("readback", readback_payload) == 0
 
 
 def test_must_return_0_for_set_cycle_db(widget):
-    with open("/home/pi/hev/NativeUI/tests/unittests/fixtures/cycleSample.json", "r") as f:
+    with open(
+        "/home/pi/hev/NativeUI/tests/unittests/fixtures/cycleSample.json", "r"
+    ) as f:
         cycle_payload = json.load(f)
-        assert widget.set_cycle_db(cycle_payload) == 0
+        assert widget.__set_db("cycle", cycle_payload) == 0
 
 
 def test_must_return_0_for_set_battery_db(widget):
     with open("/home/pi/hev/samples/batterySample.json", "r") as f:
         battery_payload = json.load(f)
-        assert widget.set_battery_db(battery_payload) == 0
+        assert widget.__set_db("battery", battery_payload) == 0
 
 
 def test_must_return_0_for_set_plots_db(widget):
     with open("/home/pi/hev/samples/dataSample.json", "r") as f:
         data_payload = json.load(f)
-        assert widget.set_plots_db(data_payload) == 0
+        assert widget.__set_plots_db(data_payload) == 0
 
 
 def test_must_return_error_if_not_data_is_sent_as_payload_for_set_plots_db(widget):
     with open("/home/pi/hev/samples/batterySample.json", "r") as f:
         battery_payload = json.load(f)
         with pytest.raises(KeyError):
-            widget.set_plots_db(battery_payload)
+            widget.__set_plots_db(battery_payload)
 
 
 def test_must_return_0_when__update_plot_ranges_correctly(widget):
@@ -125,13 +133,15 @@ def test_must_return_0_when__update_plot_ranges_correctly(widget):
 def test_must_return_0_for_set_alarms_db(widget):
     with open("/home/pi/hev/samples/alarmSample.json", "r") as f:
         alarm_payload = json.load(f)
-        assert widget.set_alarms_db(alarm_payload) == 0
+        assert widget.__set_db("alarms", alarm_payload) == 0
 
 
 def test_must_return_0_for_set_personal_db(widget):
-    with open("/home/pi/hev/NativeUI/tests/unittests/fixtures/personalSample.json", "r") as f:
+    with open(
+        "/home/pi/hev/NativeUI/tests/unittests/fixtures/personalSample.json", "r"
+    ) as f:
         personal_payload = json.load(f)
-        assert widget.set_personal_db(personal_payload) == 0
+        assert widget.__set_db("personal", personal_payload) == 0
 
 
 # Asyncio can handle event loops, but we need to add more interaction i think
@@ -183,4 +193,3 @@ def test_must_return_0_when__find_icons_svg_directory(widget):
 def test_must_return_0_when_cannot__find_icons_directory(widget):
     with pytest.raises(FileNotFoundError):
         widget.__find_icons("images")
-

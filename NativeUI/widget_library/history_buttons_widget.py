@@ -144,7 +144,7 @@ class HistoryButton(QtWidgets.QPushButton):
 
     HistoryButtonPressed = Signal(int)
 
-    def __init__(self, *args, signal_value=None, **kwargs):
+    def __init__(self, *args, signal_value: int = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.__signal_value = signal_value
         self.pressed.connect(self.on_press)
