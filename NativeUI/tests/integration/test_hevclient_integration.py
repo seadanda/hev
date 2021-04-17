@@ -26,7 +26,7 @@ def test_hev_client_state(caplog):
     HEVClient(True)
     time.sleep(1)  # give enough time for het to log
     # confirm message 'is the microcontroller running?' is NOT logged using err code
-    assert "[Errno 61]" not in caplog.text
+    assert "[Errno" not in caplog.text
 
     # TODO assert hevclient.method tests
     # myhevclient.send_cmd("CMD", "blah")

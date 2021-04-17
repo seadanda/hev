@@ -43,8 +43,9 @@ def _hev_client_expected_state(myhevclient: HEVClient, caplog):
     for record in caplog.records:
         assert record.levelname != "CRITICAL"
     assert (
-        "[Errno 61]" in caplog.text
-    )  # confirm message 'is the microcontroller running?' is logged using err code
+        "[Errno" in caplog.text
+    )  # confirm message 'is the microcontroller running?' is logged 
+    # Can't specify an err code as these are different across devices
 
 
 def _assert_posix():
