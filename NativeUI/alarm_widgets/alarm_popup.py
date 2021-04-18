@@ -17,46 +17,6 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from datetime import datetime
 
 
-class AbstractAlarm(QtWidgets.QWidget):
-
-    alarmExpired = QtCore.Signal()
-
-    def __init__(self, NativeUI, alarmPayload, *args, **kwargs):
-        super(AbstractAlarm, self).__init__(*args, **kwargs)
-        self.NativeUI = NativeUI
-        self.alarmPayload = alarmPayload
-
-        self.startTime = datetime.now()
-        self.duration = datetime.now() - self.startTime
-        self.finishTime = -1
-
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(1500)  # just faster than 60Hz
-        self.timer.timeout.connect(self.timeoutDelete)
-        self.timer.start()
-
-    def timeoutDelete(self):
-        # """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
-        self.alarmExpired.emit()
-        self.setParent(None) # delete self
-        return 0
-
-    def resetTimer(self):
-        self.timer.start()
-        return 0
-
-    def freezeTimer(self):
-        self.timer.stop()
-        return 0
-
-    def recordFinishTime(self):
-        self.finishTime = datetime.now()
-        self.duration = self.finishTime - self.startTime
-
-    def calculateDuration(self):
-        self.duration = datetime.now() - self.startTime
-
-
 class AlarmWidget(QtWidgets.QWidget):
     """Object containing information particular to one alarm.
     Created when alarm received from microcontroller, timeout after alarm signal stops.
@@ -162,11 +122,15 @@ class AlarmPopup(QtWidgets.QDialog):
         self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]] = AlarmWidget(
             self.NativeUI, abstractAlarm, self
         )
+
         self.layout.addWidget(self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]])
         return 0
 
     def removeAlarm(self, abstractAlarm):
         """Creates a new alarmWidget and adds it to the container"""
+        print('remove ' + abstractAlarm.alarmPayload["alarm_code"])
+        print(abstractAlarm)
+        print(self.alarmDict.keys())
         self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]].setParent(None)
         self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
 

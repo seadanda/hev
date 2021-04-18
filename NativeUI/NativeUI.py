@@ -203,20 +203,25 @@ class NativeUI(HEVClient, QMainWindow):
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
 
-        #self.widgets.tab_modeswitch.
+        ##### Mode:
+        # When mode is switched from mode page, various other locations must respond
         self.widgets.mode_handler.modeSwitched.connect(lambda i: self.set_current_mode(i))
         self.widgets.mode_handler.modeSwitched.connect(lambda i: self.widgets.tab_modeswitch.update_mode(i))
         self.widgets.mode_handler.modeSwitched.connect(self.widgets.mode_handler.refresh_button_colour)
 
+        # when mode is switched from modeSwitch button, other locations must respond
         self.widgets.tab_modeswitch.modeSwitched.connect(lambda i: self.set_current_mode(i))
         self.widgets.tab_modeswitch.modeSwitched.connect(self.widgets.mode_handler.refresh_button_colour)
-        #spinList = any("abc" in s for s in some_list):
+
+        # mode_handler should respond to manual spin box changes
         for key, spinWidget in self.widgets.mode_handler.spinDict.items():
             spinWidget.simpleSpin.manualChanged.connect(lambda i=key: self.widgets.mode_handler.handle_manual_change(i))
 
+        # mode_handler should respond to user selection of radio button
         for key, radioWidget in self.widgets.mode_handler.radioDict.items():
             radioWidget.toggled.connect(lambda i, j=key: self.widgets.mode_handler.handle_radio_toggled(i, j))
 
+        # mode_handler should respond to ok, send, or cancel presses
         for key, buttonWidget in self.widgets.mode_handler.buttonDict.items():
             if isinstance(buttonWidget,OkButtonWidget) or isinstance(buttonWidget,OkSendButtonWidget):
                 buttonWidget.pressed.connect(lambda i=key: self.widgets.mode_handler.handle_okbutton_click(i))
@@ -224,9 +229,12 @@ class NativeUI(HEVClient, QMainWindow):
                 mode = self.widgets.mode_handler.get_mode(key)
                 buttonWidget.pressed.connect(lambda i=mode: self.widgets.mode_handler.commandSent(i))
 
+        ##### Expert Settings:
+        # Expert handler should respond to manual value changes
         for key, spinWidget in self.widgets.expert_handler.spinDict.items():
             spinWidget.simpleSpin.manualChanged.connect(lambda i=key: self.widgets.expert_handler.handle_manual_change(i))
 
+        # mode_handler should respond to ok, send, or cancel presses
         for key, buttonWidget in self.widgets.expert_handler.buttonDict.items():
             if isinstance(buttonWidget, OkButtonWidget) or isinstance(buttonWidget, OkSendButtonWidget):
                 buttonWidget.pressed.connect(lambda i=key: self.widgets.expert_handler.handle_okbutton_click(i))
@@ -234,8 +242,8 @@ class NativeUI(HEVClient, QMainWindow):
                 buttonWidget.pressed.connect(lambda: self.widgets.expert_handler.commandSent())
 
 
-        # Lines displayed on the charts page should update when the corresponding
-        # buttons are toggled.
+        #Lines displayed on the charts page should update when the corresponding
+        #buttons are toggled.
         for button in self.widgets.chart_buttons_widget.buttons:
             button.ToggleButtonPressed.connect(self.widgets.charts_widget.show_line)
             button.ToggleButtonReleased.connect(self.widgets.charts_widget.hide_line)
@@ -245,12 +253,11 @@ class NativeUI(HEVClient, QMainWindow):
         # Plot data and measurements should update on a timer
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.widgets.detailed_measurements.update_value)
+        self.timer.timeout.connect(self.__emit_plots_signal)
+        self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
         self.timer.timeout.connect(self.widgets.mode_handler.update_values)
         self.timer.timeout.connect(self.widgets.expert_handler.update_values)
-        self.timer.timeout.connect(self.__emit_plots_signal)
-        self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.start()
 
         # When plot data is updated, plots should update
@@ -410,12 +417,16 @@ class NativeUI(HEVClient, QMainWindow):
             if payload["type"] == "DATA":
                 self.__set_db("data", payload["DATA"])
                 self.__set_plots_db(payload["DATA"])
+                old = self.ongoingAlarms
                 self.ongoingAlarms = payload["alarms"]
+                #if self.ongoingAlarms != old:
+                 #   print(self.ongoingAlarms)
             if payload["type"] == "BATTERY":
                 self.__set_db("battery", payload["BATTERY"])
                 self.BatterySignal.emit(self.get_db("battery"))
             if payload["type"] == "ALARM":
                 self.__set_db("alarms", payload["ALARM"])
+               # print(payload["ALARM"])
             if payload["type"] == "TARGET":
                 self.__set_db("targets", payload["TARGET"])
             if payload["type"] == "READBACK":

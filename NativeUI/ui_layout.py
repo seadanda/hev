@@ -223,7 +223,7 @@ class Layout:
         # Create the stack
         page_settings = SwitchableStackWidget(
             self.NativeUI,
-            [self.layout_settings_expert(), QtWidgets.QWidget()],#self.widgets.settings_chart_tab],
+            [self.layout_settings_expert(), tab_charts],
             ["Expert", "Charts"],
         )
         page_settings.setFont(self.NativeUI.text_font)
@@ -341,6 +341,9 @@ class Layout:
         return tab_alarm_table
 
     def layout_mode_settings(self) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the mode pages
+        """
         mode_pages = [] # enableDict may need to go elsewhere
         enableDict = {'PC/AC':[1, 0, 1, 1, 0, 1, 0, 1], 'PC/AC-PRVC':[1, 1, 0, 1, 0, 1, 1, 1], 'PC-PSV':[1, 1, 0, 1, 0, 1, 0, 1], 'CPAP':[1, 0, 1, 1, 0, 1, 0, 1]}
         for mode in self.NativeUI.modeList:
@@ -355,6 +358,9 @@ class Layout:
         return page_modes
 
     def layout_mode_tab(self, mode:str, enableList:list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for an individual mode setting tab
+        """
         spinList = [ self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if ('spin_' + mode + '_') in attrName]
         # consider subclassing labelledspinbox to have modespinbox with attribute mode
         if len(spinList) != len(enableList):
@@ -382,18 +388,11 @@ class Layout:
         mode_tab = QtWidgets.QWidget()
         mode_tab.setLayout(vLayout)
         return mode_tab
-            # if "IE Ratio" in key:
-            #     tab.radioButtonRat = QtWidgets.QRadioButton()
-            #     tab.radioButtonRat.setChecked(bool(enable[2]))
-            #     tab.radioButtonRat.toggled.connect(
-            #         lambda i=tab.radioButtonRat, j=tab.spinDict[
-            #             labelledSpin
-            #         ], k=tab.mode: self.radioPressed(i, j, k)
-            #     )
-            #     tab.spinDict[labelledSpin].insertWidget(tab.radioButtonRat, 1)
-            #     tab.buttonGroup.addButton(tab.radioButtonRat)
 
     def layout_mode_personal(self):
+        """
+        Construct the layout for the personal settings page
+        """
         personalList = [self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if 'personal_edit' in attrName]
         # consider subclassing labelledspinbox to have modespinbox with attribute mode
 
@@ -413,12 +412,14 @@ class Layout:
         return personal_tab
 
     def layout_settings_expert(self):
+        """
+        Construct the layout for the expert settings page, reads controlDict.json to do so
+        """
         vlayout = QtWidgets.QVBoxLayout()
         i = 0
         with open('NativeUI/config/controlDict.json') as json_file:
             controlDict = json.load(json_file)
         for key in controlDict.keys():
-
             titleLabel = self.NativeUI.widgets.get_widget('expert_label_' + key)
             titleLabel.setStyleSheet(
                 "background-color:"
@@ -447,9 +448,6 @@ class Layout:
             j = -1
             for boxInfo in controlDict[key]:
                 j = j + 1
-
-                #self.spinDict[boxInfo[0]] = labelledSpin(self.NativeUI, boxInfo)
-
                 grid.addWidget(
                     self.NativeUI.widgets.get_widget('expert_spin_' + boxInfo[2]), i + 1 + int(j / 3), 2 * (j % 3), 1, 2
                 )

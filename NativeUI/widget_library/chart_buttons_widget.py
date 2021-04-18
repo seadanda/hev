@@ -19,11 +19,9 @@ from PySide2.QtCore import QSize, Signal, Slot
 class ChartButtonsWidget(QtWidgets.QWidget):
     def __init__(self, *args, colors: dict = {}, **kwargs):
         super().__init__(*args, **kwargs)
-        self.pressureButton = ToggleButtonWidget("Pressure", signal_value="pressure")
-        self.flow_button = ToggleButtonWidget("Flow", signal_value="flow")
         self.buttons = [
-            self.pressureButton,
-            self.flow_button,
+            ToggleButtonWidget("Pressure", signal_value="pressure"),
+            ToggleButtonWidget("Flow", signal_value="flow"),
         ]
 
         stylesheet = (

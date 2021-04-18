@@ -36,7 +36,7 @@ from widget_library.plot_widget import (
     TimePlotsWidget,
 )
 from widget_library.spin_buttons_widget import SpinButtonsWidget
-from widget_library.tab_expert import TabExpert
+#from widget_library.tab_expert import TabExpert
 from widget_library.ventilator_start_stop_buttons_widget import (
     VentilatorStartStopButtonsWidget,
 )
@@ -91,7 +91,6 @@ class Widgets:
         self.detailed_measurements = ExpertMeasurementsBloackWidget(NativeUI)
 
         # Alarm Page Widgets
-
         self.alarm_handler = AlarmHandler(NativeUI)
         self.alarm_popup = AlarmPopup(NativeUI)
         self.alarm_list = AlarmList(NativeUI)
@@ -101,18 +100,12 @@ class Widgets:
         self.alarm_table = AlarmTable(NativeUI)
         self.clinical_tab = QWidget()#TabClinical(NativeUI)
 
-        # Settings Page Widgets
-        self.settings_expert_tab = TabExpert(NativeUI)
-        self.charts_widget = ChartsPlotWidget(colors=NativeUI.colors)
-        self.chart_buttons_widget = ChartButtonsWidget(colors=NativeUI.colors)
-        # self.settings_chart_tab = TabChart(NativeUI)
-        #self.settings_expert_tab = TabExpert(NativeUI)
-        #self.settings_chart_tab = TabChart(NativeUI)
+        #### Mode settings tab: Mode (x4), Personal
 
+        # Modes Page Widgets
         self.mode_confirm_popup = SetConfirmPopup(NativeUI)
         self.mode_handler = ModeHandler(NativeUI, self.mode_confirm_popup)
 
-        # Modes Page Widgets
         modeSettingsList = [
             ["Respiratory Rate","/min","respiratory_rate","SET_TARGET_","RESPIRATORY_RATE",],
             ["Inhale Time", "s", "inhale_time", "SET_TARGET_", "INHALE_TIME"],
@@ -126,10 +119,8 @@ class Widgets:
         modes = NativeUI.modeList
         radioSettings = ['Inhale Time', 'IE Ratio']
         self.groupDict = {}
-        #self.mode_ok_cancel_buttons = {}
         for mode in modes:
             self.groupDict[mode] = QButtonGroup()
-            #self.groupDict[mode].buttonClicked.connect(lambda i: print(i))
             for setting in modeSettingsList:
                 attrName = mode + '_' + setting[2]
                 targettedSetting =[ target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_")) for target in setting]
@@ -144,6 +135,8 @@ class Widgets:
             self.add_handled_widget(OkSendButtonWidget(NativeUI),'ok_send_button_' + mode, self.mode_handler)
             self.add_handled_widget(CancelButtonWidget(NativeUI),'cancel_button_' + mode, self.mode_handler)
 
+
+        # Personal tab widgets
         self.personal_confirm_popup = SetConfirmPopup(NativeUI)
         self.personal_handler = PersonalHandler(NativeUI, self.personal_confirm_popup)
         personalSettingsList = [
@@ -166,7 +159,9 @@ class Widgets:
         self.add_handled_widget(OkSendButtonWidget(NativeUI), 'ok_send_button_personal', self.personal_handler)
         self.add_handled_widget(CancelButtonWidget(NativeUI), 'cancel_button_personal', self.personal_handler)
 
+        ##### Settings Tab: Expert and Charts tabs
 
+        # Expert Tab
         self.expert_confirm_popup = SetConfirmPopup(NativeUI)
         self.expert_handler = ExpertHandler(NativeUI, self.expert_confirm_popup)
         print(os.listdir())
@@ -184,11 +179,10 @@ class Widgets:
         self.add_handled_widget(OkSendButtonWidget(NativeUI), 'ok_send_button_expert', self.expert_handler)
         self.add_handled_widget(CancelButtonWidget(NativeUI), 'cancel_button_expert', self.expert_handler)
 
+        # Chart Tab
+        self.charts_widget = ChartsPlotWidget(colors=NativeUI.colors)
+        self.chart_buttons_widget = ChartButtonsWidget(colors=NativeUI.colors)
 
-
-
-        #self.mode_settings_tab = TabModes(NativeUI)
-        #self.mode_personal_tab = TabPersonal(NativeUI)
 
     def add_widget(self, widget, name) -> int:
         setattr(self, name, widget)
