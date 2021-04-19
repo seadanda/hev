@@ -107,7 +107,10 @@ class Layout:
             )
         )
         self.widgets.battery_display.set_size(400, self.top_bar_height)
+        self.widgets.personal_display.set_size(None, self.top_bar_height)
+
         self.widgets.battery_display.setFont(self.NativeUI.text_font)
+        self.widgets.personal_display.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
         return vlayout
