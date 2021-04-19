@@ -37,7 +37,8 @@ from ui_layout import Layout
 from ui_widgets import Widgets
 
 logging.basicConfig(
-    level=logging.WARNING, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s \n (%(pathname)s, %(lineno)s)",
 )
 
 
@@ -50,8 +51,6 @@ class NativeUI(HEVClient, QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
-        self.setWindowTitle("HEV NativeUI")
-
         config_path = self.__find_configs()
 
         # self.setFixedSize(1920, 1080)
@@ -78,21 +77,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.text_font = QFont("Sans Serif", 20)
         self.value_font = QFont("Sans Serif", 40)
         self.text_size = "20pt"  # TODO: remove in favour of self.text_font
-        # self.text = {
-        #     "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
-        #     "plot_axis_label_flow": "Flow [L/min]",
-        #     "plot_axis_label_volume": "Volume [mL]",
-        #     "plot_axis_label_time": "Time [s]",
-        #     "plot_line_label_pressure": "Airway Pressure",
-        #     "plot_line_label_flow": "Flow",
-        #     "plot_line_label_volume": "Volume",
-        #     "plot_line_label_pressure_flow": "Airway Pressure - Flow",
-        #     "plot_line_label_flow_volume": "Flow - Volume",
-        #     "plot_line_label_volume_pressure": "Volume - Airway Pressure",
-        #     "layout_label_measurements": "Measurements",
-        #     "button_label_main_normal": "Normal",
-        #     "button_label_main_detailed": "Detailed",
-        # }
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -155,16 +139,17 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
+        self.setWindowTitle(self.text["ui_window_title"])
         palette = self.palette()
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
-        # Update page buttons to match the shown view
-        self.widgets.page_buttons.buttons[0].on_press()
-
         # Connect widgets
         self.__define_connections()
+
+        # Update page buttons to match the shown view
+        self.widgets.page_buttons.buttons[0].on_press()
 
     @Slot(str)
     def change_page(self, page_to_show: str) -> int:
@@ -312,7 +297,7 @@ class NativeUI(HEVClient, QMainWindow):
             )
         return 0
 
-    def set_plots_db(self, payload):
+    def __set_plots_db(self, payload):
         """
         Set the contents of the __plots database. Uses lock to avoid race
         conditions.
@@ -356,7 +341,7 @@ class NativeUI(HEVClient, QMainWindow):
             ]
         return 0
 
-    def start_client(self):
+    def __start_client(self):
         """
         Poll the microcontroller for current settings information.
 
@@ -374,14 +359,14 @@ class NativeUI(HEVClient, QMainWindow):
         self.send_cmd("GENERAL", "GET_PERSONAL")
         super().start_client()
 
-    def get_updates(self, payload: dict):
+    def get_updates(self, payload: dict) -> int:
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
                 self.__set_db("data", payload["DATA"])
-                self.set_plots_db(payload["DATA"])
+                self.__set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
                 self.__set_db("battery", payload["BATTERY"])
@@ -398,6 +383,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.__set_db("cycle", payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
+        return 0
 
     @Slot(str, str, float)
     def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
