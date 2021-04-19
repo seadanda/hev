@@ -100,7 +100,8 @@ class Layout:
             self.layout_top_bar(
                 [
                     self.widgets.tab_modeswitch,
-                    self.widgets.tab_personal,
+                    self.widgets.personal_display,
+                    self.widgets.localisation_button,
                     self.widgets.battery_display,
                 ]
             )
