@@ -51,11 +51,16 @@ class NativeUI(HEVClient, QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
-        config_path = "NativeUI/configs/"
+        config_path = self.__find_configs()
 
         # self.setFixedSize(1920, 1080)
         self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
+
+        self.localisation_files = ["text_english.json", "text_portuguese.json"]
+        self.localisation_files = [
+            os.path.join(config_path, file) for file in self.localisation_files
+        ]
 
         # Import settings from config files
         with open(os.path.join(config_path, "colors.json")) as f:
@@ -224,6 +229,11 @@ class NativeUI(HEVClient, QMainWindow):
         # When measurement data is updated, measurement widgets shouldupdate
         self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
         self.MeasurementSignal.connect(self.widgets.detailed_measurements.update_value)
+
+        # Localisation needs to update widgets
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.normal_measurements.localise_text
+        )
 
         return 0
 
@@ -397,7 +407,7 @@ class NativeUI(HEVClient, QMainWindow):
 
     def __find_icons(self, iconext: str) -> str:
         """
-        Locate the icons firectory and return its path.
+        Locate the icons directory and return its path.
 
         Assumes that the cwd is in a git repo, and that the path of the icons folder
         relative to the root of the repo is "hev-display/assets/png/".
@@ -411,6 +421,23 @@ class NativeUI(HEVClient, QMainWindow):
             raise FileNotFoundError("Could not find icon directory at %s" % icondir)
 
         return icondir
+
+    def __find_configs(self) -> str:
+        """
+        Locate the config files directory and return its path.
+
+        Assumes that the cwd is in a git repo, and that the path of the icons folder
+        relative to the root of the repo is "NativeUI/configs".
+        """
+        # Find the root of the git repo
+        rootdir = git.Repo(os.getcwd(), search_parent_directories=True).git.rev_parse(
+            "--show-toplevel"
+        )
+        configdir = os.path.join(rootdir, "NativeUI", "configs")
+        if not os.path.isdir(configdir):
+            raise FileNotFoundError("Could not find icon directory at %s" % configdir)
+
+        return configdir
 
 
 # from PySide2.QtQml import QQmlApplicationEngine

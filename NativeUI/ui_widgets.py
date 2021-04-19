@@ -13,6 +13,7 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
+from widget_library.localisation_button_widget import LocalisationButtonWidget
 from alarm_widgets.tab_alarm_table import TabAlarmTable
 from alarm_widgets.tab_alarms import TabAlarm
 from alarm_widgets.tab_clinical import TabClinical
@@ -56,7 +57,8 @@ class Widgets:
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
-        self.tab_personal = PersonalDisplayWidget(NativeUI)
+        self.personal_display = PersonalDisplayWidget(NativeUI)
+        self.localisation_button = LocalisationButtonWidget(NativeUI.localisation_files)
 
         # Left Bar widgets
         self.page_buttons = PageButtonsWidget(NativeUI)
