@@ -13,29 +13,34 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2.QtWidgets import QWidget
+from alarm_widgets.tab_alarm_table import TabAlarmTable
+from alarm_widgets.tab_alarms import TabAlarm
+from alarm_widgets.tab_clinical import TabClinical
 from global_widgets.tab_modeswitch_button import TabModeswitchButton
+from mode_widgets.tab_modes import TabModes
+from mode_widgets.tab_personal import TabPersonal
+from PySide2.QtWidgets import QWidget
+from widget_library.battery_display_widget import BatteryDisplayWidget
+
+# from widget_library.tab_charts import TabChart
+from widget_library.chart_buttons_widget import ChartButtonsWidget
 from widget_library.history_buttons_widget import HistoryButtonsWidget
 from widget_library.measurements_widget import (
-    NormalMeasurementsBlockWidget,
     ExpertMeasurementsBloackWidget,
+    NormalMeasurementsBlockWidget,
 )
-from widget_library.plot_widget import TimePlotsWidget, CirclePlotsWidget
-from widget_library.spin_buttons_widget import SpinButtonsWidget
 from widget_library.page_buttons_widget import PageButtonsWidget
 from widget_library.personal_display_widget import PersonalDisplayWidget
-from widget_library.battery_display_widget import BatteryDisplayWidget
+from widget_library.plot_widget import (
+    ChartsPlotWidget,
+    CirclePlotsWidget,
+    TimePlotsWidget,
+)
+from widget_library.spin_buttons_widget import SpinButtonsWidget
+from widget_library.tab_expert import TabExpert
 from widget_library.ventilator_start_stop_buttons_widget import (
     VentilatorStartStopButtonsWidget,
 )
-from widget_library.tab_expert import TabExpert
-from widget_library.tab_charts import TabChart
-
-from mode_widgets.tab_modes import TabModes
-from mode_widgets.tab_personal import TabPersonal
-from alarm_widgets.tab_alarms import TabAlarm
-from alarm_widgets.tab_alarm_table import TabAlarmTable
-from alarm_widgets.tab_clinical import TabClinical
 
 
 class Widgets:
@@ -75,7 +80,9 @@ class Widgets:
 
         # Settings Page Widgets
         self.settings_expert_tab = TabExpert(NativeUI)
-        self.settings_chart_tab = TabChart(NativeUI)
+        self.charts_widget = ChartsPlotWidget(colors=NativeUI.colors)
+        self.chart_buttons_widget = ChartButtonsWidget(colors=NativeUI.colors)
+        # self.settings_chart_tab = TabChart(NativeUI)
 
         # Modes Page Widgets
         self.mode_settings_tab = TabModes(NativeUI)
