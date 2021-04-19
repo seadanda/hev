@@ -51,7 +51,7 @@ class TabAlarm(QtWidgets.QWidget):
 
     def update_alarms(self):
         newAlarmPayload = self.NativeUI.get_db("alarms")
-        if newAlarmPayload == []:
+        if newAlarmPayload == {}:
             return
         if newAlarmPayload["alarm_code"] in self.alarmDict:
             a = 1

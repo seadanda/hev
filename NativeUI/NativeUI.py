@@ -123,7 +123,7 @@ class NativeUI(HEVClient, QMainWindow):
             "flow_axis_range": [-40, 80],
             "volume_axis_range": [0, 80],
         }
-        self.__alarms = []
+        self.__alarms = {}
         self.__targets = {}
         self.__personal = {}
         self.ongoingAlarms = {}
@@ -267,10 +267,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.MeasurementSignal.emit(self.get_db("cycle"), self.get_db("readback"))
         return 0
 
-    def get_db(self, database_name: str) -> str:
+    def __check_db_name(self, database_name: str) -> str:
         """
-        Return the contents of the specified database dict, assuming that it is present
-        in __database_list.
+        Check that the specified name is an actual database in NativeUI.
         """
         # Add "__" to database_name if it isn't already present.
         if not database_name.startswith("__"):
@@ -283,64 +282,34 @@ class NativeUI(HEVClient, QMainWindow):
                 "%s is not a recognised database in NativeUI" % database_name
             )
 
-        # Return the database.
-        with self.db_lock:
-            # temp = getattr(self, "_%s%s" % (type(self).__name__, database_name))
-            return getattr(self, "_%s%s" % (type(self).__name__, database_name))
+        return database_name
 
-    def set_data_db(self, payload):
+    def get_db(self, database_name: str):
         """
-        Set the contents of the __data database. Uses lock to avoid race
-        conditions.
+        Return the contents of the specified database dict, assuming that it is present
+        in __database_list.
         """
-        logging.debug("setting data db")
         with self.db_lock:
-            for key in payload:
-                self.__data[key] = payload[key]
-        return 0
+            return getattr(
+                self,
+                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
+            )
+        raise RuntimeError("Could not acquire database")
 
-    def set_targets_db(self, payload):
+    def __set_db(self, database_name: str, payload) -> int:
         """
-        Set the contents of the __targets database. Uses lock to avoid race
-        conditions.
+        Set the contents of the specified database dict, assuming that it is present in
+        __database_list. Uses lock to avoid race conditions.
         """
-        logging.debug("setting targets db")
+        temp = self.get_db(database_name)
+        for key in payload:
+            temp[key] = payload[key]
         with self.db_lock:
-            for key in payload:
-                self.__targets[key] = payload[key]
-        return 0
-
-    def set_readback_db(self, payload):
-        """
-        Set the contents of the __readback database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting readback db")
-        with self.db_lock:
-            for key in payload:
-                self.__readback[key] = payload[key]
-        return 0
-
-    def set_cycle_db(self, payload):
-        """
-        Set the contents of the __cycle database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting cycle db")
-        with self.db_lock:
-            for key in payload:
-                self.__cycle[key] = payload[key]
-        return 0
-
-    def set_battery_db(self, payload):
-        """
-        Set the contents of the __battery database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting battery db")
-        with self.db_lock:
-            for key in payload:
-                self.__battery[key] = payload[key]
+            setattr(
+                self,
+                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
+                temp,
+            )
         return 0
 
     def set_plots_db(self, payload):
@@ -387,27 +356,6 @@ class NativeUI(HEVClient, QMainWindow):
             ]
         return 0
 
-    def set_alarms_db(self, payload):
-        """
-        Set the contents of the __alarms database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting alarms db")
-        with self.db_lock:
-            self.__alarms = payload
-        return 0
-
-    def set_personal_db(self, payload):
-        """
-        Set the contents of the __personal database. Uses lock to avoid race
-        conditions.
-        """
-        logging.debug("setting personal db")
-        with self.db_lock:
-            for key in payload:
-                self.__personal[key] = payload[key]
-        return 0
-
     def start_client(self):
         """
         Poll the microcontroller for current settings information.
@@ -432,22 +380,22 @@ class NativeUI(HEVClient, QMainWindow):
         logging.debug("revieved payload of type %s" % payload["type"])
         try:
             if payload["type"] == "DATA":
-                self.set_data_db(payload["DATA"])
+                self.__set_db("data", payload["DATA"])
                 self.set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
                 self.__set_db("battery", payload["BATTERY"])
                 self.BatterySignal.emit(self.get_db("battery"))
             if payload["type"] == "ALARM":
-                self.set_alarms_db(payload["ALARM"])
+                self.__set_db("alarms", payload["ALARM"])
             if payload["type"] == "TARGET":
-                self.set_targets_db(payload["TARGET"])
+                self.__set_db("targets", payload["TARGET"])
             if payload["type"] == "READBACK":
-                self.set_readback_db(payload["READBACK"])
+                self.__set_db("readback", payload["READBACK"])
             if payload["type"] == "PERSONAL":
-                self.set_personal_db(payload["PERSONAL"])
+                self.__set_db("personal", payload["PERSONAL"])
             if payload["type"] == "CYCLE":
-                self.set_cycle_db(payload["CYCLE"])
+                self.__set_db("cycle", payload["CYCLE"])
         except KeyError:
             logging.warning(f"Invalid payload: {payload}")
 
