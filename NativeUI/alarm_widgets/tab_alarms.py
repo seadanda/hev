@@ -50,7 +50,6 @@ class TabAlarm(QtWidgets.QWidget):
         self.list.acknowledge_all()
 
     def update_alarms(self):
-        print('here')
         newAlarmPayload = self.NativeUI.get_db("alarms")
         if newAlarmPayload == []:
             return
