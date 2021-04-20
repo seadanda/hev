@@ -105,12 +105,6 @@ class TimePlotsWidget(QtWidgets.QWidget):
         """
         Get the current plots database and update the plots to match
         """
-        # plots = self.NativeUI.get_db("plots")
-
-        # Extend the non-time scales if we need to
-        self.pressure_plot.setYRange(*plots["pressure_axis_range"])
-        self.flow_plot.setYRange(*plots["flow_axis_range"])
-        self.volume_plot.setYRange(*plots["volume_axis_range"])
 
         # Replot lines with new data
         self.pressure_line.setData(plots["timestamp"], plots["pressure"])
@@ -208,11 +202,6 @@ class CirclePlotsWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(16)  # just faster than 60Hz
-        # self.timer.timeout.connect(self.update_plot_data)
-        # self.timer.start()
-
     def plot(self, canvas, x, y, plotname, color):
         pen = pg.mkPen(color=color, width=3)
         return canvas.plot(x, y, name=plotname, pen=pen)
@@ -220,19 +209,8 @@ class CirclePlotsWidget(QtWidgets.QWidget):
     @QtCore.Slot(dict)
     def update_plot_data(self, plots: dict):
         """
-        Get the current plots database and update the plots to match
+        Update the plots to match the new data.
         """
-        # plots = self.NativeUI.get_db("plots")
-
-        # Extend the non-time scales if we need to
-        self.pressure_flow_plot.setXRange(*plots["flow_axis_range"])
-        self.pressure_flow_plot.setYRange(*plots["pressure_axis_range"])
-        self.flow_volume_plot.setXRange(*plots["volume_axis_range"])
-        self.flow_volume_plot.setYRange(*plots["flow_axis_range"])
-        self.volume_pressure_plot.setXRange(*plots["pressure_axis_range"])
-        self.volume_pressure_plot.setYRange(*plots["volume_axis_range"])
-
-        # Replot lines with new data
         self.pressure_flow_line.setData(plots["flow"], plots["pressure"])
         self.flow_volume_line.setData(plots["volume"], plots["flow"])
         self.volume_pressure_line.setData(plots["pressure"], plots["volume"])

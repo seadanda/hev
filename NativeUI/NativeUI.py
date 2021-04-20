@@ -36,6 +36,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 from ui_layout import Layout
 from ui_widgets import Widgets
 from handler_library.battery_handler import BatteryHandler
+from handler_library.plot_handler import PlotHandler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -53,7 +54,9 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
 
+        # Set up the handlers
         self.battery_handler = BatteryHandler()
+        self.plot_handler = PlotHandler(plot_history_length=1000)
 
         config_path = self.__find_configs()
 
@@ -95,22 +98,22 @@ class NativeUI(HEVClient, QMainWindow):
             )
 
         # initialise databases
-        plot_history_length = 1000
+        # plot_history_length = 1000
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
         self.__cycle = {}
         # self.__battery = {}
-        self.__plots = {
-            "data": np.zeros((plot_history_length, 5)),
-            "timestamp": list(el * (-1) for el in range(plot_history_length))[::-1],
-            "pressure": list(0 for _ in range(plot_history_length)),
-            "flow": list(0 for _ in range(plot_history_length)),
-            "volume": list(0 for _ in range(plot_history_length)),
-            "pressure_axis_range": [0, 20],
-            "flow_axis_range": [-40, 80],
-            "volume_axis_range": [0, 80],
-        }
+        # self.__plots = {
+        #     "data": np.zeros((plot_history_length, 5)),
+        #     "timestamp": list(el * (-1) for el in range(plot_history_length))[::-1],
+        #     "pressure": list(0 for _ in range(plot_history_length)),
+        #     "flow": list(0 for _ in range(plot_history_length)),
+        #     "volume": list(0 for _ in range(plot_history_length)),
+        #     "pressure_axis_range": [0, 20],
+        #     "flow_axis_range": [-40, 80],
+        #     "volume_axis_range": [0, 80],
+        # }
         self.__alarms = {}
         self.__targets = {}
         self.__personal = {}
@@ -222,15 +225,18 @@ class NativeUI(HEVClient, QMainWindow):
         # Plot data and measurements should update on a timer
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.__emit_plots_signal)
         self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
 
         # When plot data is updated, plots should update
-        self.PlotSignal.connect(self.widgets.normal_plots.update_plot_data)
-        self.PlotSignal.connect(self.widgets.detailed_plots.update_plot_data)
-        self.PlotSignal.connect(self.widgets.charts_widget.update_plot_data)
+        for plot_widget in [
+            self.widgets.normal_plots.update_plot_data,
+            self.widgets.detailed_plots.update_plot_data,
+            self.widgets.circle_plots.update_plot_data,
+            self.widgets.charts_widget.update_plot_data,
+        ]:
+            self.plot_handler.UpdatePlots.connect(plot_widget)
 
         # When measurement data is updated, measurement widgets shouldupdate
         self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
@@ -241,13 +247,6 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.normal_measurements.localise_text
         )
 
-        return 0
-
-    def __emit_plots_signal(self) -> int:
-        """
-        Get the current status of the 'plots' db and emit the plot_signal signal.
-        """
-        self.PlotSignal.emit(self.get_db("plots"))
         return 0
 
     def __emit_measurements_signal(self) -> int:
@@ -303,50 +302,6 @@ class NativeUI(HEVClient, QMainWindow):
             )
         return 0
 
-    def __set_plots_db(self, payload):
-        """
-        Set the contents of the __plots database. Uses lock to avoid race
-        conditions.
-        TODO: why are there 2 volumes? Is this necessary for something?
-        """
-        logging.debug("setting plots db")
-        with self.db_lock:
-            self.__plots["data"] = np.append(
-                np.delete(self.__plots["data"], 0, 0),
-                [
-                    [
-                        payload["timestamp"],
-                        payload["pressure_patient"],
-                        payload["flow"],
-                        payload["volume"],
-                        payload["volume"],
-                    ]
-                ],
-                axis=0,
-            )
-
-            # subtract latest timestamp and scale to seconds
-            self.__plots["timestamp"] = np.true_divide(
-                np.subtract(self.__plots["data"][:, 0], self.__plots["data"][-1, 0]),
-                1000,
-            )
-            self.__plots["pressure"] = self.__plots["data"][:, 1]
-            self.__plots["flow"] = self.__plots["data"][:, 2]
-            self.__plots["volume"] = self.__plots["data"][:, 3]
-
-            self.__update_plot_ranges()
-        return 0
-
-    def __update_plot_ranges(self):
-        values = ["pressure", "flow", "volume"]
-        for value in values:
-            range = "%s_axis_range" % value
-            self.__plots[range] = [
-                min(self.__plots[range][0], min(self.__plots[value])),
-                max(self.__plots[range][1], max(self.__plots[value])),
-            ]
-        return 0
-
     def __start_client(self):
         """
         Poll the microcontroller for current settings information.
@@ -371,12 +326,11 @@ class NativeUI(HEVClient, QMainWindow):
         logging.debug("revieved payload of type %s" % payload["type"])
         # try:
         if payload["type"] == "DATA":
-            self.__set_db("data", payload["DATA"])
-            self.__set_plots_db(payload["DATA"])
+            self.plot_handler.set_db(payload["DATA"])
+            # self.__set_db("data", payload["DATA"])
+            # self.__set_plots_db(payload["DATA"])
             self.ongoingAlarms = payload["alarms"]
         elif payload["type"] == "BATTERY":
-            # self.__set_db("battery", payload["BATTERY"])
-            # self.BatterySignal.emit(payload["BATTERY"])
             self.battery_handler.set_db(payload["BATTERY"])
         elif payload["type"] == "ALARM":
             self.__set_db("alarms", payload["ALARM"])
