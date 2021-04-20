@@ -29,6 +29,13 @@ class Handler:
             self.on_payload()
         return 0
 
+    def get_db(self) -> dict:
+        """
+        Return the content of the __database dictionary.
+        """
+        with self.__lock:
+            return self.__database
+
     def on_payload(self):
         """
         Overridable function called after recieving new data.
