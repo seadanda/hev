@@ -46,7 +46,7 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    BatterySignal = Signal(dict)
+    # BatterySignal = Signal(dict)
     PlotSignal = Signal(dict)
     MeasurementSignal = Signal(dict, dict)
 
@@ -198,7 +198,7 @@ class NativeUI(HEVClient, QMainWindow):
             __emit_measurements_signal() which is triggered at timer.timeout.
         """
         # Battery Display should update when we get battery info
-        self.BatterySignal.connect(self.battery_handler.set_db)
+        # self.BatterySignal.connect(self.battery_handler.set_db)
         self.battery_handler.UpdateBatteryDisplay.connect(
             self.widgets.battery_display.update_value
         )
@@ -377,7 +377,8 @@ class NativeUI(HEVClient, QMainWindow):
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
                 # self.__set_db("battery", payload["BATTERY"])
-                self.BatterySignal.emit(payload["BATTERY"])
+                # self.BatterySignal.emit(payload["BATTERY"])
+                self.battery_handler.set_db(payload["BATTERY"])
             if payload["type"] == "ALARM":
                 self.__set_db("alarms", payload["ALARM"])
             if payload["type"] == "TARGET":
