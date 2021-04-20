@@ -200,7 +200,7 @@ class NativeUI(HEVClient, QMainWindow):
         # Battery Display should update when we get battery info
         # self.BatterySignal.connect(self.battery_handler.set_db)
         self.battery_handler.UpdateBatteryDisplay.connect(
-            self.widgets.battery_display.update_value
+            self.widgets.battery_display.update_status
         )
 
         # Plots should update when we press the history buttons

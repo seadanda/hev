@@ -26,7 +26,7 @@ class Handler:
                     self.__database[key] = payload[key]
 
         if data_changed:
-            self.on_payload()
+            self.active_payload()
         return 0
 
     def get_db(self) -> dict:
@@ -36,7 +36,7 @@ class Handler:
         with self.__lock:
             return self.__database
 
-    def on_payload(self):
+    def active_payload(self):
         """
         Overridable function called after recieving new data.
         """

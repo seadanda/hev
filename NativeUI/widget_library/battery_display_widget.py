@@ -40,15 +40,10 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         self.setLayout(layout)
 
-        self.battery_power = False
-        self.mains_power = False
-        self.battery_percent = 0
-        self.electrical_problem = False
-
         self.status = {}
         self.set_default_status()
 
-        self.update_value({})
+        self.update_status(self.status)
 
     def set_default_status(self) -> dict:
         """
@@ -66,59 +61,13 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
         return self.status
 
     @QtCore.Slot(dict)
-    def update_value(self, battery_data):
-        # battery_data = self.NativeUI.get_db("battery")
-
-        # Update status
-        try:
-            self.status["on_mains_power"] = bool(battery_data["ok"])
-        except KeyError:
-            logging.debug("Keyerror in battery payload: 'ok'")
-        try:
-            self.status["on_battery_power"] = bool(battery_data["bat"])
-        except KeyError:
-            logging.debug("Keyerror in battery payload: 'bat'")
-        try:
-            self.status["battery_percent"] = self.compute_battery_percent(battery_data)
-        except KeyError:
-            logging.debug("Keyerror in battery payload: 'bat85'")
-        try:
-            if bool(battery_data["prob_elec"]):
-                self.status["electrical_problem"] = "ERROR ELEC."
-            else:
-                self.status["electrical_problem"] = None
-        except KeyError:
-            logging.debug("Keyerror in battery payload: 'prob_elec'")
-
-        # Sanity checks
-        if self.status["on_mains_power"] == self.status["on_battery_power"]:
-            # If there is conflicting information w.r.t. power source, report a problem
-            self.status["on_mains_power"] = False
-            self.status["on_battery_power"] = False
-            self.status["electrical_problem"] = "ERROR ELEC."
-
+    def update_status(self, input_status: dict):
+        self.status = input_status
+        
         # Update widgets with new status
         for widget in self.widgets:
             widget.update_value(self.status)
         return 0
-
-    def compute_battery_percent(self, battery_data: dict) -> float:
-        """
-        Determine the current battery percentage from the information in battery_data.
-
-        As of 17/03/21 battery payloads only contain enough information to
-        determine if the battery is above or below 85% battery life.
-
-        Unless provided with specific information to the contrary, assume that the
-        battery is on 0% so that we should never overestimate how much remains.
-        """
-
-        if battery_data["bat85"] == 1:
-            return 85.0
-        elif battery_data["bat85"] == 0:
-            return 0.0
-
-        return 0.0
 
     def set_size(self, x: int, y: int) -> int:
         """
@@ -143,8 +92,7 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
 
 
 class BatteryText(QtWidgets.QLabel):
-    """
-    """
+    """"""
 
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__("", *args, **kwargs)
