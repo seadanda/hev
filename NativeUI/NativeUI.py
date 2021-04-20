@@ -35,6 +35,7 @@ from PySide2.QtGui import QColor, QFont, QPalette
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 from ui_layout import Layout
 from ui_widgets import Widgets
+from handler_library.battery_handler import BatteryHandler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -51,6 +52,9 @@ class NativeUI(HEVClient, QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super(NativeUI, self).__init__(*args, **kwargs)
+
+        self.battery_handler = BatteryHandler()
+
         config_path = self.__find_configs()
 
         # self.setFixedSize(1920, 1080)
@@ -96,7 +100,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.__data = {}
         self.__readback = {}
         self.__cycle = {}
-        self.__battery = {}
+        # self.__battery = {}
         self.__plots = {
             "data": np.zeros((plot_history_length, 5)),
             "timestamp": list(el * (-1) for el in range(plot_history_length))[::-1],
@@ -194,7 +198,10 @@ class NativeUI(HEVClient, QMainWindow):
             __emit_measurements_signal() which is triggered at timer.timeout.
         """
         # Battery Display should update when we get battery info
-        self.BatterySignal.connect(self.widgets.battery_display.update_value)
+        self.BatterySignal.connect(self.battery_handler.set_db)
+        self.battery_handler.UpdateBatteryDisplay.connect(
+            self.widgets.battery_display.update_value
+        )
 
         # Plots should update when we press the history buttons
         for button in self.widgets.history_buttons.buttons:
@@ -369,8 +376,8 @@ class NativeUI(HEVClient, QMainWindow):
                 self.__set_plots_db(payload["DATA"])
                 self.ongoingAlarms = payload["alarms"]
             if payload["type"] == "BATTERY":
-                self.__set_db("battery", payload["BATTERY"])
-                self.BatterySignal.emit(self.get_db("battery"))
+                # self.__set_db("battery", payload["BATTERY"])
+                self.BatterySignal.emit(payload["BATTERY"])
             if payload["type"] == "ALARM":
                 self.__set_db("alarms", payload["ALARM"])
             if payload["type"] == "TARGET":

@@ -48,7 +48,7 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
         self.status = {}
         self.set_default_status()
 
-        self.update_value()
+        self.update_value({})
 
     def set_default_status(self) -> dict:
         """
@@ -66,8 +66,8 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
         return self.status
 
     @QtCore.Slot(dict)
-    def update_value(self):
-        battery_data = self.NativeUI.get_db("battery")
+    def update_value(self, battery_data):
+        # battery_data = self.NativeUI.get_db("battery")
 
         # Update status
         try:
