@@ -4,7 +4,7 @@ import numpy as np
 from threading import Lock
 
 
-class PlotHandler(Handler, QObject):
+class DataHandler(Handler, QObject):
     UpdatePlots = Signal(dict)
 
     def __init__(self, plot_history_length=500):
@@ -64,7 +64,7 @@ class PlotHandler(Handler, QObject):
 
         return 0
 
-    def send_update_signal(self) -> int:
+    def send_update_plots_signal(self) -> int:
         """
         construct a dictionary of only the properties needed for plotting and emit the
         UpdatePlots signal containing it.

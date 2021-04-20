@@ -36,7 +36,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 from ui_layout import Layout
 from ui_widgets import Widgets
 from handler_library.battery_handler import BatteryHandler
-from handler_library.plot_handler import PlotHandler
+from handler_library.plot_handler import DataHandler
 
 logging.basicConfig(
     level=logging.INFO,
@@ -56,7 +56,7 @@ class NativeUI(HEVClient, QMainWindow):
 
         # Set up the handlers
         self.battery_handler = BatteryHandler()
-        self.plot_handler = PlotHandler(plot_history_length=1000)
+        self.data_handler = DataHandler(plot_history_length=1000)
 
         config_path = self.__find_configs()
 
@@ -236,7 +236,7 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.circle_plots.update_plot_data,
             self.widgets.charts_widget.update_plot_data,
         ]:
-            self.plot_handler.UpdatePlots.connect(plot_widget)
+            self.data_handler.UpdatePlots.connect(plot_widget)
 
         # When measurement data is updated, measurement widgets shouldupdate
         self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
@@ -326,9 +326,7 @@ class NativeUI(HEVClient, QMainWindow):
         logging.debug("revieved payload of type %s" % payload["type"])
         # try:
         if payload["type"] == "DATA":
-            self.plot_handler.set_db(payload["DATA"])
-            # self.__set_db("data", payload["DATA"])
-            # self.__set_plots_db(payload["DATA"])
+            self.data_handler.set_db(payload["DATA"])
             self.ongoingAlarms = payload["alarms"]
         elif payload["type"] == "BATTERY":
             self.battery_handler.set_db(payload["BATTERY"])
