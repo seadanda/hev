@@ -36,7 +36,7 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 from ui_layout import Layout
 from ui_widgets import Widgets
 from handler_library.battery_handler import BatteryHandler
-from handler_library.plot_handler import DataHandler
+from handler_library.data_handler import DataHandler
 
 logging.basicConfig(
     level=logging.INFO,

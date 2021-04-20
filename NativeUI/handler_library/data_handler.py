@@ -25,7 +25,7 @@ class DataHandler(Handler, QObject):
 
         self.timer = QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.send_update_signal)
+        self.timer.timeout.connect(self.send_update_plots_signal)
         self.timer.start()
 
     def active_payload(self):
