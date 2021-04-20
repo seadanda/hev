@@ -18,15 +18,12 @@ class Handler:
         """
         Set the content of the __database dictionary.
         """
-        data_changed = False
+
         with self.__lock:
             for key in payload:
-                if self.__database[key] != payload[key]:
-                    data_changed = True
-                    self.__database[key] = payload[key]
+                self.__database[key] = payload[key]
 
-        if data_changed:
-            self.active_payload()
+        self.active_payload()
         return 0
 
     def get_db(self) -> dict:
@@ -34,7 +31,7 @@ class Handler:
         Return the content of the __database dictionary.
         """
         with self.__lock:
-            return self.__database
+            return dict(self.__database)
 
     def active_payload(self):
         """

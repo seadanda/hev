@@ -198,7 +198,6 @@ class NativeUI(HEVClient, QMainWindow):
             __emit_measurements_signal() which is triggered at timer.timeout.
         """
         # Battery Display should update when we get battery info
-        # self.BatterySignal.connect(self.battery_handler.set_db)
         self.battery_handler.UpdateBatteryDisplay.connect(
             self.widgets.battery_display.update_status
         )
@@ -389,7 +388,8 @@ class NativeUI(HEVClient, QMainWindow):
             self.__set_db("personal", payload["PERSONAL"])
         elif payload["type"] == "CYCLE":
             self.__set_db("cycle", payload["CYCLE"])
-        # except KeyError:
+        elif payload["type"] == "DEBUG":
+            pass
         else:
             logging.warning(f"Invalid payload: {payload}")
         return 0

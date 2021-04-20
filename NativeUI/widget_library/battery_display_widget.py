@@ -62,8 +62,11 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
 
     @QtCore.Slot(dict)
     def update_status(self, input_status: dict):
+        """
+        TODO: docstring
+        """
         self.status = input_status
-        
+
         # Update widgets with new status
         for widget in self.widgets:
             widget.update_value(self.status)

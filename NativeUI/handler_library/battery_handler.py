@@ -13,8 +13,6 @@ class BatteryHandler(Handler, QObject):
         )  # Give ourselves access to the QObject Signal functionality.
 
     def active_payload(self):
-        print("BatteryHandler.on_payload()")
-
         new_status = {}
         battery_data = self.get_db()
 
@@ -46,7 +44,7 @@ class BatteryHandler(Handler, QObject):
             new_status["on_battery_power"] = False
             new_status["electrical_problem"] = "ERROR ELEC."
 
-        self.UpdateBatteryDisplay.emit(self.new_status)
+        self.UpdateBatteryDisplay.emit(new_status)
         return 0
 
     def compute_battery_percent(self, battery_data: dict) -> float:
