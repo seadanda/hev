@@ -14,14 +14,19 @@ class Handler:
         self.__database = {}
         self.__lock = Lock()
 
-    def set_db(self, payload: dict):
+    def set_db(self, payload: dict) -> int:
         """
         Set the content of the __database dictionary.
         """
+        data_changed = False
         with self.__lock:
             for key in payload:
-                self.__database[key] = payload[key]
-        self.on_payload()
+                if self.__database[key] != payload[key]:
+                    data_changed = True
+                    self.__database[key] = payload[key]
+
+        if data_changed:
+            self.on_payload()
         return 0
 
     def on_payload(self):
