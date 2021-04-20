@@ -370,26 +370,27 @@ class NativeUI(HEVClient, QMainWindow):
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("revieved payload of type %s" % payload["type"])
-        try:
-            if payload["type"] == "DATA":
-                self.__set_db("data", payload["DATA"])
-                self.__set_plots_db(payload["DATA"])
-                self.ongoingAlarms = payload["alarms"]
-            if payload["type"] == "BATTERY":
-                # self.__set_db("battery", payload["BATTERY"])
-                # self.BatterySignal.emit(payload["BATTERY"])
-                self.battery_handler.set_db(payload["BATTERY"])
-            if payload["type"] == "ALARM":
-                self.__set_db("alarms", payload["ALARM"])
-            if payload["type"] == "TARGET":
-                self.__set_db("targets", payload["TARGET"])
-            if payload["type"] == "READBACK":
-                self.__set_db("readback", payload["READBACK"])
-            if payload["type"] == "PERSONAL":
-                self.__set_db("personal", payload["PERSONAL"])
-            if payload["type"] == "CYCLE":
-                self.__set_db("cycle", payload["CYCLE"])
-        except KeyError:
+        # try:
+        if payload["type"] == "DATA":
+            self.__set_db("data", payload["DATA"])
+            self.__set_plots_db(payload["DATA"])
+            self.ongoingAlarms = payload["alarms"]
+        elif payload["type"] == "BATTERY":
+            # self.__set_db("battery", payload["BATTERY"])
+            # self.BatterySignal.emit(payload["BATTERY"])
+            self.battery_handler.set_db(payload["BATTERY"])
+        elif payload["type"] == "ALARM":
+            self.__set_db("alarms", payload["ALARM"])
+        elif payload["type"] == "TARGET":
+            self.__set_db("targets", payload["TARGET"])
+        elif payload["type"] == "READBACK":
+            self.__set_db("readback", payload["READBACK"])
+        elif payload["type"] == "PERSONAL":
+            self.__set_db("personal", payload["PERSONAL"])
+        elif payload["type"] == "CYCLE":
+            self.__set_db("cycle", payload["CYCLE"])
+        # except KeyError:
+        else:
             logging.warning(f"Invalid payload: {payload}")
         return 0
 
