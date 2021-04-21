@@ -86,7 +86,13 @@ class labelledSpin(QtWidgets.QWidget):
         self.NativeUI = NativeUI
         self.cmd_type, self.cmd_code = "", ""
         self.min, self.max, self.step = 0, 10000, 0.3
+        self.initVal = 1
         self.decPlaces = 2
+        self.label = "default"
+        if len(infoArray) == 10:
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.initVal, self.step, self.decPlaces = (
+                infoArray
+            )
         if len(infoArray) == 9:
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.step, self.decPlaces = (
                 infoArray
@@ -106,6 +112,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.nameLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
+        self.simpleSpin.setValue(self.initVal)
         self.simpleSpin.setRange(self.min, self.max)
         self.simpleSpin.setSingleStep(self.step)
         self.simpleSpin.setDecimals(self.decPlaces)
@@ -114,16 +121,16 @@ class labelledSpin(QtWidgets.QWidget):
             "    width:100px;"  # TODO: unhardcode
             "    font:" + NativeUI.text_size + ";"
             "}"
-            "QDoubleSpinBox[bgColour='0']{"
+            "QDoubleSpinBox[bgColour='1']{"
             "    background-color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
-            "QDoubleSpinBox[bgColour='1']{"
+            "QDoubleSpinBox[bgColour='0']{"
             "    background-color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
-            "QDoubleSpinBox[textColour='0']{"
+            "QDoubleSpinBox[textColour='1']{"
             "    color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
-            "QDoubleSpinBox[textColour='1']{"
+            "QDoubleSpinBox[textColour='0']{"
             "    color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='2']{"
@@ -140,8 +147,8 @@ class labelledSpin(QtWidgets.QWidget):
             "border:none;"
             "}"
         )
-        self.simpleSpin.setProperty("textColour", "0")
-        self.simpleSpin.setProperty("bgColour", "0")
+        self.simpleSpin.setProperty("textColour", "1")
+        self.simpleSpin.setProperty("bgColour", "1")
         self.simpleSpin.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
@@ -167,30 +174,37 @@ class labelledSpin(QtWidgets.QWidget):
 
     def manualStep(self):
         """Handle changes in value. Change colour if different to set value, set updating values."""
-        if not self.manuallyUpdated:
+        if self.manuallyUpdated:
+            roundVal = round(self.currentDbValue, self.decPlaces)
+            if self.decPlaces == 0:
+                roundVal = int(roundVal)
+            if self.simpleSpin.value() == roundVal:
+                self.simpleSpin.setProperty("textColour", "1")
+                self.manuallyUpdated = False
+                self.simpleSpin.style().polish(self.simpleSpin)
+        else:
             self.simpleSpin.setProperty("textColour", "2")
             self.manuallyUpdated = True
             self.simpleSpin.style().polish(self.simpleSpin)
         return 0
 
-    def update_value(self,db):
-        if (self.tag == "") :
+    def setEnabled(self, bool):
+        self.simpleSpin.setEnabled(bool)
+        self.simpleSpin.setProperty("bgColour", str(int(bool)))
+        self.simpleSpin.setProperty("textColour", str(int(bool)))
+        self.simpleSpin.style().polish(self.simpleSpin)
+
+    def update_value(self, db):
+        if self.tag == "":
             a = 1  # do nothing
         else:
             newVal = db[self.tag]
             if self.manuallyUpdated:
-                roundVal = round(newVal,self.decPlaces)
-                if self.decPlaces == 0:
-                    roundVal = int(roundVal)
-                if self.simpleSpin.value() == roundVal:
-                    self.manuallyUpdated = False
-                    self.simpleSpin.setProperty("textColour", "0")
-                    self.simpleSpin.style().polish(self.simpleSpin)
-                    print('reverting back')
-                    
+                a = 1  # do nothing
             else:
+                self.currentDbValue = newVal
                 self.simpleSpin.setValue(newVal)
-                self.simpleSpin.setProperty("textColour", "0")
+                self.simpleSpin.setProperty("textColour", "1")
                 self.simpleSpin.style().polish(self.simpleSpin)
 
     # def update_readback_value(self):
