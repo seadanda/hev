@@ -26,7 +26,6 @@ import sys
 from threading import Lock
 
 import git
-import numpy as np
 from global_widgets.global_send_popup import confirmPopup
 from hevclient import HEVClient
 from PySide2 import QtCore
@@ -35,8 +34,16 @@ from PySide2.QtGui import QColor, QFont, QPalette
 from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
 from ui_layout import Layout
 from ui_widgets import Widgets
+
+# from handler_library.alarm_handler import AlarmHandler
 from handler_library.battery_handler import BatteryHandler
+
+# from handler_library.cycle_handler import CycleHandler
 from handler_library.data_handler import DataHandler
+from handler_library.personal_handler import PersonalHandler
+
+# from handler_library.readback_handler import ReadbackHandler
+
 
 logging.basicConfig(
     level=logging.INFO,
@@ -57,6 +64,7 @@ class NativeUI(HEVClient, QMainWindow):
         # Set up the handlers
         self.battery_handler = BatteryHandler()
         self.data_handler = DataHandler(plot_history_length=1000)
+        self.personal_handler = PersonalHandler()
 
         config_path = self.__find_configs()
 
@@ -70,12 +78,12 @@ class NativeUI(HEVClient, QMainWindow):
         ]
 
         # Import settings from config files
-        with open(os.path.join(config_path, "colors.json")) as f:
+        with open(os.path.join(config_path, "colors.json")) as infile:
             # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
-            self.colors = json.load(f)
+            self.colors = json.load(infile)
 
-        with open(os.path.join(config_path, "text_english.json")) as f:
-            self.text = json.load(f)
+        with open(os.path.join(config_path, "text_english.json")) as infile:
+            self.text = json.load(infile)
 
         # convert colours to a PySide2-readble form
         for key in self.colors:
@@ -97,23 +105,11 @@ class NativeUI(HEVClient, QMainWindow):
                 self.iconpath, self.icons[key] + "." + self.iconext
             )
 
-        # initialise databases
-        # plot_history_length = 1000
+        # initialise databases TODO: remove these and use handlers instead.
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
         self.__cycle = {}
-        # self.__battery = {}
-        # self.__plots = {
-        #     "data": np.zeros((plot_history_length, 5)),
-        #     "timestamp": list(el * (-1) for el in range(plot_history_length))[::-1],
-        #     "pressure": list(0 for _ in range(plot_history_length)),
-        #     "flow": list(0 for _ in range(plot_history_length)),
-        #     "volume": list(0 for _ in range(plot_history_length)),
-        #     "pressure_axis_range": [0, 20],
-        #     "flow_axis_range": [-40, 80],
-        #     "volume_axis_range": [0, 80],
-        # }
         self.__alarms = {}
         self.__targets = {}
         self.__personal = {}
@@ -172,8 +168,13 @@ class NativeUI(HEVClient, QMainWindow):
 
         Connections defined here:
 
-        BatterySignal -> battery_display
-            BatterySignal is emitted in get_updates() in response to a battery payload.
+        battery_handler.UpdateBatteryDisplay -> battery_display.update_Status
+            UpdateBatteryDisplay is emitted by the battery handler in response to a
+            battery payload.
+
+        personal_handler.UpdatePersonalDisplay -> personal_display.update_status
+            UpdatePersonalDisplay is emitted by the personal handler in response to a
+            change in the personal information.
 
         HistoryButtonPressed -> normal_plots, detailed_plots
             History buttons control the amount of time shown on the x axes of the
@@ -205,6 +206,20 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.battery_display.update_status
         )
 
+        # Personal Display should update when personal info is changed.
+        self.personal_handler.UpdatePersonalDisplay.connect(
+            self.widgets.personal_display.update_status
+        )
+
+        # When plot data is updated, plots should update
+        for plot_widget in [
+            self.widgets.normal_plots.update_plot_data,
+            self.widgets.detailed_plots.update_plot_data,
+            self.widgets.circle_plots.update_plot_data,
+            self.widgets.charts_widget.update_plot_data,
+        ]:
+            self.data_handler.UpdatePlots.connect(plot_widget)
+
         # Plots should update when we press the history buttons
         for button in self.widgets.history_buttons.buttons:
             for widget in [self.widgets.normal_plots, self.widgets.detailed_plots]:
@@ -228,15 +243,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.start()
-
-        # When plot data is updated, plots should update
-        for plot_widget in [
-            self.widgets.normal_plots.update_plot_data,
-            self.widgets.detailed_plots.update_plot_data,
-            self.widgets.circle_plots.update_plot_data,
-            self.widgets.charts_widget.update_plot_data,
-        ]:
-            self.data_handler.UpdatePlots.connect(plot_widget)
 
         # When measurement data is updated, measurement widgets shouldupdate
         self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
@@ -323,8 +329,7 @@ class NativeUI(HEVClient, QMainWindow):
     def get_updates(self, payload: dict) -> int:
         """callback from the polling function, payload is data from socket """
         self.statusBar().showMessage(f"{payload}")
-        logging.debug("revieved payload of type %s" % payload["type"])
-        # try:
+        logging.debug("recieved payload of type %s", payload["type"])
         if payload["type"] == "DATA":
             self.data_handler.set_db(payload["DATA"])
             self.ongoingAlarms = payload["alarms"]
@@ -337,13 +342,14 @@ class NativeUI(HEVClient, QMainWindow):
         elif payload["type"] == "READBACK":
             self.__set_db("readback", payload["READBACK"])
         elif payload["type"] == "PERSONAL":
-            self.__set_db("personal", payload["PERSONAL"])
+            self.personal_handler.set_db(payload["PERSONAL"])
         elif payload["type"] == "CYCLE":
             self.__set_db("cycle", payload["CYCLE"])
         elif payload["type"] == "DEBUG":
             pass
         else:
-            logging.warning(f"Invalid payload: {payload}")
+            logging.warning("Invalid payload type: %s", payload["type"])
+            logging.debug("Content of invalid payload:\n%s", payload)
         return 0
 
     @Slot(str, str, float)
@@ -357,12 +363,14 @@ class NativeUI(HEVClient, QMainWindow):
     @Slot(str)
     def q_ack_alarm(self, alarm: str) -> int:
         """acknowledge an alarm in the hevserver"""
+        logging.debug("To MCU: Acknowledging alarm: %s", alarm)
         self.ack_alarm(alarm=alarm)
         return 0
 
     @Slot(str)
     def q_send_personal(self, personal: str) -> int:
         """send personal details to hevserver"""
+        logging.debug("to MCU: Settung personal data: %s", personal)
         self.send_personal(personal=personal)
         return 0
 
@@ -457,16 +465,17 @@ def interpret_resolution(input_string: str) -> list:
 
     dimensions = [val for val in re.findall("\d*", input_string) if val != ""]
     if len(dimensions) != 2:
-        logging.warning("Unsupported resolution argument %s" % input_string)
+        logging.warning("Unsupported resolution argument: %s", input_string)
         return default_size
 
     try:
         dimensions = [int(val) for val in dimensions]
     except ValueError:
         logging.warning(
-            "Resolution argument'%s' could not be interpreted as numerical values."
+            "Resolution argument '%s' could not be interpreted as numerical values."
             "Values must be integer numbers of pixels on x and y respectively,"
-            "e.g. 1920x1080." % input_string
+            "e.g. 1920x1080.",
+            input_string,
         )
         return default_size
 
