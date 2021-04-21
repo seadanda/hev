@@ -124,7 +124,7 @@ class labelledSpin(QtWidgets.QWidget):
             "    color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='0']{"
-            "    color:" + NativeUI.colors["page_foreground"].name() + ";"pri
+            "    color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='2']{"
             "    color:" + NativeUI.colors["red"].name() + ";"
@@ -183,17 +183,17 @@ class labelledSpin(QtWidgets.QWidget):
 
     def setEnabled(self, bool):
         self.simpleSpin.setEnabled(bool)
-        self.simpleSpin.setProperty('bgColour', str(int(bool)))
-        self.simpleSpin.setProperty('textColour', str(int(bool)))
+        self.simpleSpin.setProperty("bgColour", str(int(bool)))
+        self.simpleSpin.setProperty("textColour", str(int(bool)))
         self.simpleSpin.style().polish(self.simpleSpin)
 
-    def update_value(self,db):
-        if (self.tag == "") :
+    def update_value(self, db):
+        if self.tag == "":
             a = 1  # do nothing
         else:
             newVal = db[self.tag]
             if self.manuallyUpdated:
-                a=1 # do nothing
+                a = 1  # do nothing
             else:
                 self.currentDbValue = newVal
                 self.simpleSpin.setValue(newVal)

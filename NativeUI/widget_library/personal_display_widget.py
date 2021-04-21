@@ -12,7 +12,7 @@ __maintainer__ = "Tiago Sarmento"
 __email__ = "tiago.sarmento@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtGui, QtWidgets, QtCore
 
 
 class PersonalDisplayWidget(QtWidgets.QWidget):
@@ -25,10 +25,7 @@ class PersonalDisplayWidget(QtWidgets.QWidget):
 
         self.info_label = QtWidgets.QLabel("Person person, 55kg")
         self.info_label.setStyleSheet(
-            # "font:" + NativeUI.text_size + ";"
-            "color:"
-            + NativeUI.colors["page_foreground"].name()
-            + ";"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
         )
         self.info_label.setAlignment(QtCore.Qt.AlignCenter)
         hlayout = QtWidgets.QHBoxLayout()
