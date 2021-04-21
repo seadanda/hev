@@ -44,8 +44,8 @@ class LabelledLineEditWidget(QtWidgets.QWidget):
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.step, self.decPlaces = (
                 infoArray
             )
-        elif len(infoArray) == 5:
-            self.label, self.units, self.tag, self.cmd_type, self.cmd_code = infoArray
+        elif len(infoArray) == 6:
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.initText = infoArray
         elif len(infoArray) == 3:
             self.label, self.units, self.tag = infoArray
         self.manuallyUpdated = False
@@ -60,7 +60,7 @@ class LabelledLineEditWidget(QtWidgets.QWidget):
             widgetList.append(self.nameLabel)
 
         self.simpleSpin = SignallingLineEditWidget(NativeUI)
-        self.simpleSpin.setText("")
+        self.simpleSpin.setText(self.initText)
         self.simpleSpin.setStyleSheet(
             """QDoubleSpinBox{ width:100px; font:16pt}
             QDoubleSpinBox[bgColour="0"]{background-color:white; }

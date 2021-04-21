@@ -30,7 +30,7 @@ class SpinButton(QtWidgets.QFrame):
     def __init__(self, NativeUI, settings):
         super().__init__()
 
-        self.liveUpdating = True
+        self.manuallyUpdated = False
         # self.setStyleSheet("background-color:blue;")
         self.currentVal = 0
         self.cmd_type = settings[3]
@@ -112,17 +112,18 @@ class SpinButton(QtWidgets.QFrame):
         if (newVal == {}) or (self.val_code == ""):
             a = 1  # do nothing
         else:
-            if self.liveUpdating:
+            if not self.manuallyUpdated:
                 self.simpleSpin.setValue(newVal[self.val_code])
                 self.setTextColour(1)
             else:
-                if self.simpleSpin.value() == newVal[self.val_code]:
-                    self.liveUpdating = True
+
+                if int(self.simpleSpin.value()) == int(newVal[self.val_code]):
+                    self.manuallyUpdated = False
                     self.setTextColour(1)
 
     def manualChanged(self):
         """Called when user manually makes a change. Stops value from updating and changes colour"""
-        self.liveUpdating = False
+        self.manuallyUpdated = True
         self.setTextColour(2)
         return 0
 
@@ -162,14 +163,19 @@ class SpinButtonsWidget(QtWidgets.QWidget):
             ["IE Ratio", "", "ie_ratio", "SET_TARGET_CURRENT", "IE_RATIO"],
             ["Percentage O2", "", "fiO2_percent", "SET_TARGET_CURRENT", "FIO2_PERCENT"],
         ]
+
+        self.okButton = OkButtonWidget(self.NativeUI)
+        self.okButton.pressed.connect(self.ok_button_pressed)
+
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
+        self.cancelButton.pressed.connect(self.cancel_button_pressed)
+
         self.spinDict = {}
         self.spinStack = QtWidgets.QStackedWidget()
         stackedNames = ["Inhale Time", "IE Ratio"]
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
-            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(
-                lambda i=1: self.colourButtons(i)
-            )
+            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda: self.refresh_button_colour())
             if settings[0] in stackedNames:
                 self.spinStack.addWidget(self.spinDict[settings[0]])
             else:
@@ -179,12 +185,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
 
-        self.okButton = OkButtonWidget(self.NativeUI)
-        self.okButton.pressed.connect(self.ok_button_pressed)
         self.buttonLayout.addWidget(self.okButton)
-
-        self.cancelButton = CancelButtonWidget(self.NativeUI)
-        self.cancelButton.pressed.connect(self.cancel_button_pressed)
         self.buttonLayout.addWidget(self.cancelButton)
 
         self.layout.addLayout(self.buttonLayout)
@@ -206,6 +207,15 @@ class SpinButtonsWidget(QtWidgets.QWidget):
     def update_targets(self):
         for widget in self.spinDict:
             self.spinDict[widget].update_targets_value()  # pass database
+        self.refresh_button_colour()
+
+    def refresh_button_colour(self):
+        self.manuallyUpdated = False
+        for spin in self.spinDict:
+            self.manuallyUpdated = self.manuallyUpdated or self.spinDict[spin].manuallyUpdated
+
+        self.okButton.setColour(str(int(self.manuallyUpdated)))
+        self.cancelButton.setColour((str(int(self.manuallyUpdated))))
 
         # targets = self.NativeUI.get_db("targets")
         # if targets == {}:
@@ -225,7 +235,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         """Respond to ok button pressed by changing text colour and liveUpdating to True"""
         message, command = [], []
         for widget in self.spinDict:
-            if not self.spinDict[widget].liveUpdating:
+            if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].simpleSpin.value()
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
@@ -243,16 +253,17 @@ class SpinButtonsWidget(QtWidgets.QWidget):
 
     def commandSent(self):
         for spin in self.spinDict:
-            self.spinDict[spin].liveUpdating = True
+            self.spinDict[spin].manuallyUpdated = False
             self.spinDict[spin].setTextColour("1")
-        self.colourButtons(0)
+        self.refresh_button_colour()
+        #self.colourButtons(0)
 
     def cancel_button_pressed(self):
         """Respond to cancel button pressed by changing text colour and liveUpdating to True"""
         for spin in self.spinDict:
-            self.spinDict[spin].liveUpdating = True
+            self.spinDict[spin].manuallyUpdated = False
             self.spinDict[spin].setTextColour("1")
-        self.colourButtons(0)
+        self.refresh_button_colour()
 
         # targets = self.NativeUI.get_targets_db()
         # if targets == {}:
