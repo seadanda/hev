@@ -114,17 +114,17 @@ class labelledSpin(QtWidgets.QWidget):
             "    width:100px;"  # TODO: unhardcode
             "    font:" + NativeUI.text_size + ";"
             "}"
-            "QDoubleSpinBox[bgColour='0']{"
+            "QDoubleSpinBox[bgColour='1']{"
             "    background-color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
-            "QDoubleSpinBox[bgColour='1']{"
+            "QDoubleSpinBox[bgColour='0']{"
             "    background-color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
-            "QDoubleSpinBox[textColour='0']{"
+            "QDoubleSpinBox[textColour='1']{"
             "    color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
-            "QDoubleSpinBox[textColour='1']{"
-            "    color:" + NativeUI.colors["page_foreground"].name() + ";"
+            "QDoubleSpinBox[textColour='0']{"
+            "    color:" + NativeUI.colors["page_foreground"].name() + ";"pri
             "}"
             "QDoubleSpinBox[textColour='2']{"
             "    color:" + NativeUI.colors["red"].name() + ";"
@@ -140,8 +140,8 @@ class labelledSpin(QtWidgets.QWidget):
             "border:none;"
             "}"
         )
-        self.simpleSpin.setProperty("textColour", "0")
-        self.simpleSpin.setProperty("bgColour", "0")
+        self.simpleSpin.setProperty("textColour", "1")
+        self.simpleSpin.setProperty("bgColour", "1")
         self.simpleSpin.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
         )
@@ -181,6 +181,12 @@ class labelledSpin(QtWidgets.QWidget):
             self.simpleSpin.style().polish(self.simpleSpin)
         return 0
 
+    def setEnabled(self, bool):
+        self.simpleSpin.setEnabled(bool)
+        self.simpleSpin.setProperty('bgColour', str(int(bool)))
+        self.simpleSpin.setProperty('textColour', str(int(bool)))
+        self.simpleSpin.style().polish(self.simpleSpin)
+
     def update_value(self,db):
         if (self.tag == "") :
             a = 1  # do nothing
@@ -191,7 +197,7 @@ class labelledSpin(QtWidgets.QWidget):
             else:
                 self.currentDbValue = newVal
                 self.simpleSpin.setValue(newVal)
-                self.simpleSpin.setProperty("textColour", "0")
+                self.simpleSpin.setProperty("textColour", "1")
                 self.simpleSpin.style().polish(self.simpleSpin)
 
     # def update_readback_value(self):

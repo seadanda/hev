@@ -1,0 +1,13 @@
+{"settings":[
+["Respiratory Rate","/min","respiratory_rate","SET_TARGET_","RESPIRATORY_RATE"],
+["Inhale Time", "s", "inhale_time", "SET_TARGET_", "INHALE_TIME"],
+["IE Ratio", "", "ie_ratio", "SET_TARGET_", "IE_RATIO"],
+["Inhale Trigger Sensitivity","","inhale_trigger_threshold","SET_TARGET_","INHALE_TRIGGER_THRESHOLD"],
+["Exhale Trigger Sensitivity","","exhale_trigger_threshold","SET_TARGET_","EXHALE_TRIGGER_THRESHOLD"],
+["Inhale Pressure","","inspiratory_pressure","SET_TARGET_","INSPIRATORY_PRESSURE"],
+["Inhale Volume", "", "volume", "SET_TARGET_", "VOLUME"],
+["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT"]],
+"radioSettings": ["Inhale Time", "IE Ratio"],
+"enableDict":{"PC/AC":[1, 0, 1, 1, 0, 1, 0, 1], "PC/AC-PRVC":[1, 1, 0, 1, 0, 1, 1, 1], "PC-PSV":[1, 1, 0, 1, 0, 1, 0, 1], "CPAP":[1, 0, 1, 1, 0, 1, 0, 1]}
+
+}

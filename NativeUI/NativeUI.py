@@ -36,7 +36,7 @@ from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QFont, QPalette
 from ui_layout import Layout
 from ui_widgets import Widgets
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QRadioButton
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QRadioButton, QDialog
 
 logging.basicConfig(
     level=logging.INFO,
@@ -142,11 +142,19 @@ class NativeUI(HEVClient, QMainWindow):
         self.setPalette(palette)
         self.setAutoFillBackground(True)
 
+        self.startupWidget = QDialog(self)
+        self.startupWidget.setLayout(self.layouts.startup_layout())
+        self.startupWidget.setPalette(palette)
+        self.startupWidget.setAutoFillBackground(True)
+        self.startupWidget.show()
+
         # Connect widgets
         self.__define_connections()
 
         # Update page buttons to match the shown view
         self.widgets.page_buttons.buttons[0].on_press()
+
+
 
     @Slot(str)
     def change_page(self, page_to_show: str) -> int:
@@ -190,6 +198,19 @@ class NativeUI(HEVClient, QMainWindow):
             response to MeasurementSignal. MeasurementSignal is emitted in
             __emit_measurements_signal() which is triggered at timer.timeout.
         """
+
+        # Startup connections
+        self.widgets.calibration.button.pressed.connect(lambda i = self.widgets.calibration: self.widgets.startup_handler.handle_calibrationPress(i))
+        self.widgets.leak_test.button.pressed.connect(lambda i=self.widgets.leak_test: self.widgets.startup_handler.handle_calibrationPress(i))
+        self.widgets.maintenance.button.pressed.connect(
+            lambda i=self.widgets.maintenance: self.widgets.startup_handler.handle_calibrationPress(i))
+
+        self.widgets.nextButton.pressed.connect(lambda i = self.widgets.startup_stack: self.widgets.startup_handler.handle_nextbutton(i))
+        self.widgets.skipButton.pressed.connect(lambda: self.widgets.startup_handler.handle_sendbutton())
+
+        self.widgets.backButton.pressed.connect(
+            lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(i))
+
         # Battery Display should update when we get battery info
         self.BatterySignal.connect(self.widgets.battery_display.update_value)
 

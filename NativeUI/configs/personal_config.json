@@ -1,0 +1,11 @@
+{"settings":[
+            ["Name", "/min", "name", "SET_PERSONAL", "NAME"],
+            ["Patient ID", "s", "patient_id", "SET_PERSONAL", "PATIENT_ID"],
+            ["Age", "", "age", "SET_PERSONAL", "AGE"],
+            ["Sex", "", "sex", "SET_PERSONAL", "SEX"],
+            ["Weight", "", "weight", "SET_PERSONAL", "WEIGHT"],
+            ["Height", "", "height", "SET_PERSONAL", "HEIGHT"]
+        ],
+"textBoxes": ["Name", "Patient ID", "Sex"]
+
+}

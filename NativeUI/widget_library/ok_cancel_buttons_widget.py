@@ -50,7 +50,7 @@ class OkButtonWidget(
         # self.setFixedSize(QtCore.QSize(150, 50))
 
     def setColour(self, option):
-        print('setting colour again again')
+        #print('setting colour again again')
         self.setEnabled(bool(float(option)))
         self.setProperty("bgColour", str(option))
         self.style().polish(self)

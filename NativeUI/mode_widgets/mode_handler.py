@@ -38,7 +38,6 @@ class ModeHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family becau
                 self.spinDict[spin].update_value(db)
 
     def handle_okbutton_click(self, key):
-        print(key + ' pressed')
         mode = self.get_mode(key)
         message, command = [], []
         for widget in self.spinDict:
@@ -61,12 +60,11 @@ class ModeHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family becau
             self.popup.okButton.click()
             self.modeSwitched.emit(mode)
         else:
-            print('show popup')
             self.popup.show()
 
     def commandSent(self, mode):
         self.popup.clearPopup()
-        print('toggle from command send')
+
         #self.toggleButtons(mode,0)
         for widget in self.spinDict:
             if mode in widget:
@@ -83,10 +81,8 @@ class ModeHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family becau
         spinBox = self.spinDict[spinKey]
         radioButtonState = radioButton.isChecked()
         spinBox.simpleSpin.setEnabled(radioButtonState)
-        spinBox.simpleSpin.setProperty("bgColour", str(int(not radioButtonState)))
-        spinBox.simpleSpin.setProperty(
-            "textColour", str(int(not radioButtonState))
-        )
+        spinBox.simpleSpin.setProperty("bgColour", str(int(radioButtonState)))
+        spinBox.simpleSpin.setProperty("textColour", str(int(radioButtonState)))
 
         spinBox.simpleSpin.style().unpolish(spinBox.simpleSpin)
         spinBox.simpleSpin.style().polish(spinBox.simpleSpin)
@@ -104,7 +100,6 @@ class ModeHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family becau
                 self.buttonDict[button].setColour(str(int(True)))
             else:
                 self.buttonDict[button].setColour(str(int(self.manuallyUpdatedBoolDict[mode])))
-            print(self.manuallyUpdatedBoolDict)
 
 
     def get_mode(self, key: str):

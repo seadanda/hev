@@ -17,6 +17,8 @@ from PySide2.QtWidgets import QWidget, QPushButton, QRadioButton, QButtonGroup, 
 from global_widgets.tab_modeswitch_button import TabModeswitchButton
 from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
+from widget_library.startup_handler import StartupHandler
+from widget_library.startup_calibration_widget import calibrationWidget
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget, OkSendButtonWidget
 from widget_library.history_buttons_widget import HistoryButtonsWidget
 from widget_library.measurements_widget import (
@@ -70,6 +72,30 @@ class Widgets:
         """
         # self.NativeUI = NativeUI
 
+        # Start up procedure
+        self.startup_confirm_popup = SetConfirmPopup(NativeUI)
+        self.startup_handler = StartupHandler(NativeUI, self.startup_confirm_popup)
+
+        #self.startup_mode
+
+        with open('NativeUI/configs/startup_config.json') as json_file:
+            startupDict = json.load(json_file)
+        for key, procedureDict in startupDict.items():
+            self.add_handled_widget(calibrationWidget(NativeUI, key, procedureDict),key, self.startup_handler )
+        #self.calibration = calibrationWidget(NativeUI, 'calibration')
+        #self.leakTest = calibrationWidget(NativeUI, 'leak test')
+        #self.maintenance = calibrationWidget(NativeUI, 'maintenance')
+
+        #self.nextButton = OkButtonWidget(NativeUI)
+        self.add_handled_widget(OkButtonWidget(NativeUI), 'nextButton', self.startup_handler)
+        self.nextButton.setColour(1)
+        #self.skipButton = OkSendButtonWidget(NativeUI)
+        self.add_handled_widget(OkSendButtonWidget(NativeUI), 'skipButton', self.startup_handler)
+        self.skipButton.setColour(1)
+        #self.backButton = CancelButtonWidget(NativeUI)
+        self.add_handled_widget(CancelButtonWidget(NativeUI), 'backButton', self.startup_handler)
+        #self.backButton.setColour(1)
+
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
@@ -106,54 +132,58 @@ class Widgets:
         self.mode_confirm_popup = SetConfirmPopup(NativeUI)
         self.mode_handler = ModeHandler(NativeUI, self.mode_confirm_popup)
 
-        modeSettingsList = [
-            ["Respiratory Rate","/min","respiratory_rate","SET_TARGET_","RESPIRATORY_RATE",],
-            ["Inhale Time", "s", "inhale_time", "SET_TARGET_", "INHALE_TIME"],
-            ["IE Ratio", "", "ie_ratio", "SET_TARGET_", "IE_RATIO"],
-            ["Inhale Trigger Sensitivity","","inhale_trigger_threshold","SET_TARGET_","INHALE_TRIGGER_THRESHOLD"],
-            ["Exhale Trigger Sensitivity","","exhale_trigger_threshold","SET_TARGET_","EXHALE_TRIGGER_THRESHOLD"],
-            ["Inhale Pressure","","inspiratory_pressure","SET_TARGET_","INSPIRATORY_PRESSURE"],
-            ["Inhale Volume", "", "volume", "SET_TARGET_", "VOLUME"],
-            ["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT"],
-        ]
+        with open('NativeUI/configs/mode_config.json') as json_file:
+            modeDict = json.load(json_file)
+
+        radioSettings = modeDict["radioSettings"]
         modes = NativeUI.modeList
-        radioSettings = ['Inhale Time', 'IE Ratio']
+        #modes.append('startup')
+        #radioSettings = ['Inhale Time', 'IE Ratio']
         self.groupDict = {}
-        for mode in modes:
+        for mode in [*modes, 'startup']:
             self.groupDict[mode] = QButtonGroup()
-            for setting in modeSettingsList:
+            for setting in modeDict["settings"]:
                 attrName = mode + '_' + setting[2]
                 targettedSetting =[ target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_")) for target in setting]
-                self.add_handled_widget(labelledSpin(NativeUI,targettedSetting),'spin_' + attrName, self.mode_handler)
+                if mode == 'startup':
+                    self.add_handled_widget(labelledSpin(NativeUI, targettedSetting), 'spin_' + attrName,
+                                            self.startup_handler)
+                else:
+                    self.add_handled_widget(labelledSpin(NativeUI,targettedSetting),'spin_' + attrName, self.mode_handler)
 
                 if setting[0] in radioSettings:
                     radioButton = QRadioButton()
                     self.groupDict[mode].addButton(radioButton)
                     self.add_handled_widget(radioButton,'radio_' + attrName, self.mode_handler)
 
-            self.add_handled_widget(OkButtonWidget(NativeUI),'ok_button_' + mode, self.mode_handler)
-            self.add_handled_widget(OkSendButtonWidget(NativeUI),'ok_send_button_' + mode, self.mode_handler)
-            self.add_handled_widget(CancelButtonWidget(NativeUI),'cancel_button_' + mode, self.mode_handler)
+            if mode != 'startup':
+                self.add_handled_widget(OkButtonWidget(NativeUI),'ok_button_' + mode, self.mode_handler)
+                self.add_handled_widget(OkSendButtonWidget(NativeUI),'ok_send_button_' + mode, self.mode_handler)
+                self.add_handled_widget(CancelButtonWidget(NativeUI),'cancel_button_' + mode, self.mode_handler)
 
 
         # Personal tab widgets
         self.personal_confirm_popup = SetConfirmPopup(NativeUI)
         self.personal_handler = PersonalHandler(NativeUI, self.personal_confirm_popup)
-        personalSettingsList = [
-            ["Name", "/min", "name", "SET_PERSONAL", "NAME"],
-            ["Patient ID", "s", "patient_id", "SET_PERSONAL", "PATIENT_ID"],
-            ["Age", "", "age", "SET_PERSONAL", "AGE"],
-            ["Sex", "", "sex", "SET_PERSONAL", "SEX"],
-            ["Weight", "", "weight", "SET_PERSONAL", "WEIGHT"],
-            ["Height", "", "height", "SET_PERSONAL", "HEIGHT"],
-        ]
-        textBoxes = ["Name", "Patient ID", "Sex"]
-        for setting in personalSettingsList:
-            attrName = 'personal_edit_' + setting[2]
-            if setting[0] in textBoxes:
-                self.add_handled_widget(LabelledLineEditWidget(NativeUI, setting), 'text_' + attrName, self.personal_handler)
-            else:
-                self.add_handled_widget(labelledSpin(NativeUI, setting), 'spin_' + attrName, self.personal_handler)
+
+        with open('NativeUI/configs/personal_config.json') as json_file:
+            personalDict = json.load(json_file)
+        textBoxes = personalDict["textBoxes"]
+        for startup in ['', 'startup_']:
+            for setting in personalDict["settings"]:
+                attrName = 'personal_edit_' + setting[2]
+                if setting[0] in textBoxes:
+                    if startup == 'startup_':
+                        self.add_handled_widget(LabelledLineEditWidget(NativeUI, setting), 'text_' + startup + attrName,
+                                                self.startup_handler)
+                    else:
+                        self.add_handled_widget(LabelledLineEditWidget(NativeUI, setting), 'text_' + startup + attrName, self.personal_handler)
+                else:
+                    if startup == 'startup_':
+                        self.add_handled_widget(labelledSpin(NativeUI, setting), 'spin_' + startup + attrName, self.startup_handler)
+                    else:
+                        self.add_handled_widget(labelledSpin(NativeUI, setting), 'spin_' + startup + attrName,
+                                                self.personal_handler)
 
         self.add_handled_widget(OkButtonWidget(NativeUI), 'ok_button_personal', self.personal_handler)
         self.add_handled_widget(OkSendButtonWidget(NativeUI), 'ok_send_button_personal', self.personal_handler)
@@ -165,7 +195,7 @@ class Widgets:
         self.expert_confirm_popup = SetConfirmPopup(NativeUI)
         self.expert_handler = ExpertHandler(NativeUI, self.expert_confirm_popup)
         print(os.listdir())
-        with open('NativeUI/config/controlDict.json') as json_file:
+        with open('NativeUI/configs/expert_config.json') as json_file:
             controlDict = json.load(json_file)
 
         for key in controlDict:
