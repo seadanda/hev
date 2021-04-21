@@ -10,6 +10,8 @@ class PersonalHandler(Handler, QObject):
     """
     Subclass of the Handler class (handler.py) to handle personal data.
 
+    Inherits from QObject to give us access to pyside2's signal class.
+
     Adds the UpdatePersonalDisplay signal designed to convey information to be displayed
     to the display widget.
     """
