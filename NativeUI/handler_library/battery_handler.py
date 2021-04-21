@@ -21,7 +21,7 @@ class BatteryHandler(Handler, QObject):
             self
         )  # Give ourselves access to the QObject Signal functionality.
 
-    def active_payload(self):
+    def active_payload(self) -> int:
         new_status = {}
         battery_data = self.get_db()
 

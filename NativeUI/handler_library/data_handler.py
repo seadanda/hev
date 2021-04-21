@@ -23,11 +23,6 @@ class DataHandler(Handler, QObject):
         }
         self.__plot_lock = Lock()
 
-        self.timer = QTimer()
-        self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.send_update_plots_signal)
-        self.timer.start()
-
     def active_payload(self):
         """
         Take the raw payload information into conveniently plotable forms and store them

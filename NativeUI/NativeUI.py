@@ -242,6 +242,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.setInterval(16)  # just faster than 60Hz
         self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
+        self.timer.timeout.connect(self.data_handler.send_update_plots_signal)
         self.timer.start()
 
         # When measurement data is updated, measurement widgets shouldupdate
