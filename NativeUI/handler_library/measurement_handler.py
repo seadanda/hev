@@ -1,19 +1,20 @@
 """
-cycle_handler.py
+measurement_handler.py
 """
 
 from handler_library.handler import Handler
 from PySide2.QtCore import Signal, QObject
+import logging
 
 
-class CycleHandler(Handler, QObject):
+class MeasurementHandler(Handler, QObject):
     """
-    Subclass of the Handler class (handler.py) to handle cycle data.
+    Subclass of the Handler class (handler.py) to handle cycle and readback data.
 
     Inherits from QObject to give us access to pyside2's signal class.
     """
 
-    CycleSignal = Signal(dict)
+    UpdateMeasurements = Signal(dict)
 
     def __init__(self):
         super().__init__()
@@ -33,20 +34,13 @@ class CycleHandler(Handler, QObject):
             "mean_airway_pressure",
             "inhaled_tidal_volume",
             "inhaled_minute_volume",
+            "peep",
+            "inhale_exhale_ratio",
         ]:
-            outdict[key] = cycle_data[key]
+            try:
+                outdict[key] = cycle_data[key]
+            except KeyError:
+                logging.debug("Invalid key %s in measurement database", key)
 
-        self.CycleSignal.emit(outdict)
+        self.UpdateMeasurements.emit(outdict)
         return 0
-
-
-class MeasurementsHandler(Handler, QObject):
-    """
-    Handler for measurements.
-    TODO: decide if we want a different signal for each measurement widget?
-    TODO: move to a separate file.
-    """
-
-    def __init__(self):
-        super().__init__()
-        QObject.__init__(self)

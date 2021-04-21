@@ -37,9 +37,8 @@ from ui_widgets import Widgets
 
 # from handler_library.alarm_handler import AlarmHandler
 from handler_library.battery_handler import BatteryHandler
-
-# from handler_library.cycle_handler import CycleHandler
 from handler_library.data_handler import DataHandler
+from handler_library.measurement_handler import MeasurementHandler
 from handler_library.personal_handler import PersonalHandler
 
 # from handler_library.readback_handler import ReadbackHandler
@@ -64,6 +63,7 @@ class NativeUI(HEVClient, QMainWindow):
         # Set up the handlers
         self.battery_handler = BatteryHandler()
         self.data_handler = DataHandler(plot_history_length=1000)
+        self.measurement_handler = MeasurementHandler()
         self.personal_handler = PersonalHandler()
 
         config_path = self.__find_configs()
@@ -211,6 +211,13 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.personal_display.update_status
         )
 
+        # Measurement Widgets should update when the data is changed.
+        for widget in (
+            self.widgets.normal_measurements.widget_list
+            + self.widgets.detailed_measurements.widget_list
+        ):
+            self.measurement_handler.UpdateMeasurements.connect(widget.set_value)
+
         # When plot data is updated, plots should update
         for plot_widget in [
             self.widgets.normal_plots.update_plot_data,
@@ -244,10 +251,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
         self.timer.timeout.connect(self.data_handler.send_update_plots_signal)
         self.timer.start()
-
-        # When measurement data is updated, measurement widgets shouldupdate
-        self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
-        self.MeasurementSignal.connect(self.widgets.detailed_measurements.update_value)
 
         # Localisation needs to update widgets
         self.widgets.localisation_button.SetLocalisation.connect(
@@ -341,11 +344,11 @@ class NativeUI(HEVClient, QMainWindow):
         elif payload["type"] == "TARGET":
             self.__set_db("targets", payload["TARGET"])
         elif payload["type"] == "READBACK":
-            self.__set_db("readback", payload["READBACK"])
+            self.measurement_handler.set_db(payload["READBACK"])
         elif payload["type"] == "PERSONAL":
             self.personal_handler.set_db(payload["PERSONAL"])
         elif payload["type"] == "CYCLE":
-            self.__set_db("cycle", payload["CYCLE"])
+            self.measurement_handler.set_db(payload["CYCLE"])
         elif payload["type"] == "DEBUG":
             pass
         else:
