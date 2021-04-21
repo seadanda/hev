@@ -86,7 +86,13 @@ class labelledSpin(QtWidgets.QWidget):
         self.NativeUI = NativeUI
         self.cmd_type, self.cmd_code = "", ""
         self.min, self.max, self.step = 0, 10000, 0.3
+        self.initVal = 1
         self.decPlaces = 2
+        self.label = 'default'
+        if len(infoArray) == 10:
+            self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.initVal, self.step, self.decPlaces = (
+                infoArray
+            )
         if len(infoArray) == 9:
             self.label, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.step, self.decPlaces = (
                 infoArray
@@ -106,6 +112,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.nameLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
+        self.simpleSpin.setValue(self.initVal)
         self.simpleSpin.setRange(self.min, self.max)
         self.simpleSpin.setSingleStep(self.step)
         self.simpleSpin.setDecimals(self.decPlaces)
@@ -124,7 +131,7 @@ class labelledSpin(QtWidgets.QWidget):
             "    color:" + NativeUI.colors["page_background"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='0']{"
-            "    color:" + NativeUI.colors["page_foreground"].name() + ";"pri
+            "    color:" + NativeUI.colors["page_foreground"].name() + ";"
             "}"
             "QDoubleSpinBox[textColour='2']{"
             "    color:" + NativeUI.colors["red"].name() + ";"

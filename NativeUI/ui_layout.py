@@ -507,9 +507,14 @@ class Layout:
             personalDict = json.load(json_file)
         textBoxes = personalDict["textBoxes"]
 
-        personalList = [self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if
-                        'startup_personal_edit' in attrName]
-        # consider subclassing labelledspinbox to have modespinbox with attribute mode
+        personalList = []
+
+        for setting in personalDict["settings"]:
+            attrName = 'startup_personal_edit_' + setting[2]
+            if setting[0] in textBoxes:
+                personalList.append(self.NativeUI.widgets.get_widget('text_' + attrName))
+            else:
+                personalList.append(self.NativeUI.widgets.get_widget('spin_' + attrName))
 
         vLayout = QtWidgets.QVBoxLayout()
         for widget in personalList:
@@ -527,8 +532,15 @@ class Layout:
             personalDict = json.load(json_file)
         textBoxes = personalDict["textBoxes"]
 
-        personalList = [self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if 'personal_edit' in attrName]
-        # consider subclassing labelledspinbox to have modespinbox with attribute mode
+        personalList = []
+
+        for setting in personalDict["settings"]:
+            attrName = 'personal_edit_' + setting[2]
+            if setting[0] in textBoxes:
+                personalList.append(self.NativeUI.widgets.get_widget('text_' + attrName))
+            else:
+                personalList.append(self.NativeUI.widgets.get_widget('spin_' + attrName))
+
 
         vLayout = QtWidgets.QVBoxLayout()
         for widget in personalList:

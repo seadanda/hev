@@ -76,25 +76,17 @@ class Widgets:
         self.startup_confirm_popup = SetConfirmPopup(NativeUI)
         self.startup_handler = StartupHandler(NativeUI, self.startup_confirm_popup)
 
-        #self.startup_mode
 
         with open('NativeUI/configs/startup_config.json') as json_file:
             startupDict = json.load(json_file)
         for key, procedureDict in startupDict.items():
             self.add_handled_widget(calibrationWidget(NativeUI, key, procedureDict),key, self.startup_handler )
-        #self.calibration = calibrationWidget(NativeUI, 'calibration')
-        #self.leakTest = calibrationWidget(NativeUI, 'leak test')
-        #self.maintenance = calibrationWidget(NativeUI, 'maintenance')
 
-        #self.nextButton = OkButtonWidget(NativeUI)
         self.add_handled_widget(OkButtonWidget(NativeUI), 'nextButton', self.startup_handler)
         self.nextButton.setColour(1)
-        #self.skipButton = OkSendButtonWidget(NativeUI)
         self.add_handled_widget(OkSendButtonWidget(NativeUI), 'skipButton', self.startup_handler)
         self.skipButton.setColour(1)
-        #self.backButton = CancelButtonWidget(NativeUI)
         self.add_handled_widget(CancelButtonWidget(NativeUI), 'backButton', self.startup_handler)
-        #self.backButton.setColour(1)
 
         # Top bar widgets
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
@@ -144,7 +136,7 @@ class Widgets:
             self.groupDict[mode] = QButtonGroup()
             for setting in modeDict["settings"]:
                 attrName = mode + '_' + setting[2]
-                targettedSetting =[ target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_")) for target in setting]
+                targettedSetting =[ target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_")) if isinstance(target,str) else target for target in setting ]
                 if mode == 'startup':
                     self.add_handled_widget(labelledSpin(NativeUI, targettedSetting), 'spin_' + attrName,
                                             self.startup_handler)
