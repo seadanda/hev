@@ -2,6 +2,15 @@ import logging
 from handler_library.handler import Handler
 from PySide2.QtCore import Signal, QObject
 
+# TODO: initially we tried to have a check so that the handler only signals the display
+# elements when something changeds. Problem: when the UI starts up it takes a few
+# seconds for display elements to become active (may be an artefact of X11 forwarding?),
+# so for something like the battery which doesn't change fast, the initial signal to the
+# display is missed, and no further signal gets sent because nothing is changing.
+# Current workaround is to trigger the ative_payload every time get_db completes. Could
+# reinstate the check but add an override so every nth payload triggers the signal
+# regardless of whether data has changed, or force some update frequency (c.f. plots)?
+
 
 class BatteryHandler(Handler, QObject):
     UpdateBatteryDisplay = Signal(dict)
