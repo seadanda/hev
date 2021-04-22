@@ -6,7 +6,37 @@ import json
 import os
 from unittest.mock import MagicMock, patch
 
+from handler_library.handler import Handler
 from handler_library.battery_handler import BatteryHandler
+
+def test_handler():
+    """
+    Tests the default handler.
+    Test for set_db and get_db to set the database from a given payload and compare the db imported from get_db.
+    Test for if active_payload gets fired when set_db is called.
+    """
+    # Initalise the handler and import sample battery json file
+    handler = Handler()
+
+    batt_json_file_path = os.environ['PYTHONPATH'].split(os.pathsep)[0] + '/tests/unittests/fixtures/batterySample.json'
+    batt_json = json.load(open(batt_json_file_path))
+
+    # Set the database for the imported json and get the database imported
+    handler.set_db(batt_json)
+    db = handler.get_db()
+
+    # Check if the input payload and output database are the same
+    if batt_json == db:
+        payload_database_comparison = True
+    else:
+        payload_database_comparison = False
+
+    # Mock active_payload to return true if it is called.
+    handler.active_payload = MagicMock(return_value=True)
+
+    # Check whether conditions have been met to pass test
+    assert handler.active_payload() is True, 'active_payload was not called when set_db was run.'
+    assert payload_database_comparison is True, 'set_db does not set the inputted payload to the database.'
 
 
 def test_battery_handler():
