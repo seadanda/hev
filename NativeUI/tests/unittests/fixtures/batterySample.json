@@ -1,0 +1,12 @@
+{
+    "version": 182,
+    "timestamp": 0,
+    "type": "BATTERY",
+    "bat": 0,
+    "ok": 1,
+    "alarm": 0,
+    "rdy2buf": 0,
+    "bat85": 0,
+    "prob_elec": 0,
+    "dummy": false
+}
