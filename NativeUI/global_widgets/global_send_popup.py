@@ -76,7 +76,6 @@ class SetConfirmPopup(QtWidgets.QDialog):
             listItem = QtWidgets.QListWidgetItem(item)
             listItem.setFlags(QtCore.Qt.NoItemFlags)
             self.listWidget.addItem(listItem)
-            print(listItem)
         self.listWidget.setFixedHeight(
             self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
         )
@@ -185,12 +184,3 @@ class confirmPopup(QtWidgets.QWidget):
         x = screen.width() - screen.width() / 2
         y = 0  # screen.height() - widget.height()
         self.move(x, y)
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    widg = SetConfirmPopup(
-        None, ["test text", "test", "test", "tregfdgdfgd", "experiment"]
-    )
-    widg.show()
-    sys.exit(app.exec_())

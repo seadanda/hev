@@ -83,13 +83,8 @@ class Layout:
             self.__make_stack(
                 [
                     self.layout_startup_main(),
-                    self.layout_mode_startup(
-                        modeDict["settings"],
-                        "startup",
-                        modeDict["enableDict"]["PC/AC"],
-                        False,
-                    ),  # self, settings, mode:str, enableList:list, buttons: bool)
-                    self.layout_personal_startup(),
+                    self.layout_mode_startup(),  # self, settings, mode:str, enableList:list, buttons: bool)
+                    self.layout_mode_personal("startup_", False),
                 ]
             ),
             "startup_stack",
@@ -310,7 +305,7 @@ class Layout:
             self.NativeUI,
             [
                 self.layout_mode_settings(True),
-                self.layout_mode_personal(),
+                self.layout_mode_personal("", True),
             ],  # self.widgets.mode_personal_tab],
             ["Mode Settings", "Personal Settings"],
         )
@@ -409,18 +404,16 @@ class Layout:
         """
         Construct the layout for the mode pages
         """
-
         mode_pages = []  # enableDict may need to go elsewhere
         with open("NativeUI/configs/mode_config.json") as json_file:
             modeDict = json.load(json_file)
 
         enableDict = modeDict["enableDict"]
-        # enableDict = {'PC/AC':[1, 0, 1, 1, 0, 1, 0, 1], 'PC/AC-PRVC':[1, 1, 0, 1, 0, 1, 1, 1], 'PC-PSV':[1, 1, 0, 1, 0, 1, 0, 1], 'CPAP':[1, 0, 1, 1, 0, 1, 0, 1]}
-        # buttons = True
+        buttons = True
         for mode in self.NativeUI.modeList:
             mode_pages.append(
                 self.layout_mode_tab(
-                    modeDict["settings"], mode, enableDict[mode], buttons
+                    modeDict["settings"], mode, "", enableDict[mode], buttons
                 )
             )
 
@@ -431,25 +424,21 @@ class Layout:
         return page_modes
 
     def layout_mode_tab(
-        self, settings, mode: str, enableList: list, buttons: bool
+        self, settings, mode: str, startup: str, enableList: list, buttons: bool
     ) -> QtWidgets.QWidget:
         """
         Construct the layout for an individual mode setting tab
         """
-
         spinList = []
         for setting in settings:
-            attrName = "spin_" + mode + "_" + setting[2]
+            attrName = "spin_" + mode + startup + "_" + setting[2]
             spinList.append(self.NativeUI.widgets.get_widget(attrName))
 
-        # spinList = [ self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if ('spin_' + mode + '_') in attrName]
-        # consider subclassing labelledspinbox to have modespinbox with attribute mode
         if len(spinList) != len(enableList):
             print("lengths do not match, error!")
             print(spinList)
             print(enableList)
         radioWidgets = ["Inhale Time", "IE Ratio"]
-        buttonGroup = QtWidgets.QButtonGroup()
 
         vLayout = QtWidgets.QVBoxLayout()
         for widget, enableBool in zip(spinList, enableList):
@@ -457,18 +446,18 @@ class Layout:
 
             if widget.label in radioWidgets:
                 self.NativeUI.widgets.get_widget(
-                    "radio_" + mode + "_" + widget.tag
+                    "radio_" + mode + startup + "_" + widget.tag
                 ).setChecked(bool(enableBool))
                 self.NativeUI.widgets.get_widget(
-                    "spin_" + mode + "_" + widget.tag
+                    "spin_" + mode + startup + "_" + widget.tag
                 ).insertWidget(
                     self.NativeUI.widgets.get_widget(
-                        "radio_" + mode + "_" + widget.tag
+                        "radio_" + mode + startup + "_" + widget.tag
                     ),
                     1,
                 )
                 self.NativeUI.widgets.get_widget(
-                    "spin_" + mode + "_" + widget.tag
+                    "spin_" + mode + startup + "_" + widget.tag
                 ).setEnabled(bool(enableBool))
 
         if buttons == True:
@@ -489,92 +478,30 @@ class Layout:
         mode_tab.setLayout(vLayout)
         return mode_tab
 
-    def layout_mode_startup(
-        self, settings, mode: str, enableList: list, buttons: bool
-    ) -> QtWidgets.QWidget:
+    def layout_mode_startup(self) -> QtWidgets.QWidget:
         """
-        Construct the layout for an individual mode setting tab
+        Construct the layout for the mode pages
         """
 
-        spinList = []
-        for setting in settings:
-            attrName = "spin_" + mode + "_" + setting[2]
-            spinList.append(self.NativeUI.widgets.get_widget(attrName))
+        mode_pages = []  # enableDict may need to go elsewhere
+        with open("NativeUI/configs/mode_config.json") as json_file:
+            modeDict = json.load(json_file)
 
-        # spinList = [ self.NativeUI.widgets.get_widget(attrName) for attrName in dir(self.NativeUI.widgets) if ('spin_' + mode + '_') in attrName]
-        # consider subclassing labelledspinbox to have modespinbox with attribute mode
-        if len(spinList) != len(enableList):
-            print("lengths do not match, error!")
-            print(spinList)
-            print(enableList)
-        radioWidgets = ["Inhale Time", "IE Ratio"]
-        buttonGroup = QtWidgets.QButtonGroup()
-
-        vLayout = QtWidgets.QVBoxLayout()
-        for widget, enableBool in zip(spinList, enableList):
-            vLayout.addWidget(widget)
-
-            if widget.label in radioWidgets:
-                self.NativeUI.widgets.get_widget(
-                    "radio_" + mode + "_" + widget.tag
-                ).setChecked(bool(enableBool))
-                self.NativeUI.widgets.get_widget(
-                    "spin_" + mode + "_" + widget.tag
-                ).insertWidget(
-                    self.NativeUI.widgets.get_widget(
-                        "radio_" + mode + "_" + widget.tag
-                    ),
-                    1,
+        enableDict = modeDict["enableDict"]
+        for mode in self.NativeUI.modeList:
+            mode_pages.append(
+                self.layout_mode_tab(
+                    modeDict["settings"], mode, "_startup", enableDict[mode], False
                 )
-                self.NativeUI.widgets.get_widget(
-                    "spin_" + mode + "_" + widget.tag
-                ).setEnabled(bool(enableBool))
-
-        if buttons == True:
-            hButtonLayout = QtWidgets.QHBoxLayout()
-            hButtonLayout.addWidget(
-                self.NativeUI.widgets.get_widget("ok_button_" + mode)
-            )
-            hButtonLayout.addWidget(
-                self.NativeUI.widgets.get_widget("ok_send_button_" + mode)
-            )
-            hButtonLayout.addWidget(
-                self.NativeUI.widgets.get_widget("cancel_button_" + mode)
             )
 
-            vLayout.addLayout(hButtonLayout)
+        page_modes = SwitchableStackWidget(
+            self.NativeUI, mode_pages, self.NativeUI.modeList
+        )
+        page_modes.setFont(self.NativeUI.text_font)
+        return page_modes
 
-        mode_tab = QtWidgets.QWidget()
-        mode_tab.setLayout(vLayout)
-        return mode_tab
-
-    def layout_personal_startup(self):
-        with open("NativeUI/configs/personal_config.json") as json_file:
-            personalDict = json.load(json_file)
-        textBoxes = personalDict["textBoxes"]
-
-        personalList = []
-
-        for setting in personalDict["settings"]:
-            attrName = "startup_personal_edit_" + setting[2]
-            if setting[0] in textBoxes:
-                personalList.append(
-                    self.NativeUI.widgets.get_widget("text_" + attrName)
-                )
-            else:
-                personalList.append(
-                    self.NativeUI.widgets.get_widget("spin_" + attrName)
-                )
-
-        vLayout = QtWidgets.QVBoxLayout()
-        for widget in personalList:
-            vLayout.addWidget(widget)
-
-        personal_tab = QtWidgets.QWidget()
-        personal_tab.setLayout(vLayout)
-        return personal_tab
-
-    def layout_mode_personal(self):
+    def layout_mode_personal(self, startup: str, buttons: bool):
         """
         Construct the layout for the personal settings page
         """
@@ -585,7 +512,7 @@ class Layout:
         personalList = []
 
         for setting in personalDict["settings"]:
-            attrName = "personal_edit_" + setting[2]
+            attrName = startup + "personal_edit_" + setting[2]
             if setting[0] in textBoxes:
                 personalList.append(
                     self.NativeUI.widgets.get_widget("text_" + attrName)
@@ -599,16 +526,19 @@ class Layout:
         for widget in personalList:
             vLayout.addWidget(widget)
 
-        hButtonLayout = QtWidgets.QHBoxLayout()
-        hButtonLayout.addWidget(self.NativeUI.widgets.get_widget("ok_button_personal"))
-        hButtonLayout.addWidget(
-            self.NativeUI.widgets.get_widget("ok_send_button_personal")
-        )
-        hButtonLayout.addWidget(
-            self.NativeUI.widgets.get_widget("cancel_button_personal")
-        )
+        if buttons:
+            hButtonLayout = QtWidgets.QHBoxLayout()
+            hButtonLayout.addWidget(
+                self.NativeUI.widgets.get_widget("ok_button_personal")
+            )
+            hButtonLayout.addWidget(
+                self.NativeUI.widgets.get_widget("ok_send_button_personal")
+            )
+            hButtonLayout.addWidget(
+                self.NativeUI.widgets.get_widget("cancel_button_personal")
+            )
 
-        vLayout.addLayout(hButtonLayout)
+            vLayout.addLayout(hButtonLayout)
 
         personal_tab = QtWidgets.QWidget()
         personal_tab.setLayout(vLayout)
