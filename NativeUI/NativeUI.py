@@ -206,7 +206,7 @@ class NativeUI(HEVClient, QMainWindow):
             lambda i=self.widgets.maintenance: self.widgets.startup_handler.handle_calibrationPress(i))
 
         self.widgets.nextButton.pressed.connect(lambda i = self.widgets.startup_stack: self.widgets.startup_handler.handle_nextbutton(i))
-        self.widgets.skipButton.pressed.connect(lambda: self.widgets.startup_handler.handle_sendbutton())
+        self.widgets.skipButton.pressed.connect(self.widgets.startup_handler.handle_sendbutton)
 
         self.widgets.backButton.pressed.connect(
             lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(i))
@@ -223,6 +223,8 @@ class NativeUI(HEVClient, QMainWindow):
         # The shown page should change when we press the page buttons
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
+
+        self.widgets.ventilator_start_stop_buttons_widget.button_start.pressed.connect(self.startupWidget.show)
 
         ##### Mode:
         # When mode is switched from mode page, various other locations must respond

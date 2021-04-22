@@ -36,9 +36,6 @@ class AlarmHandler(QtWidgets.QWidget):
         currentAlarms = self.NativeUI.ongoingAlarms # instead of getting database at a particular frequency, this should be triggered when a new alarm arrives
         if self.oldAlarms != currentAlarms:
             if len(self.oldAlarms) != len(currentAlarms):
-                print('not the same length!')
-                print(len(self.oldAlarms))
-                print(len(currentAlarms))
                 self.oldAlarms = currentAlarms
 
         for alarm in currentAlarms:

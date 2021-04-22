@@ -76,7 +76,6 @@ class SetConfirmPopup(QtWidgets.QDialog):
             listItem = QtWidgets.QListWidgetItem(item)
             listItem.setFlags(QtCore.Qt.NoItemFlags)
             self.listWidget.addItem(listItem)
-            print(listItem)
         self.listWidget.setFixedHeight(
             self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
         )
