@@ -71,5 +71,5 @@ class BatteryHandler(Handler, QObject):
             return 85.0
         elif battery_data["bat85"] == 0:
             return 0.0
-
-        return 0.0
+        else:
+            raise TypeError('Battery Percentage (entry \'bat85\' in the battery payload) is not 1 or 2.')
