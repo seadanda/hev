@@ -132,26 +132,27 @@ class Widgets:
         #modes.append('startup')
         #radioSettings = ['Inhale Time', 'IE Ratio']
         self.groupDict = {}
-        for mode in [*modes, 'startup']:
-            self.groupDict[mode] = QButtonGroup()
-            for setting in modeDict["settings"]:
-                attrName = mode + '_' + setting[2]
-                targettedSetting =[ target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_")) if isinstance(target,str) else target for target in setting ]
-                if mode == 'startup':
-                    self.add_handled_widget(labelledSpin(NativeUI, targettedSetting), 'spin_' + attrName,
-                                            self.startup_handler)
-                else:
-                    self.add_handled_widget(labelledSpin(NativeUI,targettedSetting),'spin_' + attrName, self.mode_handler)
+        for mode in modes:
+            for startup in ['', '_startup']:
+                self.groupDict[mode + startup] = QButtonGroup()
+                for setting in modeDict["settings"]:
+                    attrName = mode + startup + '_' + setting[2]
+                    targettedSetting =[ target.replace("SET_TARGET_", "SET_TARGET_" + mode.replace("/", "_").replace("-", "_")) if isinstance(target,str) else target for target in setting ]
+                    if startup == '_startup':
+                        self.add_handled_widget(labelledSpin(NativeUI, targettedSetting), 'spin_' + attrName,
+                                                self.startup_handler)
+                    else:
+                        self.add_handled_widget(labelledSpin(NativeUI,targettedSetting),'spin_' + attrName, self.mode_handler)
 
-                if setting[0] in radioSettings:
-                    radioButton = QRadioButton()
-                    self.groupDict[mode].addButton(radioButton)
-                    self.add_handled_widget(radioButton,'radio_' + attrName, self.mode_handler)
+                    if setting[0] in radioSettings:
+                        radioButton = QRadioButton()
+                        self.groupDict[mode + startup].addButton(radioButton)
+                        self.add_handled_widget(radioButton,'radio_' + attrName, self.mode_handler)
 
-            if mode != 'startup':
-                self.add_handled_widget(OkButtonWidget(NativeUI),'ok_button_' + mode, self.mode_handler)
-                self.add_handled_widget(OkSendButtonWidget(NativeUI),'ok_send_button_' + mode, self.mode_handler)
-                self.add_handled_widget(CancelButtonWidget(NativeUI),'cancel_button_' + mode, self.mode_handler)
+                if startup != '_startup':
+                    self.add_handled_widget(OkButtonWidget(NativeUI),'ok_button_' + mode, self.mode_handler)
+                    self.add_handled_widget(OkSendButtonWidget(NativeUI),'ok_send_button_' + mode, self.mode_handler)
+                    self.add_handled_widget(CancelButtonWidget(NativeUI),'cancel_button_' + mode, self.mode_handler)
 
 
         # Personal tab widgets
