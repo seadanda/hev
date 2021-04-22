@@ -128,9 +128,6 @@ class AlarmPopup(QtWidgets.QDialog):
 
     def removeAlarm(self, abstractAlarm):
         """Creates a new alarmWidget and adds it to the container"""
-        print('remove ' + abstractAlarm.alarmPayload["alarm_code"])
-        print(abstractAlarm)
-        print(self.alarmDict.keys())
         self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]].setParent(None)
         self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
 

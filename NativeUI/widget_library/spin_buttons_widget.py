@@ -105,7 +105,8 @@ class SpinButton(QtWidgets.QFrame):
         self.simpleSpin.manualChanged.connect(self.manualChanged)
         self.layout.addWidget(self.simpleSpin)
         self.setLayout(self.layout)
-        self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
+        self.setFixedWidth(300)
+        self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px;")
 
     def update_targets_value(self):
         newVal = self.NativeUI.get_db("targets")
@@ -166,9 +167,14 @@ class SpinButtonsWidget(QtWidgets.QWidget):
 
         self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.ok_button_pressed)
+        self.okButton.setSizePolicy(
+            QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
 
         self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancel_button_pressed)
+        self.cancelButton.setSizePolicy(
+            QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+
 
         self.spinDict = {}
         self.spinStack = QtWidgets.QStackedWidget()
@@ -181,6 +187,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
             else:
                 self.layout.addWidget(self.spinDict[settings[0]])
         self.layout.addWidget(self.spinStack)
+
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)

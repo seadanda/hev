@@ -10,8 +10,6 @@ class ExpertHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family bec
 
     def __init__(self, NativeUI, confirmPopup, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        print('creating expert')
-
         self.NativeUI = NativeUI
         self.spinDict = {}
         self.buttonDict = {}

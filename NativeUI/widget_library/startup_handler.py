@@ -8,16 +8,12 @@ from PySide2 import QtWidgets, QtGui, QtCore
 
 class StartupHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family because easier to modify
 
-    modeSwitched = QtCore.Signal(str)
-
     def __init__(self, NativeUI, confirmPopup, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.buttonDict = {}
         self.spinDict = {}
         self.calibDict = {}
         self.popup = confirmPopup
-        #super(TabModes, self).__init__(NativeUI, *args, **kwargs)
-
 
     def add_widget(self, widget, key: str):
         if isinstance(widget, labelledSpin):
