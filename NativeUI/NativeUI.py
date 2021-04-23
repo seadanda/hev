@@ -27,19 +27,17 @@ from threading import Lock
 
 import git
 from global_widgets.global_send_popup import confirmPopup
-from global_widgets.global_spinbox import labelledSpin
 from widget_library.ok_cancel_buttons_widget import (
     OkButtonWidget,
     OkSendButtonWidget,
     CancelButtonWidget,
 )
 from hevclient import HEVClient
-from PySide2 import QtCore
-from PySide2.QtCore import Signal, Slot
+from PySide2.QtCore import Slot, QTimer, Qt
 from PySide2.QtGui import QColor, QFont, QPalette
 from ui_layout import Layout
 from ui_widgets import Widgets
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QRadioButton, QDialog
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QDialog
 
 # from handler_library.alarm_handler import AlarmHandler
 from handler_library.battery_handler import BatteryHandler
@@ -59,18 +57,20 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    # BatterySignal = Signal(dict)
-    PlotSignal = Signal(dict)
-    MeasurementSignal = Signal(dict, dict)
-
     def __init__(self, *args, **kwargs):
-        super(NativeUI, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Set up the handlers
         self.battery_handler = BatteryHandler()
         self.data_handler = DataHandler(plot_history_length=1000)
         self.measurement_handler = MeasurementHandler()
         self.personal_handler = PersonalHandler()
+        self.__payload_handlers = [
+            self.battery_handler,
+            self.data_handler,
+            self.measurement_handler,
+            self.personal_handler,
+        ]
 
         config_path = self.__find_configs()
 
@@ -113,9 +113,9 @@ class NativeUI(HEVClient, QMainWindow):
 
         # initialise databases TODO: remove these and use handlers instead.
         self.db_lock = Lock()
-        self.__data = {}
+        # self.__data = {}
         self.__readback = {}
-        self.__cycle = {}
+        # self.__cycle = {}
         self.__alarms = {}
         self.__targets = {}
         self.__personal = {}
@@ -140,9 +140,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.confirmPopup.show()
 
         # Set Central
-        self.centralWidget = QWidget(self)
-        self.centralWidget.setLayout(self.layouts.global_layout())
-        self.setCentralWidget(self.centralWidget)
+        self.central_widget = QWidget(self)
+        self.central_widget.setLayout(self.layouts.global_layout())
+        self.setCentralWidget(self.central_widget)
 
         self.statusBar().showMessage("Waiting for data")
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
@@ -203,15 +203,6 @@ class NativeUI(HEVClient, QMainWindow):
             relevent toggle button is in the checked or unchecked state.
             ToggleButtonPressed is emitted by the toggle button when pressed.
 
-        PlotSignal -> normal_plots, detailed_plots, charts_widget
-            Data plotted in the normal, detailed, and charts plots is updated in
-            response to PlotSignal. PlotSignal is emitted in __emit_plots_signal() which
-            is triggered at timer.timeout.
-
-        MeasurementSignal -> normal_measurements, detailed_measurements
-            Data shown in the normal and detailed measurments widgets is updated in
-            response to MeasurementSignal. MeasurementSignal is emitted in
-            __emit_measurements_signal() which is triggered at timer.timeout.
         """
 
         # Startup connections
@@ -306,48 +297,46 @@ class NativeUI(HEVClient, QMainWindow):
         )
 
         # mode_handler should respond to manual spin box changes
-        for key, spinWidget in self.widgets.mode_handler.spinDict.items():
-            spinWidget.simpleSpin.manualChanged.connect(
+        for key, spin_widget in self.widgets.mode_handler.spinDict.items():
+            spin_widget.simpleSpin.manualChanged.connect(
                 lambda i=key: self.widgets.mode_handler.handle_manual_change(i)
             )
 
         # mode_handler should respond to user selection of radio button
-        for key, radioWidget in self.widgets.mode_handler.radioDict.items():
-            radioWidget.toggled.connect(
+        for key, radio_widget in self.widgets.mode_handler.radioDict.items():
+            radio_widget.toggled.connect(
                 lambda i, j=key: self.widgets.mode_handler.handle_radio_toggled(i, j)
             )
 
         # mode_handler should respond to ok, send, or cancel presses
-        for key, buttonWidget in self.widgets.mode_handler.buttonDict.items():
-            if isinstance(buttonWidget, OkButtonWidget) or isinstance(
-                buttonWidget, OkSendButtonWidget
-            ):
-                buttonWidget.pressed.connect(
+        for key, button_widget in self.widgets.mode_handler.buttonDict.items():
+            if isinstance(button_widget, (OkButtonWidget, OkSendButtonWidget)):
+                button_widget.pressed.connect(
                     lambda i=key: self.widgets.mode_handler.handle_okbutton_click(i)
                 )
-            elif isinstance(buttonWidget, CancelButtonWidget):
+            elif isinstance(button_widget, CancelButtonWidget):
                 mode = self.widgets.mode_handler.get_mode(key)
-                buttonWidget.pressed.connect(
+                button_widget.pressed.connect(
                     lambda i=mode: self.widgets.mode_handler.commandSent(i)
                 )
 
         ##### Expert Settings:
         # Expert handler should respond to manual value changes
-        for key, spinWidget in self.widgets.expert_handler.spinDict.items():
-            spinWidget.simpleSpin.manualChanged.connect(
+        for key, spin_widget in self.widgets.expert_handler.spinDict.items():
+            spin_widget.simpleSpin.manualChanged.connect(
                 lambda i=key: self.widgets.expert_handler.handle_manual_change(i)
             )
 
         # mode_handler should respond to ok, send, or cancel presses
-        for key, buttonWidget in self.widgets.expert_handler.buttonDict.items():
-            if isinstance(buttonWidget, OkButtonWidget) or isinstance(
-                buttonWidget, OkSendButtonWidget
+        for key, button_widget in self.widgets.expert_handler.buttonDict.items():
+            if isinstance(button_widget, OkButtonWidget) or isinstance(
+                button_widget, OkSendButtonWidget
             ):
-                buttonWidget.pressed.connect(
+                button_widget.pressed.connect(
                     lambda i=key: self.widgets.expert_handler.handle_okbutton_click(i)
                 )
-            elif isinstance(buttonWidget, CancelButtonWidget):
-                buttonWidget.pressed.connect(
+            elif isinstance(button_widget, CancelButtonWidget):
+                button_widget.pressed.connect(
                     lambda: self.widgets.expert_handler.commandSent()
                 )
 
@@ -360,9 +349,8 @@ class NativeUI(HEVClient, QMainWindow):
             button.toggle()
 
         # Plot data and measurements should update on a timer
-        self.timer = QtCore.QTimer()
+        self.timer = QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
-        self.timer.timeout.connect(self.__emit_measurements_signal)
         self.timer.timeout.connect(self.data_handler.send_update_plots_signal)
         self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
         self.timer.timeout.connect(self.widgets.mode_handler.update_values)
@@ -374,14 +362,6 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.normal_measurements.localise_text
         )
 
-        return 0
-
-    def __emit_measurements_signal(self) -> int:
-        """
-        Get the current status of the 'cycle' and 'readback' dbs and emit the
-        measurements_signal signal.
-        """
-        self.MeasurementSignal.emit(self.get_db("cycle"), self.get_db("readback"))
         return 0
 
     def __check_db_name(self, database_name: str) -> str:
@@ -402,20 +382,13 @@ class NativeUI(HEVClient, QMainWindow):
         return database_name
 
     def set_current_mode(self, mode):
+        """
+        Set the current mode
+        TODO: move to mode handler
+        """
         print("setting native ui mode")
         print(mode)
         self.currentMode = mode
-
-    def set_data_db(self, payload):
-        """
-        Set the contents of the __data database. Uses lock to avoid race
-        conditions.
-                """
-        logging.debug("setting data db")
-        with self.db_lock:
-            for key in payload:
-                self.__data[key] = payload[key]
-        return 0
 
     def get_db(self, database_name: str):
         """
@@ -480,7 +453,6 @@ class NativeUI(HEVClient, QMainWindow):
             logging.debug("Content of invalid payload:\n%s", payload)
 
         if payload["type"] == "DATA":
-            old = self.ongoingAlarms
             self.ongoingAlarms = payload["alarms"]
         elif payload["type"] == "ALARM":
             self.__set_db("alarms", payload["ALARM"])
@@ -636,7 +608,7 @@ def set_window_size(window, resolution: str = None, windowed: bool = False) -> i
 
     if not windowed:
         window.move(0, 0)
-        window.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        window.setWindowFlags(Qt.FramelessWindowHint)
     return 0
 
 
