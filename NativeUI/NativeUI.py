@@ -464,30 +464,31 @@ class NativeUI(HEVClient, QMainWindow):
         super().start_client()
 
     def get_updates(self, payload: dict) -> int:
-        """callback from the polling function, payload is data from socket """
+        """
+        Callback from the polling function, payload is data from socket.
+        TODO: remove all if-elif logic on favor of looping over handlers.
+        """
         self.statusBar().showMessage(f"{payload}")
         logging.debug("recieved payload of type %s", payload["type"])
+
+        payload_registered = False
+        for handler in self.__payload_handlers:
+            if handler.set_db(payload) == 0:
+                payload_registered = True
+        if not payload_registered:
+            logging.warning("Handlers: Invalid payload type: %s", payload["type"])
+            logging.debug("Content of invalid payload:\n%s", payload)
+
         if payload["type"] == "DATA":
-            self.data_handler.set_db(payload)
             old = self.ongoingAlarms
             self.ongoingAlarms = payload["alarms"]
-        elif payload["type"] == "BATTERY":
-            self.battery_handler.set_db(payload)
         elif payload["type"] == "ALARM":
             self.__set_db("alarms", payload["ALARM"])
         elif payload["type"] == "TARGET":
             self.__set_db("targets", payload["TARGET"])
-        elif payload["type"] == "READBACK":
-            self.measurement_handler.set_db(payload)
-        elif payload["type"] == "PERSONAL":
-            self.personal_handler.set_db(payload)
-        elif payload["type"] == "CYCLE":
-            self.measurement_handler.set_db(payload)
         elif payload["type"] == "DEBUG":
             pass
-        else:
-            logging.warning("Invalid payload type: %s", payload["type"])
-            logging.debug("Content of invalid payload:\n%s", payload)
+
         return 0
 
     @Slot(str, str, float)

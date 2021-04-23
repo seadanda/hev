@@ -25,7 +25,7 @@ class Handler:
         If the provided database is of the correct type, copy its contents to the database
         """
         if payload["type"] not in self.__payload_types:
-            return 0
+            return 1
 
         with self.__lock:
             for key in payload[payload["type"]]:
