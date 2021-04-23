@@ -27,7 +27,7 @@ def test_handler():
     test_json = json.load(open(test_json_file_path))
 
     # Set the database for the imported json and get the database imported
-    handler.set_db(test_json)
+    set_db_return = handler.set_db(test_json)
     db = handler.get_db()
 
     # Check if the input payload and output database are the same
@@ -40,6 +40,7 @@ def test_handler():
     handler.active_payload = MagicMock(return_value=True)
 
     # Check whether conditions have been met to pass test
+    assert set_db_return == 0, "set_db does not return 0 for a valid payload"
     assert (
         handler.active_payload() is True
     ), "active_payload was not called when set_db was run."
