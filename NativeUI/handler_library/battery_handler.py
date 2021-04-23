@@ -1,9 +1,15 @@
 import logging
-from handler_library.handler import Handler
+from handler_library.handler import PayloadHandler
 from PySide2.QtCore import Signal, QObject
 
 
-class BatteryHandler(Handler, QObject):
+class BatteryHandler(PayloadHandler, QObject):
+    """
+    Subclass of the PayloadHandler class (handler.py) to handle alarm data.
+
+    Inherits from QObject to give us access to pyside2's signal class.
+    """
+
     UpdateBatteryDisplay = Signal(dict)
 
     def __init__(self, *args, **kwargs):
@@ -11,6 +17,10 @@ class BatteryHandler(Handler, QObject):
         QObject.__init__(self)
 
     def active_payload(self, *args, **kwargs) -> int:
+        """
+        When battery information is set, interprets it to construct the battery status
+        and emits the UpdateBatteryDisplay signal containing that status as a dict.
+        """
         new_status = {}
         battery_data = self.get_db()
 

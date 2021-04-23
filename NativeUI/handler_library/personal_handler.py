@@ -2,13 +2,13 @@
 personal_handler.py
 """
 
-from handler_library.handler import Handler
+from handler_library.handler import PayloadHandler
 from PySide2.QtCore import Signal, QObject
 
 
-class PersonalHandler(Handler, QObject):
+class PersonalHandler(PayloadHandler, QObject):
     """
-    Subclass of the Handler class (handler.py) to handle personal data.
+    Subclass of the PayloadHandler class (handler.py) to handle personal data.
 
     Inherits from QObject to give us access to pyside2's signal class.
 

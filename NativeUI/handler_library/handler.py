@@ -5,7 +5,7 @@ handler.py
 from threading import Lock
 
 
-class Handler:
+class PayloadHandler:
     """
     Base class for the data handlers.
     """
