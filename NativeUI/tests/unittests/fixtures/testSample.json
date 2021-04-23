@@ -1,0 +1,11 @@
+{
+    "type": "TEST",
+    "TEST":{
+        "version": 182,
+        "timestamp": 0,
+        "type": "TEST",
+        "attribute_1": true,
+        "attribute_2": 1,
+        "attribute_3": 0.579
+    }
+}

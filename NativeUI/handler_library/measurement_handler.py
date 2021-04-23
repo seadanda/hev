@@ -16,11 +16,11 @@ class MeasurementHandler(Handler, QObject):
 
     UpdateMeasurements = Signal(dict)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(["CYCLE", "READBACK"], *args, **kwargs)
         QObject.__init__(self)
 
-    def active_payload(self) -> int:
+    def active_payload(self, *args, **kwargs) -> int:
         cycle_data = self.get_db()
         outdict = {}
 

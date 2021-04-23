@@ -9,24 +9,29 @@ from unittest.mock import MagicMock, patch
 from handler_library.handler import Handler
 from handler_library.battery_handler import BatteryHandler
 
+
 def test_handler():
     """
     Tests the default handler.
-    Test for set_db and get_db to set the database from a given payload and compare the db imported from get_db.
+    Test for set_db and get_db to set the database from a given payload and compare the
+    db imported from get_db.
     Test for if active_payload gets fired when set_db is called.
     """
-    # Initalise the handler and import sample battery json file
-    handler = Handler()
+    # Initalise the handler and import sample test json file
+    handler = Handler(["TEST"])
 
-    batt_json_file_path = os.environ['PYTHONPATH'].split(os.pathsep)[0] + '/tests/unittests/fixtures/batterySample.json'
-    batt_json = json.load(open(batt_json_file_path))
+    test_json_file_path = (
+        os.environ["PYTHONPATH"].split(os.pathsep)[0]
+        + "/tests/unittests/fixtures/testSample.json"
+    )
+    test_json = json.load(open(test_json_file_path))
 
     # Set the database for the imported json and get the database imported
-    handler.set_db(batt_json)
+    handler.set_db(test_json)
     db = handler.get_db()
 
     # Check if the input payload and output database are the same
-    if batt_json == db:
+    if test_json["TEST"] == db:
         payload_database_comparison = True
     else:
         payload_database_comparison = False
@@ -35,8 +40,12 @@ def test_handler():
     handler.active_payload = MagicMock(return_value=True)
 
     # Check whether conditions have been met to pass test
-    assert handler.active_payload() is True, 'active_payload was not called when set_db was run.'
-    assert payload_database_comparison is True, 'set_db does not set the inputted payload to the database.'
+    assert (
+        handler.active_payload() is True
+    ), "active_payload was not called when set_db was run."
+    assert (
+        payload_database_comparison is True
+    ), "set_db does not set the inputted payload to the database."
 
 
 def test_battery_handler():
@@ -46,7 +55,10 @@ def test_battery_handler():
     # Initalise the battery handler and import sample battery json file
     batt_handler = BatteryHandler()
 
-    batt_json_file_path = os.environ['PYTHONPATH'].split(os.pathsep)[0] + '/tests/unittests/fixtures/batterySample.json'
+    batt_json_file_path = (
+        os.environ["PYTHONPATH"].split(os.pathsep)[0]
+        + "/tests/unittests/fixtures/batterySample.json"
+    )
     batt_json = json.load(open(batt_json_file_path))
 
     # Set true/false variables
@@ -73,7 +85,10 @@ def test_battery_handler():
         UpdateBatteryDisplay_activated = True
 
         # Check whether new_status is the expected output
-        expected_status_file_path = os.environ['PYTHONPATH'].split(os.pathsep)[0] + '/tests/unittests/fixtures/battery_status_output_sample.json'
+        expected_status_file_path = (
+            os.environ["PYTHONPATH"].split(os.pathsep)[0]
+            + "/tests/unittests/fixtures/battery_status_output_sample.json"
+        )
         expected_status = json.load(open(expected_status_file_path))
 
         if new_status == expected_status:
@@ -93,8 +108,15 @@ def test_battery_handler():
         batt_per_0_correctly_set = True
 
     # Check whether conditions have been met to pass test
-    assert UpdateBatteryDisplay_activated is True, "UpdateBatteryDisplay.emit(new_status) is not called."
-    assert new_status_correctly_set is True, "Output of new_status does not match the expected output."
-    assert batt_per_1_correctly_set is True, "compute_battery_percent does not return 85% when bat85 is set to 1."
-    assert batt_per_0_correctly_set is True, "compute_battery_percent does not return 0% when bat85 is set to 0."
-
+    assert (
+        UpdateBatteryDisplay_activated is True
+    ), "UpdateBatteryDisplay.emit(new_status) is not called."
+    assert (
+        new_status_correctly_set is True
+    ), "Output of new_status does not match the expected output."
+    assert (
+        batt_per_1_correctly_set is True
+    ), "compute_battery_percent does not return 85% when bat85 is set to 1."
+    assert (
+        batt_per_0_correctly_set is True
+    ), "compute_battery_percent does not return 0% when bat85 is set to 0."

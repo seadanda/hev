@@ -468,21 +468,21 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().showMessage(f"{payload}")
         logging.debug("recieved payload of type %s", payload["type"])
         if payload["type"] == "DATA":
-            self.data_handler.set_db(payload["DATA"])
+            self.data_handler.set_db(payload)
             old = self.ongoingAlarms
             self.ongoingAlarms = payload["alarms"]
         elif payload["type"] == "BATTERY":
-            self.battery_handler.set_db(payload["BATTERY"])
+            self.battery_handler.set_db(payload)
         elif payload["type"] == "ALARM":
             self.__set_db("alarms", payload["ALARM"])
         elif payload["type"] == "TARGET":
             self.__set_db("targets", payload["TARGET"])
         elif payload["type"] == "READBACK":
-            self.measurement_handler.set_db(payload["READBACK"])
+            self.measurement_handler.set_db(payload)
         elif payload["type"] == "PERSONAL":
-            self.personal_handler.set_db(payload["PERSONAL"])
+            self.personal_handler.set_db(payload)
         elif payload["type"] == "CYCLE":
-            self.measurement_handler.set_db(payload["CYCLE"])
+            self.measurement_handler.set_db(payload)
         elif payload["type"] == "DEBUG":
             pass
         else:

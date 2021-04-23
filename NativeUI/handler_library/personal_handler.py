@@ -18,11 +18,11 @@ class PersonalHandler(Handler, QObject):
 
     UpdatePersonalDisplay = Signal(dict)
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(["PERSONAL"], *args, **kwargs)
         QObject.__init__(self)
 
-    def active_payload(self) -> int:
+    def active_payload(self, *args, **kwargs) -> int:
         """
         When the personal data is updated, extract those parameters needed for display
         and emit the UpdatePersonalDisplay signal.
