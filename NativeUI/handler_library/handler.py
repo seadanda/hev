@@ -7,7 +7,7 @@ from threading import Lock
 
 class PayloadHandler:
     """
-    Base class for the data handlers.
+    Base class for the payload data handlers.
     """
 
     def __init__(self, payload_types: list):
@@ -47,3 +47,36 @@ class PayloadHandler:
         so that we have access to the full context of the information.
         """
         pass
+
+
+class GenericDataHandler:
+    """
+    Base class for non-payload data handlers.
+    """
+
+    def __init__(self):
+        self.__database = {}
+        self.__lock = Lock()
+
+    def set_db(self, data: dict) -> int:
+        """
+        Copy the contents of 'data' to the internal database.
+        """
+        with self.__lock:
+            for key in data:
+                self.__database[key] = data[key]
+
+        self.on_data_set()
+        return 0
+
+    def get_db(self) -> dict:
+        """
+        Return the content of the __database dictionary.
+        """
+        with self.__lock:
+            return dict(self.__database)
+
+    def on_data_set(self):
+        """
+        Overridable function called after recieving new data.
+        """
