@@ -58,6 +58,43 @@ class Layout:
 
         return 0
 
+    def startup_layout(self):
+        vlayout = QtWidgets.QVBoxLayout()
+        with open("NativeUI/configs/mode_config.json") as json_file:
+            modeDict = json.load(json_file)
+
+        # Define the stack of pages (used by the page buttons to set the current page)
+        self.widgets.add_widget(
+            self.__make_stack(
+                [
+                    self.layout_startup_main(),
+                    self.layout_mode_startup(),  # self, settings, mode:str, enableList:list, buttons: bool)
+                    self.layout_mode_personal("startup_", False),
+                ]
+            ),
+            "startup_stack",
+        )
+        self.widgets.startup_stack.setFont(self.NativeUI.text_font)
+        vlayout.addWidget(self.widgets.startup_stack)
+        hButtonLayout = QtWidgets.QHBoxLayout()
+        hButtonLayout.addWidget(self.NativeUI.widgets.backButton)
+        hButtonLayout.addWidget(self.NativeUI.widgets.skipButton)
+        hButtonLayout.addWidget(self.NativeUI.widgets.nextButton)
+
+        vlayout.addLayout(hButtonLayout)
+
+        return vlayout
+
+    def layout_startup_main(self):
+        vlayout = QtWidgets.QVBoxLayout()
+        vlayout.addWidget(self.widgets.calibration)
+        vlayout.addWidget(self.widgets.leak_test)
+        vlayout.addWidget(self.widgets.maintenance)
+        widg = QtWidgets.QWidget()
+        widg.setLayout(vlayout)
+        return widg
+
+
     def global_layout(self):
         hlayout = QtWidgets.QHBoxLayout()
         vlayout = QtWidgets.QVBoxLayout()

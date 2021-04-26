@@ -37,7 +37,7 @@ from hevclient import HEVClient
 from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot
 from PySide2.QtGui import QColor, QFont, QPalette
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget
+from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QDialog
 from ui_layout import Layout
 from ui_widgets import Widgets
 
@@ -71,6 +71,12 @@ class NativeUI(HEVClient, QMainWindow):
         self.data_handler = DataHandler(plot_history_length=1000)
         self.measurement_handler = MeasurementHandler()
         self.personal_handler = PersonalHandler()
+        self.__payload_handlers = [
+            self.battery_handler,
+            self.data_handler,
+            self.measurement_handler,
+            self.personal_handler,
+        ]
 
         config_path = self.__find_configs()
 
@@ -290,6 +296,11 @@ class NativeUI(HEVClient, QMainWindow):
 
         ##### Mode:
         # When mode is switched from mode page, various other locations must respond
+        for widget in (self.widgets.mode_handler.spinDict.values()):
+            self.widgets.mode_handler.UpdateModes.connect(widget.update_value)
+
+
+
         self.widgets.mode_handler.modeSwitched.connect(
             lambda i: self.set_current_mode(i)
         )
@@ -354,6 +365,10 @@ class NativeUI(HEVClient, QMainWindow):
                     lambda: self.widgets.expert_handler.commandSent()
                 )
 
+        for widget in (self.widgets.expert_handler.spinDict.values()):
+            self.widgets.expert_handler.UpdateExpert.connect(widget.update_value)
+
+
         # Lines displayed on the charts page should update when the corresponding
         # buttons are toggled.
         for button in self.widgets.chart_buttons_widget.buttons:
@@ -366,9 +381,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
         self.timer.timeout.connect(self.__emit_measurements_signal)
-        self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
-        self.timer.timeout.connect(self.widgets.mode_handler.update_values)
-        self.timer.timeout.connect(self.widgets.expert_handler.update_values)
+        #self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
+        #self.timer.timeout.connect(self.widgets.mode_handler.update_values)
+        #self.timer.timeout.connect(self.widgets.expert_handler.update_values)
         self.timer.timeout.connect(self.data_handler.send_update_plots_signal)
 
         self.timer.start()
@@ -463,9 +478,12 @@ class NativeUI(HEVClient, QMainWindow):
         elif payload["type"] == "ALARM":
             self.__set_db("alarms", payload["ALARM"])
         elif payload["type"] == "TARGET":
-            self.__set_db("targets", payload["TARGET"])
+            #self.__set_db("targets", payload["TARGET"])
+            self.widgets.mode_handler.set_db(payload["TARGET"])
         elif payload["type"] == "READBACK":
             self.measurement_handler.set_db(payload["READBACK"])
+            self.widgets.expert_handler.set_db(payload["READBACK"])
+            self.widgets.expert_handler.set_db(payload["READBACK"])
         elif payload["type"] == "PERSONAL":
             self.personal_handler.set_db(payload["PERSONAL"])
         elif payload["type"] == "CYCLE":

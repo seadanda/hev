@@ -24,32 +24,27 @@ class SetConfirmPopup(QtWidgets.QDialog):
     """Popup called when user wants to send new values to microcontroller.
     This popup shows changes and asks for confirmation"""
 
-    def __init__(self, parentTemplate, NativeUI, setList, commandList, *args, **kwargs):
+    def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
 
         self.NativeUI = NativeUI
-        if setList == []:
-            setList = ["no values were set"]
-        self.parentTemplate = parentTemplate
-        self.commandList = commandList
 
-        listWidget = QtWidgets.QListWidget()
-        for item in setList:
-            listItem = QtWidgets.QListWidgetItem(item)
-            listItem.setFlags(QtCore.Qt.NoItemFlags)
-            listWidget.addItem(listItem)
+        #elf.parentTemplate = parentTemplate
+        #self.commandList = commandList
+
+        self.listWidget = QtWidgets.QListWidget()
+
         # size = QtWidgets.QSize()
         #        s.setHeight(super(qtWidgets.QListWidget,listWidget).sizeHint().height())
         # listWidget.setStyleSheet('background-color:black;font:16pt; color:white; border:none')
         # self.setWindowOpacity(0.1)
         # self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
-        listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        listWidget.setFixedHeight(
-            listWidget.sizeHintForRow(0) * listWidget.count() + 10
-        )
-        listWidget.setFixedWidth(listWidget.sizeHintForColumn(0) * listWidget.count())
+        self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        # self.listWidget.setFixedHeight(
+        #     self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
+        # )
 
         buttonHLayout = QtWidgets.QHBoxLayout()
 
@@ -64,7 +59,7 @@ class SetConfirmPopup(QtWidgets.QDialog):
         buttonHLayout.addWidget(self.cancelButton)
 
         vlayout = QtWidgets.QVBoxLayout()
-        vlayout.addWidget(listWidget)
+        vlayout.addWidget(self.listWidget)
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
@@ -74,9 +69,30 @@ class SetConfirmPopup(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
         self.setWindowOpacity(0.5)
 
+    def populatePopup(self, messageList, commandList ):
+        if messageList == []:
+            messageList = ["no values were set"]
+        for item in messageList:
+            listItem = QtWidgets.QListWidgetItem(item)
+            listItem.setFlags(QtCore.Qt.NoItemFlags)
+            self.listWidget.addItem(listItem)
+        self.listWidget.setFixedHeight(
+            self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
+        )
+        self.listWidget.setFixedWidth(self.listWidget.sizeHintForColumn(0) * self.listWidget.count())
+
+        self.listWidget.update()
+        self.update()
+        self.commandList = commandList
+
+    def clearPopup(self):
+        self.listWidget.clear()
+        self.commandList = []
+
+
     def ok_button_pressed(self):
         """Send commands when ok button is clicked"""
-        self.parentTemplate.liveUpdating = True
+        #self.parentTemplate.liveUpdating = True
         for command in self.commandList:
             self.NativeUI.q_send_cmd(*command)
         self.close()
@@ -168,12 +184,3 @@ class confirmPopup(QtWidgets.QWidget):
         x = screen.width() - screen.width() / 2
         y = 0  # screen.height() - widget.height()
         self.move(x, y)
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    widg = SetConfirmPopup(
-        None, ["test text", "test", "test", "tregfdgdfgd", "experiment"]
-    )
-    widg.show()
-    sys.exit(app.exec_())

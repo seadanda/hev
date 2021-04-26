@@ -187,6 +187,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
                 self.layout.addWidget(self.spinDict[settings[0]])
         self.layout.addWidget(self.spinStack)
 
+
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
 

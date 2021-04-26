@@ -17,52 +17,12 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from datetime import datetime
 
 
-class abstractAlarm(QtWidgets.QWidget):
-
-    alarmExpired = QtCore.Signal()
-
-    def __init__(self, NativeUI, alarmPayload, *args, **kwargs):
-        super(abstractAlarm, self).__init__(*args, **kwargs)
-        self.NativeUI = NativeUI
-        self.alarmPayload = alarmPayload
-
-        self.startTime = datetime.now()
-        self.duration = datetime.now() - self.startTime
-        self.finishTime = -1
-
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(1500)  # just faster than 60Hz
-        self.timer.timeout.connect(self.timeoutDelete)
-        self.timer.start()
-
-    def timeoutDelete(self):
-        # """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
-        self.alarmExpired.emit()
-        self.setParent(None) # delete self
-        return 0
-
-    def resetTimer(self):
-        self.timer.start()
-        return 0
-
-    def freezeTimer(self):
-        self.timer.stop()
-        return 0
-
-    def recordFinishTime(self):
-        self.finishTime = datetime.now()
-        self.duration = self.finishTime - self.startTime
-
-    def calculateDuration(self):
-        self.duration = datetime.now() - self.startTime
-
-
-class alarmWidget(QtWidgets.QWidget):
+class AlarmWidget(QtWidgets.QWidget):
     """Object containing information particular to one alarm.
     Created when alarm received from microcontroller, timeout after alarm signal stops.
     Is contained within alarmPopup"""
     def __init__(self, NativeUI, abstractAlarm, alarmCarrier, *args, **kwargs):
-        super(alarmWidget, self).__init__(*args, **kwargs)
+        super(AlarmWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
         self.alarmCarrier = alarmCarrier # Needs to refer to its containing object
@@ -117,12 +77,12 @@ class alarmWidget(QtWidgets.QWidget):
     #     return 0
 
 
-class alarmPopup(QtWidgets.QDialog):
+class AlarmPopup(QtWidgets.QDialog):
     """Container class for alarm widgets. Handles ordering and positioning of alarms.
     Needs to adjust its size whenever a widget is deleted"""
     def __init__(self, NativeUI, *args, **kwargs):
-        super(alarmPopup, self).__init__(*args, **kwargs)
-
+        super(AlarmPopup, self).__init__(*args, **kwargs)
+        self.setParent(NativeUI) # ensures popup closes when main UI does
         self.alarmDict = {}
         self.NativeUI = NativeUI
 
@@ -146,6 +106,8 @@ class alarmPopup(QtWidgets.QDialog):
         self.timer.timeout.connect(self.adjustSize)
         self.timer.start()
 
+        self.show()
+
     def clearAlarms(self):
         """Wipe all alarms out and clear dictionary"""
         for i in reversed(range(self.layout.count())):
@@ -157,9 +119,10 @@ class alarmPopup(QtWidgets.QDialog):
 
     def addAlarm(self, abstractAlarm):
         """Creates a new alarmWidget and adds it to the container"""
-        self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]] = alarmWidget(
+        self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]] = AlarmWidget(
             self.NativeUI, abstractAlarm, self
         )
+
         self.layout.addWidget(self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]])
         return 0
 

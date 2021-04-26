@@ -18,9 +18,9 @@ from PySide2 import QtCore, QtGui, QtWidgets
 from datetime import datetime
 
 
-class alarmList(QtWidgets.QListWidget):
+class AlarmList(QtWidgets.QListWidget):
     def __init__(self, NativeUI, *args, **kwargs):
-        super(alarmList, self).__init__(*args, **kwargs)
+        super(AlarmList, self).__init__(*args, **kwargs)
 
         self.labelList = []
         self.setSizePolicy(

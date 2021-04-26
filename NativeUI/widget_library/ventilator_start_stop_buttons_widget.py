@@ -35,7 +35,7 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
 
         layout = QtWidgets.QVBoxLayout()
 
-        self.button_start = holdButton(NativeUI)  # QtWidgets.QPushButton()
+        self.button_start = QtWidgets.QPushButton()  # QtWidgets.QPushButton()
         self.button_stop = holdButton(NativeUI)  # QtWidgets.QPushButton()
         self.button_standby = holdButton(NativeUI)  # QtWidgets.QPushButton()
 
@@ -45,7 +45,8 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
 
         for button, text in zip(self.__buttons, self.__buttontext):
             button.setText(text)
-            button.popUp.completeLabel.setText("Ventilation " + text)
+            if isinstance(button, holdButton):
+                button.popUp.completeLabel.setText("Ventilation " + text)
             layout.addWidget(button)
             button.setStyleSheet(
                 "background-color:"
