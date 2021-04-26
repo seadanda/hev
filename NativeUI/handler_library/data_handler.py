@@ -1,15 +1,14 @@
 from handler_library.handler import PayloadHandler
-from PySide2.QtCore import Signal, QObject, QTimer
+from PySide2.QtCore import Signal
 import numpy as np
 from threading import Lock
 
 
-class DataHandler(PayloadHandler, QObject):
+class DataHandler(PayloadHandler):
     UpdatePlots = Signal(dict)
 
     def __init__(self, *args, plot_history_length=500, **kwargs):
         super().__init__(["DATA"], *args, **kwargs)
-        QObject.__init__(self)
         self.__plot_history_length = plot_history_length
         self.__plots_database = {
             "data": np.zeros((plot_history_length, 4)),

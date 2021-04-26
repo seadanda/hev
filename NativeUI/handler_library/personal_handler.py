@@ -3,14 +3,12 @@ personal_handler.py
 """
 
 from handler_library.handler import PayloadHandler
-from PySide2.QtCore import Signal, QObject
+from PySide2.QtCore import Signal
 
 
-class PersonalHandler(PayloadHandler, QObject):
+class PersonalHandler(PayloadHandler):
     """
     Subclass of the PayloadHandler class (handler.py) to handle personal data.
-
-    Inherits from QObject to give us access to pyside2's signal class.
 
     Adds the UpdatePersonalDisplay signal designed to convey information to be displayed
     to the display widget.
@@ -20,7 +18,6 @@ class PersonalHandler(PayloadHandler, QObject):
 
     def __init__(self, *args, **kwargs):
         super().__init__(["PERSONAL"], *args, **kwargs)
-        QObject.__init__(self)
 
     def active_payload(self, *args, **kwargs) -> int:
         """
