@@ -27,6 +27,12 @@ from threading import Lock
 
 import git
 from global_widgets.global_send_popup import confirmPopup
+from global_widgets.global_spinbox import labelledSpin
+from widget_library.ok_cancel_buttons_widget import (
+    OkButtonWidget,
+    OkSendButtonWidget,
+    CancelButtonWidget,
+)
 from hevclient import HEVClient
 from PySide2 import QtCore
 from PySide2.QtCore import Signal, Slot
@@ -54,7 +60,7 @@ class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
     # BatterySignal = Signal(dict)
-    PlotSignal = Signal(dict)
+    #PlotSignal = Signal(dict)
     MeasurementSignal = Signal(dict, dict)
 
     def __init__(self, *args, **kwargs):
@@ -105,7 +111,7 @@ class NativeUI(HEVClient, QMainWindow):
                 self.iconpath, self.icons[key] + "." + self.iconext
             )
 
-        # initialise databases TODO: remove these and use handlers instead.
+        # initialise databases
         self.db_lock = Lock()
         self.__data = {}
         self.__readback = {}
@@ -147,6 +153,12 @@ class NativeUI(HEVClient, QMainWindow):
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
+
+        self.startupWidget = QDialog(self)
+        self.startupWidget.setLayout(self.layouts.startup_layout())
+        self.startupWidget.setPalette(palette)
+        self.startupWidget.setAutoFillBackground(True)
+        self.startupWidget.show()
 
         # Connect widgets
         self.__define_connections()
@@ -201,6 +213,42 @@ class NativeUI(HEVClient, QMainWindow):
             response to MeasurementSignal. MeasurementSignal is emitted in
             __emit_measurements_signal() which is triggered at timer.timeout.
         """
+
+        # Startup connections
+        self.widgets.calibration.button.pressed.connect(
+            lambda i=self.widgets.calibration: self.widgets.startup_handler.handle_calibrationPress(
+                i
+            )
+        )
+        self.widgets.leak_test.button.pressed.connect(
+            lambda i=self.widgets.leak_test: self.widgets.startup_handler.handle_calibrationPress(
+                i
+            )
+        )
+        self.widgets.maintenance.button.pressed.connect(
+            lambda i=self.widgets.maintenance: self.widgets.startup_handler.handle_calibrationPress(
+                i
+            )
+        )
+
+        for radio in self.widgets.startup_handler.radioDict.values():
+            radio.toggled.connect(lambda i,j=radio: self.widgets.startup_handler.handle_radiobutton(i,j) )
+
+        self.widgets.nextButton.pressed.connect(
+            lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_nextbutton(
+                i
+            )
+        )
+        self.widgets.skipButton.pressed.connect(
+            self.widgets.startup_handler.handle_sendbutton
+        )
+
+        self.widgets.backButton.pressed.connect(
+            lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(
+                i
+            )
+        )
+
         # Battery Display should update when we get battery info
         self.battery_handler.UpdateBatteryDisplay.connect(
             self.widgets.battery_display.update_status
@@ -236,6 +284,76 @@ class NativeUI(HEVClient, QMainWindow):
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
 
+        self.widgets.ventilator_start_stop_buttons_widget.button_start.pressed.connect(
+            self.startupWidget.show
+        )
+
+        ##### Mode:
+        # When mode is switched from mode page, various other locations must respond
+        self.widgets.mode_handler.modeSwitched.connect(
+            lambda i: self.set_current_mode(i)
+        )
+        self.widgets.mode_handler.modeSwitched.connect(
+            lambda i: self.widgets.tab_modeswitch.update_mode(i)
+        )
+        self.widgets.mode_handler.modeSwitched.connect(
+            self.widgets.mode_handler.refresh_button_colour
+        )
+
+        # when mode is switched from modeSwitch button, other locations must respond
+        self.widgets.tab_modeswitch.modeSwitched.connect(
+            lambda i: self.set_current_mode(i)
+        )
+        self.widgets.tab_modeswitch.modeSwitched.connect(
+            self.widgets.mode_handler.refresh_button_colour
+        )
+
+        # mode_handler should respond to manual spin box changes
+        for key, spinWidget in self.widgets.mode_handler.spinDict.items():
+            spinWidget.simpleSpin.manualChanged.connect(
+                lambda i=key: self.widgets.mode_handler.handle_manual_change(i)
+            )
+
+        # mode_handler should respond to user selection of radio button
+        for key, radioWidget in self.widgets.mode_handler.radioDict.items():
+            radioWidget.toggled.connect(
+                lambda i, j=key: self.widgets.mode_handler.handle_radio_toggled(i, j)
+            )
+
+        # mode_handler should respond to ok, send, or cancel presses
+        for key, buttonWidget in self.widgets.mode_handler.buttonDict.items():
+            if isinstance(buttonWidget, OkButtonWidget) or isinstance(
+                buttonWidget, OkSendButtonWidget
+            ):
+                buttonWidget.pressed.connect(
+                    lambda i=key: self.widgets.mode_handler.handle_okbutton_click(i)
+                )
+            elif isinstance(buttonWidget, CancelButtonWidget):
+                mode = self.widgets.mode_handler.get_mode(key)
+                buttonWidget.pressed.connect(
+                    lambda i=mode: self.widgets.mode_handler.commandSent(i)
+                )
+
+        ##### Expert Settings:
+        # Expert handler should respond to manual value changes
+        for key, spinWidget in self.widgets.expert_handler.spinDict.items():
+            spinWidget.simpleSpin.manualChanged.connect(
+                lambda i=key: self.widgets.expert_handler.handle_manual_change(i)
+            )
+
+        # mode_handler should respond to ok, send, or cancel presses
+        for key, buttonWidget in self.widgets.expert_handler.buttonDict.items():
+            if isinstance(buttonWidget, OkButtonWidget) or isinstance(
+                buttonWidget, OkSendButtonWidget
+            ):
+                buttonWidget.pressed.connect(
+                    lambda i=key: self.widgets.expert_handler.handle_okbutton_click(i)
+                )
+            elif isinstance(buttonWidget, CancelButtonWidget):
+                buttonWidget.pressed.connect(
+                    lambda: self.widgets.expert_handler.commandSent()
+                )
+
         # Lines displayed on the charts page should update when the corresponding
         # buttons are toggled.
         for button in self.widgets.chart_buttons_widget.buttons:
@@ -248,8 +366,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
         self.timer.timeout.connect(self.__emit_measurements_signal)
-        self.timer.timeout.connect(self.widgets.alarm_tab.update_alarms)
+        self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
+        self.timer.timeout.connect(self.widgets.mode_handler.update_values)
+        self.timer.timeout.connect(self.widgets.expert_handler.update_values)
         self.timer.timeout.connect(self.data_handler.send_update_plots_signal)
+
         self.timer.start()
 
         # Localisation needs to update widgets

@@ -30,7 +30,7 @@ class SpinButton(QtWidgets.QFrame):
     def __init__(self, NativeUI, settings):
         super().__init__()
 
-        self.liveUpdating = True
+        self.manuallyUpdated = False
         # self.setStyleSheet("background-color:blue;")
         self.currentVal = 0
         self.cmd_type = settings[3]
@@ -50,25 +50,22 @@ class SpinButton(QtWidgets.QFrame):
             "font-size: " + NativeUI.text_size + ";"
             "color:white;"
             "background-color:" + labelBgColour + ";"
-            "border-radius:4px;"
-            "border: 2px solid white"
+            ""#border-radius:4px;"
+            ""#border: 2px solid white"
         )
         self.label.setAlignment(QtCore.Qt.AlignCenter)
+        self.label.setFixedHeight(45)
         self.layout.addWidget(self.label)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
-        # self.doubleSpin = QtWidgets.QDoubleSpinBox()
-        # self.doubleSpin.lineEdit().installEventFilter(
-        #     self
-        # )  # override is defined in 'eventFilter'. ensures lineEdit responds to double mouse click
         self.simpleSpin.lineEdit().setStyleSheet("border:blue;")
+        self.simpleSpin.setFixedHeight(100)
 
         boxStyleString = (
             "QDoubleSpinBox{"
             "   border:none;"
             "   background-color: black;"
             "   font: " + NativeUI.text_size + " large 'Times New Roman';"
-            "   height: 60px;"
             "}"
             "QDoubleSpinBox[colour='0'] {"
             "   color:green;"
@@ -81,7 +78,7 @@ class SpinButton(QtWidgets.QFrame):
             "}"
         )
 
-        upButtonStyleString = "QDoubleSpinBox::up-button{" "height:30;" "width:40;" "}"
+        upButtonStyleString = "QDoubleSpinBox::up-button{" "height:50;" "width:50;" "}"
 
         # upButtonPressedStyleString = (
         #    "QDoubleSpinBox::up-button:pressed{ border:orange;}"
@@ -103,26 +100,30 @@ class SpinButton(QtWidgets.QFrame):
         # self.doubleSpin.setStyleSheet("QDoubleSpinBox::up-button{ height:30; width:100;")
         self.simpleSpin.setAlignment(QtCore.Qt.AlignCenter)
         self.simpleSpin.manualChanged.connect(self.manualChanged)
+        self.simpleSpin.setSizePolicy(
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         self.layout.addWidget(self.simpleSpin)
         self.setLayout(self.layout)
-        self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px; ")
+        self.setFixedWidth(300)
+        #self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px;")
 
     def update_targets_value(self):
         newVal = self.NativeUI.get_db("targets")
         if (newVal == {}) or (self.val_code == ""):
             a = 1  # do nothing
         else:
-            if self.liveUpdating:
+            if not self.manuallyUpdated:
                 self.simpleSpin.setValue(newVal[self.val_code])
                 self.setTextColour(1)
             else:
-                if self.simpleSpin.value() == newVal[self.val_code]:
-                    self.liveUpdating = True
+
+                if int(self.simpleSpin.value()) == int(newVal[self.val_code]):
+                    self.manuallyUpdated = False
                     self.setTextColour(1)
 
     def manualChanged(self):
         """Called when user manually makes a change. Stops value from updating and changes colour"""
-        self.liveUpdating = False
+        self.manuallyUpdated = True
         self.setTextColour(2)
         return 0
 
@@ -162,14 +163,24 @@ class SpinButtonsWidget(QtWidgets.QWidget):
             ["IE Ratio", "", "ie_ratio", "SET_TARGET_CURRENT", "IE_RATIO"],
             ["Percentage O2", "", "fiO2_percent", "SET_TARGET_CURRENT", "FIO2_PERCENT"],
         ]
+
+        self.okButton = OkButtonWidget(self.NativeUI)
+        self.okButton.pressed.connect(self.ok_button_pressed)
+        self.okButton.setSizePolicy(
+            QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+
+        self.cancelButton = CancelButtonWidget(self.NativeUI)
+        self.cancelButton.pressed.connect(self.cancel_button_pressed)
+        self.cancelButton.setSizePolicy(
+            QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+
+
         self.spinDict = {}
         self.spinStack = QtWidgets.QStackedWidget()
         stackedNames = ["Inhale Time", "IE Ratio"]
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
-            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(
-                lambda i=1: self.colourButtons(i)
-            )
+            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda: self.refresh_button_colour())
             if settings[0] in stackedNames:
                 self.spinStack.addWidget(self.spinDict[settings[0]])
             else:
@@ -179,12 +190,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
 
-        self.okButton = OkButtonWidget(self.NativeUI)
-        self.okButton.pressed.connect(self.ok_button_pressed)
         self.buttonLayout.addWidget(self.okButton)
-
-        self.cancelButton = CancelButtonWidget(self.NativeUI)
-        self.cancelButton.pressed.connect(self.cancel_button_pressed)
         self.buttonLayout.addWidget(self.cancelButton)
 
         self.layout.addLayout(self.buttonLayout)
@@ -206,6 +212,15 @@ class SpinButtonsWidget(QtWidgets.QWidget):
     def update_targets(self):
         for widget in self.spinDict:
             self.spinDict[widget].update_targets_value()  # pass database
+        self.refresh_button_colour()
+
+    def refresh_button_colour(self):
+        self.manuallyUpdated = False
+        for spin in self.spinDict:
+            self.manuallyUpdated = self.manuallyUpdated or self.spinDict[spin].manuallyUpdated
+
+        self.okButton.setColour(str(int(self.manuallyUpdated)))
+        self.cancelButton.setColour((str(int(self.manuallyUpdated))))
 
         # targets = self.NativeUI.get_db("targets")
         # if targets == {}:
@@ -225,7 +240,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         """Respond to ok button pressed by changing text colour and liveUpdating to True"""
         message, command = [], []
         for widget in self.spinDict:
-            if not self.spinDict[widget].liveUpdating:
+            if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].simpleSpin.value()
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
@@ -243,16 +258,17 @@ class SpinButtonsWidget(QtWidgets.QWidget):
 
     def commandSent(self):
         for spin in self.spinDict:
-            self.spinDict[spin].liveUpdating = True
+            self.spinDict[spin].manuallyUpdated = False
             self.spinDict[spin].setTextColour("1")
-        self.colourButtons(0)
+        self.refresh_button_colour()
+        #self.colourButtons(0)
 
     def cancel_button_pressed(self):
         """Respond to cancel button pressed by changing text colour and liveUpdating to True"""
         for spin in self.spinDict:
-            self.spinDict[spin].liveUpdating = True
+            self.spinDict[spin].manuallyUpdated = False
             self.spinDict[spin].setTextColour("1")
-        self.colourButtons(0)
+        self.refresh_button_colour()
 
         # targets = self.NativeUI.get_targets_db()
         # if targets == {}:
