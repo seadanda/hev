@@ -33,8 +33,12 @@ class TimePlotsWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         self.graph_widget = pg.GraphicsLayoutWidget()
         layout.addWidget(self.graph_widget)
-        self.pressure_plot = self.graph_widget.addPlot(
-            labels={"left": NativeUI.text["plot_axis_label_pressure"]}
+
+        labelStyle = {"color": "#FFF", "font-size": "14pt"}
+
+        self.pressure_plot = self.graph_widget.addPlot()
+        self.pressure_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_pressure"], **labelStyle
         )
         self.pressure_plot.getAxis("bottom").setStyle(showValues=False)
         self.graph_widget.nextRow()
@@ -61,12 +65,16 @@ class TimePlotsWidget(QtWidgets.QWidget):
         self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add grid, hide the autoscale button, and add the legend
+        font = QtGui.QFont()  # TODO: change to an imported font from NativeuI
+        font.setPixelSize(20)
         for plot in self.plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
             plot.setMouseEnabled(x=False, y=False)
+            plot.getAxis("bottom").setStyle(tickFont=font)
+            plot.getAxis("left").setStyle(tickFont=font)
 
         # Set Range
         self.update_plot_time_range(61)
@@ -105,12 +113,6 @@ class TimePlotsWidget(QtWidgets.QWidget):
         """
         Get the current plots database and update the plots to match
         """
-        # plots = self.NativeUI.get_db("plots")
-
-        # Extend the non-time scales if we need to
-        self.pressure_plot.setYRange(*plots["pressure_axis_range"])
-        self.flow_plot.setYRange(*plots["flow_axis_range"])
-        self.volume_plot.setYRange(*plots["volume_axis_range"])
 
         # Replot lines with new data
         self.pressure_line.setData(plots["timestamp"], plots["pressure"])
@@ -208,11 +210,6 @@ class CirclePlotsWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
 
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(16)  # just faster than 60Hz
-        # self.timer.timeout.connect(self.update_plot_data)
-        # self.timer.start()
-
     def plot(self, canvas, x, y, plotname, color):
         pen = pg.mkPen(color=color, width=3)
         return canvas.plot(x, y, name=plotname, pen=pen)
@@ -220,19 +217,8 @@ class CirclePlotsWidget(QtWidgets.QWidget):
     @QtCore.Slot(dict)
     def update_plot_data(self, plots: dict):
         """
-        Get the current plots database and update the plots to match
+        Update the plots to match the new data.
         """
-        # plots = self.NativeUI.get_db("plots")
-
-        # Extend the non-time scales if we need to
-        self.pressure_flow_plot.setXRange(*plots["flow_axis_range"])
-        self.pressure_flow_plot.setYRange(*plots["pressure_axis_range"])
-        self.flow_volume_plot.setXRange(*plots["volume_axis_range"])
-        self.flow_volume_plot.setYRange(*plots["flow_axis_range"])
-        self.volume_pressure_plot.setXRange(*plots["pressure_axis_range"])
-        self.volume_pressure_plot.setYRange(*plots["volume_axis_range"])
-
-        # Replot lines with new data
         self.pressure_flow_line.setData(plots["flow"], plots["pressure"])
         self.flow_volume_line.setData(plots["volume"], plots["flow"])
         self.volume_pressure_line.setData(plots["pressure"], plots["volume"])
