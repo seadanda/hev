@@ -237,17 +237,11 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         """
         Update the plots to match the new data.
         """
-        self.pressure_flow_line.setData(plots["flow"], plots["pressure"])
-        self.flow_volume_line.setData(plots["volume"], plots["flow"])
-        self.volume_pressure_line.setData(plots["pressure"], plots["volume"])
-        return 0
-
-    @QtCore.Slot()
-    def update_plot_time_range(self, time_range: int):
-        self.time_range = time_range
-        for plot in self.plots:
-            plot.setXRange(self.time_range * (-1), 0, padding=0)
-            plot.enableAutoRange("y", True)
+        self.pressure_flow_line.setData(plots["cycle_flow"], plots["cycle_pressure"])
+        self.flow_volume_line.setData(plots["cycle_volume"], plots["cycle_flow"])
+        self.volume_pressure_line.setData(
+            plots["cycle_pressure"], plots["cycle_volume"]
+        )
         return 0
 
 
