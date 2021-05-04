@@ -1,0 +1,11 @@
+{"settings":[
+            ["Name", "/min", "name", "SET_PERSONAL", "NAME", "Goedkoop Van Tilator"],
+            ["Patient ID", "s", "patient_id", "SET_PERSONAL", "PATIENT_ID", "11235813FIB"],
+            ["Age", "years", "age", "SET_PERSONAL", "AGE", 0, 130, 25, 1, 0],
+            ["Sex", "", "sex", "SET_PERSONAL", "SEX", "X"],
+            ["Weight", "kg", "weight", "SET_PERSONAL", "WEIGHT", 20, 250, 60, 1, 0],
+            ["Height", "cms", "height", "SET_PERSONAL", "HEIGHT",20, 250, 160, 1, 0]
+        ],
+"textBoxes": ["Name", "Patient ID", "Sex"]
+
+}

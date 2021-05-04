@@ -1,24 +1,42 @@
 stages:
   - build
+  - test
 
-build:raspi4-qmake:
+before_script:
+  - pwd
+  - echo 'test'
+  - groupadd pi
+  - useradd -u 1000 -g pi -m -p raspberry pi
+  - usermod -aG sudo pi
+  - mkdir -p /home/pi/Downloads
+  - apt -y autoremove
+  - apt -y update
+  - apt -y upgrade
+  - apt -y install python3.7 software-properties-common python3-pip git-all raspi-config
+  - python3 --version
+  - pip3 install ansible
+  - ansible --version
+
+# install_packages:
+#   stage: install
+#   script:
+#     - apt -y autoremove
+#     - apt -y update
+#     - apt -y upgrade
+#     - apt -y install python3.7 software-properties-common python3-pip git-all raspi-config
+#     - python3 --version
+#     - pip3 install ansible
+#     - ansible --version
+
+ui_installation:
   stage: build
-  image: etalian/qt-raspi4
-  before_script:
-    - mkdir -p "${CI_PROJECT_DIR}/binaries"
   script:
-    - cd "${CI_PROJECT_DIR}/hev-display"
-    - /raspi/qt5/bin/qmake
-    - make
-    - mkdir /tmp/${CI_PROJECT_NAME} && cd "$_"
-    - cmake --config Release
-       -DCMAKE_TOOLCHAIN_FILE=/raspi/gcc-linaro-arm-linux-gnueabihf-raspbian-x64.cmake
-       -DCPACK_PACKAGE_SUFFIX=-pi4 -DCPACK_SYSTEM_NAME=raspbian10 -DCPACK_DEBIAN_PACKAGE_ARCHITECTURE=armhf
-       "${CI_PROJECT_DIR}/hev-display"
-    - make
-    - cpack -G DEB && cp -v *.deb "${CI_PROJECT_DIR}/binaries"
-  artifacts:
-    name: "${CI_JOB_NAME}-${CI_COMMIT_REF_SLUG}~git${CI_COMMIT_SHORT_SHA}"
-    paths:
-      - hev-display
-      - binaries/
+    - ls -a
+    - pwd
+    - cd /home/pi/hev
+    - ./setup.sh CI
+
+ui_test:
+  stage: test
+  script:
+    - echo "Tests will be here."
