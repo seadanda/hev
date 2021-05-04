@@ -42,9 +42,12 @@ class BreathingLoop
 public:
     BreathingLoop();
     ~BreathingLoop();
-    uint8_t getFsmState();
-    void FSM_assignment();
-    void FSM_breathCycle();
+    uint8_t getBreatheFSMState();
+    void assignBreatheFSM();
+    void doBreatheFSM();
+    uint8_t getFillFSMState();
+    void assignFillFSM();
+    void doFillFSM();
     void doStart();
     void doStop();
     void doReset();
@@ -54,6 +57,7 @@ public:
     void updateRawReadings();
     void updateCycleReadings();
     void updateCalculations();
+    void updateO2Concentration();
     readings<float> getReadingAverages();
     readings<float> getRawReadings();
     calculations<float> getCalculations();
@@ -72,6 +76,7 @@ public:
     uint8_t valvePurgeEnabled();
     uint8_t inhaleTriggerEnabled();
     uint8_t exhaleTriggerEnabled();
+    uint8_t determineFillMode();
     void    setVentilationMode(VENTILATION_MODE mode);
     VENTILATION_MODE getVentilationMode();
 
@@ -110,6 +115,16 @@ public:
     };
 
 
+    // states
+    enum FILL_STATES : uint8_t {
+            VALVES_CLOSED   =  0,
+            AIR_FILL        =  1,
+            PURGE           =  2,
+            MAINTAIN_O2     =  3,
+            INCREASE_O2     =  4,
+	    DECREASE_O2     =  5,
+	    O2_FILL	    =  6
+    };
 
 
 private:
@@ -118,6 +133,7 @@ private:
     uint32_t            _fsm_timeout;
     VENTILATION_MODE        _ventilation_mode;
     BL_STATES           _bl_state, _bl_laststate;
+    FILL_STATES         _fill_state, _fill_laststate;
 
     uint32_t            _lasttime;
     bool                _running;
@@ -244,6 +260,16 @@ private:
     float _expected_fiO2;
     float _new_expected_fiO2;
 
+    float _fiO2_est;
+    float _o2_frac_pressure;
+    float _p_to_purge; 
+    float _t_max_purge;
+    float _t_start_purge;
+    bool  _valve_air_last_state;
+    bool  _valve_O2_last_state;
+    float _pressure_before_filling;
+    float _time_valve_closure;
+    float _finished_filling;
 };
 
 

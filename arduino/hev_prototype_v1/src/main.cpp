@@ -103,6 +103,10 @@ void setup()
     pinMode(pin_led_yellow, OUTPUT);
     pinMode(pin_led_red, OUTPUT);
 
+    // use channel for 4 of PWM generator to output calculated FiO2
+    ledcSetup(pwm_chan_debug, pwm_frequency_debug, pwm_resolution_debug); // channel 4, Frequency 500, 8bit resolution
+    ledcAttachPin(pin_spare_2, pwm_chan_debug);  
+
     //pinMode(pin_buzzer, OUTPUT);
 
     comms.beginSerial();
@@ -137,8 +141,9 @@ void setup()
 
 void loop()
 {
-    breathing_loop.FSM_assignment();
-    breathing_loop.FSM_breathCycle();
+    breathing_loop.assignBreatheFSM();
+    breathing_loop.doBreatheFSM();
+    breathing_loop.doFillFSM(); // assignFillFSM() is in doBreatheFSM()
 
     alarm_loop.fireAlarms();
 
@@ -162,6 +167,7 @@ void loop()
     breathing_loop.updateRawReadings();
     breathing_loop.updateCycleReadings();
     breathing_loop.updateCalculations();
+    breathing_loop.updateO2Concentration();
     // update alarm values
     // TODO assign more values
     alarm_loop.updateValues(breathing_loop.getReadingAverages(), breathing_loop.getCycleReadings());

@@ -60,10 +60,13 @@ public:
     ~ValvesController();
     void setupINA(INA_Class *ina, uint8_t num_devices);
     void setPWMValve(int pin, float frac_open);
-    void setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
-                   uint8_t vexhale, bool vpurge);
+
     void getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
                    uint8_t &vexhale, bool &vpurge);
+
+    void setFillValves(bool vin_air, bool vin_o2, bool vpurge);
+    void setBreatheValves(uint8_t vinhale, uint8_t vexhale);
+    
     uint32_t calcValveDutyCycle(uint32_t pwm_resolution, float frac_open);
 
     valve_params& getValveParams();
@@ -74,7 +77,8 @@ public:
     void setInhaleDutyCycle(float value);
     void setInhaleOpenMin(float value);
     void setInhaleOpenMax(float value);
-
+    
+    bool getO2Valve();
     void updateIV(valve &v);
     void updateAllIV();
     IV_readings<float>* getIVReadings();

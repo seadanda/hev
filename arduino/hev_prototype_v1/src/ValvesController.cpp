@@ -169,44 +169,31 @@ void ValvesController::setInhaleOpenMax(float value)
 
 }
 
-void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale, 
-               uint8_t vexhale, bool vpurge)
+void ValvesController::setBreatheValves(uint8_t vinhale, uint8_t vexhale)
 {
-    digitalWrite(_air_in.pin, vin_air * _valve_params.valve_air_in_enable);
-    digitalWrite(_o2_in.pin, vin_o2 * _valve_params.valve_o2_in_enable);
-    digitalWrite(_purge.pin, vpurge * _valve_params.valve_purge_enable);
-
-    // float dc = 0;
     switch(vinhale){
         case VALVE_STATE::FULLY_CLOSED:
             setPWMValve(_inhale.pin, 0.0);
             break;
         case VALVE_STATE::FULLY_OPEN:
             setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
-            // dc = _valve_params.inhale_open_max; 
             break;
         case VALVE_STATE::OPEN:
             setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
-            // dc = _valve_params.inhale_open_max; 
             break;
         case VALVE_STATE::CALIB_OPEN:
             setPWMValve(_inhale.pin, _valve_params.inhale_open_max); 
-            // dc = _valve_params.inhale_open_max; 
             break;
         case VALVE_STATE::CLOSED:
             setPWMValve(_inhale.pin, _valve_params.inhale_open_min); 
-            // dc = _valve_params.inhale_open_min; 
             break;
         case VALVE_STATE::PID:
-            // placeholder - this should be replaced by:
-            //doPID(_inhale.pin);
-            setPWMValve(_inhale.pin, _PID_output);//_inhale_open_max);
-            // dc = _PID_output;
+            setPWMValve(_inhale.pin, _PID_output);
             break;
         default:
             break;
     }
-//logMsg(" setValve "+String(vinhale) +" " +String(dc)+" "+String(millis()));
+
     if(_exhale.proportional == true){
 	    switch(vexhale){
 		    case VALVE_STATE::FULLY_CLOSED:
@@ -236,10 +223,19 @@ void ValvesController::setValves(bool vin_air, bool vin_o2, uint8_t vinhale,
     }
 
     // save the state 
-    _air_in.state = vin_air;
-    _o2_in.state  = vin_o2;
     _inhale.state = vinhale;
     _exhale.state = vexhale;
+}
+
+void ValvesController::setFillValves(bool vin_air, bool vin_o2,  bool vpurge)
+{
+    digitalWrite(_air_in.pin, vin_air * _valve_params.valve_air_in_enable);
+    digitalWrite(_o2_in.pin, vin_o2 * _valve_params.valve_o2_in_enable);
+    digitalWrite(_purge.pin, vpurge * _valve_params.valve_purge_enable);
+
+    // save the state 
+    _air_in.state = vin_air;
+    _o2_in.state  = vin_o2;
     _purge.state  = vpurge;
 }
 
@@ -254,6 +250,10 @@ void ValvesController::getValves(bool &vin_air, bool &vin_o2, uint8_t &vinhale,
     vpurge  = _purge.state ;
 }
 
+bool ValvesController::getO2Valve()
+{
+    return _o2_in.state;
+}
 
 void ValvesController::enableO2InValve(bool en)
 {
