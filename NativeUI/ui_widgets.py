@@ -109,7 +109,9 @@ class Widgets:
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
         self.personal_display = PersonalDisplayWidget(NativeUI)
-        self.localisation_button = LocalisationButtonWidget(NativeUI.localisation_files)
+        self.localisation_button = LocalisationButtonWidget(
+            NativeUI.localisation_files, NativeUI.colors
+        )
 
         # Left Bar widgets
         self.page_buttons = PageButtonsWidget(NativeUI)

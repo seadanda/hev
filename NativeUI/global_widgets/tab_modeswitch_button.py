@@ -64,6 +64,10 @@ class TabModeswitchButton(QtWidgets.QWidget):
         self.switchButton.setText(self.mode_popup.mode)
         self.modeSwitched.emit(self.mode_popup.mode)
 
+    def set_size(self, x: int, y: int, spacing=10) -> int:
+        self.setFixedSize(x, y)
+        return 0
+
 
 class modeswitchPopup(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):

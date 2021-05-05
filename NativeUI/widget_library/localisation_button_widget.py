@@ -15,28 +15,50 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Development"
 
-from PySide2 import QtWidgets
+from PySide2 import QtWidgets, QtGui
 import json
 import os
 from PySide2.QtCore import Signal
 
 
-class LocalisationButtonWidget(QtWidgets.QPushButton):
+class LocalisationButtonWidget(QtWidgets.QWidget):
     """
     TODO BM: add set_size and setFont
     """
 
     SetLocalisation = Signal(dict)
 
-    def __init__(self, localisation_config_file_paths: list, *args, **kwargs):
+    def __init__(
+        self, localisation_config_file_paths: list, colors: dict, *args, **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.__localisation_dict: dict = {}
         self.__localisation_files_list: list = localisation_config_file_paths
         self.__current_localisation_index: int = -1
 
-        self.set_localisation(0)
+        self.localisation_button = QtWidgets.QPushButton()
+        hlayout = QtWidgets.QHBoxLayout()
+        hlayout.addWidget(self.localisation_button)
+        self.setLayout(hlayout)
 
-        self.pressed.connect(self.on_press)
+        self.localisation_button.setStyleSheet(
+            "background-color:" + colors["button_background_enabled"].name() + ";"
+            "border-color:" + colors["page_foreground"].name() + ";"
+            "color:" + colors["page_foreground"].name() + ";"
+            "border: none"
+        )
+
+        self.set_localisation(0)
+        self.localisation_button.pressed.connect(self.on_press)
+
+    def set_size(self, x: int, y: int, spacing: int = 10) -> int:
+        self.setFixedSize(x, y)
+        self.localisation_button.setFixedSize(x - spacing, y - spacing)
+        return 0
+
+    def setFont(self, font: QtGui.QFont) -> int:
+        self.localisation_button.setFont(font)
+        return 0
 
     def on_press(self) -> int:
         """
@@ -60,7 +82,7 @@ class LocalisationButtonWidget(QtWidgets.QPushButton):
         self.__current_localisation_index = index
 
         self.__import_localisation_config()
-        self.setText(self.__localisation_dict["language_name"])
+        self.localisation_button.setText(self.__localisation_dict["language_name"])
         self.SetLocalisation.emit(self.__localisation_dict)
         return 0
 

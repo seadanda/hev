@@ -60,6 +60,9 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, resolution: list, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self.screen_width = resolution[0]
+        self.screen_height = resolution[1]
+
         # Set up the handlers
         self.battery_handler = BatteryHandler()
         self.data_handler = DataHandler(plot_history_length=1000)
