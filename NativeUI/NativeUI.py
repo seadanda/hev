@@ -57,7 +57,7 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, resolution: list, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Set up the handlers
@@ -95,9 +95,10 @@ class NativeUI(HEVClient, QMainWindow):
         for key in self.colors:
             self.colors[key] = QColor.fromRgb(*self.colors[key])
 
-        self.text_font = QFont("Sans Serif", 20)
-        self.value_font = QFont("Sans Serif", 40)
-        self.text_size = "20pt"  # TODO: remove in favour of self.text_font
+        self.text_font = QFont("Sans Serif", resolution[0] / 96)  # 20px for 1920*1080
+        self.value_font = QFont(
+            "Sans Serif", 2 * resolution[0] / 96
+        )  # 40px for 1920*1080
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -620,7 +621,7 @@ if __name__ == "__main__":
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
-    dep = NativeUI()
+    dep = NativeUI(interpret_resolution(command_line_args.resolution))
     set_window_size(
         dep,
         resolution=command_line_args.resolution,

@@ -34,6 +34,7 @@ class Layout:
     def __init__(self, NativeUI, widgets, *args, **kwargs):
         self.NativeUI = NativeUI
         self.widgets = widgets
+        self.text_font = NativeUI.text_font
 
         # Define sizes
         self.top_bar_height = 75
@@ -559,8 +560,8 @@ class Layout:
                 + self.NativeUI.colors["page_background"].name()
                 + ";"
                 "color:" + self.NativeUI.colors["page_foreground"].name() + ";"
-                "font-size: " + self.NativeUI.text_size + ";"
             )
+            titleLabel.setFont(self.text_font)
             titleLabel.setAlignment(QtCore.Qt.AlignCenter)
             vlayout.addWidget(titleLabel)
 

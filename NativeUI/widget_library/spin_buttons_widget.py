@@ -47,7 +47,6 @@ class SpinButton(QtWidgets.QFrame):
 
         labelBgColour = "rgb(60,58,60)"
         self.label.setStyleSheet(
-            "font-size: " + NativeUI.text_size + ";"
             "color:white;"
             "background-color:" + labelBgColour + ";"
             "border-radius:4px;"
@@ -55,6 +54,7 @@ class SpinButton(QtWidgets.QFrame):
         )
         self.label.setAlignment(QtCore.Qt.AlignCenter)
         self.layout.addWidget(self.label)
+        self.setFont(NativeUI.text_font)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
         # self.doubleSpin = QtWidgets.QDoubleSpinBox()
@@ -67,7 +67,6 @@ class SpinButton(QtWidgets.QFrame):
             "QDoubleSpinBox{"
             "   border:none;"
             "   background-color: black;"
-            "   font: " + NativeUI.text_size + " large 'Times New Roman';"
             "   height: 60px;"
             "}"
             "QDoubleSpinBox[colour='0'] {"
@@ -96,6 +95,7 @@ class SpinButton(QtWidgets.QFrame):
         #     + upButtonPressedStyleString
         #     + downButtonPressedStyleString
         # )
+        self.simpleSpin.setFont(NativeUI.value_font)
         self.simpleSpin.setProperty("colour", "1")
         self.simpleSpin.setButtonSymbols(
             QtWidgets.QAbstractSpinBox.ButtonSymbols.PlusMinus
@@ -168,26 +168,28 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         self.okButton = OkButtonWidget(self.NativeUI)
         self.okButton.pressed.connect(self.ok_button_pressed)
         self.okButton.setSizePolicy(
-            QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed
+        )
 
         self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.pressed.connect(self.cancel_button_pressed)
         self.cancelButton.setSizePolicy(
-            QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
-
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed
+        )
 
         self.spinDict = {}
         self.spinStack = QtWidgets.QStackedWidget()
         stackedNames = ["Inhale Time", "IE Ratio"]
         for settings in self.settingsList:
             self.spinDict[settings[0]] = SpinButton(NativeUI, settings)
-            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(lambda: self.refresh_button_colour())
+            self.spinDict[settings[0]].simpleSpin.manualChanged.connect(
+                lambda: self.refresh_button_colour()
+            )
             if settings[0] in stackedNames:
                 self.spinStack.addWidget(self.spinDict[settings[0]])
             else:
                 self.layout.addWidget(self.spinDict[settings[0]])
         self.layout.addWidget(self.spinStack)
-
 
         self.buttonLayout = QtWidgets.QVBoxLayout()
         self.buttonLayout.setSpacing(5)
@@ -219,7 +221,9 @@ class SpinButtonsWidget(QtWidgets.QWidget):
     def refresh_button_colour(self):
         self.manuallyUpdated = False
         for spin in self.spinDict:
-            self.manuallyUpdated = self.manuallyUpdated or self.spinDict[spin].manuallyUpdated
+            self.manuallyUpdated = (
+                self.manuallyUpdated or self.spinDict[spin].manuallyUpdated
+            )
 
         self.okButton.setColour(str(int(self.manuallyUpdated)))
         self.cancelButton.setColour((str(int(self.manuallyUpdated))))
@@ -263,7 +267,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
             self.spinDict[spin].manuallyUpdated = False
             self.spinDict[spin].setTextColour("1")
         self.refresh_button_colour()
-        #self.colourButtons(0)
+        # self.colourButtons(0)
 
     def cancel_button_pressed(self):
         """Respond to cancel button pressed by changing text colour and liveUpdating to True"""
