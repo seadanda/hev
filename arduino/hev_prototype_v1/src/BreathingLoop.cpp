@@ -1161,7 +1161,7 @@ void BreathingLoop::doPID(){
 
     //Checking minium and maximum duty cycle
     
-    float minimum_open_frac = 0.53; //Minimum opening to avoid vibrations on the valve control
+    float minimum_open_frac = 0.52; //Minimum opening to avoid vibrations on the valve control
     float maximum_open_frac = 0.74; //Maximum opening for the PID control
 
     //_pid.valve_duty_cycle = _pid.proportional + _pid.integral + (_targets_current->pid_gain * _pid.Kd * _pid.derivative) + minimum_open_frac;
