@@ -36,6 +36,7 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
 
         self.button_start = QtWidgets.QPushButton()  # QtWidgets.QPushButton()
+        self.button_start.pressed.connect(lambda: NativeUI.send_cmd("GENERAL","START"))
         self.button_stop = holdButton(NativeUI)  # QtWidgets.QPushButton()
         self.button_standby = holdButton(NativeUI)  # QtWidgets.QPushButton()
 
