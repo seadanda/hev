@@ -33,24 +33,31 @@ class TimePlotsWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         self.graph_widget = pg.GraphicsLayoutWidget()
         layout.addWidget(self.graph_widget)
-        self.pressure_plot = self.graph_widget.addPlot(
-            labels={"left": NativeUI.text["plot_axis_label_pressure"]}
+
+        labelStyle = {"color": NativeUI.colors["page_foreground"], "font-size": "15pt"}
+
+        # Set up pressure - time plot
+        self.pressure_plot = self.graph_widget.addPlot()
+        self.pressure_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_pressure"], **labelStyle
         )
-        self.pressure_plot.getAxis("bottom").setStyle(showValues=False)
         self.graph_widget.nextRow()
 
-        self.flow_plot = self.graph_widget.addPlot(
-            labels={"left": NativeUI.text["plot_axis_label_flow"]}
+        # Set up flow - time plot
+        self.flow_plot = self.graph_widget.addPlot()
+        self.flow_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_flow"], **labelStyle
         )
-        self.flow_plot.getAxis("bottom").setStyle(showValues=False)
         self.flow_plot.setXLink(self.pressure_plot)
         self.graph_widget.nextRow()
 
-        self.volume_plot = self.graph_widget.addPlot(
-            labels={
-                "left": NativeUI.text["plot_axis_label_volume"],
-                "bottom": NativeUI.text["plot_axis_label_time"],
-            }
+        # Set up volume -time plot
+        self.volume_plot = self.graph_widget.addPlot()
+        self.volume_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_volume"], **labelStyle
+        )
+        self.volume_plot.setLabel(
+            "bottom", NativeUI.text["plot_axis_label_time"], **labelStyle
         )
         self.volume_plot.setXLink(self.pressure_plot)
         self.graph_widget.nextRow()
@@ -61,12 +68,19 @@ class TimePlotsWidget(QtWidgets.QWidget):
         self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add grid, hide the autoscale button, and add the legend
+        font = QtGui.QFont()  # TODO: change to an imported font from NativeuI
+        font.setPixelSize(24)
+
         for plot in self.plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
             plot.setMouseEnabled(x=False, y=False)
+            plot.getAxis("bottom").setStyle(tickFont=font)
+            plot.getAxis("left").setStyle(tickFont=font)
+            plot.getAxis("left").setTextPen(NativeUI.colors["page_foreground"])
+            plot.getAxis("bottom").setTextPen(NativeUI.colors["page_foreground"])
 
         # Set Range
         self.update_plot_time_range(61)
@@ -133,27 +147,32 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         self.graph_widget = pg.GraphicsLayoutWidget()
         layout.addWidget(self.graph_widget)
 
-        self.pressure_flow_plot = self.graph_widget.addPlot(
-            labels={
-                "bottom": NativeUI.text["plot_axis_label_flow"],
-                "left": NativeUI.text["plot_axis_label_pressure"],
-            }
+        labelStyle = {"color": NativeUI.colors["page_foreground"], "font-size": "15pt"}
+
+        self.pressure_flow_plot = self.graph_widget.addPlot()
+        self.pressure_flow_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_pressure"], **labelStyle
+        )
+        self.pressure_flow_plot.setLabel(
+            "bottom", NativeUI.text["plot_axis_label_flow"], **labelStyle
         )
         self.graph_widget.nextRow()
 
-        self.flow_volume_plot = self.graph_widget.addPlot(
-            labels={
-                "bottom": NativeUI.text["plot_axis_label_volume"],
-                "left": NativeUI.text["plot_axis_label_flow"],
-            }
+        self.flow_volume_plot = self.graph_widget.addPlot()
+        self.flow_volume_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_volume"], **labelStyle
+        )
+        self.flow_volume_plot.setLabel(
+            "bottom", NativeUI.text["plot_axis_label_flow"], **labelStyle
         )
         self.graph_widget.nextRow()
 
-        self.volume_pressure_plot = self.graph_widget.addPlot(
-            labels={
-                "bottom": NativeUI.text["plot_axis_label_pressure"],
-                "left": NativeUI.text["plot_axis_label_volume"],
-            }
+        self.volume_pressure_plot = self.graph_widget.addPlot()
+        self.volume_pressure_plot.setLabel(
+            "left", NativeUI.text["plot_axis_label_pressure"], **labelStyle
+        )
+        self.volume_pressure_plot.setLabel(
+            "bottom", NativeUI.text["plot_axis_label_flow"], **labelStyle
         )
         self.graph_widget.nextRow()
 
@@ -170,12 +189,19 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add grid, hide the autoscale button, and add the legend
+        font = QtGui.QFont()  # TODO: change to an imported font from NativeuI
+        font.setPixelSize(25)
+
         for plot in self.plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
             l.setLabelTextSize(self.NativeUI.text_size)
             plot.setMouseEnabled(x=False, y=False)
+            plot.getAxis("bottom").setStyle(tickFont=font)
+            plot.getAxis("left").setStyle(tickFont=font)
+            plot.getAxis("left").setTextPen(NativeUI.colors["page_foreground"])
+            plot.getAxis("bottom").setTextPen(NativeUI.colors["page_foreground"])
 
         # Plot styles
         self.pressure_flow_line = self.plot(
@@ -211,17 +237,11 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         """
         Update the plots to match the new data.
         """
-        self.pressure_flow_line.setData(plots["flow"], plots["pressure"])
-        self.flow_volume_line.setData(plots["volume"], plots["flow"])
-        self.volume_pressure_line.setData(plots["pressure"], plots["volume"])
-        return 0
-
-    @QtCore.Slot()
-    def update_plot_time_range(self, time_range: int):
-        self.time_range = time_range
-        for plot in self.plots:
-            plot.setXRange(self.time_range * (-1), 0, padding=0)
-            plot.enableAutoRange("y", True)
+        self.pressure_flow_line.setData(plots["cycle_flow"], plots["cycle_pressure"])
+        self.flow_volume_line.setData(plots["cycle_volume"], plots["cycle_flow"])
+        self.volume_pressure_line.setData(
+            plots["cycle_pressure"], plots["cycle_volume"]
+        )
         return 0
 
 
@@ -237,10 +257,21 @@ class ChartsPlotWidget(QtWidgets.QWidget):
         self.graph_widget = pg.GraphicsLayoutWidget()
         layout.addWidget(self.graph_widget)
 
+        labelStyle = {"color": "#FFF", "font-size": "15pt"}
+
         # Add the plot axes to the graph widget
-        self.display_plot = self.graph_widget.addPlot(
-            labels={"left": "????", "bottom": "????"}
+        self.display_plot = self.graph_widget.addPlot()
+        self.display_plot.setLabel("left", "????", **labelStyle)
+        self.display_plot.setLabel(
+            "bottom",
+            "????",
+            **labelStyle
+            #            labels={"left": "????", "bottom": "????"}
         )
+
+        self.display_plot.getAxis("left").setTextPen("w")
+        self.display_plot.getAxis("bottom").setTextPen("w")
+
         self.graph_widget.nextRow()
 
         # Store plots in a list in case we need to add additional axes in the future.
@@ -266,11 +297,17 @@ class ChartsPlotWidget(QtWidgets.QWidget):
         self.graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
         self.graph_widget.setBackground(colors["page_background"])
         self.legends = []
+
+        font = QtGui.QFont()  # TODO: change to an imported font from NativeuI
+        font.setPixelSize(25)
+
         for plot in plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             plot.setMouseEnabled(x=False, y=False)
             self.legends.append(plot.addLegend(offset=(-1, 1)))
+            plot.getAxis("bottom").setStyle(tickFont=font)
+            plot.getAxis("left").setStyle(tickFont=font)
 
         self.setLayout(layout)
 
