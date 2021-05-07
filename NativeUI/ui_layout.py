@@ -14,8 +14,8 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtGui import QFont
+from PySide2 import QtWidgets, QtCore, QtGui
+#from PySide2.QtGui import QFont, QSizePolicy
 from widget_library.switchable_stack_widget import SwitchableStackWidget
 import json
 
@@ -70,6 +70,7 @@ class Layout:
                     self.layout_startup_main(),
                     self.layout_mode_startup(),  # self, settings, mode:str, enableList:list, buttons: bool)
                     self.layout_mode_personal("startup_", False),
+                    self.layout_startup_confirmation()
                 ]
             ),
             "startup_stack",
@@ -210,7 +211,7 @@ class Layout:
         page_main_bottom_layout = QtWidgets.QHBoxLayout()
 
         center_widgets = [self.widgets.plot_stack]
-        bottom_widgets = [self.widgets.history_buttons, self.widgets.spin_buttons]
+        bottom_widgets = [self.widgets.history_buttons, self.layout_main_spin_buttons()]
         self.widgets.history_buttons.set_size(None, self.main_page_bottom_bar_height)
         self.widgets.history_buttons.setFont(self.NativeUI.text_font)
         # TODO spin_buttons sizes
@@ -239,9 +240,9 @@ class Layout:
             [
                 self.layout_tab_alarm_list(alarm_tab_widgets),
                 self.layout_tab_alarm_table(alarm_table_tab_widgets),
-                self.widgets.clinical_tab,
+                #self.layout_tab_clinical_limits(),
             ],
-            ["List of Alarms", "Alarm Table", "Clinical Limits"],
+            ["List of Alarms", "Alarm Table"],#, "Clinical Limits"],
         )
         page_alarms.setFont(self.NativeUI.text_font)
         return page_alarms
@@ -599,3 +600,108 @@ class Layout:
         vlayout.addLayout(hButtonLayout)
 
         return expert_tab
+
+    def layout_main_spin_buttons(self) -> QtWidgets.QWidget:
+        hlayout = QtWidgets.QHBoxLayout()
+        with open("NativeUI/configs/mode_config.json") as json_file:
+            modeDict = json.load(json_file)
+
+        stack = self.NativeUI.widgets.main_mode_stack
+        for setting in modeDict['settings']:
+            if setting[0] in modeDict['mainPageSettings']:
+                attrName = 'CURRENT_' + setting[2]
+                widg = self.NativeUI.widgets.get_widget(attrName)
+                if setting[0] in modeDict['radioSettings']:
+                    stack.addWidget(widg)
+                else:
+                    hlayout.addWidget(widg)
+        hlayout.addWidget(self.NativeUI.widgets.main_mode_stack)
+
+        vbuttonLayout =  QtWidgets.QVBoxLayout()
+        okButton = self.NativeUI.widgets.get_widget('CURRENT_ok_button')
+        okButton.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+        vbuttonLayout.addWidget(okButton)
+
+        cancelButton = self.NativeUI.widgets.get_widget('CURRENT_cancel_button')
+        cancelButton.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+        vbuttonLayout.addWidget(cancelButton)
+        hlayout.addLayout(vbuttonLayout)
+
+        combined_spin_buttons = QtWidgets.QWidget()
+        combined_spin_buttons.setLayout(hlayout)
+        return combined_spin_buttons
+
+    def layout_tab_clinical_limits(self):
+        with open("NativeUI/configs/clinical_config.json") as json_file:
+            clinicalDict = json.load(json_file)
+
+        vlayout = QtWidgets.QVBoxLayout()
+        for setting in clinicalDict['settings']:
+            attrName = 'clinical_spin_' + setting[0][2]
+            hlayout = QtWidgets.QHBoxLayout()
+            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_min'))
+            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_max'))
+            vlayout.addLayout(hlayout)
+
+        hbuttonlayout = QtWidgets.QHBoxLayout()
+        hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_ok_button'))
+        hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_cancel_button'))
+        vlayout.addLayout(hbuttonlayout)
+        # hlayoutMeta.addLayout(vlayout)
+        # hlayoutMeta.addLayout(vlayout2)
+        clinical_page = QtWidgets.QWidget()
+        clinical_page.setLayout(vlayout)
+        return clinical_page
+
+    # def layout_tab_clinical_limits(self):
+    #     with open("NativeUI/configs/clinical_config.json") as json_file:
+    #         clinicalDict = json.load(json_file)
+    #
+    #
+    #     grid = QtWidgets.QGridLayout()
+    #     #grid.setHorizontalSpacing(0)
+    #     vlayout = QtWidgets.QVBoxLayout()
+    #     vlayout2 = QtWidgets.QVBoxLayout()
+    #     i = 0
+    #     for setting in clinicalDict['settings']:
+    #         attrName = 'spin_' + setting[2]
+    #         if setting[0] in clinicalDict['HighLowLimits']:
+    #
+    #             grid.addWidget(self.NativeUI.widgets.get_widget(attrName), int(i / 2), 2 * (i % 2), 1, 1)
+    #             grid.addWidget(self.NativeUI.widgets.get_widget(attrName + '_2'), int(i / 2), 2 * (i % 2) + 1, 1, 1)
+    #         else:
+    #             grid.addWidget(self.NativeUI.widgets.get_widget(attrName), int(i / 2), 2 * (i % 2), 1, 2)
+    #
+    #         i = i + 1
+    #
+    #     vlayout.addLayout(grid)
+    #     hbuttonlayout = QtWidgets.QHBoxLayout()
+    #     hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_ok_button'))
+    #     hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_cancel_button'))
+    #     vlayout.addLayout(hbuttonlayout)
+    #     # hlayoutMeta.addLayout(vlayout)
+    #     # hlayoutMeta.addLayout(vlayout2)
+    #     clinical_page = QtWidgets.QWidget()
+    #     clinical_page.setLayout(vlayout)
+    #     return clinical_page
+    #
+
+    def layout_startup_confirmation(self):
+        vlayout = QtWidgets.QVBoxLayout()
+        i = 0
+        for key, spinBox in self.NativeUI.widgets.get_widget('startup_handler').spinDict.items():
+            i = i + 1
+            hlayout = QtWidgets.QHBoxLayout()
+            nameLabel = QtWidgets.QLabel(key)
+            valLabel = QtWidgets.QLabel(str(spinBox.get_value()))
+            hlayout.addWidget(nameLabel)
+            hlayout.addWidget(valLabel)
+            vlayout.addLayout(hlayout)
+            if i == 10:
+                break
+
+
+        widg = QtWidgets.QWidget()
+        widg.setLayout(vlayout)
+        return widg
+

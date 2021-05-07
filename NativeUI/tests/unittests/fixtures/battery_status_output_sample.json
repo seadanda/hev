@@ -1,0 +1,6 @@
+{
+    "on_mains_power": true,
+    "on_battery_power": false,
+    "battery_percent": 0.0,
+    "electrical_problem": null
+}

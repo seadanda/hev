@@ -14,6 +14,11 @@ __status__ = "Prototype"
 
 from PySide2 import QtWidgets, QtGui, QtCore
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+from widget_library.expert_handler import ExpertHandler
+from mode_widgets.personal_handler import PersonalHandler
+from mode_widgets.mode_handler import ModeHandler
+from mode_widgets.clinical_handler import ClinicalHandler
+
 
 # from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 import sys
@@ -23,6 +28,11 @@ import os
 class SetConfirmPopup(QtWidgets.QDialog):
     """Popup called when user wants to send new values to microcontroller.
     This popup shows changes and asks for confirmation"""
+
+    ExpertSend = QtCore.Signal()
+    ModeSend = QtCore.Signal()
+    PersonalSend = QtCore.Signal()
+    ClinicalSend = QtCore.Signal()
 
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -69,7 +79,10 @@ class SetConfirmPopup(QtWidgets.QDialog):
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
         self.setWindowOpacity(0.5)
 
-    def populatePopup(self, messageList, commandList ):
+    def populatePopup(self, handlerWidget, messageList):
+        print(handlerWidget)
+        self.handler = handlerWidget
+        self.clearPopup()
         if messageList == []:
             messageList = ["no values were set"]
         for item in messageList:
@@ -83,7 +96,7 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
         self.listWidget.update()
         self.update()
-        self.commandList = commandList
+        self.show()
 
     def clearPopup(self):
         self.listWidget.clear()
@@ -91,10 +104,17 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
 
     def ok_button_pressed(self):
+        print('ok button pressed')
         """Send commands when ok button is clicked"""
         #self.parentTemplate.liveUpdating = True
-        for command in self.commandList:
-            self.NativeUI.q_send_cmd(*command)
+        if isinstance(self.handler, ExpertHandler):
+            self.ExpertSend.emit()
+        elif isinstance(self.handler, ModeHandler):
+            self.ModeSend.emit()
+        elif isinstance(self.handler, PersonalHandler):
+            self.PersonalSend.emit()
+        elif isinstance(self.handler, ClinicalHandler):
+            self.ClinicalSend.emit()
         self.close()
         return 0
 

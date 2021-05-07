@@ -1,0 +1,14 @@
+{
+  "settings":[
+[["APNEA", "ms", "APNEA", "SET_THRESHOLD_MIN", "APNEA"],["APNEA", "ms", "APNEA", "SET_THRESHOLD_MAX", "APNEA"]],
+[["Check Pressure Patient", "ms", "CHECK_P_PATIENT", "SET_THRESHOLD_MIN", "CHECK_P_PATIENT"],["Check Pressure Patient", "ms", "CHECK_P_PATIENT", "SET_THRESHOLD_MAX", "CHECK_P_PATIENT"]],
+[["FIO2", "%", "HIGH_FIO2", "SET_THRESHOLD_MIN", "HIGH_FIO2", -10, 0, 5, 1, 0],["FIO2",  "%", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT", 20, 100, 21, 1, 0],["FIO2", "%", "HIGH_FIO2", "SET_THRESHOLD_MAX", "HIGH_FIO2", 0, 10, 5, 1, 0]],
+[["Pressure", " ", "HIGH_PRESSURE", "SET_THRESHOLD_", "HIGH_PRESSURE"],["Pressure", " ", "HIGH_PRESSURE", "SET_THRESHOLD_", "HIGH_PRESSURE"],["Pressure", " ", "HIGH_PRESSURE", "SET_THRESHOLD_", "HIGH_PRESSURE"]],
+[["Respiratory Rate", " ", "HIGH_RR", "SET_THRESHOLD_", "HIGH_RR"],["Respiratory Rate", " ", "HIGH_RR", "SET_THRESHOLD_", "HIGH_RR"],["Respiratory Rate", " ", "HIGH_RR", "SET_THRESHOLD_", "HIGH_RR"]],
+[["VTE", " ", "HIGH_VTE", "SET_THRESHOLD_", "HIGH_VTE"],["VTE", " ", "HIGH_VTE", "SET_THRESHOLD_", "HIGH_VTE"],["VTE", " ", "HIGH_VTE", "SET_THRESHOLD_", "HIGH_VTE"]],
+[["VTI", " ", "HIGH_VTI", "SET_THRESHOLD_", "HIGH_VTI"],["VTI", " ", "HIGH_VTI", "SET_THRESHOLD_", "HIGH_VTI"],["VTI", " ", "HIGH_VTI", "SET_THRESHOLD_", "HIGH_VTI"]],
+[["Occlusion", " ", "OCCLUSION","SET_THRESHOLD_", "OCCLUSION"],["Occlusion", " ", "OCCLUSION","SET_THRESHOLD_", "OCCLUSION"],["Occlusion", " ", "OCCLUSION","SET_THRESHOLD_", "OCCLUSION"]],
+[["PEEP", " ", "HIGH_PEEP","SET_THRESHOLD_", "HIGH_PEEP"],["PEEP", " ", "HIGH_PEEP","SET_THRESHOLD_", "HIGH_PEEP"],["PEEP", " ", "HIGH_PEEP","SET_THRESHOLD_", "HIGH_PEEP"]]
+  ],
+  "HighLowLimits": ["High Pressure", "Occlusion"]
+}

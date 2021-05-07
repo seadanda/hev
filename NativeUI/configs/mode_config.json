@@ -8,6 +8,6 @@
 ["Inhale Volume", "", "volume", "SET_TARGET_", "VOLUME", 200, 800, 400, 20, 0],
 ["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT", 20, 100, 21, 1, 0]],
 "radioSettings": ["Inhale Time", "IE Ratio"],
-"enableDict":{"PC/AC":[1, 0, 1, 1, 0, 1, 0, 1], "PC/AC-PRVC":[1, 1, 0, 1, 0, 1, 1, 1], "PC-PSV":[1, 1, 0, 1, 0, 1, 0, 1], "CPAP":[1, 0, 1, 1, 0, 1, 0, 1]}
-
+"enableDict":{"PC/AC":[1, 0, 1, 1, 0, 1, 0, 1], "PC/AC-PRVC":[1, 1, 0, 1, 0, 1, 1, 1], "PC-PSV":[1, 1, 0, 1, 0, 1, 0, 1], "CPAP":[1, 0, 1, 1, 0, 1, 0, 1]},
+"mainPageSettings": ["Inhale Pressure", "Respiratory Rate", "Inhale Time", "IE Ratio", "Percentage O2" ]
 }

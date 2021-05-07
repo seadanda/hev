@@ -1,27 +1,23 @@
 import logging
-from handler_library.handler import Handler
+from handler_library.handler import PayloadHandler
 from PySide2.QtCore import Signal, QObject
 
-# TODO: initially we tried to have a check so that the handler only signals the display
-# elements when something changeds. Problem: when the UI starts up it takes a few
-# seconds for display elements to become active (may be an artefact of X11 forwarding?),
-# so for something like the battery which doesn't change fast, the initial signal to the
-# display is missed, and no further signal gets sent because nothing is changing.
-# Current workaround is to trigger the ative_payload every time get_db completes. Could
-# reinstate the check but add an override so every nth payload triggers the signal
-# regardless of whether data has changed, or force some update frequency (c.f. plots)?
 
+class BatteryHandler(PayloadHandler):
+    """
+    Subclass of the PayloadHandler class (handler.py) to handle alarm data.
+    """
 
-class BatteryHandler(Handler, QObject):
     UpdateBatteryDisplay = Signal(dict)
 
-    def __init__(self):
-        super().__init__()
-        QObject.__init__(
-            self
-        )  # Give ourselves access to the QObject Signal functionality.
+    def __init__(self, *args, **kwargs):
+        super().__init__(["BATTERY"], *args, **kwargs)
 
-    def active_payload(self) -> int:
+    def active_payload(self, *args, **kwargs) -> int:
+        """
+        When battery information is set, interprets it to construct the battery status
+        and emits the UpdateBatteryDisplay signal containing that status as a dict.
+        """
         new_status = {}
         battery_data = self.get_db()
 
@@ -71,5 +67,7 @@ class BatteryHandler(Handler, QObject):
             return 85.0
         elif battery_data["bat85"] == 0:
             return 0.0
-
-        return 0.0
+        else:
+            raise TypeError(
+                "Battery Percentage (entry 'bat85' in the battery payload) is not 1 or 2."
+            )

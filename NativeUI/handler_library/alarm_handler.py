@@ -2,13 +2,13 @@
 alarm_handler.py
 """
 
-from handler_library.handler import Handler
+from handler_library.handler import PayloadHandler
 from PySide2.QtCore import QObject
 
 
-class AlarmHandler(Handler, QObject):
+class AlarmHandler(PayloadHandler, QObject):
     """
-    Subclass of the Handler class (handler.py) to handle alarm data.
+    Subclass of the PayloadHandler class (handler.py) to handle alarm data.
 
     Inherits from QObject to give us access to pyside2's signal class.
     """

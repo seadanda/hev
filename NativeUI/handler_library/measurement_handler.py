@@ -2,25 +2,22 @@
 measurement_handler.py
 """
 
-from handler_library.handler import Handler
-from PySide2.QtCore import Signal, QObject
+from handler_library.handler import PayloadHandler
+from PySide2.QtCore import Signal
 import logging
 
 
-class MeasurementHandler(Handler, QObject):
+class MeasurementHandler(PayloadHandler):
     """
-    Subclass of the Handler class (handler.py) to handle cycle and readback data.
-
-    Inherits from QObject to give us access to pyside2's signal class.
+    Subclass of the PayloadHandler class (handler.py) to handle cycle and readback data.
     """
 
     UpdateMeasurements = Signal(dict)
 
-    def __init__(self):
-        super().__init__()
-        QObject.__init__(self)
+    def __init__(self, *args, **kwargs):
+        super().__init__(["CYCLE", "READBACK"], *args, **kwargs)
 
-    def active_payload(self) -> int:
+    def active_payload(self, *args, **kwargs) -> int:
         cycle_data = self.get_db()
         outdict = {}
 

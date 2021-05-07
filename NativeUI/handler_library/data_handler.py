@@ -1,15 +1,14 @@
-from handler_library.handler import Handler
-from PySide2.QtCore import Signal, QObject, QTimer
+from handler_library.handler import PayloadHandler
+from PySide2.QtCore import Signal
 import numpy as np
 from threading import Lock
 
 
-class DataHandler(Handler, QObject):
+class DataHandler(PayloadHandler):
     UpdatePlots = Signal(dict)
 
-    def __init__(self, plot_history_length=500):
-        super().__init__()
-        QObject.__init__(self)
+    def __init__(self, *args, plot_history_length=500, **kwargs):
+        super().__init__(["DATA"], *args, **kwargs)
         self.__plot_history_length = plot_history_length
         self.__plots_database = {
             "data": np.zeros((plot_history_length, 4)),
@@ -23,7 +22,7 @@ class DataHandler(Handler, QObject):
         }
         self.__plot_lock = Lock()
 
-    def active_payload(self):
+    def active_payload(self, *args, **kwargs):
         """
         Take the raw payload information into conveniently plotable forms and store them
         in self.__plots_database.

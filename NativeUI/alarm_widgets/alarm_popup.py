@@ -51,8 +51,12 @@ class AlarmWidget(QtWidgets.QWidget):
         self.setLayout(self.layout)
         if self.alarmPayload["alarm_type"] == "PRIORITY_HIGH":
             self.setStyleSheet("background-color:red;")
+            #self.priority = "PRIORITY_HIGH"
         elif self.alarmPayload["alarm_type"] == "PRIORITY_MEDIUM":
             self.setStyleSheet("background-color:orange;")
+            #self.priority = "PRIORITY_LOW"
+
+        #self.code =
 
         # self.timer = QtCore.QTimer()
         # self.timer.setInterval(500)  # just faster than 60Hz
@@ -65,6 +69,10 @@ class AlarmWidget(QtWidgets.QWidget):
             self.NativeUI.leftBar.tab_page_buttons.button_alarms.click()
             self.NativeUI.alarms_view.alarmButton.click()
         return False
+
+    def get_priority(self):
+        return self.alarmPayload["alarm_type"]
+
 
     # def checkAlarm(self):
     #     """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
@@ -85,6 +93,7 @@ class AlarmPopup(QtWidgets.QDialog):
         self.setParent(NativeUI) # ensures popup closes when main UI does
         self.alarmDict = {}
         self.NativeUI = NativeUI
+        self.extraAlarms = AlarmExtrasWidget(NativeUI,self)
 
         self.layout = QtWidgets.QVBoxLayout()
         self.layout.setSpacing(0)
@@ -104,6 +113,7 @@ class AlarmPopup(QtWidgets.QDialog):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(100)  # just faster than 60Hz
         self.timer.timeout.connect(self.adjustSize)
+        #self.timer.timeout.connect(self.refresh_alarm_ordering)
         self.timer.start()
 
         self.show()
@@ -122,16 +132,41 @@ class AlarmPopup(QtWidgets.QDialog):
         self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]] = AlarmWidget(
             self.NativeUI, abstractAlarm, self
         )
-
-        self.layout.addWidget(self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]])
+        self.refresh_alarm_ordering()
+        #self.layout.addWidget(self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]])
         return 0
 
     def removeAlarm(self, abstractAlarm):
         """Creates a new alarmWidget and adds it to the container"""
         self.alarmDict[abstractAlarm.alarmPayload["alarm_code"]].setParent(None)
         self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
-
+        self.refresh_alarm_ordering()
         return 0
+
+    def refresh_alarm_ordering(self):
+        self.layout.removeWidget(self.extraAlarms)
+        for key in self.alarmDict:
+            self.layout.removeWidget(self.alarmDict[key])
+
+        for key in self.alarmDict:
+            if self.alarmDict[key].get_priority() == 'PRIORITY_HIGH':
+                if self.layout.count() == 4:
+                    self.extraAlarms.update_text(1 + len(self.alarmDict) - self.layout.count())
+                    self.layout.addWidget(self.extraAlarms)
+                    break
+                self.layout.addWidget(self.alarmDict[key])
+
+
+        if self.layout.count() < 5:
+            for key in self.alarmDict:
+                if self.layout.count() == 3:
+                    self.extraAlarms.update_text(len(self.alarmDict) - self.layout.count())
+                    self.layout.addWidget(self.extraAlarms)
+                    break
+                if self.alarmDict[key].get_priority() == 'PRIORITY_LOW':
+                    self.layout.addWidget(self.alarmDict[key])
+
+
 
     # def resetTimer(self, alarmPayload):
     #     self.alarmDict[alarmPayload["alarm_code"]].timer.start()
@@ -143,3 +178,59 @@ class AlarmPopup(QtWidgets.QDialog):
         y = 0  # screen.height() - widget.height()
         self.move(x, y)
         return 0
+
+
+
+class AlarmExtrasWidget(QtWidgets.QWidget):
+    """Object containing information particular to one alarm.
+    Created when alarm received from microcontroller, timeout after alarm signal stops.
+    Is contained within alarmPopup"""
+    def __init__(self, NativeUI, alarmCarrier, *args, **kwargs):
+        super(AlarmExtrasWidget, self).__init__(*args, **kwargs)
+
+        self.NativeUI = NativeUI
+        self.alarmCarrier = alarmCarrier # Needs to refer to its containing object
+
+        self.layout = QtWidgets.QHBoxLayout()
+        self.layout.setSpacing(0)
+        self.layout.setMargin(0)
+        #self.alarmPayload = abstractAlarm.alarmPayload
+
+        iconLabel = QtWidgets.QLabel()
+        iconpath_check = os.path.join(
+            self.NativeUI.iconpath, "exclamation-triangle-solid.png"
+        )
+        pixmap = QtGui.QPixmap(iconpath_check).scaledToHeight(40)
+        iconLabel.setPixmap(pixmap)
+        self.layout.addWidget(iconLabel)
+
+        self.textLabel = QtWidgets.QLabel()
+        self.textLabel.setText('1 More Alarms')
+        self.textLabel.setFixedWidth(400)
+        self.textLabel.setAlignment(QtCore.Qt.AlignCenter)
+        self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
+        self.layout.addWidget(self.textLabel)
+
+        self.setFixedHeight(40)
+        self.setLayout(self.layout)
+        self.setStyleSheet("background-color:red;")
+            #self.priority = "PRIORITY_LOW"
+
+    def update_text(self, num):
+        self.textLabel.setText(str(num)+ ' More Alarms')
+        #self.code =
+
+        # self.timer = QtCore.QTimer()
+        # self.timer.setInterval(500)  # just faster than 60Hz
+        # self.timer.timeout.connect(self.checkAlarm)
+        # self.timer.start()
+        # self.installEventFilter(self)
+
+    def eventFilter(self, source, event):
+        if (event.type() == QtCore.QEvent.MouseButtonPress):
+            self.NativeUI.leftBar.tab_page_buttons.button_alarms.click()
+            self.NativeUI.alarms_view.alarmButton.click()
+        return False
+
+    def get_priority(self):
+        return self.alarmPayload["alarm_type"]

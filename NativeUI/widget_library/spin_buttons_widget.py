@@ -21,7 +21,7 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 # from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 from global_widgets.global_spinbox import signallingSpinBox
-from global_widgets.global_send_popup import SetConfirmPopup
+#from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class SpinButton(QtWidgets.QFrame):
@@ -34,7 +34,7 @@ class SpinButton(QtWidgets.QFrame):
         # self.setStyleSheet("background-color:blue;")
         self.currentVal = 0
         self.cmd_type = settings[3]
-        self.val_code = settings[2]
+        self.cmd_code = settings[2]
         self.NativeUI = NativeUI
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -107,19 +107,22 @@ class SpinButton(QtWidgets.QFrame):
         self.setFixedWidth(300)
         #self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px;")
 
-    def update_targets_value(self):
-        newVal = self.NativeUI.get_db("targets")
-        if (newVal == {}) or (self.val_code == ""):
+    def update_value(self, db):
+        newVal = db
+        if (newVal == {}) or (self.cmd_code == ""):
             a = 1  # do nothing
         else:
             if not self.manuallyUpdated:
-                self.simpleSpin.setValue(newVal[self.val_code])
+                self.simpleSpin.setValue(newVal[self.cmd_code])
                 self.setTextColour(1)
             else:
 
-                if int(self.simpleSpin.value()) == int(newVal[self.val_code]):
+                if int(self.simpleSpin.value()) == int(newVal[self.cmd_code]):
                     self.manuallyUpdated = False
                     self.setTextColour(1)
+
+    def get_value(self):
+        return self.simpleSpin.value()
 
     def manualChanged(self):
         """Called when user manually makes a change. Stops value from updating and changes colour"""
@@ -185,6 +188,7 @@ class SpinButtonsWidget(QtWidgets.QWidget):
                 self.spinStack.addWidget(self.spinDict[settings[0]])
             else:
                 self.layout.addWidget(self.spinDict[settings[0]])
+        self.spinStack.setCurrentIndex(1)
         self.layout.addWidget(self.spinStack)
 
 
@@ -198,10 +202,10 @@ class SpinButtonsWidget(QtWidgets.QWidget):
 
         self.setLayout(self.layout)
 
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(160)
-        self.timer.timeout.connect(self.update_targets)
-        self.timer.start()
+        #self.timer = QtCore.QTimer()
+        #self.timer.setInterval(160)
+        #self.timer.timeout.connect(self.update_targets)
+        #self.timer.start()
 
     def setStackWidget(self, label):
         self.spinStack.setCurrentWidget(self.spinDict[label])
@@ -223,20 +227,6 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         self.okButton.setColour(str(int(self.manuallyUpdated)))
         self.cancelButton.setColour((str(int(self.manuallyUpdated))))
 
-        # targets = self.NativeUI.get_db("targets")
-        # if targets == {}:
-        #     return
-        # if targets["mode"] == "CURRENT":
-        #     for spin, code in zip(self.__spins, self.__codes):
-        #         if spin.simpleSpin.value() != float(targets[code]):
-        #             if spin.liveUpdating:
-        #                 spin.simpleSpin.setValue(float(targets[code]))
-        #                 spin.setTextColour("2")
-        #             else:
-        #                 spin.setTextColour("0")
-        #         else:
-        #             spin.setTextColour("2")
-
     def ok_button_pressed(self):
         """Respond to ok button pressed by changing text colour and liveUpdating to True"""
         message, command = [], []
@@ -247,13 +237,13 @@ class SpinButtonsWidget(QtWidgets.QWidget):
                 command.append(
                     [
                         self.spinDict[widget].cmd_type,
-                        self.spinDict[widget].val_code,
+                        self.spinDict[widget].cmd_code,
                         setVal,
                     ]
                 )
-        self.popup = SetConfirmPopup(self, self.NativeUI, message, command)
-        self.popup.okButton.pressed.connect(self.commandSent)
-        self.popup.show()
+        #self.popup = SetConfirmPopup(self, self.NativeUI, message, command)
+        #self.popup.okButton.pressed.connect(self.commandSent)
+        #self.popup.show()
 
         return 0
 
@@ -271,11 +261,4 @@ class SpinButtonsWidget(QtWidgets.QWidget):
             self.spinDict[spin].setTextColour("1")
         self.refresh_button_colour()
 
-        # targets = self.NativeUI.get_targets_db()
-        # if targets == {}:
-        #     return
-        # for spin, label in zip(self.__spins, self.__labels):
-        #     if spin.doubleSpin.value() != float(targets[label]):
-        #         spin.setTextColour("0")
-        #     else:
-        #         spin.setTextColour("2")
+
