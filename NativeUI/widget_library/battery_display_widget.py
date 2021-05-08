@@ -72,7 +72,7 @@ class BatteryDisplayWidget(QtWidgets.QWidget):
             widget.update_value(self.status)
         return 0
 
-    def set_size(self, x: int, y: int) -> int:
+    def set_size(self, x: int, y: int, spacing=None) -> int:
         """
         Set the size of the battery display widget. Due to the way that the text_display
         needs to resize itself, both the x and y sizes must be specified.

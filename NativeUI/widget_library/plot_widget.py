@@ -68,17 +68,14 @@ class TimePlotsWidget(QtWidgets.QWidget):
         self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add grid, hide the autoscale button, and add the legend
-        font = QtGui.QFont()  # TODO: change to an imported font from NativeuI
-        font.setPixelSize(24)
-
         for plot in self.plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
-            l.setLabelTextSize(self.NativeUI.text_size)
+            l.setFont(NativeUI.text_font)
             plot.setMouseEnabled(x=False, y=False)
-            plot.getAxis("bottom").setStyle(tickFont=font)
-            plot.getAxis("left").setStyle(tickFont=font)
+            plot.getAxis("bottom").setStyle(tickFont=NativeUI.text_font)
+            plot.getAxis("left").setStyle(tickFont=NativeUI.text_font)
             plot.getAxis("left").setTextPen(NativeUI.colors["page_foreground"])
             plot.getAxis("bottom").setTextPen(NativeUI.colors["page_foreground"])
 
@@ -189,17 +186,14 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         self.graph_widget.setBackground(self.NativeUI.colors["page_background"])
 
         # Add grid, hide the autoscale button, and add the legend
-        font = QtGui.QFont()  # TODO: change to an imported font from NativeuI
-        font.setPixelSize(25)
-
         for plot in self.plots:
             plot.showGrid(x=True, y=True)
             plot.hideButtons()
             l = plot.addLegend(offset=(-1, 1))
-            l.setLabelTextSize(self.NativeUI.text_size)
+            l.setFont(NativeUI.text_font)
             plot.setMouseEnabled(x=False, y=False)
-            plot.getAxis("bottom").setStyle(tickFont=font)
-            plot.getAxis("left").setStyle(tickFont=font)
+            plot.getAxis("bottom").setStyle(tickFont=NativeUI.text_font)
+            plot.getAxis("left").setStyle(tickFont=NativeUI.text_font)
             plot.getAxis("left").setTextPen(NativeUI.colors["page_foreground"])
             plot.getAxis("bottom").setTextPen(NativeUI.colors["page_foreground"])
 

@@ -25,7 +25,7 @@ class ModeHandler(PayloadHandler):
         self.commandList = []
         self.mainSpinDict = {}
         self.mainButtonDict = {}
-        self.modeList = self.NativeUI.modeList + ['CURRENT']
+        self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP", 'CURRENT']
         self.manuallyUpdatedBoolDict = { mode: False for mode in self.modeList }
         self.mainManuallyUpdated = False
         self.activeMode = self.modeList[0]

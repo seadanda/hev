@@ -104,11 +104,12 @@ class labelledSpin(QtWidgets.QWidget):
         self.manuallyUpdated = False
 
         self.layout = QtWidgets.QHBoxLayout()
-        textStyle = "color:white;" "font-size: " + NativeUI.text_size + ";"
+        textStyle = "color:white;"
 
         # if self.label != "":
         self.nameLabel = QtWidgets.QLabel(self.label)
         self.nameLabel.setStyleSheet(textStyle)
+        self.nameLabel.setFont(NativeUI.text_font)
         self.nameLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
         self.simpleSpin = signallingSpinBox(NativeUI)
@@ -119,7 +120,6 @@ class labelledSpin(QtWidgets.QWidget):
         self.simpleSpin.setStyleSheet(
             "QDoubleSpinBox{"
             "    width:100px;"  # TODO: unhardcode
-            "    font:" + NativeUI.text_size + ";"
             "}"
             "QDoubleSpinBox[bgColour='1']{"
             "    background-color:" + NativeUI.colors["page_foreground"].name() + ";"
@@ -138,15 +138,13 @@ class labelledSpin(QtWidgets.QWidget):
             "}"
             "QDoubleSpinBox::up-button{"
             "width:20; "
-            "background-color:white;"
-            "color:black;"
             "}"
             "QDoubleSpinBox::down-button{"
             "width:20px;"
             "height:20px; "
-            "border:none;"
             "}"
         )
+        self.simpleSpin.setFont(NativeUI.text_font)
         self.simpleSpin.setProperty("textColour", "1")
         self.simpleSpin.setProperty("bgColour", "1")
         self.simpleSpin.setButtonSymbols(

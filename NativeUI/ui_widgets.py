@@ -114,7 +114,9 @@ class Widgets:
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
         self.personal_display = PersonalDisplayWidget(NativeUI)
-        self.localisation_button = LocalisationButtonWidget(NativeUI.localisation_files)
+        self.localisation_button = LocalisationButtonWidget(
+            NativeUI.localisation_files, NativeUI.colors
+        )
 
         # Left Bar widgets
         self.page_buttons = PageButtonsWidget(NativeUI)
@@ -142,31 +144,32 @@ class Widgets:
         self.alarm_table = AlarmTable(NativeUI)
         self.clinical_tab = QWidget()  # TabClinical(NativeUI)
 
-        # ### Alarm limits
-        # with open("NativeUI/configs/clinical_config.json") as json_file:
-        #     clinicalDict = json.load(json_file)
-        #
-        # #radioSettings = modeDict["radioSettings"]
-        # #modes = NativeUI.modeList
-        #
-        # #self.add_handled_widget(QStackedWidget(), 'main_mode_stack', NativeUI.mode_handler)
-        # for setting in clinicalDict['settings']:
-        #     attrName = 'clinical_spin_' + setting[0][1][2]
-        #     setting[3] = setting[3] + 'MIN'
-        #     self.add_handled_widget(labelledSpin(NativeUI, setting), attrName + '_min', NativeUI.clinical_handler)
-        #     setting[3] = setting[3] + 'MAX'
-        #     self.add_handled_widget(labelledSpin(NativeUI, setting), attrName + '_max', NativeUI.clinical_handler)
-        #     #setting[3] = 'SET_TARGET'
-        #
-        #     #if setting[0] in clinicalDict['HighLowLimits']:
-        #     #    self.add_handled_widget(labelledSpin(NativeUI, [setting[0], "", setting[2]]), attrName, NativeUI.clinical_handler)
-        #     #    self.add_handled_widget(labelledSpin(NativeUI, ["", setting[1], setting[2]]), attrName + '_2', NativeUI.clinical_handler)
-        #     #else:
-        #     #    self.add_handled_widget(labelledSpin(NativeUI, setting), attrName, NativeUI.clinical_handler)
-        #
-        # self.add_handled_widget(OkButtonWidget(NativeUI), 'clinical_ok_button', NativeUI.clinical_handler)
-        # self.add_handled_widget(CancelButtonWidget(NativeUI), 'clinical_cancel_button', NativeUI.clinical_handler)
-        #
+        ### Alarm limits
+        with open("NativeUI/configs/clinical_config.json") as json_file:
+            clinicalDict = json.load(json_file)
+
+        #radioSettings = modeDict["radioSettings"]
+        #modes = NativeUI.modeList
+
+        #self.add_handled_widget(QStackedWidget(), 'main_mode_stack', NativeUI.mode_handler)
+        for setting in clinicalDict['settings']:
+            #print(setting)
+            attrName = 'clinical_spin_' + setting[0][2]
+            #setting[0][3] = setting[0][3] + 'MIN'
+            self.add_handled_widget(labelledSpin(NativeUI, setting[0]), attrName + '_min', NativeUI.clinical_handler)
+            #setting[0][3] = setting[0][3] + 'MAX'
+            self.add_handled_widget(labelledSpin(NativeUI, setting[1]), attrName + '_max', NativeUI.clinical_handler)
+            #setting[3] = 'SET_TARGET'
+
+            #if setting[0] in clinicalDict['HighLowLimits']:
+            #    self.add_handled_widget(labelledSpin(NativeUI, [setting[0], "", setting[2]]), attrName, NativeUI.clinical_handler)
+            #    self.add_handled_widget(labelledSpin(NativeUI, ["", setting[1], setting[2]]), attrName + '_2', NativeUI.clinical_handler)
+            #else:
+            #    self.add_handled_widget(labelledSpin(NativeUI, setting), attrName, NativeUI.clinical_handler)
+
+        self.add_handled_widget(OkButtonWidget(NativeUI), 'clinical_ok_button', NativeUI.clinical_handler)
+        self.add_handled_widget(CancelButtonWidget(NativeUI), 'clinical_cancel_button', NativeUI.clinical_handler)
+
 
 
         #### Mode settings tab: Mode (x4), Personal

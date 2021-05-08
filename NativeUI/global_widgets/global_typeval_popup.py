@@ -33,7 +33,6 @@ class TypeValuePopup(QtWidgets.QDialog):
         self.lineEdit.setText("4")
         self.lineEdit.setStyleSheet(
             "QLineEdit{"
-            "   font-size: " + NativeUI.text_size + ";"
             "   background-color: white;"
             "   border-radius: 4px;"
             "}"
@@ -47,6 +46,7 @@ class TypeValuePopup(QtWidgets.QDialog):
             "   color: red;"
             "}"
         )
+        self.lineEdit.setFont(NativeUI.text_font)
         self.lineEdit.setProperty("colour", "1")
         self.lineEdit.setAlignment(QtCore.Qt.AlignCenter)
         self.lineEdit.saveVal = self.lineEdit.text()

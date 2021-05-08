@@ -32,7 +32,7 @@ class PersonalDisplayWidget(QtWidgets.QWidget):
         hlayout.addWidget(self.info_label)
         self.setLayout(hlayout)
 
-    def set_size(self, x: int, y: int) -> int:
+    def set_size(self, x: int, y: int, spacing=None) -> int:
         """
         Set the size of the personal display widget.
 

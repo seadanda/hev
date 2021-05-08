@@ -21,11 +21,12 @@ class AlarmWidget(QtWidgets.QWidget):
     """Object containing information particular to one alarm.
     Created when alarm received from microcontroller, timeout after alarm signal stops.
     Is contained within alarmPopup"""
+
     def __init__(self, NativeUI, abstractAlarm, alarmCarrier, *args, **kwargs):
         super(AlarmWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.alarmCarrier = alarmCarrier # Needs to refer to its containing object
+        self.alarmCarrier = alarmCarrier  # Needs to refer to its containing object
 
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(0)
@@ -41,22 +42,21 @@ class AlarmWidget(QtWidgets.QWidget):
         self.layout.addWidget(iconLabel)
 
         self.textLabel = QtWidgets.QLabel()
-        self.textLabel.setText(self.alarmPayload['alarm_type']+ ' - ' + self.alarmPayload["alarm_code"])
+        self.textLabel.setText(
+            self.alarmPayload["alarm_type"] + " - " + self.alarmPayload["alarm_code"]
+        ) #remove priority_
         self.textLabel.setFixedWidth(400)
         self.textLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
+        self.textLabel.setFont(NativeUI.text_font)
+        #self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
         self.layout.addWidget(self.textLabel)
 
         self.setFixedHeight(40)
         self.setLayout(self.layout)
         if self.alarmPayload["alarm_type"] == "PRIORITY_HIGH":
             self.setStyleSheet("background-color:red;")
-            #self.priority = "PRIORITY_HIGH"
         elif self.alarmPayload["alarm_type"] == "PRIORITY_MEDIUM":
             self.setStyleSheet("background-color:orange;")
-            #self.priority = "PRIORITY_LOW"
-
-        #self.code =
 
         # self.timer = QtCore.QTimer()
         # self.timer.setInterval(500)  # just faster than 60Hz
@@ -74,6 +74,13 @@ class AlarmWidget(QtWidgets.QWidget):
         return self.alarmPayload["alarm_type"]
 
 
+    def setFont(self, font) -> int:
+        """
+        Set the font for textLabel.
+        """
+        self.textLabel.setFont(font)
+        return 0
+
     # def checkAlarm(self):
     #     """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
     #     self.ongoingAlarms = self.NativeUI.ongoingAlarms
@@ -90,7 +97,7 @@ class AlarmPopup(QtWidgets.QDialog):
     Needs to adjust its size whenever a widget is deleted"""
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmPopup, self).__init__(*args, **kwargs)
-        self.setParent(NativeUI) # ensures popup closes when main UI does
+        self.setParent(NativeUI)  # ensures popup closes when main UI does
         self.alarmDict = {}
         self.NativeUI = NativeUI
         self.extraAlarms = AlarmExtrasWidget(NativeUI,self)
@@ -102,7 +109,9 @@ class AlarmPopup(QtWidgets.QDialog):
 
         self.location_on_window()
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint
+            QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.Dialog
+            | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
 
         self.shadow = QtWidgets.QGraphicsDropShadowEffect()
@@ -113,7 +122,6 @@ class AlarmPopup(QtWidgets.QDialog):
         self.timer = QtCore.QTimer()
         self.timer.setInterval(100)  # just faster than 60Hz
         self.timer.timeout.connect(self.adjustSize)
-        #self.timer.timeout.connect(self.refresh_alarm_ordering)
         self.timer.start()
 
         self.show()
@@ -208,7 +216,8 @@ class AlarmExtrasWidget(QtWidgets.QWidget):
         self.textLabel.setText('1 More Alarms')
         self.textLabel.setFixedWidth(400)
         self.textLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
+        self.textLabel.setFont(NativeUI.text_font)
+        #self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
         self.layout.addWidget(self.textLabel)
 
         self.setFixedHeight(40)

@@ -16,7 +16,7 @@ class ClinicalHandler(PayloadHandler):
     #settingToggle = QtCore.Signal(str)
 
     def __init__(self, NativeUI, *args, **kwargs):
-        super().__init__(['TARGET'],*args, **kwargs)
+        super().__init__([''],*args, **kwargs)
         #super(TabModes, self).__init__(NativeUI, *args, **kwargs)
         self.NativeUI = NativeUI
         self.spinDict = {}
@@ -27,7 +27,7 @@ class ClinicalHandler(PayloadHandler):
 
         with open("NativeUI/configs/clinical_config.json") as json_file:
             clinicalDict = json.load(json_file)
-        #self.relevantKeys = [print(setting) for setting in clinicalDict['settings']]
+        #self.relevantKeys = [setting for setting in clinicalDict['settings']]
 
     def add_widget(self, widget, key: str):
         if isinstance(widget, labelledSpin):

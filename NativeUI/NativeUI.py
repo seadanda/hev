@@ -61,8 +61,11 @@ logging.basicConfig(
 class NativeUI(HEVClient, QMainWindow):
     """Main application with client logic"""
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, resolution: list, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        self.screen_width = resolution[0]
+        self.screen_height = resolution[1]
 
         config_path = self.__find_configs()
 
@@ -87,9 +90,11 @@ class NativeUI(HEVClient, QMainWindow):
         for key in self.colors:
             self.colors[key] = QColor.fromRgb(*self.colors[key])
 
-        self.text_font = QFont("Sans Serif", 20)
-        self.value_font = QFont("Sans Serif", 40)
-        self.text_size = "20pt"  # TODO: remove in favour of self.text_font
+        self.text_font = QFont("Sans Serif", resolution[0] / 96)  # 20px for 1920*1080
+        #self.text_size = 16 # temporary, used by Tiago
+        self.value_font = QFont(
+            "Sans Serif", 2 * resolution[0] / 96
+        )  # 40px for 1920*1080
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -102,6 +107,27 @@ class NativeUI(HEVClient, QMainWindow):
             self.icons[key] = os.path.join(
                 self.iconpath, self.icons[key] + "." + self.iconext
             )
+
+
+        # initialise databases TODO: remove these and use handlers instead.
+        self.db_lock = Lock()
+        # self.__data = {}
+        self.__readback = {}
+        # self.__cycle = {}
+        self.__alarms = {}
+        self.__targets = {}
+        self.__personal = {}
+        self.ongoingAlarms = {}
+        self.__database_list = [
+            "__data",
+            "__readback",
+            "__cycle",
+            "__battery",
+            "__plots",
+            "__alarms",
+            "__targets",
+            "__personal",
+        ]
 
         # Set up the handlers
         self.battery_handler = BatteryHandler()
@@ -125,25 +151,6 @@ class NativeUI(HEVClient, QMainWindow):
         ]
         self.messageCommandPopup = SetConfirmPopup(self)
 
-        # initialise databases TODO: remove these and use handlers instead.
-        self.db_lock = Lock()
-        # self.__data = {}
-        self.__readback = {}
-        # self.__cycle = {}
-        self.__alarms = {}
-        self.__targets = {}
-        self.__personal = {}
-        self.ongoingAlarms = {}
-        self.__database_list = [
-            "__data",
-            "__readback",
-            "__cycle",
-            "__battery",
-            "__plots",
-            "__alarms",
-            "__targets",
-            "__personal",
-        ]
 
         self.widgets = Widgets(self)  # Create all the widgets we'll need
         self.layouts = Layout(self, self.widgets)  #
@@ -355,10 +362,7 @@ class NativeUI(HEVClient, QMainWindow):
                     self.mode_handler.commandSent
                 )
 
-        print('main button connections')
         for key, button_widget in self.mode_handler.mainButtonDict.items():
-            print(key)
-            print(button_widget)
             if isinstance(button_widget, (OkButtonWidget)):
                 button_widget.clicked.connect(
                     self.mode_handler.handle_mainokbutton_click
@@ -369,21 +373,21 @@ class NativeUI(HEVClient, QMainWindow):
                 button_widget.clicked.connect(
                     self.mode_handler.commandSent
                 )
-
-        for key, spin_widget in self.clinical_handler.spinDict.items():
-            spin_widget.simpleSpin.manualChanged.connect(
-                lambda i=key: self.clinical_handler.handle_manual_change(i)
-            )
-
-        for key, button_widget in self.clinical_handler.buttonDict.items():
-            if isinstance(button_widget, (OkButtonWidget)):
-                button_widget.clicked.connect(
-                    self.clinical_handler.handle_okbutton_click
-                )
-            elif isinstance(button_widget, CancelButtonWidget):
-                button_widget.clicked.connect(
-                    self.clinical_handler.commandSent
-                )
+        #
+        # for key, spin_widget in self.clinical_handler.spinDict.items():
+        #     spin_widget.simpleSpin.manualChanged.connect(
+        #         lambda i=key: self.clinical_handler.handle_manual_change(i)
+        #     )
+        #
+        # for key, button_widget in self.clinical_handler.buttonDict.items():
+        #     if isinstance(button_widget, (OkButtonWidget)):
+        #         button_widget.clicked.connect(
+        #             self.clinical_handler.handle_okbutton_click
+        #         )
+        #     elif isinstance(button_widget, CancelButtonWidget):
+        #         button_widget.clicked.connect(
+        #             self.clinical_handler.commandSent
+        #         )
 
         self.mode_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.messageCommandPopup.ModeSend.connect(self.mode_handler.sendCommands)
@@ -392,8 +396,8 @@ class NativeUI(HEVClient, QMainWindow):
         self.expert_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.messageCommandPopup.ExpertSend.connect(self.expert_handler.sendCommands)
 
-        self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
-        self.messageCommandPopup.ClinicalSend.connect(self.expert_handler.sendCommands)
+        #self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
+        #self.messageCommandPopup.ClinicalSend.connect(self.expert_handler.sendCommands)
         #self.messageCommandPopup.okButton.pressed.connect(self.expert_handler.sendCommands)
 
         self.messageCommandPopup.cancelButton.pressed.connect(self.messageCommandPopup.close)
@@ -477,6 +481,10 @@ class NativeUI(HEVClient, QMainWindow):
         return database_name
 
     def set_current_mode(self, mode):
+        """
+        Set the current mode
+        TODO: move to mode handler
+        """
         print("setting native ui mode")
         print(mode)
         self.currentMode = mode
@@ -713,7 +721,7 @@ if __name__ == "__main__":
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
-    dep = NativeUI()
+    dep = NativeUI(interpret_resolution(command_line_args.resolution))
     set_window_size(
         dep,
         resolution=command_line_args.resolution,

@@ -39,7 +39,6 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
         # Create "Measurements" Title
         self.title_label = QtWidgets.QLabel()
         self.title_label.setStyleSheet(
-            # "font-size:" + NativeUI.text_size + ";"
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
             "background-color:" + NativeUI.colors["page_background"].name() + ";"
         )
@@ -62,9 +61,7 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
                 )
             else:
                 self.widget_list.append(
-                    MeasurementWidget(
-                        NativeUI, measurement[0], measurement[1]  # Label key  # Key
-                    )
+                    MeasurementWidget(NativeUI, measurement[0], measurement[1])
                 )
 
         # Compute max number of items per column
@@ -221,7 +218,6 @@ class MeasurementWidget(QtWidgets.QWidget):
             "color: " + self.NativeUI.colors["label_foreground"].name() + ";"
             "background-color:" + self.NativeUI.colors["label_background"].name() + ";"
             "border: none;"
-            # "font-size: " + NativeUI.text_size + ";"
         )
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
@@ -230,7 +226,6 @@ class MeasurementWidget(QtWidgets.QWidget):
             "background-color: " + self.NativeUI.colors["label_foreground"].name() + ";"
             "border: none;"
         )
-        # self.value_display.setFont(QtGui.QFont("SansSerif", 40))
 
         # Layout
         layout.setSpacing(0)
