@@ -21,11 +21,12 @@ class AlarmWidget(QtWidgets.QWidget):
     """Object containing information particular to one alarm.
     Created when alarm received from microcontroller, timeout after alarm signal stops.
     Is contained within alarmPopup"""
+
     def __init__(self, NativeUI, abstractAlarm, alarmCarrier, *args, **kwargs):
         super(AlarmWidget, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.alarmCarrier = alarmCarrier # Needs to refer to its containing object
+        self.alarmCarrier = alarmCarrier  # Needs to refer to its containing object
 
         self.layout = QtWidgets.QHBoxLayout()
         self.layout.setSpacing(0)
@@ -41,10 +42,11 @@ class AlarmWidget(QtWidgets.QWidget):
         self.layout.addWidget(iconLabel)
 
         self.textLabel = QtWidgets.QLabel()
-        self.textLabel.setText(self.alarmPayload['alarm_type']+ ' - ' + self.alarmPayload["alarm_code"])
+        self.textLabel.setText(
+            self.alarmPayload["alarm_type"] + " - " + self.alarmPayload["alarm_code"]
+        )
         self.textLabel.setFixedWidth(400)
         self.textLabel.setAlignment(QtCore.Qt.AlignCenter)
-        self.textLabel.setStyleSheet("font-size: " + NativeUI.text_size + ";")
         self.layout.addWidget(self.textLabel)
 
         self.setFixedHeight(40)
@@ -61,10 +63,17 @@ class AlarmWidget(QtWidgets.QWidget):
         # self.installEventFilter(self)
 
     def eventFilter(self, source, event):
-        if (event.type() == QtCore.QEvent.MouseButtonPress):
+        if event.type() == QtCore.QEvent.MouseButtonPress:
             self.NativeUI.leftBar.tab_page_buttons.button_alarms.click()
             self.NativeUI.alarms_view.alarmButton.click()
         return False
+
+    def setFont(self, font) -> int:
+        """
+        Set the font for textLabel.
+        """
+        self.textLabel.setFont(font)
+        return 0
 
     # def checkAlarm(self):
     #     """Check alarm still exists in ongoingAlarms object. If present do nothing, otherwise delete."""
@@ -80,9 +89,10 @@ class AlarmWidget(QtWidgets.QWidget):
 class AlarmPopup(QtWidgets.QDialog):
     """Container class for alarm widgets. Handles ordering and positioning of alarms.
     Needs to adjust its size whenever a widget is deleted"""
+
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmPopup, self).__init__(*args, **kwargs)
-        self.setParent(NativeUI) # ensures popup closes when main UI does
+        self.setParent(NativeUI)  # ensures popup closes when main UI does
         self.alarmDict = {}
         self.NativeUI = NativeUI
 
@@ -93,7 +103,9 @@ class AlarmPopup(QtWidgets.QDialog):
 
         self.location_on_window()
         self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.Dialog | QtCore.Qt.WindowStaysOnTopHint
+            QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.Dialog
+            | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
 
         self.shadow = QtWidgets.QGraphicsDropShadowEffect()

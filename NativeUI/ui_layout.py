@@ -60,7 +60,8 @@ class Layout:
 
         self.construct_page_widgets()
 
-        # self.startup_layout()
+        # Popups
+        NativeUI.widgets.alarm_popup.setFont(self.NativeUI.text_font)
 
     def construct_page_widgets(self) -> int:
         """
