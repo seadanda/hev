@@ -251,19 +251,14 @@ class Layout:
         page_main_center_layout = QtWidgets.QHBoxLayout()
         page_main_bottom_layout = QtWidgets.QHBoxLayout()
 
+        spin_buttons = self.layout_main_spin_buttons()
         center_widgets = [self.widgets.plot_stack]
-        bottom_widgets = [self.widgets.history_buttons, self.layout_main_spin_buttons()]
+        bottom_widgets = [self.widgets.history_buttons, spin_buttons ]
         self.widgets.history_buttons.set_size(
             None, self.main_page_bottom_bar_height, spacing=self.widget_spacing
         )
         self.widgets.history_buttons.setFont(self.NativeUI.text_font)
-        self.widgets.spin_buttons.set_size(
-            self.screen_width - self.left_bar_width - self.main_page_bottom_bar_height,
-            self.main_page_bottom_bar_height,
-            spacing=self.widget_spacing,
-        )
-        self.widgets.spin_buttons.set_label_font(self.NativeUI.text_font)
-        self.widgets.spin_buttons.set_value_font(self.NativeUI.value_font)
+
 
         for widget in center_widgets:
             page_main_center_layout.addWidget(widget)
@@ -680,6 +675,30 @@ class Layout:
 
         combined_spin_buttons = QtWidgets.QWidget()
         combined_spin_buttons.setLayout(hlayout)
+
+        x = self.screen_width - self.left_bar_width - self.main_page_bottom_bar_height
+        y = self.main_page_bottom_bar_height
+        spacing = self.widget_spacing
+
+        combined_spin_buttons.setFixedSize(x, y)
+        x_spin = int(x / hlayout.count() - spacing)
+        y_spin = y - spacing
+
+        for setting in modeDict['settings']:
+            if setting[0] in modeDict['mainPageSettings']:
+                attrName = 'CURRENT_' + setting[2]
+                self.NativeUI.widgets.get_widget(attrName).setFixedSize(x_spin, y_spin)
+                self.NativeUI.widgets.get_widget(attrName).simpleSpin.setFixedSize(x_spin, 0.7*y_spin)
+                self.NativeUI.widgets.get_widget(attrName).simpleSpin.setFont(self.NativeUI.text_font)
+                self.NativeUI.widgets.get_widget(attrName).label.setFont(self.NativeUI.text_font)
+
+        stack.setFixedSize(x_spin, y_spin)
+        cancelButton.setFixedSize(x_spin, int(y_spin / 2) - spacing)
+        okButton.setFixedSize(x_spin, int(y_spin / 2) - spacing)
+
+        #spin_buttons.set_label_font(self.NativeUI.text_font)
+        #spin_buttons.set_value_font(self.NativeUI.value_font
+
         return combined_spin_buttons
 
     def layout_tab_clinical_limits(self):
@@ -690,52 +709,23 @@ class Layout:
         for setting in clinicalDict['settings']:
             attrName = 'clinical_spin_' + setting[0][2]
             hlayout = QtWidgets.QHBoxLayout()
-            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_min'))
-            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_max'))
+            if len(setting) >= 2:
+                hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_min'))
+                if len(setting) == 3:
+                    hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_set'))
+                hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_max'))
+            elif len(setting) == 1:
+                hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_lim'))
+
             vlayout.addLayout(hlayout)
 
         hbuttonlayout = QtWidgets.QHBoxLayout()
         hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_ok_button'))
         hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_cancel_button'))
         vlayout.addLayout(hbuttonlayout)
-        # hlayoutMeta.addLayout(vlayout)
-        # hlayoutMeta.addLayout(vlayout2)
         clinical_page = QtWidgets.QWidget()
         clinical_page.setLayout(vlayout)
         return clinical_page
-
-    # def layout_tab_clinical_limits(self):
-    #     with open("NativeUI/configs/clinical_config.json") as json_file:
-    #         clinicalDict = json.load(json_file)
-    #
-    #
-    #     grid = QtWidgets.QGridLayout()
-    #     #grid.setHorizontalSpacing(0)
-    #     vlayout = QtWidgets.QVBoxLayout()
-    #     vlayout2 = QtWidgets.QVBoxLayout()
-    #     i = 0
-    #     for setting in clinicalDict['settings']:
-    #         attrName = 'spin_' + setting[2]
-    #         if setting[0] in clinicalDict['HighLowLimits']:
-    #
-    #             grid.addWidget(self.NativeUI.widgets.get_widget(attrName), int(i / 2), 2 * (i % 2), 1, 1)
-    #             grid.addWidget(self.NativeUI.widgets.get_widget(attrName + '_2'), int(i / 2), 2 * (i % 2) + 1, 1, 1)
-    #         else:
-    #             grid.addWidget(self.NativeUI.widgets.get_widget(attrName), int(i / 2), 2 * (i % 2), 1, 2)
-    #
-    #         i = i + 1
-    #
-    #     vlayout.addLayout(grid)
-    #     hbuttonlayout = QtWidgets.QHBoxLayout()
-    #     hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_ok_button'))
-    #     hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_cancel_button'))
-    #     vlayout.addLayout(hbuttonlayout)
-    #     # hlayoutMeta.addLayout(vlayout)
-    #     # hlayoutMeta.addLayout(vlayout2)
-    #     clinical_page = QtWidgets.QWidget()
-    #     clinical_page.setLayout(vlayout)
-    #     return clinical_page
-    #
 
     def layout_startup_confirmation(self):
         vlayout = QtWidgets.QVBoxLayout()

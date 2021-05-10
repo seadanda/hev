@@ -50,6 +50,7 @@ from mode_widgets.mode_handler import ModeHandler
 from mode_widgets.clinical_handler import ClinicalHandler
 from alarm_widgets.alarm_handler import AlarmHandler
 # from handler_library.readback_handler import ReadbackHandler
+from global_widgets.global_typeval_popup import TypeValuePopup
 
 
 logging.basicConfig(
@@ -150,7 +151,7 @@ class NativeUI(HEVClient, QMainWindow):
             self.alarm_handler
         ]
         self.messageCommandPopup = SetConfirmPopup(self)
-
+        self.typeValPopup = TypeValuePopup(self)
 
         self.widgets = Widgets(self)  # Create all the widgets we'll need
         self.layouts = Layout(self, self.widgets)  #
@@ -311,9 +312,14 @@ class NativeUI(HEVClient, QMainWindow):
         # When mode is switched from mode page, various other locations must respond
         for widget in (self.mode_handler.spinDict.values()):
             self.mode_handler.UpdateModes.connect(widget.update_value)
+            widget.simpleSpin.manualChanged.connect(lambda i=widget: self.clinical_handler.setpoint_changed(i))
+            widget.simpleSpin.manualChanged.connect(lambda i=widget: self.mode_handler.propagate_modevalchange(i))
 
         for widget in (self.mode_handler.mainSpinDict.values()):
             self.mode_handler.UpdateModes.connect(widget.update_value)
+            widget.simpleSpin.manualChanged.connect(lambda i=widget: self.clinical_handler.setpoint_changed(i))
+            widget.simpleSpin.manualChanged.connect(lambda i=widget: self.mode_handler.propagate_modevalchange(i))
+            #widget.simpleSpin.manualChanged.connect(lambda i=widget: self.mode_handler.mode_value(i))
 
         self.mode_handler.modeSwitched.connect(
             lambda i: self.set_current_mode(i)
@@ -338,9 +344,16 @@ class NativeUI(HEVClient, QMainWindow):
             spin_widget.simpleSpin.manualChanged.connect(
                 lambda i=key: self.mode_handler.handle_manual_change(i)
             )
+            # if 'clinical' in key:
+            #     spin_widget.simpleSpin.manualChanged.connect(
+            #         lambda i=spin_widget, j=key: self.clinical_handler.setpoint_changed(i,j)
+            #     )
 
         for key, spin_widget in self.mode_handler.mainSpinDict.items():
             spin_widget.simpleSpin.manualChanged.connect(
+                lambda i=key: self.mode_handler.handle_manual_change(i)
+            )
+            spin_widget.simpleSpin.programmaticallyChanged.connect(
                 lambda i=key: self.mode_handler.handle_manual_change(i)
             )
 
@@ -373,32 +386,44 @@ class NativeUI(HEVClient, QMainWindow):
                 button_widget.clicked.connect(
                     self.mode_handler.commandSent
                 )
-        #
-        # for key, spin_widget in self.clinical_handler.spinDict.items():
-        #     spin_widget.simpleSpin.manualChanged.connect(
-        #         lambda i=key: self.clinical_handler.handle_manual_change(i)
-        #     )
-        #
-        # for key, button_widget in self.clinical_handler.buttonDict.items():
-        #     if isinstance(button_widget, (OkButtonWidget)):
-        #         button_widget.clicked.connect(
-        #             self.clinical_handler.handle_okbutton_click
-        #         )
-        #     elif isinstance(button_widget, CancelButtonWidget):
-        #         button_widget.clicked.connect(
-        #             self.clinical_handler.commandSent
-        #         )
+
+        for key, spin_widget in self.clinical_handler.limSpinDict.items():
+            spin_widget.simpleSpin.manualChanged.connect(
+                lambda i=key: self.clinical_handler.handle_manual_change(i)
+            )
+
+        for key, spin_widget in self.clinical_handler.setSpinDict.items():
+            spin_widget.simpleSpin.manualChanged.connect(
+                lambda i=spin_widget: self.clinical_handler.setpoint_changed(i)
+            )
+            spin_widget.simpleSpin.manualChanged.connect(
+                lambda i=key: self.clinical_handler.handle_manual_change(i)
+            )
+            spin_widget.simpleSpin.manualChanged.connect(
+                lambda i=spin_widget: self.mode_handler.propagate_modevalchange(i)
+            )
+
+        for key, button_widget in self.clinical_handler.buttonDict.items():
+            if isinstance(button_widget, (OkButtonWidget)):
+                button_widget.clicked.connect(
+                    self.clinical_handler.handle_okbutton_click
+                )
+            elif isinstance(button_widget, CancelButtonWidget):
+                button_widget.clicked.connect(
+                    self.clinical_handler.handle_cancelbutton_click
+                )
+
+        #for widget in (self.clinical_handler.setSpinDict.values()):
+        #    self.clinical_handler.UpdateClinical.connect(widget.update_value)
 
         self.mode_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.messageCommandPopup.ModeSend.connect(self.mode_handler.sendCommands)
-        #self.messageCommandPopup.okButton.pressed.connect(self.mode_handler.sendCommands)
 
         self.expert_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.messageCommandPopup.ExpertSend.connect(self.expert_handler.sendCommands)
 
-        #self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
-        #self.messageCommandPopup.ClinicalSend.connect(self.expert_handler.sendCommands)
-        #self.messageCommandPopup.okButton.pressed.connect(self.expert_handler.sendCommands)
+        self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
+        self.messageCommandPopup.ClinicalSend.connect(self.clinical_handler.sendCommands)
 
         self.messageCommandPopup.cancelButton.pressed.connect(self.messageCommandPopup.close)
 
@@ -418,9 +443,7 @@ class NativeUI(HEVClient, QMainWindow):
                     lambda i=key: self.expert_handler.handle_okbutton_click(i)
                 )
             elif isinstance(button_widget, CancelButtonWidget):
-                button_widget.pressed.connect(
-                    lambda: self.expert_handler.commandSent
-                )
+                button_widget.pressed.connect(self.expert_handler.commandSent)
 
         for widget in (self.expert_handler.spinDict.values()):
             self.expert_handler.UpdateExpert.connect(widget.update_value)
@@ -443,8 +466,8 @@ class NativeUI(HEVClient, QMainWindow):
         #self.timer.timeout.connect(self.expert_handler.update_values)
         self.timer.start()
 
-        self.widgets.startup_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
-        self.mode_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
+        #self.widgets.startup_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
+        #self.mode_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
 
 
         self.alarm_handler.UpdateAlarm.connect(self.alarm_handler.handle_newAlarm)

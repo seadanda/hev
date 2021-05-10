@@ -65,6 +65,7 @@ class StartupHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family be
         message, command = [], []
         for widget in self.spinDict:
             setVal = self.spinDict[widget].get_value()
+            setVal = round(setVal, widget.decPlaces)
             message.append("set" + widget + " to " + str(setVal))
             command.append(
                 [

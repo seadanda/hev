@@ -42,7 +42,7 @@ from widget_library.plot_widget import (
     CirclePlotsWidget,
     TimePlotsWidget,
 )
-from widget_library.spin_buttons_widget import SpinButtonsWidget, SpinButton
+from widget_library.spin_buttons_widget import SpinButton
 
 # from widget_library.tab_expert import TabExpert
 from widget_library.ventilator_start_stop_buttons_widget import (
@@ -126,7 +126,7 @@ class Widgets:
 
         # Main Page Widgets
         #self.spin_buttons = SpinButtonsWidget(NativeUI)
-        self.add_handled_widget(SpinButtonsWidget(NativeUI), 'spin_buttons', NativeUI.mode_handler)
+        #self.add_handled_widget(SpinButtonsWidget(NativeUI), 'spin_buttons', NativeUI.mode_handler)
         self.history_buttons = HistoryButtonsWidget(NativeUI)
         self.normal_plots = TimePlotsWidget(NativeUI)
         self.detailed_plots = TimePlotsWidget(NativeUI)
@@ -140,7 +140,6 @@ class Widgets:
         self.alarm_list = AlarmList(NativeUI)
         self.acknowledge_button = QPushButton()
 
-        # self.alarm_table_tab = TabAlarmTable(NativeUI)
         self.alarm_table = AlarmTable(NativeUI)
         self.clinical_tab = QWidget()  # TabClinical(NativeUI)
 
@@ -148,24 +147,16 @@ class Widgets:
         with open("NativeUI/configs/clinical_config.json") as json_file:
             clinicalDict = json.load(json_file)
 
-        #radioSettings = modeDict["radioSettings"]
-        #modes = NativeUI.modeList
-
-        #self.add_handled_widget(QStackedWidget(), 'main_mode_stack', NativeUI.mode_handler)
         for setting in clinicalDict['settings']:
-            #print(setting)
             attrName = 'clinical_spin_' + setting[0][2]
-            #setting[0][3] = setting[0][3] + 'MIN'
-            self.add_handled_widget(labelledSpin(NativeUI, setting[0]), attrName + '_min', NativeUI.clinical_handler)
-            #setting[0][3] = setting[0][3] + 'MAX'
-            self.add_handled_widget(labelledSpin(NativeUI, setting[1]), attrName + '_max', NativeUI.clinical_handler)
-            #setting[3] = 'SET_TARGET'
-
-            #if setting[0] in clinicalDict['HighLowLimits']:
-            #    self.add_handled_widget(labelledSpin(NativeUI, [setting[0], "", setting[2]]), attrName, NativeUI.clinical_handler)
-            #    self.add_handled_widget(labelledSpin(NativeUI, ["", setting[1], setting[2]]), attrName + '_2', NativeUI.clinical_handler)
-            #else:
-            #    self.add_handled_widget(labelledSpin(NativeUI, setting), attrName, NativeUI.clinical_handler)
+            if len(setting) == 1:
+                self.add_handled_widget(labelledSpin(NativeUI, setting[0]), attrName + '_lim', NativeUI.clinical_handler)
+            if len(setting) >= 2:
+                self.add_handled_widget(labelledSpin(NativeUI, setting[0]), attrName + '_min', NativeUI.clinical_handler)
+                self.add_handled_widget(labelledSpin(NativeUI, setting[-1]), attrName + '_max', NativeUI.clinical_handler)
+                if len(setting) == 3:
+                    self.add_handled_widget(labelledSpin(NativeUI, setting[1]), attrName + '_set',
+                                            NativeUI.clinical_handler)
 
         self.add_handled_widget(OkButtonWidget(NativeUI), 'clinical_ok_button', NativeUI.clinical_handler)
         self.add_handled_widget(CancelButtonWidget(NativeUI), 'clinical_cancel_button', NativeUI.clinical_handler)
@@ -175,9 +166,6 @@ class Widgets:
         #### Mode settings tab: Mode (x4), Personal
 
         # Modes Page Widgets
-        #self.mode_confirm_popup = SetConfirmPopup(NativeUI)
-        #NativeUI.mode_handler = ModeHandler(NativeUI, self.mode_confirm_popup)
-
         with open("NativeUI/configs/mode_config.json") as json_file:
             modeDict = json.load(json_file)
 
