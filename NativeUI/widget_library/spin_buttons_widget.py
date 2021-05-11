@@ -27,7 +27,7 @@ from global_widgets.global_spinbox import signallingSpinBox
 class SpinButton(QtWidgets.QFrame):
     """TO DO: Implement command sending"""
 
-    def __init__(self, NativeUI, infoArray):
+    def __init__(self, NativeUI, popup, infoArray):
         super().__init__()
 
         self.manuallyUpdated = False
@@ -37,6 +37,9 @@ class SpinButton(QtWidgets.QFrame):
             self.label_text, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.initVal, self.step, self.decPlaces = (
                 infoArray
             )
+        #print('before')
+        #print(self.cmd_type)
+        self.cmd_type = self.cmd_type.replace('SET_TARGET_','SET_TARGET_CURRENT')
         #self.cmd_type = settings[3]
         #self.cmd_code = settings[4]
         #self.tag = settings[2]
@@ -63,7 +66,7 @@ class SpinButton(QtWidgets.QFrame):
         self.layout.addWidget(self.label)
         #self.setFont(NativeUI.text_font)
 
-        self.simpleSpin = signallingSpinBox(NativeUI, self.label_text, self.min, self.max, self.initVal, self.step, self.decPlaces)
+        self.simpleSpin = signallingSpinBox(NativeUI, popup, self.label_text, self.min, self.max, self.initVal, self.step, self.decPlaces)
         self.simpleSpin.lineEdit().setStyleSheet("border:blue;")
       #  self.simpleSpin.setFixedHeight(100)
       #  self.simpleSpin.setFont(NativeUI.text_font)
@@ -121,7 +124,7 @@ class SpinButton(QtWidgets.QFrame):
                 self.simpleSpin.setValue(newVal[self.tag])
                 self.setTextColour(1)
             else:
-                if int(self.simpleSpin.value()) == int(newVal[self.tag]):
+                if round(self.simpleSpin.value(),self.decPlaces) == round(newVal[self.tag],self.decPlaces):
                     self.manuallyUpdated = False
                     self.setTextColour(1)
 

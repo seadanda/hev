@@ -58,8 +58,8 @@ from mode_widgets.clinical_handler import ClinicalHandler
 from alarm_widgets.alarm_handler import AlarmHandler
 
 # from handler_library.readback_handler import ReadbackHandler
-from global_widgets.global_typeval_popup import TypeValuePopup
-
+from global_widgets.global_typeval_popup import TypeValuePopup, AbstractTypeValPopup
+from widget_library.numpad_widget import NumberpadWidget, AlphapadWidget
 
 logging.basicConfig(
     level=logging.INFO,
@@ -164,7 +164,8 @@ class NativeUI(HEVClient, QMainWindow):
             self.alarm_handler,
         ]
         self.messageCommandPopup = SetConfirmPopup(self)
-        self.typeValPopup = TypeValuePopup(self)
+        self.typeValPopupNum = AbstractTypeValPopup(self,'numeric')#TypeValuePopup(self, NumberpadWidget(self))
+        self.typeValPopupAlpha = AbstractTypeValPopup(self,'alpha')#TypeValuePopup(self, AlphapadWidget(self))
 
         # Create all of the widgets and place them in the layout.
         self.widgets = Widgets(self)
@@ -174,6 +175,7 @@ class NativeUI(HEVClient, QMainWindow):
         # a time.
         self.messageCommandPopup = SetConfirmPopup(self)
         self.confirmPopup = confirmPopup(self, self)
+        self.confirmPopup.show()
         self.main_display = QWidget(self)
         self.main_display.setLayout(self.layouts.global_layout())
         self.startupWidget = QDialog(self)
@@ -183,8 +185,10 @@ class NativeUI(HEVClient, QMainWindow):
 
         self.display_stack = QStackedWidget(self)
         for widget in [
+            self.typeValPopupNum,
+            self.typeValPopupAlpha,
             self.messageCommandPopup,
-            self.confirmPopup,
+            #self.confirmPopup,
             self.main_display,
             self.startupWidget,
         ]:
@@ -612,9 +616,13 @@ class NativeUI(HEVClient, QMainWindow):
         logging.debug("to MCU: cmd: %s", cmd)
         check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
         if check:
+            print('confirmed this command ' + cmdtype + '   ' + cmd)
             self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
+            print('added popup')
             return 0
-        return 1
+        else:
+            print('failed this command ' + cmdtype + '   ' + cmd)
+            return 1
 
     @Slot(str)
     def q_ack_alarm(self, alarm: str) -> int:

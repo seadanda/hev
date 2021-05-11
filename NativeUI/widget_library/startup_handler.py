@@ -102,7 +102,7 @@ class StartupHandler(
         message, command = [], []
         for widget in self.spinDict:
             setVal = self.spinDict[widget].get_value()
-            setVal = round(setVal, widget.decPlaces)
+            setVal = round(setVal, self.spinDict[widget].decPlaces)
             message.append("set" + widget + " to " + str(setVal))
             command.append(
                 [self.spinDict[widget].cmd_type, self.spinDict[widget].cmd_code, setVal]

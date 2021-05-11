@@ -5,10 +5,12 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 class SignallingLineEditWidget(QtWidgets.QLineEdit):
     manualChanged = QtCore.Signal()
 
-    def __init__(self, NativeUI):
+    def __init__(self, NativeUI, popup, label):
         super().__init__()
         self.installEventFilter(self)
-
+        self.label_text = label
+        self.NativeUI = NativeUI
+        self.popUp = popup#NativeUI.typeValPopupAlpha
         #self.popUp = TypeValuePopup(NativeUI)#,'text edit',0,1,2,3,4)
         #self.popUp.lineEdit.setValidator(None)  # nsure it accepts text
         #self.popUp.okButton.clicked.connect(self.okButtonPressed)
@@ -26,14 +28,20 @@ class SignallingLineEditWidget(QtWidgets.QLineEdit):
 
     def eventFilter(self, source, event):
         if source is self and event.type() == QtCore.QEvent.MouseButtonDblClick:
-            self.popUp.lineEdit.setText(str(self.text()))
-            self.popUp.show()
+            self.popUp.populatePopup(self, self.NativeUI.display_stack.currentWidget())
+            self.NativeUI.display_stack.setCurrentWidget(self.popUp)
             return True
         return False
 
+    def value(self):
+        return self.text()
+
+    def setValue(self, value):
+        self.setText(str(value))
+
 
 class LabelledLineEditWidget(QtWidgets.QWidget):
-    def __init__(self, NativeUI, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, popup, infoArray, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # print(infoArray)
         self.NativeUI = NativeUI
@@ -59,7 +67,7 @@ class LabelledLineEditWidget(QtWidgets.QWidget):
             self.nameLabel.setAlignment(QtCore.Qt.AlignRight)
             widgetList.append(self.nameLabel)
 
-        self.simpleSpin = SignallingLineEditWidget(NativeUI)
+        self.simpleSpin = SignallingLineEditWidget(NativeUI, popup, self.label)
         self.simpleSpin.setText(self.initText)
         self.simpleSpin.setStyleSheet(
             """QDoubleSpinBox{ width:100px; font:16pt}

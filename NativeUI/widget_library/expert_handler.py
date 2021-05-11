@@ -47,7 +47,7 @@ class ExpertHandler(PayloadHandler):  # chose QWidget over QDialog family becaus
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].get_value()
-                setVal = round(setVal, widget.decPlaces)
+                setVal = round(setVal, self.spindict[widget].decPlaces)
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [

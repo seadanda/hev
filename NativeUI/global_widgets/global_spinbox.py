@@ -27,7 +27,7 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
     manualChanged = QtCore.Signal()
     programmaticallyChanged = QtCore.Signal()
 
-    def __init__(self, NativeUI, label_text, min, max, initVal, step, decPlaces):
+    def __init__(self, NativeUI, popup, label_text, min, max, initVal, step, decPlaces):
         super().__init__()
         self.lineEdit().installEventFilter(self)
         self.editable = True
@@ -36,8 +36,9 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
         self.setSingleStep(step)
         self.setDecimals(decPlaces)
         self.setValue(initVal)
+        self.NativeUI = NativeUI
         #self.populateVals = [label_text, min, max, initVal, step, decPlaces]
-        self.popUp = NativeUI.typeValPopup# TypeValuePopup(NativeUI, label_text, min, max, initVal, step, decPlaces)
+        self.popUp = popup# TypeValuePopup(NativeUI, label_text, min, max, initVal, step, decPlaces)
         #self.popUp.okButton.clicked.connect(self.okButtonPressed)
         #self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
 
@@ -78,8 +79,10 @@ class signallingSpinBox(QtWidgets.QDoubleSpinBox):
                 return
             #self.popUp.lineEdit.setText(str(self.value()))
             #self.popUp.lineEdit.setFocus()
-            self.popUp.populatePopup(self)
-            self.popUp.show()
+            self.popUp.populatePopup(self,self.NativeUI.display_stack.currentWidget())
+            self.NativeUI.display_stack.setCurrentWidget(self.popUp)
+
+            #self.popUp.show()
             return True
         return False
 
@@ -89,7 +92,7 @@ class labelledSpin(QtWidgets.QWidget):
     It is created by an information array which indicates labels, units, command type and code for value setting,
     and the range of permitted values"""
 
-    def __init__(self, NativeUI, infoArray, *args, **kwargs):
+    def __init__(self, NativeUI, popup, infoArray, *args, **kwargs):
         super(labelledSpin, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
@@ -122,7 +125,7 @@ class labelledSpin(QtWidgets.QWidget):
         self.nameLabel.setFont(NativeUI.text_font)
         self.nameLabel.setAlignment(QtCore.Qt.AlignRight | QtCore.Qt.AlignVCenter)
 
-        self.simpleSpin = signallingSpinBox(NativeUI, self.label, self.min, self.max, self.initVal, self.step, self.decPlaces)
+        self.simpleSpin = signallingSpinBox(NativeUI, popup, self.label, self.min, self.max, self.initVal, self.step, self.decPlaces)
         # self.simpleSpin.setRange(self.min, self.max)
         # self.simpleSpin.setSingleStep(self.step)
         # self.simpleSpin.setDecimals(self.decPlaces)

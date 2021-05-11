@@ -680,7 +680,11 @@ class Layout:
 
         vlayout.addLayout(hButtonLayout)
 
-        return expert_tab
+        passlock_stack = QtWidgets.QStackedWidget()
+        passlock_stack.addWidget(self.NativeUI.widgets.expert_password_widget)
+        passlock_stack.addWidget(expert_tab)
+        #break this here
+        return passlock_stack#expert_tab
 
     def layout_main_spin_buttons(self) -> QtWidgets.QWidget:
         hlayout = QtWidgets.QHBoxLayout()
