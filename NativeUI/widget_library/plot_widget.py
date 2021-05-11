@@ -169,7 +169,7 @@ class CirclePlotsWidget(QtWidgets.QWidget):
             "left", NativeUI.text["plot_axis_label_pressure"], **labelStyle
         )
         self.volume_pressure_plot.setLabel(
-            "bottom", NativeUI.text["plot_axis_label_flow"], **labelStyle
+            "bottom", NativeUI.text["plot_axis_label_volume"], **labelStyle
         )
         self.graph_widget.nextRow()
 
