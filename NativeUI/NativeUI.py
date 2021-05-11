@@ -152,7 +152,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
 
         # Appearance
-        self.setWindowTitle(self.text["ui_window_title"])
+        self.setWindowTitle(self.text["ui_window_title"].format(version=__version__))
         palette = self.palette()
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
