@@ -126,6 +126,26 @@ class TimePlotsWidget(QtWidgets.QWidget):
             plot.enableAutoRange("y", True)
         return 0
 
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict) -> int:
+        """
+        Update the text displayed on the axis' and legend of time plots.
+        """
+        self.pressure_plot.setLabel("left", text["plot_axis_label_pressure"])
+        self.pressure_plot.legend.clear()
+        self.pressure_plot.legend.addItem(self.pressure_line, text["plot_line_label_pressure"])
+
+        self.flow_plot.setLabel("left", text["plot_axis_label_flow"])
+        self.flow_plot.legend.clear()
+        self.flow_plot.legend.addItem(self.flow_line, name=text["plot_line_label_flow"])
+
+        self.volume_plot.setLabel("left", text["plot_axis_label_volume"])
+        self.volume_plot.setLabel("bottom", text["plot_axis_label_time"])
+        self.volume_plot.legend.clear()
+        self.volume_plot.legend.addItem(self.volume_line, name=text["plot_line_label_volume"])
+
+        return 0
+
 
 class CirclePlotsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, port=54322, *args, **kwargs):

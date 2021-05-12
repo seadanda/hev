@@ -234,6 +234,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.widgets.localisation_button.SetLocalisation.connect(
             self.widgets.normal_measurements.localise_text
         )
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.normal_plots.localise_text
+        )
 
         return 0
 
