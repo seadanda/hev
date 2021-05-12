@@ -137,12 +137,12 @@ class TimePlotsWidget(QtWidgets.QWidget):
 
         self.flow_plot.setLabel("left", text["plot_axis_label_flow"])
         self.flow_plot.legend.clear()
-        self.flow_plot.legend.addItem(self.flow_line, name=text["plot_line_label_flow"])
+        self.flow_plot.legend.addItem(self.flow_line, text["plot_line_label_flow"])
 
         self.volume_plot.setLabel("left", text["plot_axis_label_volume"])
         self.volume_plot.setLabel("bottom", text["plot_axis_label_time"])
         self.volume_plot.legend.clear()
-        self.volume_plot.legend.addItem(self.volume_line, name=text["plot_line_label_volume"])
+        self.volume_plot.legend.addItem(self.volume_line, text["plot_line_label_volume"])
 
         return 0
 
@@ -269,36 +269,22 @@ class CirclePlotsWidget(QtWidgets.QWidget):
     @QtCore.Slot(dict)
     def localise_text(self, text: dict) -> int:
         """
-        Update the text displayed on the axis' and legend of time plots.
+        Update the text displayed on the axis' and legend of circle plots.
         """
-        self.pressure_plot.setLabel("left", text["plot_axis_label_pressure"])
-        self.pressure_plot.legend.clear()
-        self.pressure_plot.legend.addItem(self.pressure_line, text["plot_line_label_pressure"])
-
-        self.flow_plot.setLabel("left", text["plot_axis_label_flow"])
-        self.flow_plot.legend.clear()
-        self.flow_plot.legend.addItem(self.flow_line, name=text["plot_line_label_flow"])
-
-        self.volume_plot.setLabel("left", text["plot_axis_label_volume"])
-        self.volume_plot.setLabel("bottom", text["plot_axis_label_time"])
-        self.volume_plot.legend.clear()
-        self.volume_plot.legend.addItem(self.volume_line, name=text["plot_line_label_volume"])
-        
         self.pressure_flow_plot.setLabel("left", text["plot_axis_label_pressure"])
         self.pressure_flow_plot.setLabel("bottom", text["plot_axis_label_flow"])
         self.pressure_flow_plot.legend.clear()
-        self.pressure_flow_plot.legend.additem(self.pressure_flow_line, name=text["plot_line_label_pressure_flow"])
+        self.pressure_flow_plot.legend.addItem(self.pressure_flow_line, text["plot_line_label_pressure_flow"])
         
         self.flow_volume_plot.setLabel("left", text["plot_axis_label_flow"])
         self.flow_volume_plot.setLabel("bottom", text["plot_axis_label_volume"])
         self.flow_volume_plot.legend.clear()
-        self.flow_volume_plot.legend.additem(self.volume_flow_line, name=text["plot_line_label_flow_volume"])
+        self.flow_volume_plot.legend.addItem(self.flow_volume_line, text["plot_line_label_flow_volume"])
         
         self.volume_pressure_plot.setLabel("left", text["plot_axis_label_volume"])
         self.volume_pressure_plot.setLabel("bottom", text["plot_axis_label_pressure"])
         self.volume_pressure_plot.legend.clear()
-        self.volume_pressure_plot.legend.additem(self.volume_pressure_line, name=text["plot_line_label_volume_pressure"])
-        
+        self.volume_pressure_plot.legend.addItem(self.volume_pressure_line, text["plot_line_label_volume_pressure"])
         
         return 0
 
