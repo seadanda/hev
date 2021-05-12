@@ -240,6 +240,17 @@ class NativeUI(HEVClient, QMainWindow):
         self.widgets.localisation_button.SetLocalisation.connect(
             self.widgets.ventilator_start_stop_buttons_widget.localise_text
         )
+        
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.detailed_plots.localise_text
+        )
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.circle_plots.localise_text
+        )
+        
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.charts_widget.localise_text
+        )
 
         return 0
 
