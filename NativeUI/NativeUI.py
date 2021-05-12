@@ -226,7 +226,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.PlotSignal.connect(self.widgets.detailed_plots.update_plot_data)
         self.PlotSignal.connect(self.widgets.charts_widget.update_plot_data)
 
-        # When measurement data is updated, measurement widgets shouldupdate
+        # When measurement data is updated, measurement widgets should update
         self.MeasurementSignal.connect(self.widgets.normal_measurements.update_value)
         self.MeasurementSignal.connect(self.widgets.detailed_measurements.update_value)
 
@@ -236,6 +236,9 @@ class NativeUI(HEVClient, QMainWindow):
         )
         self.widgets.localisation_button.SetLocalisation.connect(
             self.widgets.normal_plots.localise_text
+        )
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.ventilator_start_stop_buttons_widget.localise_text
         )
 
         return 0

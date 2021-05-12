@@ -1,6 +1,9 @@
 {
 
     "language_name": "Portugues",
+    "start_button": "INICIAR",
+    "stop_button": "PARAR",
+    "standby_button": "ESPERAR",
     "plot_axis_label_pressure": "Pressao [cmH<sub>2</sub>O]",
     "plot_axis_label_flow": "Fluxo [L/min]",
     "plot_axis_label_volume": "Volume [mL]",

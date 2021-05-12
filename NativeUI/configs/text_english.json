@@ -1,5 +1,8 @@
 {
     "language_name": "English",
+    "start_button": "START",
+    "stop_button": "STOP",
+    "standby_button": "STANDBY",
     "plot_axis_label_pressure": "Pressure [cmH<sub>2</sub>O]",
     "plot_axis_label_flow": "Flow [L/min]",
     "plot_axis_label_volume": "Volume [mL]",
