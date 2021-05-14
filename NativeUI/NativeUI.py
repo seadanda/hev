@@ -95,22 +95,18 @@ class NativeUI(HEVClient, QMainWindow):
     def __init__(self, resolution: list, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        # Set the resolution of the display window
         self.screen_width = resolution[0]
         self.screen_height = resolution[1]
 
-        config_path = self.__find_configs()
-
-        # self.setFixedSize(1920, 1080)
+        # Set up available modes
         self.modeList = ["PC/AC", "PC/AC-PRVC", "PC-PSV", "CPAP"]
         self.currentMode = self.modeList[0]
 
-        self.localisation_files = ["text_english.json", "text_portuguese.json"]
-        self.localisation_files = [
-            os.path.join(config_path, file) for file in self.localisation_files
-        ]
-
         # Import settings from config files.
         # Colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
+        config_path = self.__find_configs()
+        self.localisation_files = self.__find_localisation_files(config_path)
         with open(os.path.join(config_path, "colors.json")) as infile:
             self.colors = json.load(infile)
             for key in self.colors:
@@ -118,10 +114,12 @@ class NativeUI(HEVClient, QMainWindow):
         with open(os.path.join(config_path, "text_english.json")) as infile:
             self.text = json.load(infile)
 
-        self.text_font = QFont("Sans Serif", resolution[0] / 96)  # 20px for 1920*1080
-        self.value_font = QFont(
-            "Sans Serif", 2 * resolution[0] / 96
-        )  # 40px for 1920*1080
+        # Set up fonts based on the screen resolution. text_font and value_font are 20
+        # and 40px respectively for 1920*1080.
+        self.text_font = QFont("Sans Serif", resolution[0] / 96)
+        self.value_font = QFont("Sans Serif", 2 * resolution[0] / 96)
+
+        # Import icons
         self.icons = {
             "button_main_page": "user-md-solid",
             "button_alarms_page": "exclamation-triangle-solid",
@@ -135,6 +133,10 @@ class NativeUI(HEVClient, QMainWindow):
                 self.iconpath, self.icons[key] + "." + self.iconext
             )
 
+        # Appearance settings
+        palette = self.palette()
+        palette.setColor(QPalette.Window, self.colors["page_background"])
+
         # Set up the handlers
         self.battery_handler = BatteryHandler()
         self.data_handler = DataHandler(plot_history_length=1000)
@@ -144,7 +146,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.expert_handler = ExpertHandler(self)
         self.clinical_handler = ClinicalHandler(self)
         self.alarm_handler = AlarmHandler(self)
-
         self.__payload_handlers = [
             self.battery_handler,
             self.data_handler,
@@ -155,10 +156,12 @@ class NativeUI(HEVClient, QMainWindow):
             self.clinical_handler,
             self.alarm_handler,
         ]
+
         self.messageCommandPopup = SetConfirmPopup(self)
 
-        self.widgets = Widgets(self)  # Create all the widgets we'll need
-        self.layouts = Layout(self, self.widgets)  #
+        # Create all of the widgets and place them in the layout.
+        self.widgets = Widgets(self)
+        self.layouts = Layout(self, self.widgets)
 
         self.confirmPopup = confirmPopup(
             self, self
@@ -170,27 +173,32 @@ class NativeUI(HEVClient, QMainWindow):
         self.central_widget.setLayout(self.layouts.global_layout())
         self.setCentralWidget(self.central_widget)
 
+        # Set up status bar and window title (the title is only shown in windowed mode).
         self.statusBar().showMessage("Waiting for data")
         self.statusBar().setStyleSheet("color:" + self.colors["page_foreground"].name())
-
-        # Appearance
         self.setWindowTitle(self.text["ui_window_title"].format(version=__version__))
-        palette = self.palette()
-        palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
-
-        self.startupWidget = QDialog(self)
-        self.startupWidget.setLayout(self.layouts.startup_layout())
-        self.startupWidget.setPalette(palette)
-        self.startupWidget.setAutoFillBackground(True)
-        self.startupWidget.show()
 
         # Connect widgets
         self.__define_connections()
 
         # Update page buttons to match the shown view
         self.widgets.page_buttons.buttons[0].on_press()
+
+    def __find_localisation_files(self, config_path: str) -> list:
+        """
+        List the availale localisation files.
+        """
+        files_list = [
+            os.path.join(config_path, file)
+            for file in ["text_english.json", "text_portuguese.json"]
+        ]
+
+        for file in files_list:
+            assert os.path.isfile(file)
+
+        return files_list
 
     def __define_connections(self) -> int:
         """
