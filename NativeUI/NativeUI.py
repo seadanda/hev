@@ -43,12 +43,14 @@ from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QDialog, QRadi
 from handler_library.battery_handler import BatteryHandler
 from handler_library.data_handler import DataHandler
 from handler_library.measurement_handler import MeasurementHandler
-#from handler_library.personal_handler import PersonalHandler
+
+# from handler_library.personal_handler import PersonalHandler
 from widget_library.expert_handler import ExpertHandler
 from mode_widgets.personal_handler import PersonalHandler
 from mode_widgets.mode_handler import ModeHandler
 from mode_widgets.clinical_handler import ClinicalHandler
 from alarm_widgets.alarm_handler import AlarmHandler
+
 # from handler_library.readback_handler import ReadbackHandler
 
 
@@ -59,7 +61,36 @@ logging.basicConfig(
 
 
 class NativeUI(HEVClient, QMainWindow):
-    """Main application with client logic"""
+    """
+    Main application with client logic
+
+    Subclassed HEVClient for client logic, and QMainWindow for display.
+
+    Extends its base classes with the following methods:
+
+    __define_connections - connects widget signals and slots to allow the UI to
+    function. Called once during initialisation.
+
+    __find icons - locate the directory containing icons used for UI buttons and
+    displays. Called once during initialisation.
+
+    __find_configs - locate the directory containing config files used by the UI. Called
+    once during initialisation.
+
+    set_current_mode - TODO: deprecated, remove.
+
+    get_updates - Overrides the placeholder get_updates method of HEVClient. Passes
+    payloads to handlers. Called whenever a new payload is read in.
+
+    change_page (Slot) - switches the page shown in the page_stack. Called whent the
+    page buttons are pressed or whenever a popup needs to show a specific page.
+
+    q_send_cmd (Slot) - send a command to the MCU.
+
+    q_ack_alarm (Slot) - acknowledge a recieved alarm.
+
+    q_send_personal (Slot) - send personal information to the MCU.
+    """
 
     def __init__(self, resolution: list, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,20 +109,16 @@ class NativeUI(HEVClient, QMainWindow):
             os.path.join(config_path, file) for file in self.localisation_files
         ]
 
-        # Import settings from config files
+        # Import settings from config files.
+        # Colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
         with open(os.path.join(config_path, "colors.json")) as infile:
-            # colorblind friendly ref: https://i.stack.imgur.com/zX6EV.png
             self.colors = json.load(infile)
-
+            for key in self.colors:
+                self.colors[key] = QColor.fromRgb(*self.colors[key])
         with open(os.path.join(config_path, "text_english.json")) as infile:
             self.text = json.load(infile)
 
-        # convert colours to a PySide2-readble form
-        for key in self.colors:
-            self.colors[key] = QColor.fromRgb(*self.colors[key])
-
         self.text_font = QFont("Sans Serif", resolution[0] / 96)  # 20px for 1920*1080
-        #self.text_size = 16 # temporary, used by Tiago
         self.value_font = QFont(
             "Sans Serif", 2 * resolution[0] / 96
         )  # 40px for 1920*1080
@@ -108,33 +135,12 @@ class NativeUI(HEVClient, QMainWindow):
                 self.iconpath, self.icons[key] + "." + self.iconext
             )
 
-
-        # initialise databases TODO: remove these and use handlers instead.
-        self.db_lock = Lock()
-        # self.__data = {}
-        self.__readback = {}
-        # self.__cycle = {}
-        self.__alarms = {}
-        self.__targets = {}
-        self.__personal = {}
-        self.ongoingAlarms = {}
-        self.__database_list = [
-            "__data",
-            "__readback",
-            "__cycle",
-            "__battery",
-            "__plots",
-            "__alarms",
-            "__targets",
-            "__personal",
-        ]
-
         # Set up the handlers
         self.battery_handler = BatteryHandler()
         self.data_handler = DataHandler(plot_history_length=1000)
         self.measurement_handler = MeasurementHandler()
         self.personal_handler = PersonalHandler(self)
-        self.mode_handler = ModeHandler(self)#, self.mode_confirm_popup)
+        self.mode_handler = ModeHandler(self)  # , self.mode_confirm_popup)
         self.expert_handler = ExpertHandler(self)
         self.clinical_handler = ClinicalHandler(self)
         self.alarm_handler = AlarmHandler(self)
@@ -147,10 +153,9 @@ class NativeUI(HEVClient, QMainWindow):
             self.mode_handler,
             self.expert_handler,
             self.clinical_handler,
-            self.alarm_handler
+            self.alarm_handler,
         ]
         self.messageCommandPopup = SetConfirmPopup(self)
-
 
         self.widgets = Widgets(self)  # Create all the widgets we'll need
         self.layouts = Layout(self, self.widgets)  #
@@ -181,21 +186,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.startupWidget.setAutoFillBackground(True)
         self.startupWidget.show()
 
-
-
         # Connect widgets
         self.__define_connections()
 
         # Update page buttons to match the shown view
         self.widgets.page_buttons.buttons[0].on_press()
-
-    @Slot(str)
-    def change_page(self, page_to_show: str) -> int:
-        """
-        Change the page shown in page_stack.
-        """
-        self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
-        return 0
 
     def __define_connections(self) -> int:
         """
@@ -245,13 +240,19 @@ class NativeUI(HEVClient, QMainWindow):
             )
         )
 
-
         for key, radio in self.widgets.startup_handler.settingsRadioDict.items():
-            radio.toggled.connect(lambda i,j=key: self.widgets.startup_handler.handle_settings_radiobutton(i,j) )
-
+            radio.toggled.connect(
+                lambda i, j=key: self.widgets.startup_handler.handle_settings_radiobutton(
+                    i, j
+                )
+            )
 
         for radio in self.widgets.startup_handler.modeRadioDict.values():
-            radio.toggled.connect(lambda i,j=radio: self.widgets.startup_handler.handle_mode_radiobutton(i,j) )
+            radio.toggled.connect(
+                lambda i, j=radio: self.widgets.startup_handler.handle_mode_radiobutton(
+                    i, j
+                )
+            )
 
         self.widgets.nextButton.pressed.connect(
             lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_nextbutton(
@@ -309,21 +310,17 @@ class NativeUI(HEVClient, QMainWindow):
 
         ##### Mode:
         # When mode is switched from mode page, various other locations must respond
-        for widget in (self.mode_handler.spinDict.values()):
+        for widget in self.mode_handler.spinDict.values():
             self.mode_handler.UpdateModes.connect(widget.update_value)
 
-        for widget in (self.mode_handler.mainSpinDict.values()):
+        for widget in self.mode_handler.mainSpinDict.values():
             self.mode_handler.UpdateModes.connect(widget.update_value)
 
-        self.mode_handler.modeSwitched.connect(
-            lambda i: self.set_current_mode(i)
-        )
+        self.mode_handler.modeSwitched.connect(lambda i: self.set_current_mode(i))
         self.mode_handler.modeSwitched.connect(
             lambda i: self.widgets.tab_modeswitch.update_mode(i)
         )
-        self.mode_handler.modeSwitched.connect(
-            self.mode_handler.refresh_button_colour
-        )
+        self.mode_handler.modeSwitched.connect(self.mode_handler.refresh_button_colour)
 
         # when mode is switched from modeSwitch button, other locations must respond
         self.widgets.tab_modeswitch.modeSwitched.connect(
@@ -358,9 +355,7 @@ class NativeUI(HEVClient, QMainWindow):
                 )
             elif isinstance(button_widget, CancelButtonWidget):
                 mode = self.mode_handler.get_mode(key)
-                button_widget.pressed.connect(
-                    self.mode_handler.commandSent
-                )
+                button_widget.pressed.connect(self.mode_handler.commandSent)
 
         for key, button_widget in self.mode_handler.mainButtonDict.items():
             if isinstance(button_widget, (OkButtonWidget)):
@@ -368,11 +363,9 @@ class NativeUI(HEVClient, QMainWindow):
                     self.mode_handler.handle_mainokbutton_click
                 )
             elif isinstance(button_widget, CancelButtonWidget):
-                print('connecting cancel button')
-                #mode = self.mode_handler.get_mode(key)
-                button_widget.clicked.connect(
-                    self.mode_handler.commandSent
-                )
+                print("connecting cancel button")
+                # mode = self.mode_handler.get_mode(key)
+                button_widget.clicked.connect(self.mode_handler.commandSent)
         #
         # for key, spin_widget in self.clinical_handler.spinDict.items():
         #     spin_widget.simpleSpin.manualChanged.connect(
@@ -391,16 +384,18 @@ class NativeUI(HEVClient, QMainWindow):
 
         self.mode_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.messageCommandPopup.ModeSend.connect(self.mode_handler.sendCommands)
-        #self.messageCommandPopup.okButton.pressed.connect(self.mode_handler.sendCommands)
+        # self.messageCommandPopup.okButton.pressed.connect(self.mode_handler.sendCommands)
 
         self.expert_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.messageCommandPopup.ExpertSend.connect(self.expert_handler.sendCommands)
 
-        #self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
-        #self.messageCommandPopup.ClinicalSend.connect(self.expert_handler.sendCommands)
-        #self.messageCommandPopup.okButton.pressed.connect(self.expert_handler.sendCommands)
+        # self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
+        # self.messageCommandPopup.ClinicalSend.connect(self.expert_handler.sendCommands)
+        # self.messageCommandPopup.okButton.pressed.connect(self.expert_handler.sendCommands)
 
-        self.messageCommandPopup.cancelButton.pressed.connect(self.messageCommandPopup.close)
+        self.messageCommandPopup.cancelButton.pressed.connect(
+            self.messageCommandPopup.close
+        )
 
         ##### Expert Settings:
         # Expert handler should respond to manual value changes
@@ -418,13 +413,10 @@ class NativeUI(HEVClient, QMainWindow):
                     lambda i=key: self.expert_handler.handle_okbutton_click(i)
                 )
             elif isinstance(button_widget, CancelButtonWidget):
-                button_widget.pressed.connect(
-                    lambda: self.expert_handler.commandSent
-                )
+                button_widget.pressed.connect(lambda: self.expert_handler.commandSent)
 
-        for widget in (self.expert_handler.spinDict.values()):
+        for widget in self.expert_handler.spinDict.values():
             self.expert_handler.UpdateExpert.connect(widget.update_value)
-
 
         # Lines displayed on the charts page should update when the corresponding
         # buttons are toggled.
@@ -438,14 +430,17 @@ class NativeUI(HEVClient, QMainWindow):
         self.timer = QTimer()
         self.timer.setInterval(16)  # just faster than 60Hz
         self.timer.timeout.connect(self.data_handler.send_update_plots_signal)
-        #self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
-        #self.timer.timeout.connect(self.mode_handler.update_values)
-        #self.timer.timeout.connect(self.expert_handler.update_values)
+        # self.timer.timeout.connect(self.widgets.alarm_handler.update_alarms)
+        # self.timer.timeout.connect(self.mode_handler.update_values)
+        # self.timer.timeout.connect(self.expert_handler.update_values)
         self.timer.start()
 
-        self.widgets.startup_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
-        self.mode_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
-
+        self.widgets.startup_handler.settingToggle.connect(
+            self.widgets.spin_buttons.setStackWidget
+        )
+        self.mode_handler.settingToggle.connect(
+            self.widgets.spin_buttons.setStackWidget
+        )
 
         self.alarm_handler.UpdateAlarm.connect(self.alarm_handler.handle_newAlarm)
         self.alarm_handler.NewAlarm.connect(self.widgets.alarm_popup.addAlarm)
@@ -455,135 +450,11 @@ class NativeUI(HEVClient, QMainWindow):
         self.alarm_handler.RemoveAlarm.connect(self.widgets.alarm_popup.removeAlarm)
         self.alarm_handler.RemoveAlarm.connect(self.widgets.alarm_list.removeAlarm)
 
-
         # Localisation needs to update widgets
         self.widgets.localisation_button.SetLocalisation.connect(
             self.widgets.normal_measurements.localise_text
         )
 
-        return 0
-
-    def __check_db_name(self, database_name: str) -> str:
-        """
-        Check that the specified name is an actual database in NativeUI.
-        """
-        # Add "__" to database_name if it isn't already present.
-        if not database_name.startswith("__"):
-            database_name = "__%s" % database_name
-
-        # Check against self.__database_list to ensure that only explicitely permitted
-        # attributes can be accessed by this method.
-        if not database_name in self.__database_list:
-            raise AttributeError(
-                "%s is not a recognised database in NativeUI" % database_name
-            )
-
-        return database_name
-
-    def set_current_mode(self, mode):
-        """
-        Set the current mode
-        TODO: move to mode handler
-        """
-        print("setting native ui mode")
-        print(mode)
-        self.currentMode = mode
-
-    def set_data_db(self, payload):
-        """
-        Set the contents of the __data database. Uses lock to avoid race
-        conditions.
-                """
-        logging.debug("setting data db")
-        with self.db_lock:
-            for key in payload:
-                self.__data[key] = payload[key]
-        return 0
-
-    def get_db(self, database_name: str):
-        """
-        Return the contents of the specified database dict, assuming that it is present
-        in __database_list.
-        """
-        with self.db_lock:
-            return getattr(
-                self,
-                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
-            )
-        raise RuntimeError("Could not acquire database")
-
-    def __set_db(self, database_name: str, payload) -> int:
-        """
-        Set the contents of the specified database dict, assuming that it is present in
-        __database_list. Uses lock to avoid race conditions.
-        """
-        temp = self.get_db(database_name)
-        for key in payload:
-            temp[key] = payload[key]
-        with self.db_lock:
-            setattr(
-                self,
-                "_%s%s" % (type(self).__name__, self.__check_db_name(database_name)),
-                temp,
-            )
-        return 0
-
-    def __start_client(self):
-        """
-        Poll the microcontroller for current settings information.
-
-        runs in other thread - works as long as super goes last and nothing
-        else is blocking. If something more than a one-shot process is needed
-        then use async
-        """
-        logging.debug("start_client")
-        # call for all the targets and personal details
-        # when starting the web app so we always have some in the db
-        self.send_cmd("GET_TARGETS", "PC_AC")
-        self.send_cmd("GET_TARGETS", "PC_AC_PRVC")
-        self.send_cmd("GET_TARGETS", "PC_PSV")
-        self.send_cmd("GET_TARGETS", "TEST")
-        self.send_cmd("GENERAL", "GET_PERSONAL")
-        super().start_client()
-
-    def get_updates(self, payload: dict) -> int:
-        """
-        Callback from the polling function, payload is data from socket.
-        TODO: remove all if-elif logic on favor of looping over handlers.
-        """
-        self.statusBar().showMessage(f"{payload}")
-        logging.debug("recieved payload of type %s", payload["type"])
-
-        payload_registered = False
-        for handler in self.__payload_handlers:
-            if handler.set_db(payload) == 0:
-                payload_registered = True
-        if not payload_registered:
-            logging.warning("Handlers: Invalid payload type: %s", payload["type"])
-            logging.debug("Content of invalid payload:\n%s", payload)
-
-        return 0
-
-    @Slot(str, str, float)
-    def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
-        """send command to hevserver via socket"""
-        check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
-        if check:
-            self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
-        return 0
-
-    @Slot(str)
-    def q_ack_alarm(self, alarm: str) -> int:
-        """acknowledge an alarm in the hevserver"""
-        logging.debug("To MCU: Acknowledging alarm: %s", alarm)
-        self.ack_alarm(alarm=alarm)
-        return 0
-
-    @Slot(str)
-    def q_send_personal(self, personal: str) -> int:
-        """send personal details to hevserver"""
-        logging.debug("to MCU: Settung personal data: %s", personal)
-        self.send_personal(personal=personal)
         return 0
 
     def __find_icons(self, iconext: str) -> str:
@@ -620,8 +491,73 @@ class NativeUI(HEVClient, QMainWindow):
 
         return configdir
 
+    def set_current_mode(self, mode):
+        """
+        Set the current mode
+        TODO: move to mode handler
+        """
+        print("setting native ui mode")
+        print(mode)
+        self.currentMode = mode
 
-# from PySide2.QtQml import QQmlApplicationEngine
+    def get_updates(self, payload: dict) -> int:
+        """
+        Callback from the polling function, payload is data from socket.
+
+        Passes the payload to each of the handlers in self.__payload_handlers. If no
+        handlers return 0, indicating that the payload is not dealt with by any handler,
+        log a warning.
+        """
+        self.statusBar().showMessage(f"{payload}")
+        logging.debug("recieved payload of type %s", payload["type"])
+
+        payload_registered = False
+        for handler in self.__payload_handlers:
+            if handler.set_db(payload) == 0:
+                payload_registered = True
+        if not payload_registered:
+            logging.warning("Handlers: Invalid payload type: %s", payload["type"])
+            logging.debug("Content of invalid payload:\n%s", payload)
+
+        return 0
+
+    @Slot(str)
+    def change_page(self, page_to_show: str) -> int:
+        """
+        Change the page shown in page_stack.
+        """
+        self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
+        return 0
+
+    @Slot(str, str, float)
+    def q_send_cmd(self, cmdtype: str, cmd: str, param: float = None) -> int:
+        """
+        Send command to hevserver via socket.
+        """
+        logging.debug("to MCU: cmd: %s", cmd)
+        check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
+        if check:
+            self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
+            return 0
+        return 1
+
+    @Slot(str)
+    def q_ack_alarm(self, alarm: str) -> int:
+        """
+        Acknowledge an alarm in the hevserver
+        """
+        logging.debug("To MCU: Acknowledging alarm: %s", alarm)
+        self.ack_alarm(alarm=alarm)
+        return 0
+
+    @Slot(str)
+    def q_send_personal(self, personal: str) -> int:
+        """
+        Send personal details to the hevserver.
+        """
+        logging.debug("to MCU: Setting personal data: %s", personal)
+        self.send_personal(personal=personal)
+        return 0
 
 
 def parse_command_line_arguments() -> argparse.Namespace:
