@@ -179,6 +179,8 @@ class NativeUI(HEVClient, QMainWindow):
         palette.setColor(QPalette.Window, self.colors["page_background"])
         self.setPalette(palette)
         self.setAutoFillBackground(True)
+        self.widgets.version_display_widget.update_UI_version(__version__)
+        self.widgets.version_display_widget.update_UI_hash(self.__get_hash())
 
         self.startupWidget = QDialog(self)
         self.startupWidget.setLayout(self.layouts.startup_layout())
@@ -191,6 +193,13 @@ class NativeUI(HEVClient, QMainWindow):
 
         # Update page buttons to match the shown view
         self.widgets.page_buttons.buttons[0].on_press()
+
+    def __get_hash(self) -> str:
+        """
+        Get the hash of the current commit.
+        """
+        repo = git.Repo(search_parent_directories=True)
+        return repo.head.object.hexsha
 
     def __define_connections(self) -> int:
         """

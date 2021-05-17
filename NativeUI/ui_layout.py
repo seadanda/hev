@@ -15,7 +15,8 @@ __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
 from PySide2 import QtWidgets, QtCore, QtGui
-#from PySide2.QtGui import QFont, QSizePolicy
+
+# from PySide2.QtGui import QFont, QSizePolicy
 from widget_library.switchable_stack_widget import SwitchableStackWidget
 import json
 
@@ -86,7 +87,7 @@ class Layout:
                     self.layout_startup_main(),
                     self.layout_mode_startup(),  # self, settings, mode:str, enableList:list, buttons: bool)
                     self.layout_mode_personal("startup_", False),
-                    self.layout_startup_confirmation()
+                    self.layout_startup_confirmation(),
                 ]
             ),
             "startup_stack",
@@ -309,11 +310,21 @@ class Layout:
             self.left_bar_width, None, spacing=self.widget_spacing
         )
 
+        # Create the system info tab
+        sysinfo_widgets = [
+            self.widgets.version_display_widget,
+            self.widgets.maintenance_time_display_widget,
+            self.widgets.update_time_display_widget,
+        ]
+        tab_info = self.layout_tab_info(sysinfo_widgets)
+        for widget in sysinfo_widgets:
+            widget.setFont(self.NativeUI.text_font)
+
         # Create the stack
         page_settings = SwitchableStackWidget(
             self.NativeUI,
-            [self.layout_settings_expert(), tab_charts],
-            ["Expert", "Charts"],
+            [self.layout_settings_expert(), tab_charts, tab_info],
+            ["Expert", "Charts", "Info"],
         )
         page_settings.setFont(self.NativeUI.text_font)
         self.widgets.add_widget(page_settings, "setting_stack")
@@ -393,12 +404,26 @@ class Layout:
         return tab_main_detailed
 
     def layout_tab_charts(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the charts page.
+        """
         tab_charts = QtWidgets.QWidget()
         tab_charts_layout = QtWidgets.QHBoxLayout(tab_charts)
         for widget in widgets:
             tab_charts_layout.addWidget(widget)
         tab_charts.setLayout(tab_charts_layout)
         return tab_charts
+
+    def layout_tab_info(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the info page.
+        """
+        tab_info = QtWidgets.QWidget()
+        tab_info_layout = QtWidgets.QVBoxLayout(tab_info)
+        for widget in widgets:
+            tab_info_layout.addWidget(widget)
+        tab_info.setLayout(tab_info_layout)
+        return tab_info
 
     def __make_stack(self, widgets):
         """
@@ -533,7 +558,9 @@ class Layout:
 
         hRadioLayout = QtWidgets.QHBoxLayout()
         for mode in self.NativeUI.modeList:
-            hRadioLayout.addWidget(self.NativeUI.widgets.get_widget('startup_radio_' + mode))
+            hRadioLayout.addWidget(
+                self.NativeUI.widgets.get_widget("startup_radio_" + mode)
+            )
 
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.addWidget(mode_stack)
@@ -658,23 +685,23 @@ class Layout:
             modeDict = json.load(json_file)
 
         stack = self.NativeUI.widgets.main_mode_stack
-        for setting in modeDict['settings']:
-            if setting[0] in modeDict['mainPageSettings']:
-                attrName = 'CURRENT_' + setting[2]
+        for setting in modeDict["settings"]:
+            if setting[0] in modeDict["mainPageSettings"]:
+                attrName = "CURRENT_" + setting[2]
                 widg = self.NativeUI.widgets.get_widget(attrName)
-                if setting[0] in modeDict['radioSettings']:
+                if setting[0] in modeDict["radioSettings"]:
                     stack.addWidget(widg)
                 else:
                     hlayout.addWidget(widg)
         hlayout.addWidget(self.NativeUI.widgets.main_mode_stack)
 
-        vbuttonLayout =  QtWidgets.QVBoxLayout()
-        okButton = self.NativeUI.widgets.get_widget('CURRENT_ok_button')
-        okButton.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+        vbuttonLayout = QtWidgets.QVBoxLayout()
+        okButton = self.NativeUI.widgets.get_widget("CURRENT_ok_button")
+        okButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         vbuttonLayout.addWidget(okButton)
 
-        cancelButton = self.NativeUI.widgets.get_widget('CURRENT_cancel_button')
-        cancelButton.setSizePolicy(QtGui.QSizePolicy.Expanding,QtGui.QSizePolicy.Fixed)
+        cancelButton = self.NativeUI.widgets.get_widget("CURRENT_cancel_button")
+        cancelButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
         vbuttonLayout.addWidget(cancelButton)
         hlayout.addLayout(vbuttonLayout)
 
@@ -687,16 +714,18 @@ class Layout:
             clinicalDict = json.load(json_file)
 
         vlayout = QtWidgets.QVBoxLayout()
-        for setting in clinicalDict['settings']:
-            attrName = 'clinical_spin_' + setting[0][2]
+        for setting in clinicalDict["settings"]:
+            attrName = "clinical_spin_" + setting[0][2]
             hlayout = QtWidgets.QHBoxLayout()
-            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_min'))
-            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + '_max'))
+            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + "_min"))
+            hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + "_max"))
             vlayout.addLayout(hlayout)
 
         hbuttonlayout = QtWidgets.QHBoxLayout()
-        hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_ok_button'))
-        hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget('clinical_cancel_button'))
+        hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget("clinical_ok_button"))
+        hbuttonlayout.addWidget(
+            self.NativeUI.widgets.get_widget("clinical_cancel_button")
+        )
         vlayout.addLayout(hbuttonlayout)
         # hlayoutMeta.addLayout(vlayout)
         # hlayoutMeta.addLayout(vlayout2)
@@ -740,7 +769,9 @@ class Layout:
     def layout_startup_confirmation(self):
         vlayout = QtWidgets.QVBoxLayout()
         i = 0
-        for key, spinBox in self.NativeUI.widgets.get_widget('startup_handler').spinDict.items():
+        for key, spinBox in self.NativeUI.widgets.get_widget(
+            "startup_handler"
+        ).spinDict.items():
             i = i + 1
             hlayout = QtWidgets.QHBoxLayout()
             nameLabel = QtWidgets.QLabel(key)
@@ -751,8 +782,6 @@ class Layout:
             if i == 10:
                 break
 
-
         widg = QtWidgets.QWidget()
         widg.setLayout(vlayout)
         return widg
-
