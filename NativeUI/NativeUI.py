@@ -247,21 +247,18 @@ class NativeUI(HEVClient, QMainWindow):
                 i
             )
         )
-
         for key, radio in self.widgets.startup_handler.settingsRadioDict.items():
             radio.toggled.connect(
                 lambda i, j=key: self.widgets.startup_handler.handle_settings_radiobutton(
                     i, j
                 )
             )
-
         for radio in self.widgets.startup_handler.modeRadioDict.values():
             radio.toggled.connect(
                 lambda i, j=radio: self.widgets.startup_handler.handle_mode_radiobutton(
                     i, j
                 )
             )
-
         self.widgets.nextButton.pressed.connect(
             lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_nextbutton(
                 i
@@ -270,7 +267,6 @@ class NativeUI(HEVClient, QMainWindow):
         self.widgets.skipButton.pressed.connect(
             self.widgets.startup_handler.handle_sendbutton
         )
-
         self.widgets.backButton.pressed.connect(
             lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(
                 i
