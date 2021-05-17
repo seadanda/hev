@@ -18,6 +18,7 @@ from widget_library.expert_handler import ExpertHandler
 from mode_widgets.personal_handler import PersonalHandler
 from mode_widgets.mode_handler import ModeHandler
 from mode_widgets.clinical_handler import ClinicalHandler
+import logging
 
 
 # from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
@@ -38,9 +39,9 @@ class SetConfirmPopup(QtWidgets.QDialog):
         super().__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
+        self.handler = None
 
         self.listWidget = QtWidgets.QListWidget()
-
         self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
@@ -53,7 +54,6 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
         self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.setEnabled(True)
-        self.cancelButton.pressed.connect(self.cancel_button_pressed)
         buttonHLayout.addWidget(self.cancelButton)
 
         vlayout = QtWidgets.QVBoxLayout()
@@ -61,14 +61,10 @@ class SetConfirmPopup(QtWidgets.QDialog):
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
-        # self.setWindowFlags(
-        #     QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
-        # )  # no window title
-        self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
-        self.setWindowOpacity(0.5)
+        # self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
+        # self.setWindowOpacity(0.5)
 
     def populatePopup(self, handlerWidget, messageList):
-        print(handlerWidget)
         self.handler = handlerWidget
         self.clearPopup()
         if messageList == []:
@@ -86,16 +82,18 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
         self.listWidget.update()
         self.update()
-        self.show()
 
     def clearPopup(self):
         self.listWidget.clear()
         self.commandList = []
 
     def ok_button_pressed(self):
-        print("ok button pressed")
         """Send commands when ok button is clicked"""
         # self.parentTemplate.liveUpdating = True
+        if self.handler is None:
+            logging.error("Popup ok_button_pressed called before popupatePopup")
+            return 1
+
         if isinstance(self.handler, ExpertHandler):
             self.ExpertSend.emit()
         elif isinstance(self.handler, ModeHandler):
@@ -104,14 +102,15 @@ class SetConfirmPopup(QtWidgets.QDialog):
             self.PersonalSend.emit()
         elif isinstance(self.handler, ClinicalHandler):
             self.ClinicalSend.emit()
-        self.close()
+        else:
+            logging.warning("Unrecognised handler type: %s", type(self.handler))
         return 0
 
-    def cancel_button_pressed(self):
-        """Close popup when cancel button is clicked"""
-        print("CANCEL BUTTON PRESSED")
-        # self.close()
-        return 0
+    # def cancel_button_pressed(self):
+    #     """Close popup when cancel button is clicked"""
+    #     print("CANCEL BUTTON PRESSED")
+    #     # self.close()
+    #     return 0
 
 
 class confirmWidget(QtWidgets.QWidget):

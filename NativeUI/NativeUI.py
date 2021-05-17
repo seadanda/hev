@@ -199,7 +199,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.__define_connections()
 
         # Update page buttons to match the shown view
-        self.display_stack.setCurrentWidget(self.confirmPopup)
+        self.display_stack.setCurrentWidget(self.messageCommandPopup)
         self.widgets.page_buttons.buttons[0].on_press()
 
     def __find_localisation_files(self, config_path: str) -> list:
@@ -324,8 +324,9 @@ class NativeUI(HEVClient, QMainWindow):
         for button in self.widgets.page_buttons.buttons:
             button.PageButtonPressed.connect(self.change_page)
 
+        # Start button should raise the startup widget.
         self.widgets.ventilator_start_stop_buttons_widget.button_start.pressed.connect(
-            self.startupWidget.show
+            lambda: self.display_stack.setCurrentWidget(self.startupWidget)
         )
 
         ##### Mode:
