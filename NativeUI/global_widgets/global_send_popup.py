@@ -36,25 +36,13 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
 
         self.NativeUI = NativeUI
 
-        #elf.parentTemplate = parentTemplate
-        #self.commandList = commandList
-
         self.listWidget = QtWidgets.QListWidget()
 
-        # size = QtWidgets.QSize()
-        #        s.setHeight(super(qtWidgets.QListWidget,listWidget).sizeHint().height())
-        # listWidget.setStyleSheet('background-color:black;font:16pt; color:white; border:none')
-        # self.setWindowOpacity(0.1)
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        # self.listWidget.setFixedHeight(
-        #     self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
-        # )
 
         buttonHLayout = QtWidgets.QHBoxLayout()
 
@@ -73,9 +61,9 @@ class SetConfirmPopup(QtWidgets.QDialog):
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
-        self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
-        )  # no window title
+        # self.setWindowFlags(
+        #     QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
+        # )  # no window title
         self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
         self.setWindowOpacity(0.5)
 
@@ -92,7 +80,9 @@ class SetConfirmPopup(QtWidgets.QDialog):
         self.listWidget.setFixedHeight(
             self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
         )
-        self.listWidget.setFixedWidth(self.listWidget.sizeHintForColumn(0) * self.listWidget.count())
+        self.listWidget.setFixedWidth(
+            self.listWidget.sizeHintForColumn(0) * self.listWidget.count()
+        )
 
         self.listWidget.update()
         self.update()
@@ -102,11 +92,10 @@ class SetConfirmPopup(QtWidgets.QDialog):
         self.listWidget.clear()
         self.commandList = []
 
-
     def ok_button_pressed(self):
-        print('ok button pressed')
+        print("ok button pressed")
         """Send commands when ok button is clicked"""
-        #self.parentTemplate.liveUpdating = True
+        # self.parentTemplate.liveUpdating = True
         if isinstance(self.handler, ExpertHandler):
             self.ExpertSend.emit()
         elif isinstance(self.handler, ModeHandler):
@@ -120,7 +109,8 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
     def cancel_button_pressed(self):
         """Close popup when cancel button is clicked"""
-        self.close()
+        print("CANCEL BUTTON PRESSED")
+        # self.close()
         return 0
 
 
@@ -176,19 +166,7 @@ class confirmPopup(QtWidgets.QWidget):
         self.vlayout.setMargin(0)
         self.setLayout(self.vlayout)
 
-        self.location_on_window()
-        self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint
-            | QtCore.Qt.Dialog
-            | QtCore.Qt.WindowStaysOnTopHint
-        )  # no window title
-
         self.setStyleSheet("background-color:green;")
-
-        self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)  # just faster than 60Hz
-        self.timer.timeout.connect(self.adjustSize)
-        self.timer.start()
 
     def addConfirmation(self, confirmMessage):
         """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
@@ -198,9 +176,9 @@ class confirmPopup(QtWidgets.QWidget):
         self.vlayout.addWidget(self.confirmDict[confirmMessage])
         return 0
 
-    def location_on_window(self):
-        screen = QtWidgets.QDesktopWidget().screenGeometry()
-        # widget = self.geometry()
-        x = screen.width() - screen.width() / 2
-        y = 0  # screen.height() - widget.height()
-        self.move(x, y)
+    # def location_on_window(self):
+    #     screen = QtWidgets.QDesktopWidget().screenGeometry()
+    #     # widget = self.geometry()
+    #     x = screen.width() - screen.width() / 2
+    #     y = 0  # screen.height() - widget.height()
+    #     self.move(x, y)

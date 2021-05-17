@@ -37,7 +37,13 @@ from PySide2.QtCore import Slot, QTimer, Qt
 from PySide2.QtGui import QColor, QFont, QPalette
 from ui_layout import Layout
 from ui_widgets import Widgets
-from PySide2.QtWidgets import QApplication, QMainWindow, QWidget, QDialog, QRadioButton
+from PySide2.QtWidgets import (
+    QApplication,
+    QMainWindow,
+    QWidget,
+    QDialog,
+    QStackedWidget,
+)
 
 # from handler_library.alarm_handler import AlarmHandler
 from handler_library.battery_handler import BatteryHandler
@@ -157,21 +163,30 @@ class NativeUI(HEVClient, QMainWindow):
             self.alarm_handler,
         ]
 
-        self.messageCommandPopup = SetConfirmPopup(self)
-
         # Create all of the widgets and place them in the layout.
         self.widgets = Widgets(self)
         self.layouts = Layout(self, self.widgets)
 
-        self.confirmPopup = confirmPopup(
-            self, self
-        )  # one is passed as an argument, the other becomes parent
-        self.confirmPopup.show()
+        # Setup, main_display, and popups created in a stack so we can only show one at
+        # a time.
+        self.messageCommandPopup = SetConfirmPopup(self)
+        self.confirmPopup = confirmPopup(self, self)
+        self.main_display = QWidget(self)
+        self.main_display.setLayout(self.layouts.global_layout())
+        self.startupWidget = QDialog(self)
+        self.startupWidget.setLayout(self.layouts.startup_layout())
+        self.startupWidget.setPalette(palette)
+        self.startupWidget.setAutoFillBackground(True)
 
-        # Set Central
-        self.central_widget = QWidget(self)
-        self.central_widget.setLayout(self.layouts.global_layout())
-        self.setCentralWidget(self.central_widget)
+        self.display_stack = QStackedWidget(self)
+        for widget in [
+            self.messageCommandPopup,
+            self.confirmPopup,
+            self.main_display,
+            self.startupWidget,
+        ]:
+            self.display_stack.addWidget(widget)
+        self.setCentralWidget(self.display_stack)
 
         # Set up status bar and window title (the title is only shown in windowed mode).
         self.statusBar().showMessage("Waiting for data")
@@ -184,6 +199,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.__define_connections()
 
         # Update page buttons to match the shown view
+        self.display_stack.setCurrentWidget(self.confirmPopup)
         self.widgets.page_buttons.buttons[0].on_press()
 
     def __find_localisation_files(self, config_path: str) -> list:
@@ -367,7 +383,6 @@ class NativeUI(HEVClient, QMainWindow):
                     self.mode_handler.handle_mainokbutton_click
                 )
             elif isinstance(button_widget, CancelButtonWidget):
-                print("connecting cancel button")
                 # mode = self.mode_handler.get_mode(key)
                 button_widget.clicked.connect(self.mode_handler.commandSent)
         #
@@ -387,10 +402,16 @@ class NativeUI(HEVClient, QMainWindow):
         #         )
 
         self.mode_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
+        self.mode_handler.OpenPopup.connect(
+            lambda: self.display_stack.setCurrentWidget(self.messageCommandPopup)
+        )
         self.messageCommandPopup.ModeSend.connect(self.mode_handler.sendCommands)
         # self.messageCommandPopup.okButton.pressed.connect(self.mode_handler.sendCommands)
 
         self.expert_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
+        self.expert_handler.OpenPopup.connect(
+            lambda: self.display_stack.setCurrentWidget(self.messageCommandPopup)
+        )
         self.messageCommandPopup.ExpertSend.connect(self.expert_handler.sendCommands)
 
         # self.clinical_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
@@ -398,7 +419,10 @@ class NativeUI(HEVClient, QMainWindow):
         # self.messageCommandPopup.okButton.pressed.connect(self.expert_handler.sendCommands)
 
         self.messageCommandPopup.cancelButton.pressed.connect(
-            self.messageCommandPopup.close
+            lambda: self.display_stack.setCurrentWidget(self.main_display)
+        )
+        self.messageCommandPopup.okButton.pressed.connect(
+            lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
 
         ##### Expert Settings:
