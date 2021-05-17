@@ -194,6 +194,8 @@ class NativeUI(HEVClient, QMainWindow):
         self.setWindowTitle(self.text["ui_window_title"].format(version=__version__))
         self.setPalette(palette)
         self.setAutoFillBackground(True)
+        self.widgets.version_display_widget.update_UI_version(__version__)
+        self.widgets.version_display_widget.update_UI_hash(self.__get_hash())
 
         # Connect widgets
         self.__define_connections()
@@ -215,6 +217,13 @@ class NativeUI(HEVClient, QMainWindow):
             assert os.path.isfile(file)
 
         return files_list
+
+    def __get_hash(self) -> str:
+        """
+        Get the hash of the current commit.
+        """
+        repo = git.Repo(search_parent_directories=True)
+        return repo.head.object.hexsha
 
     def __define_connections(self) -> int:
         """
