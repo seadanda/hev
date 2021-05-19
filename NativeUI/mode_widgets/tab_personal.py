@@ -36,6 +36,16 @@ class TabPersonal(TemplateSetValues):
         self.addButtons()
         self.finaliseLayout()
 
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict) -> int:
+        self.spinDict["Name"].nameLabel.setText(text["personal_tab_name"])
+        self.spinDict["Patient ID"].nameLabel.setText(text["personal_tab_patientid"])
+        self.spinDict["Age"].nameLabel.setText(text["personal_tab_age"])
+        self.spinDict["Sex"].nameLabel.setText(text["personal_tab_sex"])
+        self.spinDict["Weight"].nameLabel.setText(text["personal_tab_weight"])
+        self.spinDict["Height"].nameLabel.setText(text["personal_tab_height"])
+        return 0
+
 
 if __name__ == "__main__":
     # sys.path.append("../")

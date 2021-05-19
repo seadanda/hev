@@ -32,5 +32,11 @@
     "spin_box_label_Respiratory_Rate": "Respiratory Rate",
     "spin_box_label_Inhale_Time": "Inhale Time",
     "spin_box_label_IE_Ratio": "IE Ratio",
-    "spin_box_label_Percentage_O2": "Percentage O2"
+    "spin_box_label_Percentage_O2": "Percentage O2",
+    "personal_tab_name": "Name",
+    "personal_tab_patientid": "Patient ID",
+    "personal_tab_age": "Age",
+    "personal_tab_sex": "Sex",
+    "personal_tab_weight": "Weight",
+    "personal_tab_height": "Height"
 }
