@@ -27,5 +27,10 @@
     "measurement_label_mean_airway_pressure": "P<sub>MEAN</sub> [cmH<sub>2</sub>O]",
     "measurement_label_inhaled_tidal_volume": "VTI [mL]",
     "measurement_label_inhaled_minute_volume": "MVI [L/min]",
-    "measurement_label_peak_inspiratory_pressure": "P<sub>PEAK</sub> [cmH<sub>2</sub>O]"
+    "measurement_label_peak_inspiratory_pressure": "P<sub>PEAK</sub> [cmH<sub>2</sub>O]",
+    "spin_box_label_Inhale_Pressure": "Inhale Pressure",
+    "spin_box_label_Respiratory_Rate": "Respiratory Rate",
+    "spin_box_label_Inhale_Time": "Inhale Time",
+    "spin_box_label_IE_Ratio": "IE Ratio",
+    "spin_box_label_Percentage_O2": "Percentage O2"
 }

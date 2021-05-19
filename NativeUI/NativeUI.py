@@ -251,6 +251,9 @@ class NativeUI(HEVClient, QMainWindow):
         self.widgets.localisation_button.SetLocalisation.connect(
             self.widgets.charts_widget.localise_text
         )
+        self.widgets.localisation_button.SetLocalisation.connect(
+            self.widgets.spin_buttons.localise_text
+        )
 
         return 0
 

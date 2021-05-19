@@ -1,5 +1,4 @@
 {
-
     "language_name": "Portugues",
     "start_button": "INICIAR",
     "stop_button": "PARAR",
@@ -28,5 +27,10 @@
     "measurement_label_mean_airway_pressure": "P<sub>MEDIO</sub> [cmH<sub>2</sub>O]",
     "measurement_label_inhaled_tidal_volume": "VTI [mL]",
     "measurement_label_inhaled_minute_volume": "MVI [L/min]",
-    "measurement_label_peak_inspiratory_pressure": "P<sub>PICO</sub> [cmH<sub>2</sub>O]"
+    "measurement_label_peak_inspiratory_pressure": "P<sub>PICO</sub> [cmH<sub>2</sub>O]",
+    "spin_box_label_Inhale_Pressure": "Pressao inspiracao",
+    "spin_box_label_Respiratory_Rate": "Frequencia Respiratoria",
+    "spin_box_label_Inhale_Time": "Tempo Inspiracao",
+    "spin_box_label_IE_Ratio": "Razao I/E",
+    "spin_box_label_Percentage_O2": "Porcetagem O<sub>2<sub>"
 }

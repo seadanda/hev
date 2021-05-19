@@ -262,3 +262,13 @@ class SpinButtonsWidget(QtWidgets.QWidget):
         #         spin.setTextColour("0")
         #     else:
         #         spin.setTextColour("2")
+
+    @QtCore.Slot(dict)
+    def localise_text(self, text : dict) -> int:
+        self.spinDict["Inhale Pressure"].label.setText(text["spin_box_label_Inhale_Pressure"])
+        self.spinDict["Respiratory Rate"].label.setText(text["spin_box_label_Respiratory_Rate"])
+        self.spinDict["Inhale Time"].label.setText(text["spin_box_label_Inhale_Time"])
+        self.spinDict["IE Ratio"].label.setText(text["spin_box_label_IE_Ratio"])
+        self.spinDict["Percentage O2"].label.setText(text["spin_box_label_Percentage_O2"])
+        return 0
+
