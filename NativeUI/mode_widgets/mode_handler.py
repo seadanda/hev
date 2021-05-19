@@ -1,7 +1,7 @@
 from global_widgets.global_spinbox import labelledSpin
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget, OkSendButtonWidget
 #from global_widgets.global_send_popup import SetConfirmPopup
-from widget_library.spin_buttons_widget import SpinButton, SpinButtonsWidget
+from widget_library.spin_buttons_widget import SpinButton
 
 from PySide2 import QtWidgets, QtGui, QtCore
 from handler_library.handler import PayloadHandler
@@ -63,15 +63,12 @@ class ModeHandler(PayloadHandler):
 
 
     def handle_okbutton_click(self, key):
-        print('ok')
-        print(key)
         mode = self.get_mode(key)
-        print(mode)
         message, command = [], []
         for widget in self.spinDict:
             if (mode in widget) and self.spinDict[widget].manuallyUpdated:
-                print('True')
                 setVal = self.spinDict[widget].get_value()
+                setVal = round(setVal, widget.decPlaces)
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [
@@ -90,6 +87,7 @@ class ModeHandler(PayloadHandler):
         for widget in self.mainSpinDict:
             if self.mainSpinDict[widget].manuallyUpdated:
                 setVal = self.mainSpinDict[widget].get_value()
+                setVal = round(setVal, widget.decPlaces)
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [
@@ -128,6 +126,7 @@ class ModeHandler(PayloadHandler):
         self.refresh_main_button_colour()
 
     def handle_manual_change(self, changed_spin_key):
+        print('handle manual change')
         self.active_payload()
         self.refresh_button_colour()
         self.refresh_main_button_colour()
@@ -144,19 +143,34 @@ class ModeHandler(PayloadHandler):
 
     def refresh_button_colour(self):
         self.manuallyUpdatedBoolDict = { mode: False for mode in self.modeList }
-        for spin in dict(self.spinDict):
-            self.manuallyUpdatedBoolDict[self.get_mode(spin)] = self.manuallyUpdatedBoolDict[self.get_mode(spin)] or self.spinDict[spin].manuallyUpdated
-        for button in dict(self.buttonDict):
+        for spin in self.spinDict:
+            mode = self.get_mode(spin)
+            if mode == None: continue
+            self.manuallyUpdatedBoolDict[mode] = self.manuallyUpdatedBoolDict[mode] or self.spinDict[spin].manuallyUpdated
+        for button in self.buttonDict:
             mode = str(self.get_mode(button))
             if isinstance(self.buttonDict[button], OkSendButtonWidget) and (mode != self.NativeUI.currentMode):
                 self.buttonDict[button].setColour(str(int(True)))
             else:
                 self.buttonDict[button].setColour(str(int(self.manuallyUpdatedBoolDict[mode])))
 
+    def propagate_modevalchange(self,widget):
+        for spin in self.mainSpinDict.values():
+            if spin.tag == widget.tag:
+                if spin.get_value() != widget.get_value():
+                    spin.set_value(widget.get_value())
+
+        for spin in self.spinDict.values():
+            if spin.tag == widget.tag:
+                if self.NativeUI.currentMode.replace('/','_').replace('-','_') in spin.cmd_type:
+                    if spin.get_value() != widget.get_value():
+                        spin.simpleSpin.set_value(widget.get_value())
 
     def refresh_main_button_colour(self):
+        print('refreshing main buttons')
         self.manuallyUpdatedBoolDict['CURRENT'] = False
         for spin in self.mainSpinDict:
+            print(spin + 'is ' + str(self.mainSpinDict[spin].manuallyUpdated))
             self.manuallyUpdatedBoolDict['CURRENT'] = self.manuallyUpdatedBoolDict['CURRENT'] or self.mainSpinDict[spin].manuallyUpdated
         for button in self.mainButtonDict:
             self.mainButtonDict[button].setColour(str(int(self.manuallyUpdatedBoolDict['CURRENT'])))

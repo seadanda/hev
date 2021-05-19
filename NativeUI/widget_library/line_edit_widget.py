@@ -9,10 +9,10 @@ class SignallingLineEditWidget(QtWidgets.QLineEdit):
         super().__init__()
         self.installEventFilter(self)
 
-        self.popUp = TypeValuePopup(NativeUI)
-        self.popUp.lineEdit.setValidator(None)  # nsure it accepts text
-        self.popUp.okButton.clicked.connect(self.okButtonPressed)
-        self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
+        #self.popUp = TypeValuePopup(NativeUI)#,'text edit',0,1,2,3,4)
+        #self.popUp.lineEdit.setValidator(None)  # nsure it accepts text
+        #self.popUp.okButton.clicked.connect(self.okButtonPressed)
+        #self.popUp.cancelButton.clicked.connect(self.cancelButtonPressed)
 
     def okButtonPressed(self):
         val = self.popUp.lineEdit.text()
@@ -21,7 +21,7 @@ class SignallingLineEditWidget(QtWidgets.QLineEdit):
         self.manualChanged.emit()
 
     def cancelButtonPressed(self):
-        self.popUp.lineEdit.setText(self.popUp.lineEdit.saveVal)
+        self.popUp.lineEdit.setText(self.popUp.lineEditp.saveVal)
         self.popUp.close()
 
     def eventFilter(self, source, event):
