@@ -114,11 +114,11 @@ class Widgets:
         self.add_handled_widget(
             OkButtonWidget(NativeUI), "nextButton", self.startup_handler
         )
-        self.nextButton.setColour(1)
+        self.nextButton.setColour(0)
         self.add_handled_widget(
             OkSendButtonWidget(NativeUI), "skipButton", self.startup_handler
         )
-        self.skipButton.setColour(1)
+        self.skipButton.setColour(0)
         self.add_handled_widget(
             CancelButtonWidget(NativeUI), "backButton", self.startup_handler
         )

@@ -76,32 +76,41 @@ class Layout:
         return 0
 
     def startup_layout(self):
-        vlayout = QtWidgets.QVBoxLayout()
-        with open("NativeUI/configs/mode_config.json") as json_file:
-            modeDict = json.load(json_file)
+        v_layout = QtWidgets.QVBoxLayout()
+        h_layout = QtWidgets.QHBoxLayout()
+        h_button_layout = QtWidgets.QHBoxLayout()
 
-        # Define the stack of pages (used by the page buttons to set the current page)
+        # Stack the data collection pages.
         self.widgets.add_widget(
-            self.__make_stack(
+            SwitchableStackWidget(
+                self.NativeUI,
                 [
-                    self.layout_startup_main(),
-                    self.layout_mode_startup(),  # self, settings, mode:str, enableList:list, buttons: bool)
+                    self.layout_mode_startup(),
                     self.layout_mode_personal("startup_", False),
                     self.layout_startup_confirmation(),
-                ]
+                ],
+                ["Mode Settings", "Personal Settings", "Summary"],
             ),
             "startup_stack",
         )
         self.widgets.startup_stack.setFont(self.NativeUI.text_font)
-        vlayout.addWidget(self.widgets.startup_stack)
-        hButtonLayout = QtWidgets.QHBoxLayout()
-        hButtonLayout.addWidget(self.NativeUI.widgets.backButton)
-        hButtonLayout.addWidget(self.NativeUI.widgets.skipButton)
-        hButtonLayout.addWidget(self.NativeUI.widgets.nextButton)
 
-        vlayout.addLayout(hButtonLayout)
+        # Add buttons
+        h_button_layout.addWidget(self.NativeUI.widgets.backButton)
+        h_button_layout.addWidget(self.NativeUI.widgets.skipButton)
+        h_button_layout.addWidget(self.NativeUI.widgets.nextButton)
 
-        return vlayout
+        # Put the layouts together
+        h_layout.addWidget(self.layout_startup_main())
+        h_layout.addWidget(self.widgets.startup_stack)
+        v_layout.addLayout(h_layout)
+        v_layout.addLayout(h_button_layout)
+
+        # Ensure that next and skip buttons are disabled by default.
+        self.NativeUI.widgets.skipButton.setEnabled(False)
+        self.NativeUI.widgets.nextButton.setEnabled(False)
+
+        return v_layout
 
     def layout_startup_main(self):
         vlayout = QtWidgets.QVBoxLayout()

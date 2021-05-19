@@ -12,7 +12,7 @@ Command-line arguments:
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
 __credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
 __license__ = "GPL"
-__version__ = "0.0.1"
+__version__ = "0.1.1"
 __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
@@ -201,7 +201,7 @@ class NativeUI(HEVClient, QMainWindow):
         self.__define_connections()
 
         # Update page buttons to match the shown view
-        self.display_stack.setCurrentWidget(self.messageCommandPopup)
+        self.display_stack.setCurrentWidget(self.startupWidget)
         self.widgets.page_buttons.buttons[0].on_press()
 
     def __find_localisation_files(self, config_path: str) -> list:
@@ -284,19 +284,23 @@ class NativeUI(HEVClient, QMainWindow):
                     i, j
                 )
             )
+
+        # TODO: command sending
         self.widgets.nextButton.pressed.connect(
-            lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_nextbutton(
-                i
-            )
+            lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
         self.widgets.skipButton.pressed.connect(
-            self.widgets.startup_handler.handle_sendbutton
+            lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
-        self.widgets.backButton.pressed.connect(
-            lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(
-                i
-            )
-        )
+
+        # self.widgets.skipButton.pressed.connect(
+        #     self.widgets.startup_handler.handle_sendbutton
+        # )
+        # self.widgets.backButton.pressed.connect(
+        #     lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(
+        #         i
+        #     )
+        # )
 
         # Battery Display should update when we get battery info
         self.battery_handler.UpdateBatteryDisplay.connect(
