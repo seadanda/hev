@@ -518,7 +518,6 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.startup_stack,
             self.widgets.mode_settings_stack,
             self.widgets.mode_settings_stack_startup,
-            self.widgets.personal_display,
             # self.widgets.spin_buttons,
             # self.widgets.mode_personal_tab,
         ]:
