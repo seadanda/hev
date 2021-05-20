@@ -99,7 +99,7 @@ class NativeUI(HEVClient, QMainWindow):
     q_send_personal (Slot) - send personal information to the MCU.
     """
 
-    def __init__(self, resolution: list, *args, **kwargs):
+    def __init__(self, resolution: list, *args, skip_startup=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Set the resolution of the display window
@@ -204,7 +204,10 @@ class NativeUI(HEVClient, QMainWindow):
         self.__define_connections()
 
         # Update page buttons to match the shown view
-        self.display_stack.setCurrentWidget(self.startupWidget)
+        if skip_startup:
+            self.display_stack.setCurrentWidget(self.main_display)
+        else:
+            self.display_stack.setCurrentWidget(self.startupWidget)
         self.widgets.page_buttons.buttons[0].on_press()
 
     def __find_localisation_files(self, config_path: str) -> list:
@@ -663,6 +666,12 @@ def parse_command_line_arguments() -> argparse.Namespace:
     parser.add_argument(
         "-r", "--resolution", action="store", dest="resolution", type=str
     )
+    parser.add_argument(
+        "--no-startup",
+        action="store_true",
+        default=False,
+        help="Run the UI without the startup sequence",
+    )
     return parser.parse_args()
 
 
@@ -735,12 +744,14 @@ def set_window_size(window, resolution: str = None, windowed: bool = False) -> i
 if __name__ == "__main__":
     # parse args and setup logging
     command_line_args = parse_command_line_arguments()
-    print(command_line_args)
     set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
-    dep = NativeUI(interpret_resolution(command_line_args.resolution))
+    dep = NativeUI(
+        interpret_resolution(command_line_args.resolution),
+        skip_startup=command_line_args.no_startup,
+    )
     set_window_size(
         dep,
         resolution=command_line_args.resolution,
