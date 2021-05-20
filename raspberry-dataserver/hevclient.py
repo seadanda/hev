@@ -15,7 +15,7 @@
 # for more details.
 #
 # You should have received a copy of the GNU General Public License along
-# with hev-sw. If not, see <http://www.gnu.org/licenses/>.
+# with hev-sw. If not, see <http://www.gnu.org/licenses/> .
 #
 # The authors would like to acknowledge the much appreciated support
 # of all those involved with the High Energy Ventilator project
@@ -96,6 +96,8 @@ class HEVClient(object):
 
     async def polling(self) -> None:
         """open persistent connection with server"""
+        writer = None
+        data = None
         while True:
             try:
                 reader, writer = await asyncio.open_connection("127.0.0.1", 54320)
@@ -150,9 +152,6 @@ class HEVClient(object):
                     except KeyError:
                         raise
 
-                # close connection
-                writer.close()
-                await writer.wait_closed()
             except ConnectionRefusedError as e:
                 logging.error(str(e) + " - is the microcontroller running?")
                 await asyncio.sleep(2)
@@ -160,12 +159,17 @@ class HEVClient(object):
                 # warn and reopen connection
                 logging.error(e)
                 await asyncio.sleep(2)
+            finally:
+                # close connection
+                if writer is not None:
+                    writer.close()
+                    await writer.wait_closed()
 
     def get_updates(self, payload) -> None:
         """Overrideable function called after receiving data from the socket, with that data as an argument"""
         pass
 
-    async def send_request(
+    async def _send_request(
         self,
         reqtype,
         cmdtype: str = None,
@@ -225,19 +229,19 @@ class HEVClient(object):
         # print(cmdtype, cmd, param)
         try:
             return asyncio.run(
-                self.send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param)
+                self._send_request("CMD", cmdtype=cmdtype, cmd=cmd, param=param)
             )
         except ConnectionRefusedError as error:
             logging.error(str(error) + " - is the microcontroller running?")
 
     def ack_alarm(self, alarm: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list
-        return asyncio.run(self.send_request("ALARM", alarm=alarm))
+        return asyncio.run(self._send_request("ALARM", alarm=alarm))
 
     # def send_personal(self, personal: Dict[str, str]=None ) -> bool:
     def send_personal(self, personal: str) -> bool:
         # acknowledge alarm to remove it from the hevserver list
-        return asyncio.run(self.send_request("PERSONAL", personal=personal))
+        return asyncio.run(self._send_request("PERSONAL", personal=personal))
 
     def get_values(self) -> Dict:
         # get sensor values from db
@@ -246,12 +250,12 @@ class HEVClient(object):
             fastdata = pickle.load(self._mmFile)
         except pickle.UnpicklingError as e:
             logging.warning(f"Unpicking error {e}")
-            return None
+            return None  # Should return empty dict here?
         if type(fastdata) is dict:
             return fastdata
         else:
             logging.warning("Missing fastdata")
-            return None
+            return None  # Should return empty dict here?
 
     def get_readback(self) -> Dict:
         # get readback from db

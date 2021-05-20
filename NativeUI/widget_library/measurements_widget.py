@@ -39,7 +39,6 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
         # Create "Measurements" Title
         self.title_label = QtWidgets.QLabel()
         self.title_label.setStyleSheet(
-            # "font-size:" + NativeUI.text_size + ";"
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
             "background-color:" + NativeUI.colors["page_background"].name() + ";"
         )
@@ -51,24 +50,18 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
         # Create Muasurement widgets
         self.widget_list = []
         for measurement in measurements:
-            if len(measurement) > 3:
+            if len(measurement) > 2:
                 self.widget_list.append(
                     MeasurementWidget(
                         NativeUI,
                         measurement[0],  # Label key
-                        measurement[2],  # Keydir
                         measurement[1],  # Key
-                        measurement[3],  # Format
+                        measurement[2],  # Format
                     )
                 )
             else:
                 self.widget_list.append(
-                    MeasurementWidget(
-                        NativeUI,
-                        measurement[0],  # Label key
-                        measurement[2],  # Keydir
-                        measurement[1],  # Key
-                    )
+                    MeasurementWidget(NativeUI, measurement[0], measurement[1])
                 )
 
         # Compute max number of items per column
@@ -173,11 +166,6 @@ class MeasurementsBlockWidget(QtWidgets.QWidget):
 
         return 0
 
-    @QtCore.Slot(dict, dict)
-    def update_value(self, cycle: dict, readback: dict) -> int:
-        for widget in self.widget_list:
-            widget.update_value({"cycle": cycle, "readback": readback})
-
 
 class MeasurementWidget(QtWidgets.QWidget):
     """
@@ -203,7 +191,6 @@ class MeasurementWidget(QtWidgets.QWidget):
         self,
         NativeUI,
         label_key: str,
-        keydir: str,
         key: str,
         format: str = "{:.1f}",
         *args,
@@ -213,7 +200,6 @@ class MeasurementWidget(QtWidgets.QWidget):
 
         self.NativeUI = NativeUI
         self.label_key = label_key
-        self.keydir = keydir
         self.key = key
         self.format = format
 
@@ -232,7 +218,6 @@ class MeasurementWidget(QtWidgets.QWidget):
             "color: " + self.NativeUI.colors["label_foreground"].name() + ";"
             "background-color:" + self.NativeUI.colors["label_background"].name() + ";"
             "border: none;"
-            # "font-size: " + NativeUI.text_size + ";"
         )
 
         self.value_display.setAlignment(QtCore.Qt.AlignCenter)
@@ -241,26 +226,25 @@ class MeasurementWidget(QtWidgets.QWidget):
             "background-color: " + self.NativeUI.colors["label_foreground"].name() + ";"
             "border: none;"
         )
-        # self.value_display.setFont(QtGui.QFont("SansSerif", 40))
 
         # Layout
         layout.setSpacing(0)
         self.setLayout(layout)
+        self.set_value({})
 
-    def update_value(self, db: dict) -> int:
+    def set_value(self, data: dict) -> int:
         """
-        Poll the database in NativeUI and update the displayed value.
+        Update the displayed value
         """
         if self.key is None:  # widget can be created without assigning a parameter
             self.value_display.setText("-")
             return 0
 
-        data = db[self.keydir]
-        if len(data) == 0:  # means that the db hasn't been populated yet
+        try:
+            self.value_display.setText(self.__format_value(data[self.key]))
+        except KeyError:
             self.value_display.setText("-")
-            return 0
 
-        self.value_display.setText(self.__format_value(data[self.key]))
         return 0
 
     def __format_value(self, number):
@@ -305,17 +289,16 @@ class NormalMeasurementsBlockWidget(MeasurementsBlockWidget):
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("measurement_label_plateau_pressure", "plateau_pressure", "cycle"),
-            ("measurement_label_respiratory_rate", "respiratory_rate", "cycle"),
-            ("measurement_label_fio2_percent", "fiO2_percent", "cycle"),
-            ("measurement_label_exhaled_tidal_volume", "exhaled_tidal_volume", "cycle"),
+            ("measurement_label_plateau_pressure", "plateau_pressure"),
+            ("measurement_label_respiratory_rate", "respiratory_rate"),
+            ("measurement_label_fio2_percent", "fiO2_percent"),
+            ("measurement_label_exhaled_tidal_volume", "exhaled_tidal_volume"),
             (
                 "measurement_label_exhaled_minute_volume",
                 "exhaled_minute_volume",
-                "cycle",
                 "{:.0f}",
             ),
-            ("measurement_label_peep", "peep", "readback"),
+            ("measurement_label_peep", "peep"),
         ]
 
         super().__init__(
@@ -332,32 +315,21 @@ class ExpertMeasurementsBloackWidget(MeasurementsBlockWidget):
 
     def __init__(self, NativeUI, *args, **kwargs):
         measurements = [
-            ("measurement_label_fio2_percent", "fiO2_percent", "cycle"),
-            (
-                "measurement_label_inhale_exhale_ratio",
-                "inhale_exhale_ratio",
-                "readback",
-                "ratio",
-            ),
+            ("measurement_label_fio2_percent", "fiO2_percent"),
+            ("measurement_label_inhale_exhale_ratio", "inhale_exhale_ratio", "ratio"),
             (
                 "measurement_label_peak_inspiratory_pressure",
                 "peak_inspiratory_pressure",
-                "cycle",
             ),
-            ("measurement_label_plateau_pressure", "plateau_pressure", "cycle"),
-            ("measurement_label_mean_airway_pressure", "mean_airway_pressure", "cycle"),
-            ("measurement_label_peep", "peep", "readback"),
-            ("measurement_label_inhaled_tidal_volume", "inhaled_tidal_volume", "cycle"),
-            ("measurement_label_exhaled_tidal_volume", "exhaled_tidal_volume", "cycle"),
-            (
-                "measurement_label_inhaled_minute_volume",
-                "inhaled_minute_volume",
-                "cycle",
-            ),
+            ("measurement_label_plateau_pressure", "plateau_pressure"),
+            ("measurement_label_mean_airway_pressure", "mean_airway_pressure"),
+            ("measurement_label_peep", "peep"),
+            ("measurement_label_inhaled_tidal_volume", "inhaled_tidal_volume"),
+            ("measurement_label_exhaled_tidal_volume", "exhaled_tidal_volume"),
+            ("measurement_label_inhaled_minute_volume", "inhaled_minute_volume"),
             (
                 "measurement_label_exhaled_minute_volume",
                 "exhaled_minute_volume",
-                "cycle",
                 "{:.0f}",
             ),
         ]

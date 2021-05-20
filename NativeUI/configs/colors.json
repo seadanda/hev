@@ -9,6 +9,8 @@
     "label_foreground":[200, 200, 200],
     "display_background":[200, 200, 200],
     "display_foreground":[0, 0, 0],
+    "display_foreground_changed":[0, 200, 0],
+    "display_foreground_red":[200, 0, 0],
     "baby_blue":[144, 231, 211],
     "red":[200, 0, 0],
     "green":[0, 200, 0],

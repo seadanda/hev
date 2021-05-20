@@ -29,7 +29,8 @@ import logging
 import binascii
 
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s (%(filename)s line %(lineno)d: %(module)s.%(funcName)s)",
 )
 
 # VERSIONING

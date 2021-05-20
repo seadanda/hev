@@ -202,7 +202,7 @@ class ClientPlots(QtWidgets.QMainWindow):
             client = HEVClient(polling=False) # just use hevclient for requests
             await asyncio.sleep(2)
             # trigger an alarm
-            await client.send_request("CMD", cmdtype="SET_THRESHOLD_MIN", cmd="APNEA",param=0)
+            await client._send_request("CMD", cmdtype="SET_THRESHOLD_MIN", cmd="APNEA", param=0)
             while True:
                 await asyncio.sleep(60)
         except Exception as e:

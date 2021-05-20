@@ -16,92 +16,9 @@ from PySide2 import QtWidgets, QtGui, QtCore
 import os
 
 
-class OkButtonWidget(
-    QtWidgets.QPushButton
-):
-    def __init__(self, NativeUI, *args, **kwargs):
+class styledButton(QtWidgets.QPushButton):
+    def __init__(self, NativeUI, colour, iconpath_play, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        iconpath_check = os.path.join(NativeUI.iconpath, "check-solid.png")
-
-        # set icon color
-        pixmap = QtGui.QPixmap(iconpath_check)
-        mask = pixmap.mask()
-        pixmap.fill(NativeUI.colors["page_background"])
-        pixmap.setMask(mask)
-        self.setIcon(QtGui.QIcon(pixmap))
-
-        self.setStyleSheet(
-            "QPushButton[bgColour='0']{background-color: "
-            + NativeUI.colors["page_foreground"].name()
-            + ";}"
-            "QPushButton[bgColour='1']{background-color: "
-            + NativeUI.colors["green"].name()
-            + ";}"
-            "QPushButton{color: " + NativeUI.colors["page_background"].name() + ";"
-            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
-            "font-size: " + NativeUI.text_size + ";"
-            "border-radius: 8px;"
-            "border:none}"
-        )
-        self.setProperty("bgColour", "0")
-        self.setEnabled(False)
-
-        self.setFixedHeight(50)
-        # self.setFixedSize(QtCore.QSize(150, 50))
-
-    def setColour(self, option):
-        self.setEnabled(bool(float(option)))
-        self.setProperty("bgColour", str(option))
-        self.style().polish(self)
-
-
-class CancelButtonWidget(
-    QtWidgets.QPushButton
-):
-    def __init__(self, NativeUI, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")
-
-        # set icon color
-        pixmap = QtGui.QPixmap(iconpath_cross)
-        mask = pixmap.mask()
-        pixmap.fill(NativeUI.colors["page_background"])
-        pixmap.setMask(mask)
-        self.setIcon(QtGui.QIcon(pixmap))
-
-        self.setStyleSheet(
-            "QPushButton[bgColour='0']{"
-            "   background-color:"
-            + NativeUI.colors["button_foreground_enabled"].name()
-            + ";"
-            "}"
-            "QPushButton[bgColour='1']{"
-            "background-color:" + NativeUI.colors["red"].name() + ";"
-            "}"
-            "QPushButton{"
-            "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
-            "   font-size: " + NativeUI.text_size + ";"
-            "   border:none;"
-            "}"
-        )
-        self.setProperty("bgColour", "0")
-        self.setEnabled(False)
-
-        self.setFixedHeight(50)
-        # self.setFixedSize(QtCore.QSize(150, 50))
-
-    def setColour(self, option):
-        self.setEnabled(bool(float(option)))
-        self.setProperty("bgColour", str(option))
-        self.style().polish(self)
-
-
-class OkSendButtonWidget(
-    QtWidgets.QPushButton
-):  # chose QWidget over QDialog family because easier to modify
-    def __init__(self, NativeUI, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        iconpath_play = os.path.join(NativeUI.iconpath, "play-solid.png")
 
         # set icon color
         pixmap = QtGui.QPixmap(iconpath_play)
@@ -111,22 +28,18 @@ class OkSendButtonWidget(
         self.setIcon(QtGui.QIcon(pixmap))
 
         self.setStyleSheet(
-            "QPushButton[bgColour='0']{"
-            "   background-color: "
-            + NativeUI.colors["button_foreground_enabled"].name()
-            + ";"
-            "}"
-            "QPushButton[bgColour='1']{"
-            "   background-color:" + NativeUI.colors["green"].name() + ";"
-            "}"
-            "QPushButton{"
-            "   color: " + NativeUI.colors["button_background_enabled"].name() + ";"
-            "   font-size: " + NativeUI.text_size + ";"
-            "   border:none"
-            "}"
-            "font-size: " + NativeUI.text_size + ";"
-            "border:none;"
+            "QPushButton[bgColour='0']{background-color: "
+            + NativeUI.colors["page_foreground"].name()
+            + ";}"
+            "QPushButton[bgColour='1']{background-color: "
+            + NativeUI.colors[colour].name()
+            + ";}"
+            "QPushButton{color: " + NativeUI.colors["page_background"].name() + ";"
+            "border-color: " + NativeUI.colors["page_foreground"].name() + ";"
+            "border-radius: 8px;"
+            "border:none}"
         )
+        self.setFont(NativeUI.text_font)
         self.setProperty("bgColour", "0")
         self.setEnabled(False)
 
@@ -134,6 +47,27 @@ class OkSendButtonWidget(
         # self.setFixedSize(QtCore.QSize(150, 50))
 
     def setColour(self, option):
+        # print('setting colour again again')
         self.setEnabled(bool(float(option)))
         self.setProperty("bgColour", str(option))
         self.style().polish(self)
+
+
+class OkButtonWidget(styledButton):
+    def __init__(self, NativeUI, *args, **kwargs):
+        iconpath_check = os.path.join(NativeUI.iconpath, "check-solid.png")
+        super().__init__(NativeUI, "green", iconpath_check, *args, **kwargs)
+
+
+class CancelButtonWidget(styledButton):
+    def __init__(self, NativeUI, *args, **kwargs):
+        iconpath_cross = os.path.join(NativeUI.iconpath, "times-solid.png")
+        super().__init__(NativeUI, "red", iconpath_cross, *args, **kwargs)
+
+
+class OkSendButtonWidget(
+    styledButton
+):  # chose QWidget over QDialog family because easier to modify
+    def __init__(self, NativeUI, *args, **kwargs):
+        iconpath_play = os.path.join(NativeUI.iconpath, "play-solid.png")
+        super().__init__(NativeUI, "green", iconpath_play, *args, **kwargs)
