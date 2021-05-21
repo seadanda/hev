@@ -74,35 +74,39 @@ class NativeUI(HEVClient, QMainWindow):
     Subclassed HEVClient for client logic, and QMainWindow for display.
 
     Extends its base classes with the following methods:
-
-    __define_connections - connects widget signals and slots to allow the UI to
+    - __define_connections - connects widget signals and slots to allow the UI to
     function. Called once during initialisation.
 
-    __find icons - locate the directory containing icons used for UI buttons and
+    - __find icons - locate the directory containing icons used for UI buttons and
     displays. Called once during initialisation.
 
-    __find_configs - locate the directory containing config files used by the UI. Called
+    - __find_configs - locate the directory containing config files used by the UI. Called
     once during initialisation.
 
-    set_current_mode - TODO: deprecated, remove.
+    - set_current_mode - TODO: deprecated, remove.
 
-    get_updates - Overrides the placeholder get_updates method of HEVClient. Passes
+    - get_updates - Overrides the placeholder get_updates method of HEVClient. Passes
     payloads to handlers. Called whenever a new payload is read in.
 
-    change_page (Slot) - switches the page shown in the page_stack. Called whent the
+    - change_page (Slot) - switches the page shown in the page_stack. Called whent the
     page buttons are pressed or whenever a popup needs to show a specific page.
 
-    q_send_cmd (Slot) - send a command to the MCU.
+    - q_send_cmd (Slot) - send a command to the MCU.
 
-    q_ack_alarm (Slot) - acknowledge a recieved alarm.
+    - q_ack_alarm (Slot) - acknowledge a recieved alarm.
 
-    q_send_personal (Slot) - send personal information to the MCU.
+    - q_send_personal (Slot) - send personal information to the MCU.
+
+    Also adds the following keyword arguments:
+    - resolution
+    - skip_startup
+    - language
     """
 
     def __init__(
         self,
-        resolution: list,
         *args,
+        resolution: list = [1920, 1080],
         skip_startup: bool = False,
         language: str = "english",
         **kwargs,
@@ -126,15 +130,21 @@ class NativeUI(HEVClient, QMainWindow):
             for key in self.colors:
                 self.colors[key] = QColor.fromRgb(*self.colors[key])
 
+        # Import the specified language config file
         language_config = os.path.join(config_path, "text_%s.json" % language)
-        if not os.path.isfile(language_config):
+        if not language_config in self.localisation_files:
             logging.error(
-                "No config file for %s language (expected file at %s)",
-                (language, language_config),
+                "No config file for %s language (expected file at %s), defaulting to %s",
+                (language, language_config, self.localisation_files[0]),
             )
-            language_config = os.path.join(config_path, "text_english.json")
+            language_config = self.localisation_files[0]
         with open(language_config) as infile:
             self.text = json.load(infile)
+        # Reorder localisation_files so that the language used is the first index
+        self.localisation_files.insert(
+            0,
+            self.localisation_files.pop(self.localisation_files.index(language_config)),
+        )
 
         # Set up fonts based on the screen resolution. text_font and value_font are 20
         # and 40px respectively for 1920*1080.
@@ -799,7 +809,7 @@ if __name__ == "__main__":
     # setup pyqtplot widget
     app = QApplication(sys.argv)
     dep = NativeUI(
-        interpret_resolution(command_line_args.resolution),
+        resolution=interpret_resolution(command_line_args.resolution),
         skip_startup=command_line_args.no_startup,
         language=interpret_language(command_line_args.language),
     )
