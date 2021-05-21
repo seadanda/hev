@@ -149,7 +149,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.setParent(None)
 
 
-class confirmPopup(QtWidgets.QWidget):
+class confirmPopup(QtWidgets.QDialog):
     """Popup when a command is confirmed by microcontroller.
     This popup is a frame containing a confirmWidget object for
     each successful command."""
@@ -159,15 +159,26 @@ class confirmPopup(QtWidgets.QWidget):
 
         self.NativeUI = NativeUI
         self.confirmDict = {}
-
         self.vlayout = QtWidgets.QVBoxLayout()
         self.vlayout.setSpacing(0)
         self.vlayout.setMargin(0)
         self.setLayout(self.vlayout)
 
         self.setStyleSheet("background-color:green;")
+        self.location_on_window()
+        self.setWindowFlags(
+            QtCore.Qt.FramelessWindowHint
+            | QtCore.Qt.Dialog
+            | QtCore.Qt.WindowStaysOnTopHint
+        )  # no window title
+
+        self.timer = QtCore.QTimer()
+        self.timer.setInterval(500)  # just faster than 60Hz
+        self.timer.timeout.connect(self.adjustSize)
+        self.timer.start()
 
     def addConfirmation(self, confirmMessage):
+        print('adding confirmation')
         """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
         self.confirmDict[confirmMessage] = confirmWidget(
             self.NativeUI, confirmMessage
@@ -175,9 +186,9 @@ class confirmPopup(QtWidgets.QWidget):
         self.vlayout.addWidget(self.confirmDict[confirmMessage])
         return 0
 
-    # def location_on_window(self):
-    #     screen = QtWidgets.QDesktopWidget().screenGeometry()
-    #     # widget = self.geometry()
-    #     x = screen.width() - screen.width() / 2
-    #     y = 0  # screen.height() - widget.height()
-    #     self.move(x, y)
+    def location_on_window(self):
+        screen = QtWidgets.QDesktopWidget().screenGeometry()
+        # widget = self.geometry()
+        x = screen.width() - screen.width() / 2
+        y = 0  # screen.height() - widget.height()
+        self.move(x, y)

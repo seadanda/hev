@@ -57,7 +57,6 @@ class ModeHandler(PayloadHandler):
                 outdict[key] = target_data[key]
             except KeyError:
                 logging.debug("Invalid key %s in measurement database", key)
-
         self.UpdateModes.emit(outdict)
         return 0
 
@@ -68,7 +67,7 @@ class ModeHandler(PayloadHandler):
         for widget in self.spinDict:
             if (mode in widget) and self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].get_value()
-                setVal = round(setVal, widget.decPlaces)
+                setVal = round(setVal, self.spinDict[widget].decPlaces)
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [
@@ -87,7 +86,7 @@ class ModeHandler(PayloadHandler):
         for widget in self.mainSpinDict:
             if self.mainSpinDict[widget].manuallyUpdated:
                 setVal = self.mainSpinDict[widget].get_value()
-                setVal = round(setVal, widget.decPlaces)
+                setVal = round(setVal, self.mainSpinDict[widget].decPlaces)
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [
@@ -100,13 +99,15 @@ class ModeHandler(PayloadHandler):
         # command sending should occur in handler
         self.commandList = command
 
-        self.OpenPopup.emit(message)
+        self.OpenPopup.emit(self,message)
 
     def sendCommands(self):
         if self.commandList == []:
             a=1
         else:
             for command in self.commandList:
+                print('sending commands')
+                print(command)
                 self.NativeUI.q_send_cmd(*command)
             self.modeSwitched.emit(self.activeMode)
             self.commandSent()
@@ -167,10 +168,8 @@ class ModeHandler(PayloadHandler):
                         spin.simpleSpin.set_value(widget.get_value())
 
     def refresh_main_button_colour(self):
-        print('refreshing main buttons')
         self.manuallyUpdatedBoolDict['CURRENT'] = False
         for spin in self.mainSpinDict:
-            print(spin + 'is ' + str(self.mainSpinDict[spin].manuallyUpdated))
             self.manuallyUpdatedBoolDict['CURRENT'] = self.manuallyUpdatedBoolDict['CURRENT'] or self.mainSpinDict[spin].manuallyUpdated
         for button in self.mainButtonDict:
             self.mainButtonDict[button].setColour(str(int(self.manuallyUpdatedBoolDict['CURRENT'])))

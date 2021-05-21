@@ -63,12 +63,11 @@ class AlarmWidget(QtWidgets.QWidget):
         # self.timer.setInterval(500)  # just faster than 60Hz
         # self.timer.timeout.connect(self.checkAlarm)
         # self.timer.start()
-        # self.installEventFilter(self)
+        self.installEventFilter(self)
 
     def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseButtonPress):
-            self.NativeUI.leftBar.tab_page_buttons.button_alarms.click()
-            self.NativeUI.alarms_view.alarmButton.click()
+            self.NativeUI.widgets.page_buttons.alarms_button.click()
         return False
 
     def get_priority(self):
@@ -225,21 +224,14 @@ class AlarmExtrasWidget(QtWidgets.QWidget):
         self.setLayout(self.layout)
         self.setStyleSheet("background-color:red;")
             #self.priority = "PRIORITY_LOW"
+        self.installEventFilter(self)
 
     def update_text(self, num):
         self.textLabel.setText(str(num)+ ' More Alarms')
-        #self.code =
-
-        # self.timer = QtCore.QTimer()
-        # self.timer.setInterval(500)  # just faster than 60Hz
-        # self.timer.timeout.connect(self.checkAlarm)
-        # self.timer.start()
-        # self.installEventFilter(self)
 
     def eventFilter(self, source, event):
         if (event.type() == QtCore.QEvent.MouseButtonPress):
-            self.NativeUI.leftBar.tab_page_buttons.button_alarms.click()
-            self.NativeUI.alarms_view.alarmButton.click()
+            self.NativeUI.widgets.page_buttons.alarms_button.click()
         return False
 
     def get_priority(self):

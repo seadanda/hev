@@ -61,7 +61,7 @@ from widget_library.ventilator_start_stop_buttons_widget import (
     VentilatorStartStopButtonsWidget,
 )
 from widget_library.line_edit_widget import LabelledLineEditWidget
-
+from global_widgets.global_typeval_popup import TypeValuePopup, AbstractTypeValPopup
 # from widget_library.NativeUI.expert_handler import ExpertHandler
 # from mode_widgets.NativeUI.personal_handler import PersonalHandler
 
@@ -163,24 +163,24 @@ class Widgets:
             attrName = "clinical_spin_" + setting[0][2]
             if len(setting) == 1:
                 self.add_handled_widget(
-                    labelledSpin(NativeUI, setting[0]),
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[0]),
                     attrName + "_lim",
                     NativeUI.clinical_handler,
                 )
             if len(setting) >= 2:
                 self.add_handled_widget(
-                    labelledSpin(NativeUI, setting[0]),
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[0]),
                     attrName + "_min",
                     NativeUI.clinical_handler,
                 )
                 self.add_handled_widget(
-                    labelledSpin(NativeUI, setting[-1]),
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[-1]),
                     attrName + "_max",
                     NativeUI.clinical_handler,
                 )
                 if len(setting) == 3:
                     self.add_handled_widget(
-                        labelledSpin(NativeUI, setting[1]),
+                        labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[1]),
                         attrName + "_set",
                         NativeUI.clinical_handler,
                     )
@@ -209,8 +209,9 @@ class Widgets:
         for setting in modeDict["settings"]:
             if setting[0] in modeDict["mainPageSettings"]:
                 attrName = "CURRENT_" + setting[2]
+                #setting[3] = setting[3].replace('SET_TARGET_', 'SET_TARGET_CURRENT')
                 self.add_handled_widget(
-                    SpinButton(NativeUI, setting), attrName, NativeUI.mode_handler
+                    SpinButton(NativeUI, NativeUI.typeValPopupNum,setting), attrName, NativeUI.mode_handler
                 )
 
         self.add_handled_widget(
@@ -237,13 +238,13 @@ class Widgets:
                     ]
                     if startup == "_startup":
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, targettedSetting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,targettedSetting),
                             "spin_" + attrName,
                             self.startup_handler,
                         )
                     else:
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, targettedSetting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,targettedSetting),
                             "spin_" + attrName,
                             NativeUI.mode_handler,
                         )
@@ -290,26 +291,26 @@ class Widgets:
                 if setting[0] in textBoxes:
                     if startup == "startup_":
                         self.add_handled_widget(
-                            LabelledLineEditWidget(NativeUI, setting),
+                            LabelledLineEditWidget(NativeUI, NativeUI.typeValPopupAlpha, setting),
                             "text_" + startup + attrName,
                             self.startup_handler,
                         )
                     else:
                         self.add_handled_widget(
-                            LabelledLineEditWidget(NativeUI, setting),
+                            LabelledLineEditWidget(NativeUI, NativeUI.typeValPopupAlpha, setting),
                             "text_" + startup + attrName,
                             NativeUI.personal_handler,
                         )
                 else:
                     if startup == "startup_":
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, setting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting),
                             "spin_" + startup + attrName,
                             self.startup_handler,
                         )
                     else:
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, setting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting),
                             "spin_" + startup + attrName,
                             NativeUI.personal_handler,
                         )
@@ -329,6 +330,7 @@ class Widgets:
         )
 
         ##### Settings Tab: Expert and Charts tabs
+        self.add_widget(AbstractTypeValPopup(NativeUI,'numeric'), 'expert_password_widget')
 
         # Expert Tab
         # self.expert_confirm_popup = SetConfirmPopup(NativeUI)
@@ -343,7 +345,7 @@ class Widgets:
             for setting in controlDict[key]:
                 attrName = "expert_spin_" + setting[2]
                 self.add_handled_widget(
-                    labelledSpin(NativeUI, setting), attrName, NativeUI.expert_handler
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting), attrName, NativeUI.expert_handler
                 )
 
         self.add_handled_widget(

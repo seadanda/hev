@@ -48,3 +48,34 @@ class NumberpadWidget(QtWidgets.QWidget):
     def buttonPressed(self,symbol: str):
         """Emit a signal with the button's character"""
         self.numberPressed.emit(symbol)
+
+
+class AlphapadWidget(QtWidgets.QWidget):
+    """A widget with digits 0-9, a decimal point '.', and a backspace '<'.
+    Has one signal for any button pressed, the corresponding character is emitted with the signal.
+    """
+    numberPressed = QtCore.Signal(str)
+    def __init__(self, NativeUI, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        symbol_list = ['Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X','C','V','B','N','M','<']
+        newLineCharacters = ['P','L']
+        button_dict = {}
+        grid = QtWidgets.QGridLayout()
+        ncolumns = 3
+        i = 0
+        j=0
+        for symbol in symbol_list:
+            button_dict[symbol] = NumberpadButton(NativeUI, symbol)
+            button_dict[symbol].pressed.connect(lambda j=symbol: self.buttonPressed(j))
+            grid.addWidget(button_dict[symbol], j, i)
+            i = i+1
+            if symbol in newLineCharacters:
+                i = 0
+                j = j + 1
+
+        self.setLayout(grid)
+
+    def buttonPressed(self,symbol: str):
+        """Emit a signal with the button's character"""
+        self.numberPressed.emit(symbol)

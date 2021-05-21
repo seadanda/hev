@@ -28,7 +28,7 @@ from global_widgets.global_spinbox import signallingSpinBox
 class SpinButton(QtWidgets.QFrame):
     """TO DO: Implement command sending"""
 
-    def __init__(self, NativeUI, infoArray):
+    def __init__(self, NativeUI, popup, infoArray):
         super().__init__()
 
         self.manuallyUpdated = False
@@ -38,9 +38,12 @@ class SpinButton(QtWidgets.QFrame):
             self.label_text, self.units, self.tag, self.cmd_type, self.cmd_code, self.min, self.max, self.initVal, self.step, self.decPlaces = (
                 infoArray
             )
-        # self.cmd_type = settings[3]
-        # self.cmd_code = settings[4]
-        # self.tag = settings[2]
+        #print('before')
+        #print(self.cmd_type)
+        self.cmd_type = self.cmd_type.replace('SET_TARGET_','SET_TARGET_CURRENT')
+        #self.cmd_type = settings[3]
+        #self.cmd_code = settings[4]
+        #self.tag = settings[2]
         self.NativeUI = NativeUI
 
         self.layout = QtWidgets.QVBoxLayout()
@@ -64,15 +67,7 @@ class SpinButton(QtWidgets.QFrame):
         self.layout.addWidget(self.label)
         # self.setFont(NativeUI.text_font)
 
-        self.simpleSpin = signallingSpinBox(
-            NativeUI,
-            self.label_text,
-            self.min,
-            self.max,
-            self.initVal,
-            self.step,
-            self.decPlaces,
-        )
+        self.simpleSpin = signallingSpinBox(NativeUI, popup, self.label_text, self.min, self.max, self.initVal, self.step, self.decPlaces)
         self.simpleSpin.lineEdit().setStyleSheet("border:blue;")
         #  self.simpleSpin.setFixedHeight(100)
         #  self.simpleSpin.setFont(NativeUI.text_font)
@@ -131,7 +126,7 @@ class SpinButton(QtWidgets.QFrame):
                 self.simpleSpin.setValue(newVal[self.tag])
                 self.setTextColour(1)
             else:
-                if int(self.simpleSpin.value()) == int(newVal[self.tag]):
+                if round(self.simpleSpin.value(),self.decPlaces) == round(newVal[self.tag],self.decPlaces):
                     self.manuallyUpdated = False
                     self.setTextColour(1)
 
@@ -142,6 +137,7 @@ class SpinButton(QtWidgets.QFrame):
         self.simpleSpin.setValue(value)
         self.manuallyUpdated = True
         self.simpleSpin.programmaticallyChanged.emit()
+
 
     def manualChanged(self):
         print("manually changed" + self.label.text())
@@ -171,26 +167,3 @@ class SpinButton(QtWidgets.QFrame):
         self.simpleSpin.setFont(font)
         return 0
 
-        # targets = self.NativeUI.get_targets_db()
-        # if targets == {}:
-        #     return
-        # for spin, label in zip(self.__spins, self.__labels):
-        #     if spin.doubleSpin.value() != float(targets[label]):
-        #         spin.setTextColour("0")
-        #     else:
-        #         spin.setTextColour("2")
-
-    @QtCore.Slot(dict)
-    def localise_text(self, text: dict) -> int:
-        self.spinDict["Inhale Pressure"].label.setText(
-            text["spin_box_label_Inhale_Pressure"]
-        )
-        self.spinDict["Respiratory Rate"].label.setText(
-            text["spin_box_label_Respiratory_Rate"]
-        )
-        self.spinDict["Inhale Time"].label.setText(text["spin_box_label_Inhale_Time"])
-        self.spinDict["IE Ratio"].label.setText(text["spin_box_label_IE_Ratio"])
-        self.spinDict["Percentage O2"].label.setText(
-            text["spin_box_label_Percentage_O2"]
-        )
-        return 0
