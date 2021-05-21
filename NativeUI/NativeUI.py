@@ -99,7 +99,7 @@ class NativeUI(HEVClient, QMainWindow):
     q_send_personal (Slot) - send personal information to the MCU.
     """
 
-    def __init__(self, resolution: list, *args, **kwargs):
+    def __init__(self, resolution: list, *args, skip_startup=False, **kwargs):
         super().__init__(*args, **kwargs)
 
         # Set the resolution of the display window
@@ -208,7 +208,10 @@ class NativeUI(HEVClient, QMainWindow):
         self.__define_connections()
 
         # Update page buttons to match the shown view
-        self.display_stack.setCurrentWidget(self.startupWidget)
+        if skip_startup:
+            self.display_stack.setCurrentWidget(self.main_display)
+        else:
+            self.display_stack.setCurrentWidget(self.startupWidget)
         self.widgets.page_buttons.buttons[0].on_press()
 
     def __find_localisation_files(self, config_path: str) -> list:
@@ -300,15 +303,6 @@ class NativeUI(HEVClient, QMainWindow):
             lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
 
-        # self.widgets.skipButton.pressed.connect(
-        #     self.widgets.startup_handler.handle_sendbutton
-        # )
-        # self.widgets.backButton.pressed.connect(
-        #     lambda i=self.widgets.startup_stack: self.widgets.startup_handler.handle_backbutton(
-        #         i
-        #     )
-        # )
-
         # Battery Display should update when we get battery info
         self.battery_handler.UpdateBatteryDisplay.connect(
             self.widgets.battery_display.update_status
@@ -389,10 +383,6 @@ class NativeUI(HEVClient, QMainWindow):
             spin_widget.simpleSpin.manualChanged.connect(
                 lambda i=key: self.mode_handler.handle_manual_change(i)
             )
-            # if 'clinical' in key:
-            #     spin_widget.simpleSpin.manualChanged.connect(
-            #         lambda i=spin_widget, j=key: self.clinical_handler.setpoint_changed(i,j)
-            #     )
 
         for key, spin_widget in self.mode_handler.mainSpinDict.items():
             spin_widget.simpleSpin.manualChanged.connect(
@@ -518,8 +508,21 @@ class NativeUI(HEVClient, QMainWindow):
         # self.timer.timeout.connect(self.expert_handler.update_values)
         self.timer.start()
 
-        # self.widgets.startup_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
-        # self.mode_handler.settingToggle.connect(self.widgets.spin_buttons.setStackWidget)
+        # Localisation needs to update widgets
+        for widget in [
+            self.widgets.normal_measurements,
+            self.widgets.detailed_measurements,
+            self.widgets.normal_plots,
+            self.widgets.detailed_plots,
+            self.widgets.circle_plots,
+            self.widgets.ventilator_start_stop_buttons_widget,
+            # self.widgets.charts_widget,
+            # self.widgets.spin_buttons,
+            # self.widgets.mode_personal_tab,
+        ]:
+            self.widgets.localisation_button.SetLocalisation.connect(
+                widget.localise_text
+            )
 
         self.alarm_handler.UpdateAlarm.connect(self.alarm_handler.handle_newAlarm)
         self.alarm_handler.NewAlarm.connect(self.widgets.alarm_popup.addAlarm)
@@ -663,6 +666,12 @@ def parse_command_line_arguments() -> argparse.Namespace:
     parser.add_argument(
         "-r", "--resolution", action="store", dest="resolution", type=str
     )
+    parser.add_argument(
+        "--no-startup",
+        action="store_true",
+        default=False,
+        help="Run the UI without the startup sequence",
+    )
     return parser.parse_args()
 
 
@@ -735,12 +744,14 @@ def set_window_size(window, resolution: str = None, windowed: bool = False) -> i
 if __name__ == "__main__":
     # parse args and setup logging
     command_line_args = parse_command_line_arguments()
-    print(command_line_args)
     set_logging_level(command_line_args.debug)
 
     # setup pyqtplot widget
     app = QApplication(sys.argv)
-    dep = NativeUI(interpret_resolution(command_line_args.resolution))
+    dep = NativeUI(
+        interpret_resolution(command_line_args.resolution),
+        skip_startup=command_line_args.no_startup,
+    )
     set_window_size(
         dep,
         resolution=command_line_args.resolution,

@@ -131,6 +131,30 @@ class TimePlotsWidget(QtWidgets.QWidget):
             plot.enableAutoRange("y", True)
         return 0
 
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict) -> int:
+        """
+        Update the text displayed on the axis' and legend of time plots.
+        """
+        self.pressure_plot.setLabel("left", text["plot_axis_label_pressure"])
+        self.pressure_plot.legend.clear()
+        self.pressure_plot.legend.addItem(
+            self.pressure_line, text["plot_line_label_pressure"]
+        )
+
+        self.flow_plot.setLabel("left", text["plot_axis_label_flow"])
+        self.flow_plot.legend.clear()
+        self.flow_plot.legend.addItem(self.flow_line, text["plot_line_label_flow"])
+
+        self.volume_plot.setLabel("left", text["plot_axis_label_volume"])
+        self.volume_plot.setLabel("bottom", text["plot_axis_label_time"])
+        self.volume_plot.legend.clear()
+        self.volume_plot.legend.addItem(
+            self.volume_line, text["plot_line_label_volume"]
+        )
+
+        return 0
+
 
 class CirclePlotsWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, port=54322, *args, **kwargs):
@@ -238,6 +262,34 @@ class CirclePlotsWidget(QtWidgets.QWidget):
         )
         return 0
 
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict) -> int:
+        """
+        Update the text displayed on the axis' and legend of circle plots.
+        """
+        self.pressure_flow_plot.setLabel("left", text["plot_axis_label_pressure"])
+        self.pressure_flow_plot.setLabel("bottom", text["plot_axis_label_flow"])
+        self.pressure_flow_plot.legend.clear()
+        self.pressure_flow_plot.legend.addItem(
+            self.pressure_flow_line, text["plot_line_label_pressure_flow"]
+        )
+
+        self.flow_volume_plot.setLabel("left", text["plot_axis_label_flow"])
+        self.flow_volume_plot.setLabel("bottom", text["plot_axis_label_volume"])
+        self.flow_volume_plot.legend.clear()
+        self.flow_volume_plot.legend.addItem(
+            self.flow_volume_line, text["plot_line_label_flow_volume"]
+        )
+
+        self.volume_pressure_plot.setLabel("left", text["plot_axis_label_volume"])
+        self.volume_pressure_plot.setLabel("bottom", text["plot_axis_label_pressure"])
+        self.volume_pressure_plot.legend.clear()
+        self.volume_pressure_plot.legend.addItem(
+            self.volume_pressure_line, text["plot_line_label_volume_pressure"]
+        )
+
+        return 0
+
 
 class ChartsPlotWidget(QtWidgets.QWidget):
     def __init__(self, port=54322, *args, colors: dict = {}, **kwargs):
@@ -334,4 +386,17 @@ class ChartsPlotWidget(QtWidgets.QWidget):
         Hide the specified line
         """
         self.lines[key].setPen(pg.mkPen(color=(0, 0, 0, 0), width=0))
+        return 0
+
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict) -> int:
+        """
+        Update the text displayed on the axis' and legend of time plots.
+        """
+        self.pressure_plot.setLabel("left", text["plot_axis_label_pressure"])
+        self.pressure_plot.legend.clear()
+        self.pressure_plot.legend.addItem(
+            self.pressure_line, text["plot_line_label_pressure"]
+        )
+
         return 0

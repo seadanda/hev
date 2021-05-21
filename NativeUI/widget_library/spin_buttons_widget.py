@@ -21,7 +21,8 @@ from global_widgets.global_typeval_popup import TypeValuePopup
 # from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
 from global_widgets.global_spinbox import signallingSpinBox
-#from global_widgets.global_send_popup import SetConfirmPopup
+
+# from global_widgets.global_send_popup import SetConfirmPopup
 
 
 class SpinButton(QtWidgets.QFrame):
@@ -57,19 +58,19 @@ class SpinButton(QtWidgets.QFrame):
         self.label.setStyleSheet(
             "color:white;"
             "background-color:" + labelBgColour + ";"
-            ""#border-radius:4px;"
-            ""#border: 2px solid white"
+            ""  # border-radius:4px;"
+            ""  # border: 2px solid white"
         )
         self.label.setAlignment(QtCore.Qt.AlignCenter)
-      #  self.label.setFixedHeight(45)
-      #  self.label.setFont(NativeUI.text_font)
+        #  self.label.setFixedHeight(45)
+        #  self.label.setFont(NativeUI.text_font)
         self.layout.addWidget(self.label)
-        #self.setFont(NativeUI.text_font)
+        # self.setFont(NativeUI.text_font)
 
         self.simpleSpin = signallingSpinBox(NativeUI, popup, self.label_text, self.min, self.max, self.initVal, self.step, self.decPlaces)
         self.simpleSpin.lineEdit().setStyleSheet("border:blue;")
-      #  self.simpleSpin.setFixedHeight(100)
-      #  self.simpleSpin.setFont(NativeUI.text_font)
+        #  self.simpleSpin.setFixedHeight(100)
+        #  self.simpleSpin.setFont(NativeUI.text_font)
 
         boxStyleString = (
             "QDoubleSpinBox{"
@@ -86,7 +87,7 @@ class SpinButton(QtWidgets.QFrame):
             "    color:red;"
             "}"
         )
-       # self.setFont(NativeUI.text_font)
+        # self.setFont(NativeUI.text_font)
         upButtonStyleString = "QDoubleSpinBox::up-button{" "height:50;" "width:50;" "}"
 
         # upButtonPressedStyleString = (
@@ -109,11 +110,12 @@ class SpinButton(QtWidgets.QFrame):
         self.simpleSpin.manualChanged.connect(self.manualChanged)
         self.simpleSpin.programmaticallyChanged.connect(self.manualChanged)
         self.simpleSpin.setSizePolicy(
-            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+            QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed
+        )
         self.layout.addWidget(self.simpleSpin)
         self.setLayout(self.layout)
         self.setFixedWidth(300)
-        #self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px;")
+        # self.setStyleSheet("border:2px solid white; border-radius:4px; padding:0px;")
 
     def update_value(self, db):
         newVal = db
@@ -138,7 +140,7 @@ class SpinButton(QtWidgets.QFrame):
 
 
     def manualChanged(self):
-        print('manually changed' + self.label.text())
+        print("manually changed" + self.label.text())
         """Called when user manually makes a change. Stops value from updating and changes colour"""
         self.manuallyUpdated = True
         self.setTextColour(2)
