@@ -99,7 +99,14 @@ class NativeUI(HEVClient, QMainWindow):
     q_send_personal (Slot) - send personal information to the MCU.
     """
 
-    def __init__(self, resolution: list, *args, skip_startup=False, **kwargs):
+    def __init__(
+        self,
+        resolution: list,
+        *args,
+        skip_startup: bool = False,
+        language: str = "english",
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         # Set the resolution of the display window
@@ -118,7 +125,15 @@ class NativeUI(HEVClient, QMainWindow):
             self.colors = json.load(infile)
             for key in self.colors:
                 self.colors[key] = QColor.fromRgb(*self.colors[key])
-        with open(os.path.join(config_path, "text_english.json")) as infile:
+
+        language_config = os.path.join(config_path, "text_%s.json" % language)
+        if not os.path.isfile(language_config):
+            logging.error(
+                "No config file for %s language (expected file at %s)",
+                (language, language_config),
+            )
+            language_config = os.path.join(config_path, "text_english.json")
+        with open(language_config) as infile:
             self.text = json.load(infile)
 
         # Set up fonts based on the screen resolution. text_font and value_font are 20
@@ -664,6 +679,20 @@ def parse_command_line_arguments() -> argparse.Namespace:
         default=False,
         help="Run the UI without the startup sequence",
     )
+    parser.add_argument(
+        "-l",
+        "--language",
+        action="store",
+        dest="language",
+        default="English",
+        type=str,
+        help="""
+            Set the language for the UI from the following list:\n
+            Language     Recognised Values\n
+            English      e, E, english, English\n
+            Portugues    p, P, portugues, Portugues
+        """,
+    )
     return parser.parse_args()
 
 
@@ -681,6 +710,27 @@ def set_logging_level(debug_level: int) -> int:
     else:
         logging.getLogger().setLevel(logging.DEBUG)
     return 0
+
+
+def interpret_language(input_string: str) -> str:
+    """
+    Convert the value given for the language CLA to one that NativeUI can interpret.
+    """
+    default_language = "English"
+    if input_string is None:
+        return default_language
+
+    keys_english = ["e", "E", "english", "English"]
+    keys_portugues = ["p", "P", "portugues", "Portugues", "portuguese", "Portuguese"]
+    if input_string in keys_english:
+        return "english"
+    if input_string in keys_portugues:
+        return "portuguese"
+    logging.error(
+        "Unrecognised language value %s, defaulting to %s",
+        (input_string, default_language),
+    )
+    return default_language
 
 
 def interpret_resolution(input_string: str) -> list:
@@ -743,6 +793,7 @@ if __name__ == "__main__":
     dep = NativeUI(
         interpret_resolution(command_line_args.resolution),
         skip_startup=command_line_args.no_startup,
+        language=interpret_language(command_line_args.language),
     )
     set_window_size(
         dep,
