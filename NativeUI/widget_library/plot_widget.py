@@ -308,13 +308,7 @@ class ChartsPlotWidget(QtWidgets.QWidget):
         # Add the plot axes to the graph widget
         self.display_plot = self.graph_widget.addPlot()
         self.display_plot.setLabel("left", "????", **labelStyle)
-        self.display_plot.setLabel(
-            "bottom",
-            "????",
-            **labelStyle
-            #            labels={"left": "????", "bottom": "????"}
-        )
-
+        self.display_plot.setLabel("bottom", "????", **labelStyle)
         self.display_plot.getAxis("left").setTextPen("w")
         self.display_plot.getAxis("bottom").setTextPen("w")
 
@@ -392,11 +386,13 @@ class ChartsPlotWidget(QtWidgets.QWidget):
     def localise_text(self, text: dict) -> int:
         """
         Update the text displayed on the axis' and legend of time plots.
+
+        Currently a placeholder.
         """
-        self.pressure_plot.setLabel("left", text["plot_axis_label_pressure"])
-        self.pressure_plot.legend.clear()
-        self.pressure_plot.legend.addItem(
-            self.pressure_line, text["plot_line_label_pressure"]
-        )
+        self.display_plot.setLabel("left", text["plot_axis_label_pressure"])
+        # self.display_plot.legend.clear()
+        # self.display_plot.legend.addItem(
+        #     self.pressure_line, text["plot_line_label_pressure"]
+        # )
 
         return 0

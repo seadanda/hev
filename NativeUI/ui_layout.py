@@ -83,13 +83,18 @@ class Layout:
         # Stack the data collection pages.
         self.widgets.add_widget(
             SwitchableStackWidget(
-                self.NativeUI,
+                self.NativeUI.colors,
+                self.NativeUI.text,
                 [
                     self.layout_mode_startup(),
                     self.layout_mode_personal("startup_", False),
                     self.layout_startup_confirmation(),
                 ],
-                ["Mode Settings", "Personal Settings", "Summary"],
+                [
+                    "button_label_modes_mode",
+                    "button_label_modes_personal",
+                    "button_label_modes_summary",
+                ],
             ),
             "startup_stack",
         )
@@ -245,12 +250,10 @@ class Layout:
         # Put the normal and detailed views into a switchable stack
         self.widgets.add_widget(
             SwitchableStackWidget(
-                self.NativeUI,
+                self.NativeUI.colors,
+                self.NativeUI.text,
                 [tab_main_normal, tab_main_detailed],
-                [
-                    self.NativeUI.text["button_label_main_normal"],
-                    self.NativeUI.text["button_label_main_detailed"],
-                ],
+                ["button_label_main_normal", "button_label_main_detailed"],
             ),
             "plot_stack",
         )
@@ -289,13 +292,18 @@ class Layout:
         alarm_table_tab_widgets = [self.widgets.alarm_table]
 
         page_alarms = SwitchableStackWidget(
-            self.NativeUI,
+            self.NativeUI.colors,
+            self.NativeUI.text,
             [
                 self.layout_tab_alarm_list(alarm_tab_widgets),
                 self.layout_tab_alarm_table(alarm_table_tab_widgets),
                 self.layout_tab_clinical_limits(),
             ],
-            ["List of Alarms", "Alarm Table", "Clinical Limits"],
+            [
+                "button_label_alarms_list",
+                "button_label_alarms_table",
+                "button_label_alarms_clinical",
+            ],
         )
         page_alarms.setFont(self.NativeUI.text_font)
         return page_alarms
@@ -325,9 +333,14 @@ class Layout:
 
         # Create the stack
         page_settings = SwitchableStackWidget(
-            self.NativeUI,
+            self.NativeUI.colors,
+            self.NativeUI.text,
             [self.layout_settings_expert(), tab_charts, tab_info],
-            ["Expert", "Charts", "Info"],
+            [
+                "button_label_settings_expert",
+                "button_label_settings_charts",
+                "button_label_settings_info",
+            ],
         )
         page_settings.setFont(self.NativeUI.text_font)
         self.widgets.add_widget(page_settings, "setting_stack")
@@ -347,12 +360,13 @@ class Layout:
         # )
 
         modes_stack = SwitchableStackWidget(
-            self.NativeUI,
+            self.NativeUI.colors,
+            self.NativeUI.text,
             [
                 self.layout_mode_settings(True),
                 self.layout_mode_personal("", True),
             ],  # self.widgets.mode_personal_tab],
-            ["Mode Settings", "Personal Settings"],
+            ["button_label_modes_mode", "button_label_modes_personal"],
         )
         modes_stack.setFont(self.NativeUI.text_font)
         self.widgets.add_widget(modes_stack, "modes_stack")
@@ -477,8 +491,10 @@ class Layout:
             )
 
         page_modes = SwitchableStackWidget(
-            self.NativeUI, mode_pages, self.NativeUI.modeList
+            self.NativeUI.colors, self.NativeUI.text, mode_pages, self.NativeUI.modeList
         )
+        self.widgets.add_widget(page_modes, "mode_settings_stack")
+
         page_modes.setFont(self.NativeUI.text_font)
         return page_modes
 
@@ -555,9 +571,10 @@ class Layout:
             )
 
         mode_stack = SwitchableStackWidget(
-            self.NativeUI, mode_pages, self.NativeUI.modeList
+            self.NativeUI.colors, self.NativeUI.text, mode_pages, self.NativeUI.modeList
         )
         mode_stack.setFont(self.NativeUI.text_font)
+        self.widgets.add_widget(mode_stack, "mode_settings_stack_startup")
 
         hRadioLayout = QtWidgets.QHBoxLayout()
         for mode in self.NativeUI.modeList:
