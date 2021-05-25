@@ -7,6 +7,9 @@ Command-line arguments:
 -d, --debug      : set the level of debug output.Include once for INFO, twice for DEBUG
 -w, --windowed   : run the user interface in windowed mode.
 -r, --resolution : set the window size in pixels. E.g. -r 1920x1080
+--no-startup     : start the UI without going through the calibration startup sequence.
+-l, --language   : set the initial language for the UI (can later be set within the
+                   interface). Defaults to English.
 """
 
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
