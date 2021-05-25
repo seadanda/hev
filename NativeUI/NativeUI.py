@@ -327,12 +327,18 @@ class NativeUI(HEVClient, QMainWindow):
                 )
             )
 
-        # TODO: command sending
+        # Startup next and skip buttons should move from the startup widget to the main
+        # display
         self.widgets.nextButton.pressed.connect(
             lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
         self.widgets.skipButton.pressed.connect(
             lambda: self.display_stack.setCurrentWidget(self.main_display)
+        )
+
+        # Startup next button should send the ventilator start command.
+        self.widgets.nextButton.pressed.connect(
+            lambda: self.q_send_cmd("GENERAL", "START")
         )
 
         # Battery Display should update when we get battery info
