@@ -30,6 +30,7 @@ class SetConfirmPopup(QtWidgets.QDialog):
     """Popup called when user wants to send new values to microcontroller.
     This popup shows changes and asks for confirmation"""
 
+    # a signal for each handler, so the UI knows which values were updated
     ExpertSend = QtCore.Signal()
     ModeSend = QtCore.Signal()
     PersonalSend = QtCore.Signal()
@@ -41,6 +42,7 @@ class SetConfirmPopup(QtWidgets.QDialog):
         self.NativeUI = NativeUI
         self.handler = None
 
+        # list widget displays the changes to be sent to MCU in human readable way
         self.listWidget = QtWidgets.QListWidget()
         self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -61,18 +63,19 @@ class SetConfirmPopup(QtWidgets.QDialog):
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
-        # self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
-        # self.setWindowOpacity(0.5)
+
 
     def populatePopup(self, handlerWidget, messageList):
+        """One popup is used for all the handlers. It is populated when called by a particular handler"""
         self.handler = handlerWidget
-        self.clearPopup()
+        self.listWidget.clear()
         if messageList == []:
             messageList = ["no values were set"]
         for item in messageList:
             listItem = QtWidgets.QListWidgetItem(item)
             listItem.setFlags(QtCore.Qt.NoItemFlags)
             self.listWidget.addItem(listItem)
+        # adjust size according to list contents
         self.listWidget.setFixedHeight(
             self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
         )
@@ -82,14 +85,10 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
         self.listWidget.update()
         self.update()
-
-    def clearPopup(self):
-        self.listWidget.clear()
-        self.commandList = []
+        return 0
 
     def ok_button_pressed(self):
-        """Send commands when ok button is clicked"""
-        # self.parentTemplate.liveUpdating = True
+        """Emit signal to connect with handler corresponding to editted values."""
         if self.handler is None:
             logging.error("Popup ok_button_pressed called before popupatePopup")
             return 1
@@ -114,6 +113,8 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
 
 class confirmWidget(QtWidgets.QWidget):
+    """A widget displaying an individual command confirmation from the MCU. Is contained in confirmPopup"""
+
     def __init__(self, NativeUI, confirmMessage, *args, **kwargs):
         super(confirmWidget, self).__init__(*args, **kwargs)
         self.hlayout = QtWidgets.QHBoxLayout()
@@ -137,16 +138,18 @@ class confirmWidget(QtWidgets.QWidget):
         self.setLayout(self.hlayout)
         self.setFixedHeight(50)
 
+        # create timer to handle timeout
         self.timer = QtCore.QTimer()
         self.timer.setInterval(10000)
         self.timer.timeout.connect(self.confirmTimeout)
         self.timer.start()
 
     def confirmTimeout(self):
+        """Widget should expire after a defined time"""
         self.parent().confirmDict.pop(
-            self.confirmMessage.replace("/", "_").replace("-", "_")
+            self.confirmMessage.replace("/", "_").replace("-", "_") # - and / are not used in dictionary keys
         )
-        self.setParent(None)
+        self.setParent(None) # delete self
 
 
 class confirmPopup(QtWidgets.QDialog):
@@ -173,12 +176,11 @@ class confirmPopup(QtWidgets.QDialog):
         )  # no window title
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(500)  # just faster than 60Hz
-        self.timer.timeout.connect(self.adjustSize)
+        self.timer.setInterval(500)
+        self.timer.timeout.connect(self.adjustSize) # container needs to adjust to a new number of confirmWidgets
         self.timer.start()
 
     def addConfirmation(self, confirmMessage):
-        print('adding confirmation')
         """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
         self.confirmDict[confirmMessage] = confirmWidget(
             self.NativeUI, confirmMessage
@@ -187,8 +189,10 @@ class confirmPopup(QtWidgets.QDialog):
         return 0
 
     def location_on_window(self):
+        """Places confirmWidgets at the top center of the screen"""
         screen = QtWidgets.QDesktopWidget().screenGeometry()
         # widget = self.geometry()
         x = screen.width() - screen.width() / 2
         y = 0  # screen.height() - widget.height()
         self.move(x, y)
+        return 0

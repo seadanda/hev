@@ -140,7 +140,6 @@ class SpinButton(QtWidgets.QFrame):
 
 
     def manualChanged(self):
-        print("manually changed" + self.label.text())
         """Called when user manually makes a change. Stops value from updating and changes colour"""
         self.manuallyUpdated = True
         self.setTextColour(2)

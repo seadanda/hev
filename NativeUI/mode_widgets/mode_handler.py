@@ -76,6 +76,9 @@ class ModeHandler(PayloadHandler):
                         setVal,
                     ]
                 )
+        if isinstance(self.buttonDict[key], OkSendButtonWidget):
+            message.append("change mode to " + str(mode))
+            command.append(["SET_MODE", mode.replace("/", "_").replace("-", "_")])
         # create a signal emitting message, command, handler identifier - in nativeui connect to a popup widget
         # command sending should occur in handler
         self.commandList = command
@@ -113,6 +116,20 @@ class ModeHandler(PayloadHandler):
             self.commandSent()
         return 0
 
+    def handle_cancel_pressed(self, buttonMode):
+        for widget in self.spinDict:
+            if buttonMode in widget:
+                self.spinDict[widget].manuallyUpdated = False
+        if buttonMode == self.NativeUI.currentMode:
+            print('modes match ')
+            for widget in self.mainSpinDict:
+                self.mainSpinDict[widget].manuallyUpdated = False
+        else:
+            print('do nothing in clinical')
+        self.active_payload()
+        self.refresh_button_colour()
+        self.refresh_main_button_colour()
+
     def commandSent(self):
         self.commandList = []
         for widget in self.spinDict:
@@ -127,7 +144,6 @@ class ModeHandler(PayloadHandler):
         self.refresh_main_button_colour()
 
     def handle_manual_change(self, changed_spin_key):
-        print('handle manual change')
         self.active_payload()
         self.refresh_button_colour()
         self.refresh_main_button_colour()

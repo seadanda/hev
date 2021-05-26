@@ -43,8 +43,10 @@ class AlarmWidget(QtWidgets.QWidget):
         self.layout.addWidget(iconLabel)
 
         self.textLabel = QtWidgets.QLabel()
-        alarmLevel = self.alarmPayload["alarm_type"].replace("PRIORITY_", "")
-        self.textLabel.setText(alarmLevel + " - " + self.alarmPayload["alarm_code"])
+        alarmLevel = self.alarmPayload["alarm_type"]  # .replace('PRIORITY_', '')
+        self.textLabel.setText(
+            self.alarmPayload["alarm_code"] + " - (" + alarmLevel + ")"
+        )
         self.textLabel.setFixedWidth(NativeUI.alarm_popup_width)
         self.textLabel.setAlignment(QtCore.Qt.AlignCenter)
         self.textLabel.setFont(NativeUI.text_font)
