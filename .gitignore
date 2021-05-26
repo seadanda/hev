@@ -19,6 +19,8 @@ env/
 ansible/playbooks/hosts
 .idea
 scratch_*
+*/*/startup_config.json
+NativeUI/configs/startup_config.json
 
 # python virtual env created using ansible
 .hev_env

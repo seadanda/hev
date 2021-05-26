@@ -14,6 +14,12 @@ __status__ = "Prototype"
 
 from PySide2 import QtWidgets, QtGui, QtCore
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+from widget_library.expert_handler import ExpertHandler
+from mode_widgets.personal_handler import PersonalHandler
+from mode_widgets.mode_handler import ModeHandler
+from mode_widgets.clinical_handler import ClinicalHandler
+import logging
+
 
 # from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 import sys
@@ -24,27 +30,20 @@ class SetConfirmPopup(QtWidgets.QDialog):
     """Popup called when user wants to send new values to microcontroller.
     This popup shows changes and asks for confirmation"""
 
+    ExpertSend = QtCore.Signal()
+    ModeSend = QtCore.Signal()
+    PersonalSend = QtCore.Signal()
+    ClinicalSend = QtCore.Signal()
+
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # self.setStyleSheet("background-color:rgba(255,0,255,50%);color:rgb(0,255,0)")
 
         self.NativeUI = NativeUI
-
-        #elf.parentTemplate = parentTemplate
-        #self.commandList = commandList
+        self.handler = None
 
         self.listWidget = QtWidgets.QListWidget()
-
-        # size = QtWidgets.QSize()
-        #        s.setHeight(super(qtWidgets.QListWidget,listWidget).sizeHint().height())
-        # listWidget.setStyleSheet('background-color:black;font:16pt; color:white; border:none')
-        # self.setWindowOpacity(0.1)
-        # self.setAttribute(QtCore.Qt.WA_TranslucentBackground, True)
         self.listWidget.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.listWidget.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        # self.listWidget.setFixedHeight(
-        #     self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
-        # )
 
         buttonHLayout = QtWidgets.QHBoxLayout()
 
@@ -55,7 +54,6 @@ class SetConfirmPopup(QtWidgets.QDialog):
 
         self.cancelButton = CancelButtonWidget(self.NativeUI)
         self.cancelButton.setEnabled(True)
-        self.cancelButton.pressed.connect(self.cancel_button_pressed)
         buttonHLayout.addWidget(self.cancelButton)
 
         vlayout = QtWidgets.QVBoxLayout()
@@ -63,13 +61,12 @@ class SetConfirmPopup(QtWidgets.QDialog):
         vlayout.addLayout(buttonHLayout)
 
         self.setLayout(vlayout)
-        self.setWindowFlags(
-            QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
-        )  # no window title
-        self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
-        self.setWindowOpacity(0.5)
+        # self.setAttribute(QtCore.Qt.WA_NoSystemBackground, True)
+        # self.setWindowOpacity(0.5)
 
-    def populatePopup(self, messageList, commandList ):
+    def populatePopup(self, handlerWidget, messageList):
+        self.handler = handlerWidget
+        self.clearPopup()
         if messageList == []:
             messageList = ["no values were set"]
         for item in messageList:
@@ -79,29 +76,41 @@ class SetConfirmPopup(QtWidgets.QDialog):
         self.listWidget.setFixedHeight(
             self.listWidget.sizeHintForRow(0) * self.listWidget.count() + 10
         )
-        self.listWidget.setFixedWidth(self.listWidget.sizeHintForColumn(0) * self.listWidget.count())
+        self.listWidget.setFixedWidth(
+            self.listWidget.sizeHintForColumn(0) * self.listWidget.count()
+        )
 
         self.listWidget.update()
         self.update()
-        self.commandList = commandList
 
     def clearPopup(self):
         self.listWidget.clear()
         self.commandList = []
 
-
     def ok_button_pressed(self):
         """Send commands when ok button is clicked"""
-        #self.parentTemplate.liveUpdating = True
-        for command in self.commandList:
-            self.NativeUI.q_send_cmd(*command)
-        self.close()
+        # self.parentTemplate.liveUpdating = True
+        if self.handler is None:
+            logging.error("Popup ok_button_pressed called before popupatePopup")
+            return 1
+
+        if isinstance(self.handler, ExpertHandler):
+            self.ExpertSend.emit()
+        elif isinstance(self.handler, ModeHandler):
+            self.ModeSend.emit()
+        elif isinstance(self.handler, PersonalHandler):
+            self.PersonalSend.emit()
+        elif isinstance(self.handler, ClinicalHandler):
+            self.ClinicalSend.emit()
+        else:
+            logging.warning("Unrecognised handler type: %s", type(self.handler))
         return 0
 
-    def cancel_button_pressed(self):
-        """Close popup when cancel button is clicked"""
-        self.close()
-        return 0
+    # def cancel_button_pressed(self):
+    #     """Close popup when cancel button is clicked"""
+    #     print("CANCEL BUTTON PRESSED")
+    #     # self.close()
+    #     return 0
 
 
 class confirmWidget(QtWidgets.QWidget):
@@ -140,7 +149,7 @@ class confirmWidget(QtWidgets.QWidget):
         self.setParent(None)
 
 
-class confirmPopup(QtWidgets.QWidget):
+class confirmPopup(QtWidgets.QDialog):
     """Popup when a command is confirmed by microcontroller.
     This popup is a frame containing a confirmWidget object for
     each successful command."""
@@ -150,12 +159,12 @@ class confirmPopup(QtWidgets.QWidget):
 
         self.NativeUI = NativeUI
         self.confirmDict = {}
-
         self.vlayout = QtWidgets.QVBoxLayout()
         self.vlayout.setSpacing(0)
         self.vlayout.setMargin(0)
         self.setLayout(self.vlayout)
 
+        self.setStyleSheet("background-color:green;")
         self.location_on_window()
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint
@@ -163,14 +172,13 @@ class confirmPopup(QtWidgets.QWidget):
             | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
 
-        self.setStyleSheet("background-color:green;")
-
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)  # just faster than 60Hz
+        self.timer.setInterval(500)  # just faster than 60Hz
         self.timer.timeout.connect(self.adjustSize)
         self.timer.start()
 
     def addConfirmation(self, confirmMessage):
+        print('adding confirmation')
         """Add a confirmation to the popup. Triggered when UI receives a confirmation from the microcontroller"""
         self.confirmDict[confirmMessage] = confirmWidget(
             self.NativeUI, confirmMessage

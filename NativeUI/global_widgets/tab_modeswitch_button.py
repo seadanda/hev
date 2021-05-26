@@ -28,6 +28,13 @@ class TabModeswitchButton(QtWidgets.QWidget):
 
         layout = QtWidgets.QHBoxLayout(self)
         self.label = QtWidgets.QLabel("Mode: ")
+        self.label.setFont(NativeUI.text_font)
+        self.label.setStyleSheet(
+            "background-color:" + NativeUI.colors["page_background"].name() + ";"
+            "border: none;"
+            "color:" + NativeUI.colors["page_foreground"].name() + ";"
+        )
+
         self.switchButton = QtWidgets.QPushButton(self.NativeUI.modeList[0])
         layout.addWidget(self.label)
         layout.addWidget(self.switchButton)
@@ -39,10 +46,10 @@ class TabModeswitchButton(QtWidgets.QWidget):
         # self.mode_popup.okbutton.pressed.connect(self.changeText)
 
     def update_mode(self, mode):
-        print('updating mode')
+        print("updating mode")
         print(mode)
         self.switchButton.setText(mode)
-        #self.mode_popup.update_mode(mode)
+        # self.mode_popup.update_mode(mode)
 
     def switch_button_pressed(self):
         if self.mode_popup == False:
@@ -57,24 +64,50 @@ class TabModeswitchButton(QtWidgets.QWidget):
         self.switchButton.setText(self.mode_popup.mode)
         self.modeSwitched.emit(self.mode_popup.mode)
 
+    def set_size(self, x: int, y: int, spacing=10) -> int:
+        self.setFixedSize(x, y)
+        return 0
+
 
 class modeswitchPopup(QtWidgets.QWidget):
-
-
     def __init__(self, NativeUI, *args, **kwargs):
         super(modeswitchPopup, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.settingsList =[
-            ["Respiratory Rate","/min","respiratory_rate","SET_TARGET_","RESPIRATORY_RATE",],
+        self.settingsList = [
+            [
+                "Respiratory Rate",
+                "/min",
+                "respiratory_rate",
+                "SET_TARGET_",
+                "RESPIRATORY_RATE",
+            ],
             ["Inhale Time", "s", "inhale_time", "SET_TARGET_", "INHALE_TIME"],
             ["IE Ratio", "", "ie_ratio", "SET_TARGET_", "IE_RATIO"],
-            ["Inhale Trigger Sensitivity","","inhale_trigger_threshold","SET_TARGET_","INHALE_TRIGGER_THRESHOLD"],
-            ["Exhale Trigger Sensitivity","","exhale_trigger_threshold","SET_TARGET_","EXHALE_TRIGGER_THRESHOLD"],
-            ["Inhale Pressure","","inspiratory_pressure","SET_TARGET_","INSPIRATORY_PRESSURE"],
+            [
+                "Inhale Trigger Sensitivity",
+                "",
+                "inhale_trigger_threshold",
+                "SET_TARGET_",
+                "INHALE_TRIGGER_THRESHOLD",
+            ],
+            [
+                "Exhale Trigger Sensitivity",
+                "",
+                "exhale_trigger_threshold",
+                "SET_TARGET_",
+                "EXHALE_TRIGGER_THRESHOLD",
+            ],
+            [
+                "Inhale Pressure",
+                "",
+                "inspiratory_pressure",
+                "SET_TARGET_",
+                "INSPIRATORY_PRESSURE",
+            ],
             ["Inhale Volume", "", "volume", "SET_TARGET_", "VOLUME"],
             ["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT"],
-        ]# self.NativeUI.modes_view.modeTab.settingsList
+        ]  # self.NativeUI.modes_view.modeTab.settingsList
         modeList = self.NativeUI.modeList
 
         vradioLayout = QtWidgets.QVBoxLayout()
@@ -176,7 +209,9 @@ class modeswitchPopup(QtWidgets.QWidget):
         self.NativeUI.widgets.page_buttons.set_pressed(["modes_button"])
 
         # Switch to the specific mode tab
-        for button in self.NativeUI.widgets.modes_page.widget_list[0].button_list:       #mode_settings_tab.buttonWidgets:
+        for button in self.NativeUI.widgets.modes_page.widget_list[
+            0
+        ].button_list:  # mode_settings_tab.buttonWidgets:
             if mode in button.text():
                 self.NativeUI.widgets.modes_page.widget_list[0].setTab(button)
 
@@ -191,14 +226,16 @@ class modeswitchPopup(QtWidgets.QWidget):
         for settings, currentLabel, newLabel in zip(
             self.settingsList, self.currentLabelList, self.newLabelList
         ):
-            currentVal = self.spinDict['spin_' + self.NativeUI.currentMode + '_' + settings[2]].get_value()
-            #currentVal = self.spinDict[
+            currentVal = self.spinDict[
+                "spin_" + self.NativeUI.currentMode + "_" + settings[2]
+            ].get_value()
+            # currentVal = self.spinDict[
             #    self.NativeUI.currentMode  # .replace("/", "_").replace("-", "_")
-            #][settings].get_value()
+            # ][settings].get_value()
             currentLabel.setText(str(round(currentVal, 4)))
-            setVal = self.spinDict['spin_' + self.mode + '_' + settings[2]].get_value()
+            setVal = self.spinDict["spin_" + self.mode + "_" + settings[2]].get_value()
             newLabel.setText(str(round(setVal, 4)))
-        print('done')
+        print("done")
 
     def ok_button_pressed(self):
         if self.NativeUI.currentMode == self.mode:
@@ -219,7 +256,7 @@ class modeswitchPopup(QtWidgets.QWidget):
             #     # self.NativeUI.main_view.tab_spin.setStackWidget("Inhale Time")
             #     self.NativeUI.widgets.spin_buttons.setStackWidget("Inhale Time")
 
-            #self.modeSwitched.emit()
+            # self.modeSwitched.emit()
             return 0
 
     def cancel_button_pressed(self):

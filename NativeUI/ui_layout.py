@@ -14,8 +14,9 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2 import QtWidgets, QtCore
-from PySide2.QtGui import QFont
+from PySide2 import QtWidgets, QtCore, QtGui
+
+# from PySide2.QtGui import QFont, QSizePolicy
 from widget_library.switchable_stack_widget import SwitchableStackWidget
 import json
 
@@ -34,20 +35,34 @@ class Layout:
     def __init__(self, NativeUI, widgets, *args, **kwargs):
         self.NativeUI = NativeUI
         self.widgets = widgets
+        self.text_font = NativeUI.text_font
+        self.screen_width = NativeUI.screen_width
+        self.screen_height = NativeUI.screen_height
 
         # Define sizes
-        self.top_bar_height = 75
-        self.left_bar_width = 150
-        self.main_page_bottom_bar_height = 150
-        self.main_page_normal_measurements_width = 250
+        # Global
+        self.widget_spacing = max(
+            [int(self.screen_height / 192), 5]
+        )  # 10 for 1920x1080
+        self.measurement_widget_size_ratio = 1 / 0.46
+        self.top_bar_height = int(self.screen_height / 14.4)  # 75 for 1920x1080
+        self.left_bar_width = int(self.screen_width / 12.8)  # 150 for 1920x1080
+
+        # main page
+        self.main_page_bottom_bar_height = int(
+            self.screen_height / 7.2
+        )  # 150 for 1920x1080
+        self.main_page_normal_measurements_width = int(
+            self.screen_width / 7.68
+        )  # 250 for 1920x1080
         self.main_page_detailed_measurement_width = (
             self.main_page_normal_measurements_width * 2
         )
-        self.measurement_widget_size_ratio = 1 / 0.46
 
         self.construct_page_widgets()
 
-        # self.startup_layout()
+        # Popups
+        NativeUI.widgets.alarm_popup.setFont(self.NativeUI.text_font)
 
     def construct_page_widgets(self) -> int:
         """
@@ -60,45 +75,47 @@ class Layout:
 
         return 0
 
-    # def construct_startup_widgets(self) -> int:
-    #     self.widgets.add_widget(
-    #         self.__make_stack(
-    #             [
-    #
-    #                 self.layout_mode_settings(),
-    #                 self.layout_mode_personal(),self.layout_startup_main()
-    #             ]
-    #         ),
-    #         "startup_stack",
-    #     )
-    #     self.widgets.startup_stack.show()
-
     def startup_layout(self):
-        vlayout = QtWidgets.QVBoxLayout()
-        with open("NativeUI/configs/mode_config.json") as json_file:
-            modeDict = json.load(json_file)
+        v_layout = QtWidgets.QVBoxLayout()
+        h_layout = QtWidgets.QHBoxLayout()
+        h_button_layout = QtWidgets.QHBoxLayout()
 
-        # Define the stack of pages (used by the page buttons to set the current page)
+        # Stack the data collection pages.
         self.widgets.add_widget(
-            self.__make_stack(
+            SwitchableStackWidget(
+                self.NativeUI.colors,
+                self.NativeUI.text,
                 [
-                    self.layout_startup_main(),
-                    self.layout_mode_startup(),  # self, settings, mode:str, enableList:list, buttons: bool)
+                    self.layout_mode_startup(),
                     self.layout_mode_personal("startup_", False),
-                ]
+                    self.layout_startup_confirmation(),
+                ],
+                [
+                    "button_label_modes_mode",
+                    "button_label_modes_personal",
+                    "button_label_modes_summary",
+                ],
             ),
             "startup_stack",
         )
         self.widgets.startup_stack.setFont(self.NativeUI.text_font)
-        vlayout.addWidget(self.widgets.startup_stack)
-        hButtonLayout = QtWidgets.QHBoxLayout()
-        hButtonLayout.addWidget(self.NativeUI.widgets.backButton)
-        hButtonLayout.addWidget(self.NativeUI.widgets.skipButton)
-        hButtonLayout.addWidget(self.NativeUI.widgets.nextButton)
 
-        vlayout.addLayout(hButtonLayout)
+        # Add buttons
+        h_button_layout.addWidget(self.NativeUI.widgets.backButton)
+        h_button_layout.addWidget(self.NativeUI.widgets.skipButton)
+        h_button_layout.addWidget(self.NativeUI.widgets.nextButton)
 
-        return vlayout
+        # Put the layouts together
+        h_layout.addWidget(self.layout_startup_main())
+        h_layout.addWidget(self.widgets.startup_stack)
+        v_layout.addLayout(h_layout)
+        v_layout.addLayout(h_button_layout)
+
+        # Ensure that next and skip buttons are disabled by default.
+        self.NativeUI.widgets.skipButton.setEnabled(False)
+        self.NativeUI.widgets.nextButton.setEnabled(False)
+
+        return v_layout
 
     def layout_startup_main(self):
         vlayout = QtWidgets.QVBoxLayout()
@@ -112,6 +129,17 @@ class Layout:
     def global_layout(self):
         hlayout = QtWidgets.QHBoxLayout()
         vlayout = QtWidgets.QVBoxLayout()
+
+        # Define Sizes
+        f_mode = 0.25
+        f_battery = 0.2
+        f_localisation = 0.1
+        f_personal = 1 - (f_mode + f_battery + f_localisation)
+
+        mode_display_width = int(self.screen_width * f_mode)
+        personal_display_width = int(self.screen_width * f_personal)
+        localisation_display_width = int(self.screen_width * f_localisation)
+        battery_display_width = int(self.screen_width * f_battery)
 
         # Define the stack of pages (used by the page buttons to set the current page)
         self.widgets.add_widget(
@@ -136,9 +164,11 @@ class Layout:
                 ]
             )
         )
-        self.widgets.page_buttons.set_size(self.left_bar_width, None)
+        self.widgets.page_buttons.set_size(
+            self.left_bar_width, None, spacing=self.widget_spacing
+        )
         self.widgets.ventilator_start_stop_buttons_widget.set_size(
-            self.left_bar_width, None
+            self.left_bar_width, None, spacing=self.widget_spacing
         )
         self.widgets.ventilator_start_stop_buttons_widget.setFont(
             self.NativeUI.text_font
@@ -158,11 +188,23 @@ class Layout:
                 ]
             )
         )
-        self.widgets.battery_display.set_size(400, self.top_bar_height)
-        self.widgets.personal_display.set_size(None, self.top_bar_height)
 
-        self.widgets.battery_display.setFont(self.NativeUI.text_font)
+        self.widgets.tab_modeswitch.set_size(
+            mode_display_width, self.top_bar_height, spacing=self.widget_spacing
+        )
+        # self.widgets.tab_modeswitch.setFont()
+        self.widgets.personal_display.set_size(
+            personal_display_width, self.top_bar_height, spacing=self.widget_spacing
+        )
         self.widgets.personal_display.setFont(self.NativeUI.text_font)
+        self.widgets.localisation_button.set_size(
+            localisation_display_width, self.top_bar_height, spacing=self.widget_spacing
+        )
+        self.widgets.localisation_button.setFont(self.NativeUI.text_font)
+        self.widgets.battery_display.set_size(
+            battery_display_width, self.top_bar_height, spacing=self.widget_spacing
+        )
+        self.widgets.battery_display.setFont(self.NativeUI.text_font)
 
         vlayout.addLayout(hlayout)
         return vlayout
@@ -184,6 +226,7 @@ class Layout:
             self.main_page_normal_measurements_width,  # but allow plots to expand to
             None,  # fill the available space.
             widget_size_ratio=self.measurement_widget_size_ratio,
+            spacing=self.widget_spacing,
         )
         self.widgets.normal_measurements.set_label_font(self.NativeUI.text_font)
         self.widgets.normal_measurements.set_value_font(self.NativeUI.value_font)
@@ -207,12 +250,10 @@ class Layout:
         # Put the normal and detailed views into a switchable stack
         self.widgets.add_widget(
             SwitchableStackWidget(
-                self.NativeUI,
+                self.NativeUI.colors,
+                self.NativeUI.text,
                 [tab_main_normal, tab_main_detailed],
-                [
-                    self.NativeUI.text["button_label_main_normal"],
-                    self.NativeUI.text["button_label_main_detailed"],
-                ],
+                ["button_label_main_normal", "button_label_main_detailed"],
             ),
             "plot_stack",
         )
@@ -223,11 +264,13 @@ class Layout:
         page_main_center_layout = QtWidgets.QHBoxLayout()
         page_main_bottom_layout = QtWidgets.QHBoxLayout()
 
+        spin_buttons = self.layout_main_spin_buttons()
         center_widgets = [self.widgets.plot_stack]
-        bottom_widgets = [self.widgets.history_buttons, self.widgets.spin_buttons]
-        self.widgets.history_buttons.set_size(None, self.main_page_bottom_bar_height)
+        bottom_widgets = [self.widgets.history_buttons, spin_buttons]
+        self.widgets.history_buttons.set_size(
+            None, self.main_page_bottom_bar_height, spacing=self.widget_spacing
+        )
         self.widgets.history_buttons.setFont(self.NativeUI.text_font)
-        # TODO spin_buttons sizes
 
         for widget in center_widgets:
             page_main_center_layout.addWidget(widget)
@@ -249,23 +292,21 @@ class Layout:
         alarm_table_tab_widgets = [self.widgets.alarm_table]
 
         page_alarms = SwitchableStackWidget(
-            self.NativeUI,
+            self.NativeUI.colors,
+            self.NativeUI.text,
             [
                 self.layout_tab_alarm_list(alarm_tab_widgets),
                 self.layout_tab_alarm_table(alarm_table_tab_widgets),
-                self.widgets.clinical_tab,
+                self.layout_tab_clinical_limits(),
             ],
-            ["List of Alarms", "Alarm Table", "Clinical Limits"],
+            [
+                "button_label_alarms_list",
+                "button_label_alarms_table",
+                "button_label_alarms_clinical",
+            ],
         )
         page_alarms.setFont(self.NativeUI.text_font)
         return page_alarms
-        # page_alarms = SwitchableStackWidget(
-        #     self.NativeUI,
-        #     [self.widgets.alarm_tab, self.widgets.alarm_table_tab, self.widgets.clinical_tab],
-        #     ["List of Alarms", "Alarm Table", "Clinical Limits"],
-        # )
-        # page_alarms.setFont(self.NativeUI.text_font)
-        # return page_alarms
 
     def layout_page_settings(self) -> QtWidgets.QWidget:
         """
@@ -276,13 +317,30 @@ class Layout:
             [self.widgets.charts_widget, self.widgets.chart_buttons_widget]
         )
         self.widgets.chart_buttons_widget.setFont(self.NativeUI.text_font)
-        self.widgets.chart_buttons_widget.set_size(self.left_bar_width, None)
+        self.widgets.chart_buttons_widget.set_size(
+            self.left_bar_width, None, spacing=self.widget_spacing
+        )
+
+        # Create the system info tab
+        sysinfo_widgets = [
+            self.widgets.version_display_widget,
+            self.widgets.maintenance_time_display_widget,
+            self.widgets.update_time_display_widget,
+        ]
+        tab_info = self.layout_tab_info(sysinfo_widgets)
+        for widget in sysinfo_widgets:
+            widget.setFont(self.NativeUI.text_font)
 
         # Create the stack
         page_settings = SwitchableStackWidget(
-            self.NativeUI,
-            [self.layout_settings_expert(), tab_charts],
-            ["Expert", "Charts"],
+            self.NativeUI.colors,
+            self.NativeUI.text,
+            [self.layout_settings_expert(), tab_charts, tab_info],
+            [
+                "button_label_settings_expert",
+                "button_label_settings_charts",
+                "button_label_settings_info",
+            ],
         )
         page_settings.setFont(self.NativeUI.text_font)
         self.widgets.add_widget(page_settings, "setting_stack")
@@ -302,12 +360,13 @@ class Layout:
         # )
 
         modes_stack = SwitchableStackWidget(
-            self.NativeUI,
+            self.NativeUI.colors,
+            self.NativeUI.text,
             [
                 self.layout_mode_settings(True),
                 self.layout_mode_personal("", True),
             ],  # self.widgets.mode_personal_tab],
-            ["Mode Settings", "Personal Settings"],
+            ["button_label_modes_mode", "button_label_modes_personal"],
         )
         modes_stack.setFont(self.NativeUI.text_font)
         self.widgets.add_widget(modes_stack, "modes_stack")
@@ -362,12 +421,26 @@ class Layout:
         return tab_main_detailed
 
     def layout_tab_charts(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the charts page.
+        """
         tab_charts = QtWidgets.QWidget()
         tab_charts_layout = QtWidgets.QHBoxLayout(tab_charts)
         for widget in widgets:
             tab_charts_layout.addWidget(widget)
         tab_charts.setLayout(tab_charts_layout)
         return tab_charts
+
+    def layout_tab_info(self, widgets: list) -> QtWidgets.QWidget:
+        """
+        Construct the layout for the info page.
+        """
+        tab_info = QtWidgets.QWidget()
+        tab_info_layout = QtWidgets.QVBoxLayout(tab_info)
+        for widget in widgets:
+            tab_info_layout.addWidget(widget)
+        tab_info.setLayout(tab_info_layout)
+        return tab_info
 
     def __make_stack(self, widgets):
         """
@@ -418,8 +491,10 @@ class Layout:
             )
 
         page_modes = SwitchableStackWidget(
-            self.NativeUI, mode_pages, self.NativeUI.modeList
+            self.NativeUI.colors, self.NativeUI.text, mode_pages, self.NativeUI.modeList
         )
+        self.widgets.add_widget(page_modes, "mode_settings_stack")
+
         page_modes.setFont(self.NativeUI.text_font)
         return page_modes
 
@@ -495,10 +570,24 @@ class Layout:
                 )
             )
 
-        page_modes = SwitchableStackWidget(
-            self.NativeUI, mode_pages, self.NativeUI.modeList
+        mode_stack = SwitchableStackWidget(
+            self.NativeUI.colors, self.NativeUI.text, mode_pages, self.NativeUI.modeList
         )
-        page_modes.setFont(self.NativeUI.text_font)
+        mode_stack.setFont(self.NativeUI.text_font)
+        self.widgets.add_widget(mode_stack, "mode_settings_stack_startup")
+
+        hRadioLayout = QtWidgets.QHBoxLayout()
+        for mode in self.NativeUI.modeList:
+            hRadioLayout.addWidget(
+                self.NativeUI.widgets.get_widget("startup_radio_" + mode)
+            )
+
+        vlayout = QtWidgets.QVBoxLayout()
+        vlayout.addWidget(mode_stack)
+        vlayout.addLayout(hRadioLayout)
+        page_modes = QtWidgets.QWidget()
+        page_modes.setLayout(vlayout)
+
         return page_modes
 
     def layout_mode_personal(self, startup: str, buttons: bool):
@@ -559,8 +648,8 @@ class Layout:
                 + self.NativeUI.colors["page_background"].name()
                 + ";"
                 "color:" + self.NativeUI.colors["page_foreground"].name() + ";"
-                "font-size: " + self.NativeUI.text_size + ";"
             )
+            titleLabel.setFont(self.text_font)
             titleLabel.setAlignment(QtCore.Qt.AlignCenter)
             vlayout.addWidget(titleLabel)
 
@@ -608,4 +697,118 @@ class Layout:
 
         vlayout.addLayout(hButtonLayout)
 
-        return expert_tab
+        passlock_stack = QtWidgets.QStackedWidget()
+        passlock_stack.addWidget(self.NativeUI.widgets.expert_password_widget)
+        passlock_stack.addWidget(expert_tab)
+        # break this here
+        return passlock_stack  # expert_tab
+
+    def layout_main_spin_buttons(self) -> QtWidgets.QWidget:
+        hlayout = QtWidgets.QHBoxLayout()
+        with open("NativeUI/configs/mode_config.json") as json_file:
+            modeDict = json.load(json_file)
+
+        stack = self.NativeUI.widgets.main_mode_stack
+        for setting in modeDict["settings"]:
+            if setting[0] in modeDict["mainPageSettings"]:
+                attrName = "CURRENT_" + setting[2]
+                widg = self.NativeUI.widgets.get_widget(attrName)
+                if setting[0] in modeDict["radioSettings"]:
+                    stack.addWidget(widg)
+                else:
+                    hlayout.addWidget(widg)
+        hlayout.addWidget(self.NativeUI.widgets.main_mode_stack)
+
+        vbuttonLayout = QtWidgets.QVBoxLayout()
+        okButton = self.NativeUI.widgets.get_widget("CURRENT_ok_button")
+        okButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        vbuttonLayout.addWidget(okButton)
+
+        cancelButton = self.NativeUI.widgets.get_widget("CURRENT_cancel_button")
+        cancelButton.setSizePolicy(QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Fixed)
+        vbuttonLayout.addWidget(cancelButton)
+        hlayout.addLayout(vbuttonLayout)
+
+        combined_spin_buttons = QtWidgets.QWidget()
+        combined_spin_buttons.setLayout(hlayout)
+
+        x = self.screen_width - self.left_bar_width - self.main_page_bottom_bar_height
+        y = self.main_page_bottom_bar_height
+        spacing = self.widget_spacing
+
+        combined_spin_buttons.setFixedSize(x, y)
+        x_spin = int(x / hlayout.count() - spacing)
+        y_spin = y - spacing
+
+        for setting in modeDict["settings"]:
+            if setting[0] in modeDict["mainPageSettings"]:
+                attrName = "CURRENT_" + setting[2]
+                self.NativeUI.widgets.get_widget(attrName).setFixedSize(x_spin, y_spin)
+                self.NativeUI.widgets.get_widget(attrName).simpleSpin.setFixedSize(
+                    x_spin, 0.7 * y_spin
+                )
+                self.NativeUI.widgets.get_widget(attrName).simpleSpin.setFont(
+                    self.NativeUI.text_font
+                )
+                self.NativeUI.widgets.get_widget(attrName).label.setFont(
+                    self.NativeUI.text_font
+                )
+
+        stack.setFixedSize(x_spin, y_spin)
+        cancelButton.setFixedSize(x_spin, int(y_spin / 2) - spacing)
+        okButton.setFixedSize(x_spin, int(y_spin / 2) - spacing)
+
+        # spin_buttons.set_label_font(self.NativeUI.text_font)
+        # spin_buttons.set_value_font(self.NativeUI.value_font
+
+        return combined_spin_buttons
+
+    def layout_tab_clinical_limits(self):
+        with open("NativeUI/configs/clinical_config.json") as json_file:
+            clinicalDict = json.load(json_file)
+
+        vlayout = QtWidgets.QVBoxLayout()
+        for setting in clinicalDict["settings"]:
+            attrName = "clinical_spin_" + setting[0][2]
+            hlayout = QtWidgets.QHBoxLayout()
+            if len(setting) >= 2:
+                hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + "_min"))
+                if len(setting) == 3:
+                    hlayout.addWidget(
+                        self.NativeUI.widgets.get_widget(attrName + "_set")
+                    )
+                hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + "_max"))
+            elif len(setting) == 1:
+                hlayout.addWidget(self.NativeUI.widgets.get_widget(attrName + "_lim"))
+
+            vlayout.addLayout(hlayout)
+
+        hbuttonlayout = QtWidgets.QHBoxLayout()
+        hbuttonlayout.addWidget(self.NativeUI.widgets.get_widget("clinical_ok_button"))
+        hbuttonlayout.addWidget(
+            self.NativeUI.widgets.get_widget("clinical_cancel_button")
+        )
+        vlayout.addLayout(hbuttonlayout)
+        clinical_page = QtWidgets.QWidget()
+        clinical_page.setLayout(vlayout)
+        return clinical_page
+
+    def layout_startup_confirmation(self):
+        vlayout = QtWidgets.QVBoxLayout()
+        i = 0
+        for key, spinBox in self.NativeUI.widgets.get_widget(
+            "startup_handler"
+        ).spinDict.items():
+            i = i + 1
+            hlayout = QtWidgets.QHBoxLayout()
+            nameLabel = QtWidgets.QLabel(key)
+            valLabel = QtWidgets.QLabel(str(spinBox.get_value()))
+            hlayout.addWidget(nameLabel)
+            hlayout.addWidget(valLabel)
+            vlayout.addLayout(hlayout)
+            if i == 10:
+                break
+
+        widg = QtWidgets.QWidget()
+        widg.setLayout(vlayout)
+        return widg

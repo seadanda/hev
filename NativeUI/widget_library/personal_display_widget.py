@@ -23,7 +23,7 @@ class PersonalDisplayWidget(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.info_label = QtWidgets.QLabel("Person person, 55kg")
+        self.info_label = QtWidgets.QLabel("No personal information set.")
         self.info_label.setStyleSheet(
             "color:" + NativeUI.colors["page_foreground"].name() + ";"
         )
@@ -32,7 +32,7 @@ class PersonalDisplayWidget(QtWidgets.QWidget):
         hlayout.addWidget(self.info_label)
         self.setLayout(hlayout)
 
-    def set_size(self, x: int, y: int) -> int:
+    def set_size(self, x: int, y: int, spacing=None) -> int:
         """
         Set the size of the personal display widget.
 
@@ -64,4 +64,13 @@ class PersonalDisplayWidget(QtWidgets.QWidget):
         subwidgets.
         """
         self.info_label.setFont(font)
+        return 0
+
+    @QtCore.Slot(dict)
+    def update_status(self, new_info: dict) -> int:
+        """
+        Update the display information.
+        """
+        outtxt = "{name}, {height}m".format(**new_info)
+        self.info_label.set_text(outtxt)
         return 0

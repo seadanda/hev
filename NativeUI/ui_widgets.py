@@ -13,7 +13,14 @@ __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
 
-from PySide2.QtWidgets import QWidget, QPushButton, QRadioButton, QButtonGroup, QLabel
+from PySide2.QtWidgets import (
+    QWidget,
+    QPushButton,
+    QRadioButton,
+    QButtonGroup,
+    QLabel,
+    QStackedWidget,
+)
 from global_widgets.tab_modeswitch_button import TabModeswitchButton
 from global_widgets.global_spinbox import labelledSpin
 from global_widgets.global_send_popup import SetConfirmPopup
@@ -31,6 +38,11 @@ from widget_library.measurements_widget import (
     ExpertMeasurementsBloackWidget,
 )
 from widget_library.battery_display_widget import BatteryDisplayWidget
+from widget_library.info_display_widgets import (
+    VersionDisplayWidget,
+    MaintenanceTimeDisplayWidget,
+    UpdateTimeDisplayWidget,
+)
 
 # from widget_library.tab_charts import TabChart
 from widget_library.chart_buttons_widget import ChartButtonsWidget
@@ -42,22 +54,23 @@ from widget_library.plot_widget import (
     CirclePlotsWidget,
     TimePlotsWidget,
 )
-from widget_library.spin_buttons_widget import SpinButtonsWidget
+from widget_library.spin_buttons_widget import SpinButton
 
 # from widget_library.tab_expert import TabExpert
 from widget_library.ventilator_start_stop_buttons_widget import (
     VentilatorStartStopButtonsWidget,
 )
 from widget_library.line_edit_widget import LabelledLineEditWidget
-from widget_library.expert_handler import ExpertHandler
-from mode_widgets.personal_handler import PersonalHandler
+from global_widgets.global_typeval_popup import TypeValuePopup, AbstractTypeValPopup
+# from widget_library.NativeUI.expert_handler import ExpertHandler
+# from mode_widgets.NativeUI.personal_handler import PersonalHandler
 
 # from widget_library.tab_expert import TabExpert
 # from widget_library.tab_charts import TabChart
 
 # from mode_widgets.tab_modes import TabModes
 # from mode_widgets.tab_personal import TabPersonal
-from mode_widgets.mode_handler import ModeHandler
+# from mode_widgets.NativeUI.mode_handler import ModeHandler
 from alarm_widgets.alarm_handler import AlarmHandler
 from alarm_widgets.alarm_list import AlarmList
 from alarm_widgets.alarm_popup import AlarmPopup
@@ -78,7 +91,7 @@ class Widgets:
         Widgets are grouped by pages for convenience, however this class deliberately
         contains no layout logic.
         """
-        # self.NativeUI = NativeUI
+        # NativeUI = NativeUI
 
         # Start up procedure
         self.startup_confirm_popup = SetConfirmPopup(NativeUI)
@@ -93,14 +106,19 @@ class Widgets:
                 self.startup_handler,
             )
 
+        for mode in NativeUI.modeList:
+            self.add_handled_widget(
+                QRadioButton(mode), "startup_radio_" + mode, self.startup_handler
+            )
+
         self.add_handled_widget(
             OkButtonWidget(NativeUI), "nextButton", self.startup_handler
         )
-        self.nextButton.setColour(1)
+        self.nextButton.setColour(0)
         self.add_handled_widget(
             OkSendButtonWidget(NativeUI), "skipButton", self.startup_handler
         )
-        self.skipButton.setColour(1)
+        self.skipButton.setColour(0)
         self.add_handled_widget(
             CancelButtonWidget(NativeUI), "backButton", self.startup_handler
         )
@@ -109,7 +127,9 @@ class Widgets:
         self.tab_modeswitch = TabModeswitchButton(NativeUI)
         self.battery_display = BatteryDisplayWidget(NativeUI)
         self.personal_display = PersonalDisplayWidget(NativeUI)
-        self.localisation_button = LocalisationButtonWidget(NativeUI.localisation_files)
+        self.localisation_button = LocalisationButtonWidget(
+            NativeUI.localisation_files, NativeUI.colors
+        )
 
         # Left Bar widgets
         self.page_buttons = PageButtonsWidget(NativeUI)
@@ -118,7 +138,8 @@ class Widgets:
         )
 
         # Main Page Widgets
-        self.spin_buttons = SpinButtonsWidget(NativeUI)
+        # self.spin_buttons = SpinButtonsWidget(NativeUI)
+        # self.add_handled_widget(SpinButtonsWidget(NativeUI), 'spin_buttons', NativeUI.mode_handler)
         self.history_buttons = HistoryButtonsWidget(NativeUI)
         self.normal_plots = TimePlotsWidget(NativeUI)
         self.detailed_plots = TimePlotsWidget(NativeUI)
@@ -131,24 +152,75 @@ class Widgets:
         self.alarm_popup = AlarmPopup(NativeUI)
         self.alarm_list = AlarmList(NativeUI)
         self.acknowledge_button = QPushButton()
-
-        # self.alarm_table_tab = TabAlarmTable(NativeUI)
         self.alarm_table = AlarmTable(NativeUI)
         self.clinical_tab = QWidget()  # TabClinical(NativeUI)
+
+        ### Alarm limits
+        with open("NativeUI/configs/clinical_config.json") as json_file:
+            clinicalDict = json.load(json_file)
+
+        for setting in clinicalDict["settings"]:
+            attrName = "clinical_spin_" + setting[0][2]
+            if len(setting) == 1:
+                self.add_handled_widget(
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[0]),
+                    attrName + "_lim",
+                    NativeUI.clinical_handler,
+                )
+            if len(setting) >= 2:
+                self.add_handled_widget(
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[0]),
+                    attrName + "_min",
+                    NativeUI.clinical_handler,
+                )
+                self.add_handled_widget(
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[-1]),
+                    attrName + "_max",
+                    NativeUI.clinical_handler,
+                )
+                if len(setting) == 3:
+                    self.add_handled_widget(
+                        labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting[1]),
+                        attrName + "_set",
+                        NativeUI.clinical_handler,
+                    )
+
+        self.add_handled_widget(
+            OkButtonWidget(NativeUI), "clinical_ok_button", NativeUI.clinical_handler
+        )
+        self.add_handled_widget(
+            CancelButtonWidget(NativeUI),
+            "clinical_cancel_button",
+            NativeUI.clinical_handler,
+        )
 
         #### Mode settings tab: Mode (x4), Personal
 
         # Modes Page Widgets
-        self.mode_confirm_popup = SetConfirmPopup(NativeUI)
-        self.mode_handler = ModeHandler(NativeUI, self.mode_confirm_popup)
-
         with open("NativeUI/configs/mode_config.json") as json_file:
             modeDict = json.load(json_file)
 
         radioSettings = modeDict["radioSettings"]
         modes = NativeUI.modeList
-        # modes.append('startup')
-        # radioSettings = ['Inhale Time', 'IE Ratio']
+
+        self.add_handled_widget(
+            QStackedWidget(), "main_mode_stack", NativeUI.mode_handler
+        )
+        for setting in modeDict["settings"]:
+            if setting[0] in modeDict["mainPageSettings"]:
+                attrName = "CURRENT_" + setting[2]
+                #setting[3] = setting[3].replace('SET_TARGET_', 'SET_TARGET_CURRENT')
+                self.add_handled_widget(
+                    SpinButton(NativeUI, NativeUI.typeValPopupNum,setting), attrName, NativeUI.mode_handler
+                )
+
+        self.add_handled_widget(
+            OkButtonWidget(NativeUI), "CURRENT_ok_button", NativeUI.mode_handler
+        )
+        self.add_handled_widget(
+            CancelButtonWidget(NativeUI), "CURRENT_cancel_button", NativeUI.mode_handler
+        )
+
         self.groupDict = {}
         for mode in modes:
             for startup in ["", "_startup"]:
@@ -166,42 +238,49 @@ class Widgets:
                     ]
                     if startup == "_startup":
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, targettedSetting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,targettedSetting),
                             "spin_" + attrName,
                             self.startup_handler,
                         )
                     else:
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, targettedSetting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,targettedSetting),
                             "spin_" + attrName,
-                            self.mode_handler,
+                            NativeUI.mode_handler,
                         )
 
                     if setting[0] in radioSettings:
                         radioButton = QRadioButton()
                         self.groupDict[mode + startup].addButton(radioButton)
-                        self.add_handled_widget(
-                            radioButton, "radio_" + attrName, self.mode_handler
-                        )
+                        if startup == "_startup":
+                            self.add_handled_widget(
+                                radioButton, "radio_" + attrName, self.startup_handler
+                            )
+                        else:
+                            self.add_handled_widget(
+                                radioButton, "radio_" + attrName, NativeUI.mode_handler
+                            )
 
                 if startup != "_startup":
                     self.add_handled_widget(
-                        OkButtonWidget(NativeUI), "ok_button_" + mode, self.mode_handler
+                        OkButtonWidget(NativeUI),
+                        "ok_button_" + mode,
+                        NativeUI.mode_handler,
                     )
                     self.add_handled_widget(
                         OkSendButtonWidget(NativeUI),
                         "ok_send_button_" + mode,
-                        self.mode_handler,
+                        NativeUI.mode_handler,
                     )
                     self.add_handled_widget(
                         CancelButtonWidget(NativeUI),
                         "cancel_button_" + mode,
-                        self.mode_handler,
+                        NativeUI.mode_handler,
                     )
 
         # Personal tab widgets
-        self.personal_confirm_popup = SetConfirmPopup(NativeUI)
-        self.personal_handler = PersonalHandler(NativeUI, self.personal_confirm_popup)
+        # self.personal_confirm_popup = SetConfirmPopup(NativeUI)
+        # NativeUI.personal_handler = PersonalHandler(NativeUI, self.personal_confirm_popup)
 
         with open("NativeUI/configs/personal_config.json") as json_file:
             personalDict = json.load(json_file)
@@ -212,49 +291,50 @@ class Widgets:
                 if setting[0] in textBoxes:
                     if startup == "startup_":
                         self.add_handled_widget(
-                            LabelledLineEditWidget(NativeUI, setting),
+                            LabelledLineEditWidget(NativeUI, NativeUI.typeValPopupAlpha, setting),
                             "text_" + startup + attrName,
                             self.startup_handler,
                         )
                     else:
                         self.add_handled_widget(
-                            LabelledLineEditWidget(NativeUI, setting),
+                            LabelledLineEditWidget(NativeUI, NativeUI.typeValPopupAlpha, setting),
                             "text_" + startup + attrName,
-                            self.personal_handler,
+                            NativeUI.personal_handler,
                         )
                 else:
                     if startup == "startup_":
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, setting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting),
                             "spin_" + startup + attrName,
                             self.startup_handler,
                         )
                     else:
                         self.add_handled_widget(
-                            labelledSpin(NativeUI, setting),
+                            labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting),
                             "spin_" + startup + attrName,
-                            self.personal_handler,
+                            NativeUI.personal_handler,
                         )
 
         self.add_handled_widget(
-            OkButtonWidget(NativeUI), "ok_button_personal", self.personal_handler
+            OkButtonWidget(NativeUI), "ok_button_personal", NativeUI.personal_handler
         )
         self.add_handled_widget(
             OkSendButtonWidget(NativeUI),
             "ok_send_button_personal",
-            self.personal_handler,
+            NativeUI.personal_handler,
         )
         self.add_handled_widget(
             CancelButtonWidget(NativeUI),
             "cancel_button_personal",
-            self.personal_handler,
+            NativeUI.personal_handler,
         )
 
         ##### Settings Tab: Expert and Charts tabs
+        self.add_widget(AbstractTypeValPopup(NativeUI,'numeric'), 'expert_password_widget')
 
         # Expert Tab
-        self.expert_confirm_popup = SetConfirmPopup(NativeUI)
-        self.expert_handler = ExpertHandler(NativeUI, self.expert_confirm_popup)
+        # self.expert_confirm_popup = SetConfirmPopup(NativeUI)
+        # NativeUI.expert_handler = ExpertHandler(NativeUI, self.expert_confirm_popup)
         print(os.listdir())
         with open("NativeUI/configs/expert_config.json") as json_file:
             controlDict = json.load(json_file)
@@ -265,22 +345,33 @@ class Widgets:
             for setting in controlDict[key]:
                 attrName = "expert_spin_" + setting[2]
                 self.add_handled_widget(
-                    labelledSpin(NativeUI, setting), attrName, self.expert_handler
+                    labelledSpin(NativeUI, NativeUI.typeValPopupNum,setting), attrName, NativeUI.expert_handler
                 )
 
         self.add_handled_widget(
-            OkButtonWidget(NativeUI), "ok_button_expert", self.expert_handler
+            OkButtonWidget(NativeUI), "ok_button_expert", NativeUI.expert_handler
         )
         self.add_handled_widget(
-            OkSendButtonWidget(NativeUI), "ok_send_button_expert", self.expert_handler
+            OkSendButtonWidget(NativeUI),
+            "ok_send_button_expert",
+            NativeUI.expert_handler,
         )
         self.add_handled_widget(
-            CancelButtonWidget(NativeUI), "cancel_button_expert", self.expert_handler
+            CancelButtonWidget(NativeUI),
+            "cancel_button_expert",
+            NativeUI.expert_handler,
         )
 
         # Chart Tab
         self.charts_widget = ChartsPlotWidget(colors=NativeUI.colors)
         self.chart_buttons_widget = ChartButtonsWidget(colors=NativeUI.colors)
+
+        # Info Tab
+        self.version_display_widget = VersionDisplayWidget(NativeUI.colors)
+        self.maintenance_time_display_widget = MaintenanceTimeDisplayWidget(
+            NativeUI.colors
+        )
+        self.update_time_display_widget = UpdateTimeDisplayWidget(NativeUI.colors)
 
     def add_widget(self, widget, name) -> int:
         setattr(self, name, widget)

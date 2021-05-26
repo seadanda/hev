@@ -1,22 +1,28 @@
 from global_widgets.global_spinbox import labelledSpin
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget, OkSendButtonWidget
-from global_widgets.global_send_popup import SetConfirmPopup
 
 from PySide2 import QtWidgets, QtGui, QtCore
+from handler_library.handler import PayloadHandler
+import logging
+import json
 
-class ExpertHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family because easier to modify
+class ExpertHandler(PayloadHandler):  # chose QWidget over QDialog family because easier to modify
 
-    #modeSwitched = QtCore.Signal(str)
+    UpdateExpert = QtCore.Signal(dict)
+    OpenPopup = QtCore.Signal(PayloadHandler,list)
 
-    def __init__(self, NativeUI, confirmPopup, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, NativeUI, *args, **kwargs):
+        super().__init__(['READBACK'],*args, **kwargs)
         self.NativeUI = NativeUI
         self.spinDict = {}
         self.buttonDict = {}
         self.manuallyUpdated = False
-        self.popup = confirmPopup
-        self.popup.okButton.pressed.connect(lambda: self.commandSent()) # not sure why, but lambda is necessary here
+        self.commandList = []
 
+        with open("NativeUI/configs/expert_config.json") as json_file:
+            controlDict = json.load(json_file)
+
+        self.relevantKeys = [list[2] for key in controlDict for list in controlDict[key]]
 
     def add_widget(self, widget, key: str):
         if isinstance(widget, labelledSpin):
@@ -24,20 +30,24 @@ class ExpertHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family bec
         if isinstance(widget, OkButtonWidget) or isinstance(widget, CancelButtonWidget) or isinstance(widget,OkSendButtonWidget):
             self.buttonDict[key] = widget
 
-    def update_values(self):
-        db = self.NativeUI.get_db('readback')
-        if db == {}:
-            return 0  # do nothing
-        else:
-            self.manuallyUpdatedDict = False
-            for spin in self.spinDict:
-                self.spinDict[spin].update_value(db)
+
+    def active_payload(self, *args) -> int:
+        readback_data = self.get_db()
+        outdict = {}
+        for key in self.relevantKeys:
+            try:
+                outdict[key] = readback_data[key]
+            except KeyError:
+                logging.debug("Invalid key %s in measurement database", key)
+        self.UpdateExpert.emit(outdict)
+        return 0
 
     def handle_okbutton_click(self, key):
         message, command = [], []
         for widget in self.spinDict:
             if self.spinDict[widget].manuallyUpdated:
                 setVal = self.spinDict[widget].get_value()
+                setVal = round(setVal, self.spindict[widget].decPlaces)
                 message.append("set" + widget + " to " + str(setVal))
                 command.append(
                     [
@@ -46,17 +56,27 @@ class ExpertHandler(QtWidgets.QWidget):  # chose QWidget over QDialog family bec
                         setVal,
                     ]
                 )
-        self.popup.clearPopup()
-        self.popup.populatePopup(message, command)
+        self.commandList = command
         if 'send' in key:
-            self.popup.okButton.click()
+            self.sendCommands()
         else:
-            self.popup.show()
+            self.OpenPopup.emit(self,message)
+
+    def sendCommands(self):
+        if self.commandList == []:
+            a=1
+        else:
+            for command in self.commandList:
+                self.NativeUI.q_send_cmd(*command)
+            self.commandSent()
+        return 0
 
     def commandSent(self):
+        self.commandList = []
         for widget in self.spinDict:
             self.spinDict[widget].manuallyUpdated = False
         self.refresh_button_colour()
+
 
     def handle_manual_change(self, changed_spin_key):
         self.refresh_button_colour()

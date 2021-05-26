@@ -1047,16 +1047,18 @@ float BreathingLoop::calculateFlow(const uint32_t &current_time, const float &pr
 float BreathingLoop::getFlow(){
     const float temperature = 298.0;
     const float pressure = 1030.0;
+    const float calibration_factor=1.40 ;// adjusted to make VTE=VTI
+    
     float l2nl = (temperature *1013.25)/(pressure * 273.15 ) ; 
     float dp_raw = _readings_avgs.pressure_diff_patient;
-    
     float flowtmp;
+    
 
-    float fudge_factor1 = 1.15;  // we scale to test chest 
+     
 
     flowtmp = pow(dp_raw,3)*0.1512-3.3422*pow(dp_raw,2)+dp_raw*41.657;  // this is in slm (standard liter per minute)
 
-    _flow =  flowtmp * l2nl;  // now expressed in l/min
+    _flow =  calibration_factor * flowtmp * l2nl;  // now expressed in l/min
 
     if (_calibrated == true){
         return _flow;

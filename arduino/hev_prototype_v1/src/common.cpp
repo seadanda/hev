@@ -222,7 +222,7 @@ float adcToMillibarDPFloat(float adc, float offset)
     // https://docs.rs-online.com/7d77/0900766b81568899.pdf
 
     float PCB_Gain		= 2.; 		// real voltage is two times higher thant the measured in the PCB (there is a voltage divider)
-    float ADC_to_mVoltage_Gain	= 0.788; 	// this is the measured gain
+    float ADC_to_mVoltage_Gain	= 0.768; 	// this is the measured gain
     float ADC_offset		= 162.;		// this is the measured offset
     float Aout = PCB_Gain * (ADC_to_mVoltage_Gain * adc + ADC_offset) ; 
     float Vdd = 5000; 

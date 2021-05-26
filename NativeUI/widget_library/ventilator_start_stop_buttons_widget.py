@@ -15,6 +15,7 @@ __status__ = "Prototype"
 import logging
 from PySide2 import QtGui, QtWidgets
 from PySide2.QtCore import QSize
+from PySide2 import QtCore
 from global_widgets.tab_hold_buttons import holdButton
 
 
@@ -41,7 +42,7 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
         self.button_standby = holdButton(NativeUI)  # QtWidgets.QPushButton()
 
         self.__buttons = [self.button_start, self.button_stop, self.button_standby]
-        self.__buttontext = ["START", "STOP", "STANDBY"]
+        self.localise_text(NativeUI.text)
         self.__buttoncommand = [""]
 
         for button, text in zip(self.__buttons, self.__buttontext):
@@ -122,4 +123,18 @@ class VentilatorStartStopButtonsWidget(QtWidgets.QWidget):
         """
         for button in self.__buttons:
             button.setFont(font)
+        return 0
+
+    @QtCore.Slot(dict)
+    def localise_text(self, text: dict):
+        self.__buttontext = [
+            text["start_button"],
+            text["stop_button"],
+            text["standby_button"],
+        ]
+
+        self.button_start.setText(text["start_button"])
+        self.button_stop.setText(text["stop_button"])
+        self.button_standby.setText(text["standby_button"])
+
         return 0

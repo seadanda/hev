@@ -16,28 +16,46 @@ import sys
 from datetime import datetime
 from PySide2 import QtCore, QtGui, QtWidgets
 
+from handler_library.handler import PayloadHandler
+import logging
 
-class AlarmHandler(QtWidgets.QWidget):
+class AlarmHandler(PayloadHandler):
+
+    UpdateAlarm = QtCore.Signal(dict)
+    NewAlarm = QtCore.Signal(QtWidgets.QWidget)
+    RemoveAlarm = QtCore.Signal(QtWidgets.QWidget)
+
     def __init__(self, NativeUI, *args, **kwargs):
-        super(AlarmHandler, self).__init__(*args, **kwargs)
+        super().__init__(['DATA', 'ALARM'],*args, **kwargs)
         self.NativeUI = NativeUI
 
-
-        # self.setLayout(vlayout)
         self.alarmDict = {}
+        self.alarm_list = []
         self.oldAlarms = []
-
 
     def acknowledge_pressed(self):
         self.popup.clearAlarms()
         self.list.acknowledge_all()
 
-    def update_alarms(self):
-        currentAlarms = self.NativeUI.ongoingAlarms # instead of getting database at a particular frequency, this should be triggered when a new alarm arrives
+    def _set_alarm_list(self, alarm_list:list):
+        self.alarm_list = alarm_list
+
+    def active_payload(self, *args) -> int:
+        #alarm_data = self.get_db()
+        #outdict = {}
+
+        full_payload = args[0]
+        #print(full_payload['alarms'])
+        currentAlarms = full_payload['alarms']#self.NativeUI.ongoingAlarms  # instead of getting database at a particular frequency, this should be triggered when a new alarm arrives
+        self.alarm_list = currentAlarms
+        #self._set__alarm_list(currentAlarms)
         if self.oldAlarms != currentAlarms:
             if len(self.oldAlarms) != len(currentAlarms):
                 self.oldAlarms = currentAlarms
 
+        self.UpdateAlarm.emit(currentAlarms)
+
+    def handle_newAlarm(self, currentAlarms): # if this is combined with active_payload an error arises
         for alarm in currentAlarms:
             alarmCode = alarm["alarm_code"]
             if alarmCode in self.alarmDict:
@@ -46,21 +64,20 @@ class AlarmHandler(QtWidgets.QWidget):
             else:
                 newAbstractAlarm = AbstractAlarm(self.NativeUI, alarm)
                 self.alarmDict[alarmCode] = newAbstractAlarm
+                self.NewAlarm.emit(newAbstractAlarm)
                 newAbstractAlarm.alarmExpired.connect(
                     lambda i=newAbstractAlarm: self.handleAlarmExpiry(i)
                 )
-                self.NativeUI.widgets.alarm_popup.addAlarm(newAbstractAlarm)
-                self.NativeUI.widgets.alarm_list.addAlarm(newAbstractAlarm)
-                self.NativeUI.widgets.alarm_table.addAlarmRow(newAbstractAlarm)
 
     def handleAlarmExpiry(self, abstractAlarm):
         abstractAlarm.freezeTimer()
-        self.NativeUI.widgets.alarm_popup.removeAlarm(abstractAlarm)
-        self.NativeUI.widgets.alarm_list.removeAlarm(abstractAlarm)
-        self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
         abstractAlarm.recordFinishTime()
+        self.RemoveAlarm.emit(abstractAlarm)
+        self.alarmDict.pop(abstractAlarm.alarmPayload["alarm_code"])
+        # abstractAlarm is deleted by itself
 
-class AbstractAlarm(QtWidgets.QWidget):
+
+class AbstractAlarm(QtCore.QObject):
 
     alarmExpired = QtCore.Signal()
 
@@ -74,7 +91,7 @@ class AbstractAlarm(QtWidgets.QWidget):
         self.finishTime = -1
 
         self.timer = QtCore.QTimer()
-        self.timer.setInterval(100)  # just faster than 60Hz
+        self.timer.setInterval(2000)  # just faster than 60Hz
         self.timer.timeout.connect(self.timeoutDelete)
         self.timer.start()
 
