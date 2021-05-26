@@ -121,6 +121,13 @@ class ClinicalHandler(PayloadHandler):
         self.active_payload()
         self.refresh_button_colour()
 
+    def handle_cancel_pressed(self,buttonMode):
+        if buttonMode == self.NativeUI.currentMode:
+            print('modes match ')
+            self.commandSent()
+        else:
+            print('do nothing in clinical')
+
     def commandSent(self):
         self.commandList = []
         for key, widget in dict(self.limSpinDict, **self.setSpinDict).items():

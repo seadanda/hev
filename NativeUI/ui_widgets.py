@@ -47,7 +47,7 @@ from widget_library.info_display_widgets import (
 # from widget_library.tab_charts import TabChart
 from widget_library.chart_buttons_widget import ChartButtonsWidget
 
-from widget_library.page_buttons_widget import PageButtonsWidget
+from widget_library.page_buttons_widget import PageButtonsWidget, PageButton
 from widget_library.personal_display_widget import PersonalDisplayWidget
 from widget_library.plot_widget import (
     ChartsPlotWidget,
@@ -136,10 +136,14 @@ class Widgets:
         self.ventilator_start_stop_buttons_widget = VentilatorStartStopButtonsWidget(
             NativeUI
         )
+        self.lock_button = PageButton(
+            NativeUI,
+            "",
+            signal_value="lock_screen",
+            icon=NativeUI.icons["lock_screen"],
+        )
 
         # Main Page Widgets
-        # self.spin_buttons = SpinButtonsWidget(NativeUI)
-        # self.add_handled_widget(SpinButtonsWidget(NativeUI), 'spin_buttons', NativeUI.mode_handler)
         self.history_buttons = HistoryButtonsWidget(NativeUI)
         self.normal_plots = TimePlotsWidget(NativeUI)
         self.detailed_plots = TimePlotsWidget(NativeUI)
@@ -209,7 +213,6 @@ class Widgets:
         for setting in modeDict["settings"]:
             if setting[0] in modeDict["mainPageSettings"]:
                 attrName = "CURRENT_" + setting[2]
-                #setting[3] = setting[3].replace('SET_TARGET_', 'SET_TARGET_CURRENT')
                 self.add_handled_widget(
                     SpinButton(NativeUI, NativeUI.typeValPopupNum,setting), attrName, NativeUI.mode_handler
                 )
@@ -330,12 +333,10 @@ class Widgets:
         )
 
         ##### Settings Tab: Expert and Charts tabs
-        self.add_widget(AbstractTypeValPopup(NativeUI,'numeric'), 'expert_password_widget')
+        self.add_widget(QStackedWidget(),'expert_passlock_stack')
+        self.add_handled_widget(AbstractTypeValPopup(NativeUI,'alpha'), 'expert_password_widget', NativeUI.expert_handler)
 
         # Expert Tab
-        # self.expert_confirm_popup = SetConfirmPopup(NativeUI)
-        # NativeUI.expert_handler = ExpertHandler(NativeUI, self.expert_confirm_popup)
-        print(os.listdir())
         with open("NativeUI/configs/expert_config.json") as json_file:
             controlDict = json.load(json_file)
 
@@ -378,6 +379,7 @@ class Widgets:
         return 0
 
     def add_handled_widget(self, widget, name, handler) -> int:
+        """Add a widget to Widgets and pass it into a handler"""
         setattr(self, name, widget)
         handler.add_widget(widget, name)
         return 0

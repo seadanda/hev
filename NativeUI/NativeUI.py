@@ -7,12 +7,15 @@ Command-line arguments:
 -d, --debug      : set the level of debug output.Include once for INFO, twice for DEBUG
 -w, --windowed   : run the user interface in windowed mode.
 -r, --resolution : set the window size in pixels. E.g. -r 1920x1080
+--no-startup     : start the UI without going through the calibration startup sequence.
+-l, --language   : set the initial language for the UI (can later be set within the
+                   interface). Defaults to English.
 """
 
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
 __credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
 __license__ = "GPL"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
@@ -113,6 +116,9 @@ class NativeUI(HEVClient, QMainWindow):
     ):
         super().__init__(*args, **kwargs)
 
+        # store variable to change editability of screen - implemented in screen locking
+        self.enableState = True
+
         # Set the resolution of the display window
         self.screen_width = resolution[0]
         self.screen_height = resolution[1]
@@ -148,8 +154,12 @@ class NativeUI(HEVClient, QMainWindow):
 
         # Set up fonts based on the screen resolution. text_font and value_font are 20
         # and 40px respectively for 1920*1080.
-        self.text_font = QFont("Sans Serif", resolution[0] / 96)
-        self.value_font = QFont("Sans Serif", 2 * resolution[0] / 96)
+        self.text_font = QFont("Sans Serif", int(resolution[0] / 96))
+        self.value_font = QFont("Sans Serif", int(2 * resolution[0] / 96))
+
+        # Set the popup size based on the screen resolution. alarm_popup_width is 400
+        # for 1920*1080
+        self.alarm_popup_width = int(resolution[0] / 4.8)
 
         # Import icons
         self.icons = {
@@ -157,6 +167,7 @@ class NativeUI(HEVClient, QMainWindow):
             "button_alarms_page": "exclamation-triangle-solid",
             "button_modes_page": "fan-solid",
             "button_settings_page": "sliders-h-solid",
+            "lock_screen": "lock-solid",
         }
         self.iconext = "png"
         self.iconpath = self.__find_icons(self.iconext)
@@ -168,6 +179,8 @@ class NativeUI(HEVClient, QMainWindow):
         # Appearance settings
         palette = self.palette()
         palette.setColor(QPalette.Window, self.colors["page_background"])
+
+        self.alt_palette = self.palette()
 
         # Set up the handlers
         self.battery_handler = BatteryHandler()
@@ -324,12 +337,19 @@ class NativeUI(HEVClient, QMainWindow):
                 )
             )
 
-        # TODO: command sending
+        # Startup next and skip buttons should move from the startup widget to the main
+        # display
         self.widgets.nextButton.pressed.connect(
             lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
         self.widgets.skipButton.pressed.connect(
             lambda: self.display_stack.setCurrentWidget(self.main_display)
+        )
+
+        self.widgets.lock_button.PageButtonPressed.connect(self.toggle_editability)
+        # Startup next button should send the ventilator start command.
+        self.widgets.nextButton.pressed.connect(
+            lambda: self.q_send_cmd("GENERAL", "START")
         )
 
         # Battery Display should update when we get battery info
@@ -372,6 +392,12 @@ class NativeUI(HEVClient, QMainWindow):
             lambda: self.display_stack.setCurrentWidget(self.startupWidget)
         )
 
+        self.typeValPopupNum.okButton.pressed.connect(
+            self.typeValPopupNum.handle_ok_press
+        )
+        self.typeValPopupAlpha.okButton.pressed.connect(
+            self.typeValPopupNum.handle_ok_press
+        )
         ##### Mode:
         # When mode is switched from mode page, various other locations must respond
         for widget in self.mode_handler.spinDict.values():
@@ -433,18 +459,26 @@ class NativeUI(HEVClient, QMainWindow):
                 button_widget.pressed.connect(
                     lambda i=key: self.mode_handler.handle_okbutton_click(i)
                 )
+                button_widget.pressed.connect(self.clinical_handler.commandSent)
             elif isinstance(button_widget, CancelButtonWidget):
-                mode = self.mode_handler.get_mode(key)
-                button_widget.pressed.connect(self.mode_handler.commandSent)
+                buttonMode = self.mode_handler.get_mode(key)
+                button_widget.pressed.connect(
+                    lambda i=buttonMode: self.mode_handler.handle_cancel_pressed(i)
+                )
+                button_widget.pressed.connect(
+                    lambda i=buttonMode: self.clinical_handler.handle_cancel_pressed(i)
+                )
 
         for key, button_widget in self.mode_handler.mainButtonDict.items():
             if isinstance(button_widget, (OkButtonWidget)):
                 button_widget.clicked.connect(
                     self.mode_handler.handle_mainokbutton_click
                 )
+                button_widget.pressed.connect(self.clinical_handler.commandSent)
             elif isinstance(button_widget, CancelButtonWidget):
                 # mode = self.mode_handler.get_mode(key)
                 button_widget.clicked.connect(self.mode_handler.commandSent)
+                button_widget.pressed.connect(self.clinical_handler.commandSent)
 
         for key, spin_widget in self.clinical_handler.limSpinDict.items():
             spin_widget.simpleSpin.manualChanged.connect(
@@ -472,8 +506,8 @@ class NativeUI(HEVClient, QMainWindow):
                     self.clinical_handler.handle_cancelbutton_click
                 )
 
-        # for widget in (self.clinical_handler.setSpinDict.values()):
-        #    self.clinical_handler.UpdateClinical.connect(widget.update_value)
+        for widget in self.clinical_handler.setSpinDict.values():
+            self.clinical_handler.UpdateClinical.connect(widget.update_value)
 
         self.mode_handler.OpenPopup.connect(self.messageCommandPopup.populatePopup)
         self.mode_handler.OpenPopup.connect(
@@ -500,6 +534,13 @@ class NativeUI(HEVClient, QMainWindow):
         )
 
         ##### Expert Settings:
+        self.widgets.expert_password_widget.okButton.pressed.connect(
+            self.widgets.expert_password_widget.submit_password
+        )
+        self.widgets.expert_password_widget.correctPassword.connect(
+            lambda: self.widgets.expert_passlock_stack.setCurrentIndex(1)
+        )
+
         # Expert handler should respond to manual value changes
         for key, spin_widget in self.expert_handler.spinDict.items():
             spin_widget.simpleSpin.manualChanged.connect(
@@ -640,12 +681,30 @@ class NativeUI(HEVClient, QMainWindow):
 
         return 0
 
+    def toggle_editability(self):
+        """Set all widgets disabled to lock screen"""
+
+        self.enableState = not self.enableState
+        if self.enableState:
+            self.alt_palette.setColor(QPalette.Window, self.colors["page_background"])
+        else:
+            self.alt_palette.setColor(QPalette.Window, self.colors["page_foreground"])
+        self.setPalette(self.alt_palette)
+        for attribute in dir(self.widgets):
+            widg = self.widgets.get_widget(attribute)
+            if isinstance(widg, QWidget):
+                widg.setEnabled(self.enableState)
+        self.widgets.lock_button.setEnabled(True)
+
     @Slot(str)
     def change_page(self, page_to_show: str) -> int:
         """
         Change the page shown in page_stack.
         """
         self.widgets.page_stack.setCurrentWidget(getattr(self.widgets, page_to_show))
+        self.widgets.expert_passlock_stack.setCurrentIndex(
+            0
+        )  # reset password lock on expert settings
         return 0
 
     @Slot(str, str, float)
@@ -656,12 +715,9 @@ class NativeUI(HEVClient, QMainWindow):
         logging.debug("to MCU: cmd: %s", cmd)
         check = self.send_cmd(cmdtype=cmdtype, cmd=cmd, param=param)
         if check:
-            print("confirmed this command " + cmdtype + "   " + cmd)
             self.confirmPopup.addConfirmation(cmdtype + "   " + cmd)
-            print("added popup")
             return 0
         else:
-            print("failed this command " + cmdtype + "   " + cmd)
             return 1
 
     @Slot(str)

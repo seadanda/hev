@@ -14,6 +14,7 @@ __status__ = "Prototype"
 
 from PySide2 import QtCore, QtGui, QtWidgets
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget
+import json
 
 # from global_widgets.global_ok_cancel_buttons import okButton, cancelButton
 
@@ -23,6 +24,8 @@ class TabModeswitchButton(QtWidgets.QWidget):
 
     def __init__(self, NativeUI, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        """Button opens popup for user to switch modes.
+        The label is updated to show the current operating mode"""
 
         self.NativeUI = NativeUI
 
@@ -46,19 +49,19 @@ class TabModeswitchButton(QtWidgets.QWidget):
         # self.mode_popup.okbutton.pressed.connect(self.changeText)
 
     def update_mode(self, mode):
-        print("updating mode")
-        print(mode)
+        """Update button text to show operating mode"""
         self.switchButton.setText(mode)
-        # self.mode_popup.update_mode(mode)
+        return 0
 
     def switch_button_pressed(self):
+        """Button pressed, open popup, ensure correct mode is selected in popup."""
         if self.mode_popup == False:
             self.mode_popup = modeswitchPopup(self.NativeUI)
             self.mode_popup.okbutton.pressed.connect(self.changeText)
-
         else:
             self.mode_popup.radioButtons[self.NativeUI.currentMode].click()
         self.mode_popup.show()
+        return 0
 
     def changeText(self):
         self.switchButton.setText(self.mode_popup.mode)
@@ -71,43 +74,15 @@ class TabModeswitchButton(QtWidgets.QWidget):
 
 class modeswitchPopup(QtWidgets.QWidget):
     def __init__(self, NativeUI, *args, **kwargs):
+        """A popup used to switch modes. Allows the user to compare the values they are setting with current setting
+        and to navigate to mode setting page to edit those values."""
         super(modeswitchPopup, self).__init__(*args, **kwargs)
 
         self.NativeUI = NativeUI
-        self.settingsList = [
-            [
-                "Respiratory Rate",
-                "/min",
-                "respiratory_rate",
-                "SET_TARGET_",
-                "RESPIRATORY_RATE",
-            ],
-            ["Inhale Time", "s", "inhale_time", "SET_TARGET_", "INHALE_TIME"],
-            ["IE Ratio", "", "ie_ratio", "SET_TARGET_", "IE_RATIO"],
-            [
-                "Inhale Trigger Sensitivity",
-                "",
-                "inhale_trigger_threshold",
-                "SET_TARGET_",
-                "INHALE_TRIGGER_THRESHOLD",
-            ],
-            [
-                "Exhale Trigger Sensitivity",
-                "",
-                "exhale_trigger_threshold",
-                "SET_TARGET_",
-                "EXHALE_TRIGGER_THRESHOLD",
-            ],
-            [
-                "Inhale Pressure",
-                "",
-                "inspiratory_pressure",
-                "SET_TARGET_",
-                "INSPIRATORY_PRESSURE",
-            ],
-            ["Inhale Volume", "", "volume", "SET_TARGET_", "VOLUME"],
-            ["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT"],
-        ]  # self.NativeUI.modes_view.modeTab.settingsList
+        with open("NativeUI/configs/mode_config.json") as json_file:
+            modeDict = json.load(json_file)
+
+        self.settingsList = modeDict['settings']
         modeList = self.NativeUI.modeList
 
         vradioLayout = QtWidgets.QVBoxLayout()
@@ -115,29 +90,27 @@ class modeswitchPopup(QtWidgets.QWidget):
         self.radioButtons = {}
         for mode in modeList:
             button = QtWidgets.QRadioButton(mode)
-            goToButton = QtWidgets.QPushButton(mode)
-            goToButton.pressed.connect(lambda j=mode: self.goToPressed(j))
+            goto_button = QtWidgets.QPushButton(mode)
+            goto_button.pressed.connect(lambda j=mode: self.goto_pressed(j))
             hlayout = QtWidgets.QHBoxLayout()
             hlayout.addWidget(button)
-            hlayout.addWidget(goToButton)
+            hlayout.addWidget(goto_button)
             self.radioButtons[mode] = button
             vradioLayout.addLayout(hlayout)
-            button.pressed.connect(lambda i=button: self.update_settings_data(i))
-            if mode == self.NativeUI.currentMode:
-                button.click()
         groupBox.setLayout(vradioLayout)
 
         ## Values display
 
         valuesLayout = QtWidgets.QHBoxLayout()
-
-        initLabel = QtWidgets.QLabel(" ")  # titles
+        # Title labels:
+        initLabel = QtWidgets.QLabel(" ")
         initVal = QtWidgets.QLabel("Current")
         initVal.setAlignment(QtCore.Qt.AlignCenter)
         newVal = QtWidgets.QLabel("New")
         newVal.setAlignment(QtCore.Qt.AlignCenter)
         newVal.setStyleSheet("color: red")
 
+        # Populate actual values in loop
         self.labelList, self.currentLabelList, self.newLabelList = [], [], []
         vlayout1, vlayout2, vlayout3 = (
             QtWidgets.QVBoxLayout(),
@@ -186,6 +159,12 @@ class modeswitchPopup(QtWidgets.QWidget):
         vlayout.addLayout(hlayout)
         vlayout.addLayout(hbuttonlayout)
 
+        for mode in modeList:
+            button = self.radioButtons[mode]
+            button.pressed.connect(lambda i=button: self.update_settings_data(i))
+            if mode == self.NativeUI.currentMode:
+                button.click()
+
         ## Final, general, initiation steps
 
         self.setLayout(vlayout)
@@ -201,8 +180,8 @@ class modeswitchPopup(QtWidgets.QWidget):
         )
         # self.radioButtons[self.NativeUI.currentMode].click()
 
-    def goToPressed(self, mode):
-        # Switch to the modes page
+    def goto_pressed(self, mode):
+        """On button press, show mode page in UI"""
         self.NativeUI.widgets.page_stack.setCurrentWidget(
             self.NativeUI.widgets.modes_page
         )
@@ -219,25 +198,21 @@ class modeswitchPopup(QtWidgets.QWidget):
         self.close()
 
     def update_settings_data(self, button):
-        self.spinDict = self.NativeUI.widgets.mode_handler.spinDict
-        self.mode = button.text()  # .replace("/", "_").replace("-", "_")
-
-        data = self.NativeUI.get_db("targets")
+        """Respond to button press and update labels in modeswitch popup"""
+        self.spinDict = self.NativeUI.mode_handler.spinDict
+        self.mode = button.text()
         for settings, currentLabel, newLabel in zip(
             self.settingsList, self.currentLabelList, self.newLabelList
         ):
             currentVal = self.spinDict[
                 "spin_" + self.NativeUI.currentMode + "_" + settings[2]
             ].get_value()
-            # currentVal = self.spinDict[
-            #    self.NativeUI.currentMode  # .replace("/", "_").replace("-", "_")
-            # ][settings].get_value()
             currentLabel.setText(str(round(currentVal, 4)))
             setVal = self.spinDict["spin_" + self.mode + "_" + settings[2]].get_value()
             newLabel.setText(str(round(setVal, 4)))
-        print("done")
 
     def ok_button_pressed(self):
+        """Switch to selected mode"""
         if self.NativeUI.currentMode == self.mode:
             a = 1  # do nothing
         else:
@@ -246,22 +221,13 @@ class modeswitchPopup(QtWidgets.QWidget):
             )
             self.NativeUI.currentMode = self.mode
             self.close()
-            # ensure main page buttons display IE Ratio or Inhale Time as enabled
-            # if self.NativeUI.widgets.mode_settings_tab.tabsDict[
-            #     self.mode
-            # ].radioButtonRat.isChecked():
-            #     # self.NativeUI.main_view.tab_spin.setStackWidget("IE Ratio")
-            #     self.NativeUI.widgets.spin_buttons.setStackWidget("IE Ratio")
-            # else:
-            #     # self.NativeUI.main_view.tab_spin.setStackWidget("Inhale Time")
-            #     self.NativeUI.widgets.spin_buttons.setStackWidget("Inhale Time")
-
-            # self.modeSwitched.emit()
-            return 0
+        return 0
 
     def cancel_button_pressed(self):
+        """Close popup without doing anything"""
         self.close()
         return 0
 
     def update_mode(self, mode):
+        """When mode is changed the popup radio buttons should show the new mode"""
         self.mode_popup.radioButtons[mode].click()

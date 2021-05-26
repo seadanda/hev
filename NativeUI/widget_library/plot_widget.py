@@ -88,21 +88,21 @@ class TimePlotsWidget(QtWidgets.QWidget):
             [0, 0],
             [0, 0],
             NativeUI.text["plot_line_label_pressure"],
-            NativeUI.colors["pressure_plot"].name(),
+            NativeUI.colors["plot_pressure"].name(),
         )
         self.flow_line = self.plot(
             self.flow_plot,
             [0, 0],
             [0, 0],
             NativeUI.text["plot_line_label_flow"],
-            NativeUI.colors["flow_plot"].name(),
+            NativeUI.colors["plot_flow"].name(),
         )
         self.volume_line = self.plot(
             self.volume_plot,
             [0, 0],
             [0, 0],
             NativeUI.text["plot_line_label_volume"],
-            NativeUI.colors["volume_plot"].name(),
+            NativeUI.colors["plot_volume"].name(),
         )
 
         self.setLayout(layout)
@@ -227,21 +227,21 @@ class CirclePlotsWidget(QtWidgets.QWidget):
             [0, 0],
             [0, 0],
             NativeUI.text["plot_line_label_pressure_flow"],
-            NativeUI.colors["pressure_flow_plot"].name(),
+            NativeUI.colors["plot_pressure_flow"].name(),
         )
         self.flow_volume_line = self.plot(
             self.flow_volume_plot,
             [0, 0],
             [0, 0],
             NativeUI.text["plot_line_label_flow_volume"],
-            NativeUI.colors["flow_volume_plot"].name(),
+            NativeUI.colors["plot_flow_volume"].name(),
         )
         self.volume_pressure_line = self.plot(
             self.volume_pressure_plot,
             [0, 0],
             [0, 0],
             NativeUI.text["plot_line_label_volume_pressure"],
-            NativeUI.colors["volume_pressure_plot"].name(),
+            NativeUI.colors["plot_volume_pressure"].name(),
         )
 
         self.setLayout(layout)
@@ -332,7 +332,7 @@ class ChartsPlotWidget(QtWidgets.QWidget):
         }
 
         # Store the colors of the lines
-        self.colors = {"pressure": colors["pressure_plot"], "flow": colors["flow_plot"]}
+        self.colors = {"pressure": colors["plot_pressure"], "flow": colors["plot_flow"]}
 
         self.graph_widget.setContentsMargins(0.0, 0.0, 0.0, 0.0)
         self.graph_widget.setBackground(colors["page_background"])

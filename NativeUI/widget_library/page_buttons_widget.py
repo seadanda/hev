@@ -36,10 +36,7 @@ class PageButtonsWidget(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
 
         self.main_button = PageButton(
-            NativeUI,
-            "",
-            signal_value="main_page",
-            icon=NativeUI.icons["button_main_page"],
+            "", signal_value="main_page", icon=NativeUI.icons["button_main_page"]
         )
         self.alarms_button = PageButton(
             "", signal_value="alarms_page", icon=NativeUI.icons["button_alarms_page"]
@@ -64,17 +61,20 @@ class PageButtonsWidget(QtWidgets.QWidget):
             "QPushButton{"
             "    border:none"
             "}"
+            "QPushButton[selected='0']{"
+            "    background-color:"
+            + NativeUI.colors["button_background_enabled"].name()
+            + ";"
+            "}"
+            "QPushButton[selected='1']{"
+            "    background-color:"
+            + NativeUI.colors["button_background_highlight"].name()
+            + ";"
+            "}"
             "QPushButton:disabled{"
             "    background-color:"
             + NativeUI.colors["button_background_disabled"].name()
             + ";"
-            "    border:none"
-            "}"
-            "QPushButton:enabled{"
-            "    background-color:"
-            + NativeUI.colors["button_background_enabled"].name()
-            + ";"
-            "    border:none"
             "}"
         )
 
@@ -82,19 +82,14 @@ class PageButtonsWidget(QtWidgets.QWidget):
             # set button appearance
             button.setStyleSheet(stylesheet)
             button.setIconColor(NativeUI.colors["page_foreground"])
+            button.pressed.connect(lambda i=button: self.set_pressed(i))
 
             layout.addWidget(button)
 
         self.setLayout(layout)
+        self.set_pressed(self.buttons[0])
 
-        # Connect the buttons so that pressing one enables all of the others
-        for pressed_button in self.buttons:
-            for unpressed_button in self.buttons:
-                if pressed_button == unpressed_button:
-                    continue
-                pressed_button.pressed.connect(unpressed_button.enable)
-
-    def set_pressed(self, pressed: str) -> int:
+    def set_pressed(self, button_pressed) -> int:
         """
         Set the specified buttons to enabled (unpressed) or disabled (pressed) states.
         By default, all buttons in self.buttons will be made enabled except those in the
@@ -102,13 +97,13 @@ class PageButtonsWidget(QtWidgets.QWidget):
 
         pressed can be str or list of str.
         """
-        if isinstance(pressed, str):
-            pressed = [pressed]
         for button in self.buttons:
-            button.setEnabled(True)
-        for button_name in pressed:
-            button = getattr(self, button_name)
-            button.setEnabled(False)
+            if button == button_pressed:
+                button.setProperty("selected", "1")
+            else:
+                button.setProperty("selected", "0")
+            button.style().unpolish(button)
+            button.style().polish(button)
         return 0
 
     def set_size(self, x: int, y: int, spacing: int = 10) -> int:
@@ -165,9 +160,7 @@ class PageButtonsWidget(QtWidgets.QWidget):
 class PageButton(QtWidgets.QPushButton):
     PageButtonPressed = Signal(str)
 
-    def __init__(
-        self, NativeUI, *args, signal_value: str = None, icon: str = None, **kwargs
-    ):
+    def __init__(self, *args, signal_value: str = None, icon: str = None, **kwargs):
         super().__init__(*args, **kwargs)
         self.__signal_value = signal_value
         self.__icon_path = icon
@@ -186,15 +179,12 @@ class PageButton(QtWidgets.QPushButton):
         self.setIcon(QtGui.QIcon(pixmap))
         return 0
 
-    @Slot()
-    def enable(self):
-        self.setEnabled(True)
-        return 0
-
     def on_press(self):
         """
         When the button is pressed, disable it and emit the PageButtonPressed signal.
         """
-        self.setEnabled(False)
         self.PageButtonPressed.emit(self.__signal_value)
         return 0
+
+    def localise_text(self, *args, **kwargs) -> int:
+        pass
