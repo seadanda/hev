@@ -15,7 +15,7 @@ Command-line arguments:
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
 __credits__ = ["Benjamin Mummery", "Dónal Murray", "Tim Powell", "Tiago Sarmento"]
 __license__ = "GPL"
-__version__ = "0.1.1"
+__version__ = "0.1.2"
 __maintainer__ = "Benjamin Mummery"
 __email__ = "benjamin.mummery@stfc.ac.uk"
 __status__ = "Prototype"
@@ -151,8 +151,12 @@ class NativeUI(HEVClient, QMainWindow):
 
         # Set up fonts based on the screen resolution. text_font and value_font are 20
         # and 40px respectively for 1920*1080.
-        self.text_font = QFont("Sans Serif", resolution[0] / 96)
-        self.value_font = QFont("Sans Serif", 2 * resolution[0] / 96)
+        self.text_font = QFont("Sans Serif", int(resolution[0] / 96))
+        self.value_font = QFont("Sans Serif", int(2 * resolution[0] / 96))
+
+        # Set the popup size based on the screen resolution. alarm_popup_width is 400
+        # for 1920*1080
+        self.alarm_popup_width = int(resolution[0] / 4.8)
 
         # Import icons
         self.icons = {
