@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 # © Copyright CERN, Riga Technical University and University of Liverpool 2020.
-# All rights not expressly granted are reserved. 
-# 
+# All rights not expressly granted are reserved.
+#
 # This file is part of hev-sw.
-# 
+#
 # hev-sw is free software: you can redistribute it and/or modify it under
 # the terms of the GNU General Public Licence as published by the Free
 # Software Foundation, either version 3 of the Licence, or (at your option)
 # any later version.
-# 
+#
 # hev-sw is distributed in the hope that it will be useful, but WITHOUT
 # ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public Licence
 # for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License along
 # with hev-sw. If not, see <http://www.gnu.org/licenses/>.
-# 
+#
 # The authors would like to acknowledge the much appreciated support
 # of all those involved with the High Energy Ventilator project
 # (https://hev.web.cern.ch/).
@@ -40,20 +40,36 @@ from pathlib import Path
 from hevtestdata import HEVTestData
 from CommsLLI import CommsLLI
 from BatteryLLI import BatteryLLI
-from CommsCommon import PAYLOAD_TYPE, CMD_TYPE, CMD_GENERAL, CMD_SET_DURATION, VENTILATION_MODE, ALARM_TYPE, ALARM_CODES, CMD_MAP, CommandFormat, AlarmFormat, PersonalFormat
+from CommsCommon import (
+    PAYLOAD_TYPE,
+    CMD_TYPE,
+    CMD_GENERAL,
+    CMD_SET_DURATION,
+    VENTILATION_MODE,
+    ALARM_TYPE,
+    ALARM_CODES,
+    CMD_MAP,
+    CommandFormat,
+    AlarmFormat,
+    PersonalFormat,
+)
 from collections import deque
 from serial.tools import list_ports
 from typing import List
 from struct import error as StructError
 import logging
-logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s')
+
+logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s")
 logging.getLogger().setLevel(logging.INFO)
+
 
 class HEVPacketError(Exception):
     pass
 
+
 class HEVAlreadyRunning(Exception):
     pass
+
 
 class HEVServer(object):
     def __init__(self, comms_lli, battery_lli):
@@ -89,16 +105,16 @@ class HEVServer(object):
                 PAYLOAD_TYPE.ALARM,
                 PAYLOAD_TYPE.DEBUG,
                 PAYLOAD_TYPE.IVT,
-                #PAYLOAD_TYPE.LOGMSG,
+                # PAYLOAD_TYPE.LOGMSG,
                 PAYLOAD_TYPE.PERSONAL,
-                PAYLOAD_TYPE.CMD
+                PAYLOAD_TYPE.CMD,
             ]
             if payload_type in whitelist:
                 # fork data to broadcast threads
                 for queue in self._broadcasts.values():
                     self.push_to(queue, payload)
 
-                #if payload_type == PAYLOAD_TYPE.PERSONAL : print("PERSONAL")
+                # if payload_type == PAYLOAD_TYPE.PERSONAL : print("PERSONAL")
             elif payload_type in PAYLOAD_TYPE:
                 # valid payload but ignored
                 pass
@@ -106,14 +122,13 @@ class HEVServer(object):
                 # invalid packet, don't throw exception just log and pop
                 logging.error(f"Received invalid packet, ignoring: {payload}")
 
-    
     async def handle_battery(self) -> None:
         while True:
             try:
                 # wait for a new battery state from the batterylli
                 payload = await self._battery_lli.queue.get()
                 logging.debug(f"Payload received: {payload}")
-                self._battery_lli.queue.task_done() # consume entry
+                self._battery_lli.queue.task_done()  # consume entry
                 if payload.getType() != PAYLOAD_TYPE.BATTERY:
                     raise HEVPacketError("Battery state invalid")
 
@@ -125,18 +140,19 @@ class HEVServer(object):
                 self._comms_lli.writePayload(payload)
             except HEVPacketError as e:
                 logging.error(e)
-            
 
-    async def handle_request(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    async def handle_request(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ) -> None:
         # listen for queries on the request socket
-        data = await reader.readuntil(separator=b'\0')
-        data = data[:-1] # snip off nullbyte
+        data = await reader.readuntil(separator=b"\0")
+        data = data[:-1]  # snip off nullbyte
         request = json.loads(data.decode("utf-8"))
 
         # logging
         addr = writer.get_extra_info("peername")
         logging.info(f"Answering request from {addr}")
-        
+
         try:
             reqtype = request["type"]
             if reqtype == "CMD":
@@ -144,12 +160,14 @@ class HEVServer(object):
                 reqcmdtype = request["cmdtype"]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                command = CommandFormat(cmd_type=CMD_TYPE[reqcmdtype].value,
-                                        cmd_code=CMD_MAP[reqcmdtype].value[reqcmd].value,
-                                        param=reqparam)
+                command = CommandFormat(
+                    cmd_type=CMD_TYPE[reqcmdtype].value,
+                    cmd_code=CMD_MAP[reqcmdtype].value[reqcmd].value,
+                    param=reqparam,
+                )
 
-                #print('***sending cmd ') 
-                #print(command)
+                # print('***sending cmd ')
+                # print(command)
                 self._comms_lli.writePayload(command)
 
                 # processed and sent to controller, send ack to GUI since it's in enum
@@ -164,7 +182,7 @@ class HEVServer(object):
             elif reqtype == "CYCLE":
                 # ignore for the minute
                 pass
-            #elif reqtype == "LOGSMG":
+            # elif reqtype == "LOGSMG":
             #    # ignore for the minute
             #    pass
             elif reqtype == "TARGET":
@@ -172,13 +190,20 @@ class HEVServer(object):
                 pass
             elif reqtype == "PERSONAL":
                 # ignore for the minute
-                name   = request["name"].encode()
+                name = request["name"].encode()
                 patient_id = request["patient_id"].encode()
-                age    = int(request["age"])
-                sex    = request["sex"].encode()
+                age = int(request["age"])
+                sex = request["sex"].encode()
                 height = int(request["height"])
                 weight = int(request["weight"])
-                pfmt = PersonalFormat(name=name, patient_id=patient_id, age=age, sex=sex, height=height, weight=weight)
+                pfmt = PersonalFormat(
+                    name=name,
+                    patient_id=patient_id,
+                    age=age,
+                    sex=sex,
+                    height=height,
+                    weight=weight,
+                )
                 self._comms_lli.writePayload(pfmt)
                 payload = {"type": "ack"}
                 pass
@@ -194,9 +219,11 @@ class HEVServer(object):
                 reqalarm_code = ALARM_CODES[request["alarm_code"]]
                 reqparam = request["param"] if request["param"] is not None else 0
 
-                alarm_to_ack = AlarmFormat(alarm_type=ALARM_TYPE[reqalarm_type],
-                                           alarm_code=reqalarm_code,
-                                           param=reqparam)
+                alarm_to_ack = AlarmFormat(
+                    alarm_type=ALARM_TYPE[reqalarm_type],
+                    alarm_code=reqalarm_code,
+                    param=reqparam,
+                )
                 try:
                     # delete alarm if it exists
                     with self._dblock:
@@ -205,7 +232,9 @@ class HEVServer(object):
                                 self._alarms.remove(alarm)
                     payload = {"type": "ack"}
                 except NameError as e:
-                    raise HEVPacketError(f"Alarm could not be removed. May have been removed already. {e}")
+                    raise HEVPacketError(
+                        f"Alarm could not be removed. May have been removed already. {e}"
+                    )
             else:
                 raise HEVPacketError(f"Invalid request type")
         except (NameError, KeyError, HEVPacketError, StructError) as e:
@@ -217,18 +246,20 @@ class HEVServer(object):
             exit(1)
 
         # send reply and close connection
-        packet = json.dumps(payload).encode() + b'\0'
+        packet = json.dumps(payload).encode() + b"\0"
         writer.write(packet)
         await writer.drain()
         writer.close()
 
-    async def handle_broadcast(self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter) -> None:
+    async def handle_broadcast(
+        self, reader: asyncio.StreamReader, writer: asyncio.StreamWriter
+    ) -> None:
         # log address
         addr = writer.get_extra_info("peername")
         logging.info(f"Broadcasting to {addr!r}")
 
         bindex = str(addr[1])
-        self._broadcasts[bindex] = asyncio.Queue(maxsize=16) # append new queue
+        self._broadcasts[bindex] = asyncio.Queue(maxsize=16)  # append new queue
 
         while self._broadcasting:
             # wait for data from queue
@@ -249,10 +280,14 @@ class HEVServer(object):
 
             broadcast_packet[data_type] = payload.getDict()
 
-            broadcast_packet["alarms"] = [alarm.getDict() for alarm in alarms] if alarms is not None else []
+            broadcast_packet["alarms"] = (
+                [alarm.getDict() for alarm in alarms] if alarms is not None else []
+            )
             self._broadcasts[bindex].task_done()
 
-            logging.info(f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}")
+            logging.info(
+                f"Send data for timestamp: {broadcast_packet[data_type]['timestamp']}"
+            )
             logging.debug(f"Send: {json.dumps(broadcast_packet,indent=4)}")
 
             try:
@@ -269,8 +304,7 @@ class HEVServer(object):
         del self._broadcasts[bindex]
 
     async def serve_request(self, ip: str, port: int) -> None:
-        server = await asyncio.start_server(
-            self.handle_request, ip, port)
+        server = await asyncio.start_server(self.handle_request, ip, port)
 
         # get address for log
         addr = server.sockets[0].getsockname()
@@ -280,8 +314,7 @@ class HEVServer(object):
             await server.serve_forever()
 
     async def serve_broadcast(self, ip: str, port: int) -> None:
-        server = await asyncio.start_server(
-            self.handle_broadcast, ip, port)
+        server = await asyncio.start_server(self.handle_broadcast, ip, port)
 
         # get address for log
         addr = server.sockets[0].getsockname()
@@ -291,15 +324,16 @@ class HEVServer(object):
             await server.serve_forever()
 
     async def main(self) -> None:
-        self._datavalid = threading.Event() # initially false
+        self._datavalid = threading.Event()  # initially false
         LOCALHOST = "127.0.0.1"
         b1 = self.serve_broadcast(LOCALHOST, 54320)  # WebUI broadcast
-        r1 = self.serve_request(LOCALHOST, 54321)    # joint request socket
+        r1 = self.serve_request(LOCALHOST, 54321)  # joint request socket
         b2 = self.serve_broadcast(LOCALHOST, 54322)  # NativeUI broadcast
-        battery = self.handle_battery()              # Battery status
-        poll = self.polling()                        # Battery status
+        battery = self.handle_battery()  # Battery status
+        poll = self.polling()  # Battery status
         tasks = [b1, r1, b2, poll, battery]
         await asyncio.gather(*tasks, return_exceptions=True)
+
 
 def getArduinoPort():
     # get arduino serial port
@@ -310,9 +344,9 @@ def getArduinoPort():
             vidpid = f"{ port.vid:04x}:{port.pid:04x}".upper()
             logging.debug(vidpid)
         if port.manufacturer and "ARDUINO" in port.manufacturer.upper():
-            port_device = port.device 
-        elif vidpid == "10C4:EA60" :
-            port_device = port.device 
+            port_device = port.device
+        elif vidpid == "10C4:EA60":
+            port_device = port.device
     if port_device is None:
         logging.critical(f"Arduino disconnected")
         exit(1)
@@ -328,17 +362,32 @@ async def arduinoConnected():
 
 
 if __name__ == "__main__":
-    tasks = [] # asyncio tasks
+    tasks = []  # asyncio tasks
     loop = asyncio.get_event_loop()
     try:
-        #parser to allow us to pass arguments to hevserver
-        parser = argparse.ArgumentParser(description='Arguments to run hevserver')
-        parser.add_argument('-i', '--inputFile', type=str, default = '', help='Load data from file')
-        parser.add_argument('-d', '--debug', action='count', default=0, help='Show debug output')
-        parser.add_argument('--use-test-data', action='store_true', help='Use test data source')
-        parser.add_argument('--use-dump-data', action='store_true', help='Use dump data source')
-        parser.add_argument('--dump', type=int, default=0, help='Dump NUM raw data packets to file')
-        parser.add_argument('-o', '--dumpfile', type=str, default = '', help='File to dump to')
+        # parser to allow us to pass arguments to hevserver
+        parser = argparse.ArgumentParser(description="Arguments to run hevserver")
+        parser.add_argument(
+            "-i", "--inputFile", type=str, default="", help="Load data from file"
+        )
+        parser.add_argument(
+            "-d", "--debug", action="count", default=0, help="Show debug output"
+        )
+        parser.add_argument(
+            "--use-test-data", action="store_true", help="Use test data source"
+        )
+        parser.add_argument(
+            "--use-dump-data", action="store_true", help="Use dump data source"
+        )
+        parser.add_argument(
+            "--mcu-tty", type=str, default="", help="Specify tty serial device for MCU"
+        )
+        parser.add_argument(
+            "--dump", type=int, default=0, help="Dump NUM raw data packets to file"
+        )
+        parser.add_argument(
+            "-o", "--dumpfile", type=str, default="", help="File to dump to"
+        )
         args = parser.parse_args()
         if args.debug == 0:
             logging.getLogger().setLevel(logging.WARNING)
@@ -346,7 +395,7 @@ if __name__ == "__main__":
             logging.getLogger().setLevel(logging.INFO)
         else:
             logging.getLogger().setLevel(logging.DEBUG)
-    
+
         # check if hevserver is running
         pidfile = "/dev/shm/hevpid"
         mypid = os.getpid()
@@ -358,16 +407,18 @@ if __name__ == "__main__":
                     pass
                 else:
                     if psutil.pid_exists(pid):
-                        raise HEVAlreadyRunning(f"hevserver is already running. To kill it run:\n $ kill {pid}")
-        
-        with open(pidfile, 'w') as f:
+                        raise HEVAlreadyRunning(
+                            f"hevserver is already running. To kill it run:\n $ kill {pid}"
+                        )
+
+        with open(pidfile, "w") as f:
             f.write(str(mypid))
 
         if args.use_test_data:
             comms_lli = HEVTestData()
             logging.info(f"Using test data source")
-        elif args.inputFile != '':
-            if args.inputFile[-1-3:] == '.txt':
+        elif args.inputFile != "":
+            if args.inputFile[-1 - 3 :] == ".txt":
                 # just ignore actual filename and read from both valid inputfiles
                 comms_lli = hevfromtxt.hevfromtxt()
             else:
@@ -376,7 +427,12 @@ if __name__ == "__main__":
             # initialise low level interface
             try:
                 if args.use_dump_data:
-                    port_device = '/dev/shm/ttyEMU0'
+                    port_device = "/dev/shm/ttyEMU0"
+                elif args.mcu_tty is not "":
+                    if not os.path.exists(args.mcu_tty):
+                        logging.critical("MCU tty does not exist")
+                        exit(1)
+                    port_device = args.mcu_tty
                 else:
                     port_device = getArduinoPort()
                     connected = arduinoConnected()
@@ -385,14 +441,14 @@ if __name__ == "__main__":
                 if args.dump == 0:
                     comms_lli = CommsLLI(loop)
                 elif args.dump > 0:
-                    if args.dumpfile == '':
+                    if args.dumpfile == "":
                         logging.critical("No dump file specified")
-                        raise KeyboardInterrupt # fake ctrl+c
+                        raise KeyboardInterrupt  # fake ctrl+c
                     logging.warning(f"Dumping {args.dump} packets to {args.dumpfile}")
                     comms_lli = CommsLLI(loop, file=args.dumpfile, number=args.dump)
                 else:
                     logging.critical("Invalid number of packets to dump")
-                    raise KeyboardInterrupt # fake ctrl+c
+                    raise KeyboardInterrupt  # fake ctrl+c
                 comms = comms_lli.main(port_device, 115200)
                 tasks.append(comms)
                 logging.info(f"Serving data from device {port_device}")

@@ -7,6 +7,9 @@ Command-line arguments:
 -d, --debug      : set the level of debug output.Include once for INFO, twice for DEBUG
 -w, --windowed   : run the user interface in windowed mode.
 -r, --resolution : set the window size in pixels. E.g. -r 1920x1080
+--no-startup     : start the UI without going through the calibration startup sequence.
+-l, --language   : set the initial language for the UI (can later be set within the
+                   interface). Defaults to English.
 """
 
 __author__ = ["Benjamin Mummery", "Dónal Murray", "Tiago Sarmento"]
@@ -74,32 +77,43 @@ class NativeUI(HEVClient, QMainWindow):
     Subclassed HEVClient for client logic, and QMainWindow for display.
 
     Extends its base classes with the following methods:
-
-    __define_connections - connects widget signals and slots to allow the UI to
+    - __define_connections - connects widget signals and slots to allow the UI to
     function. Called once during initialisation.
 
-    __find icons - locate the directory containing icons used for UI buttons and
+    - __find icons - locate the directory containing icons used for UI buttons and
     displays. Called once during initialisation.
 
-    __find_configs - locate the directory containing config files used by the UI. Called
+    - __find_configs - locate the directory containing config files used by the UI. Called
     once during initialisation.
 
-    set_current_mode - TODO: deprecated, remove.
+    - set_current_mode - TODO: deprecated, remove.
 
-    get_updates - Overrides the placeholder get_updates method of HEVClient. Passes
+    - get_updates - Overrides the placeholder get_updates method of HEVClient. Passes
     payloads to handlers. Called whenever a new payload is read in.
 
-    change_page (Slot) - switches the page shown in the page_stack. Called whent the
+    - change_page (Slot) - switches the page shown in the page_stack. Called whent the
     page buttons are pressed or whenever a popup needs to show a specific page.
 
-    q_send_cmd (Slot) - send a command to the MCU.
+    - q_send_cmd (Slot) - send a command to the MCU.
 
-    q_ack_alarm (Slot) - acknowledge a recieved alarm.
+    - q_ack_alarm (Slot) - acknowledge a recieved alarm.
 
-    q_send_personal (Slot) - send personal information to the MCU.
+    - q_send_personal (Slot) - send personal information to the MCU.
+
+    Also adds the following keyword arguments:
+    - resolution
+    - skip_startup
+    - language
     """
 
-    def __init__(self, resolution: list, *args, skip_startup=False, **kwargs):
+    def __init__(
+        self,
+        *args,
+        resolution: list = [1920, 1080],
+        skip_startup: bool = False,
+        language: str = "english",
+        **kwargs,
+    ):
         super().__init__(*args, **kwargs)
 
         # store variable to change editability of screen - implemented in screen locking
@@ -121,8 +135,22 @@ class NativeUI(HEVClient, QMainWindow):
             self.colors = json.load(infile)
             for key in self.colors:
                 self.colors[key] = QColor.fromRgb(*self.colors[key])
-        with open(os.path.join(config_path, "text_english.json")) as infile:
+
+        # Import the specified language config file
+        language_config = os.path.join(config_path, "text_%s.json" % language)
+        if not language_config in self.localisation_files:
+            logging.error(
+                "No config file for %s language (expected file at %s), defaulting to %s",
+                (language, language_config, self.localisation_files[0]),
+            )
+            language_config = self.localisation_files[0]
+        with open(language_config) as infile:
             self.text = json.load(infile)
+        # Reorder localisation_files so that the language used is the first index
+        self.localisation_files.insert(
+            0,
+            self.localisation_files.pop(self.localisation_files.index(language_config)),
+        )
 
         # Set up fonts based on the screen resolution. text_font and value_font are 20
         # and 40px respectively for 1920*1080.
@@ -170,8 +198,12 @@ class NativeUI(HEVClient, QMainWindow):
             self.alarm_handler,
         ]
         self.messageCommandPopup = SetConfirmPopup(self)
-        self.typeValPopupNum = AbstractTypeValPopup(self,'numeric')#TypeValuePopup(self, NumberpadWidget(self))
-        self.typeValPopupAlpha = AbstractTypeValPopup(self,'alpha')#TypeValuePopup(self, AlphapadWidget(self))
+        self.typeValPopupNum = AbstractTypeValPopup(
+            self, "numeric"
+        )  # TypeValuePopup(self, NumberpadWidget(self))
+        self.typeValPopupAlpha = AbstractTypeValPopup(
+            self, "alpha"
+        )  # TypeValuePopup(self, AlphapadWidget(self))
 
         # Create all of the widgets and place them in the layout.
         self.widgets = Widgets(self)
@@ -194,7 +226,7 @@ class NativeUI(HEVClient, QMainWindow):
             self.typeValPopupNum,
             self.typeValPopupAlpha,
             self.messageCommandPopup,
-            #self.confirmPopup,
+            # self.confirmPopup,
             self.main_display,
             self.startupWidget,
         ]:
@@ -301,7 +333,8 @@ class NativeUI(HEVClient, QMainWindow):
                 )
             )
 
-        # TODO: command sending
+        # Startup next and skip buttons should move from the startup widget to the main
+        # display
         self.widgets.nextButton.pressed.connect(
             lambda: self.display_stack.setCurrentWidget(self.main_display)
         )
@@ -310,6 +343,11 @@ class NativeUI(HEVClient, QMainWindow):
         )
 
         self.widgets.lock_button.PageButtonPressed.connect(self.toggle_editability)
+        # Startup next button should send the ventilator start command.
+        self.widgets.nextButton.pressed.connect(
+            lambda: self.q_send_cmd("GENERAL", "START")
+        )
+
         # Battery Display should update when we get battery info
         self.battery_handler.UpdateBatteryDisplay.connect(
             self.widgets.battery_display.update_status
@@ -534,7 +572,15 @@ class NativeUI(HEVClient, QMainWindow):
             self.widgets.detailed_plots,
             self.widgets.circle_plots,
             self.widgets.ventilator_start_stop_buttons_widget,
-            # self.widgets.charts_widget,
+            self.widgets.charts_widget,
+            self.widgets.plot_stack,
+            self.widgets.alarms_page,
+            self.widgets.settings_page,
+            self.widgets.modes_page,
+            self.widgets.modes_stack,
+            self.widgets.startup_stack,
+            self.widgets.mode_settings_stack,
+            self.widgets.mode_settings_stack_startup,
             # self.widgets.spin_buttons,
             # self.widgets.mode_personal_tab,
         ]:
@@ -704,6 +750,20 @@ def parse_command_line_arguments() -> argparse.Namespace:
         default=False,
         help="Run the UI without the startup sequence",
     )
+    parser.add_argument(
+        "-l",
+        "--language",
+        action="store",
+        dest="language",
+        default="English",
+        type=str,
+        help="""
+            Set the language for the UI from the following list:\n
+            Language     Recognised Values\n
+            English      e, E, english, English\n
+            Portugues    p, P, portugues, Portugues
+        """,
+    )
     return parser.parse_args()
 
 
@@ -721,6 +781,27 @@ def set_logging_level(debug_level: int) -> int:
     else:
         logging.getLogger().setLevel(logging.DEBUG)
     return 0
+
+
+def interpret_language(input_string: str) -> str:
+    """
+    Convert the value given for the language CLA to one that NativeUI can interpret.
+    """
+    default_language = "English"
+    if input_string is None:
+        return default_language
+
+    keys_english = ["e", "E", "english", "English"]
+    keys_portugues = ["p", "P", "portugues", "Portugues", "portuguese", "Portuguese"]
+    if input_string in keys_english:
+        return "english"
+    if input_string in keys_portugues:
+        return "portuguese"
+    logging.error(
+        "Unrecognised language value %s, defaulting to %s",
+        (input_string, default_language),
+    )
+    return default_language
 
 
 def interpret_resolution(input_string: str) -> list:
@@ -781,8 +862,9 @@ if __name__ == "__main__":
     # setup pyqtplot widget
     app = QApplication(sys.argv)
     dep = NativeUI(
-        interpret_resolution(command_line_args.resolution),
+        resolution=interpret_resolution(command_line_args.resolution),
         skip_startup=command_line_args.no_startup,
+        language=interpret_language(command_line_args.language),
     )
     set_window_size(
         dep,

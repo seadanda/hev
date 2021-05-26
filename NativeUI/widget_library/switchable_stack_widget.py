@@ -7,23 +7,22 @@ from PySide2.QtGui import QFont
 
 class SwitchableStackWidget(QtWidgets.QWidget):
     def __init__(
-        self, NativeUI, widget_list: list, button_labels: list, *args, **kwargs
+        self, colors, text, widget_list: list, button_label_keys: list, *args, **kwargs
     ):
         super().__init__(*args, **kwargs)
-        self.NativeUI = NativeUI
         self.widget_list = widget_list
-        self.button_list = self.__make_buttons(button_labels)
+        self.button_list = self.__make_buttons(colors, text, button_label_keys)
         self.__build()
         if len(self.button_list) > 0:
             self.setTab(self.button_list[0])
 
-    def rebuild(self, widget_list, button_labels):
+    def rebuild(self, colors, text, widget_list, button_label_keys):
         """
         For an already created SwitchableStackWidget, change the tabs in the stack.
         """
         self.__clear()
         self.widget_list = widget_list
-        self.button_list = self.__make_buttons(button_labels)
+        self.button_list = self.__make_buttons(colors, text, button_label_keys)
         self.__build()
         self.setTab(self.button_list[0])
         return 0
@@ -55,11 +54,14 @@ class SwitchableStackWidget(QtWidgets.QWidget):
         vlayout.addWidget(self.stack)
         self.setLayout(vlayout)
 
-    def __make_buttons(self, button_labels: list) -> list:
+    def __make_buttons(self, colors, text, button_label_keys: list) -> list:
         """
         Make the selector buttons
         """
-        return [SelectorButtonWidget(self.NativeUI, label) for label in button_labels]
+        return [
+            SelectorButtonWidget(colors, text, label_key)
+            for label_key in button_label_keys
+        ]
 
     def setTab(self, button_pressed) -> int:
         """
@@ -104,27 +106,34 @@ class SwitchableStackWidget(QtWidgets.QWidget):
             raise AttributeError("setButtonSize called without usable size information")
         return 0
 
+    def localise_text(self, text: dict) -> int:
+        for button in self.button_list:
+            button.localise_text(text)
+        return 0
+
 
 class SelectorButtonWidget(QtWidgets.QPushButton):
-    def __init__(self, NativeUI, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, colors: dict, text: dict, label_key: str, *args, **kwargs):
+        super().__init__(text[label_key], *args, **kwargs)
+
+        self.__label_key = label_key
 
         style = (
             "QPushButton[selected='0']{"
-            "   color: " + NativeUI.colors["button_foreground_enabled"].name() + ";"
-            "   background-color: "
-            + NativeUI.colors["button_background_enabled"].name()
-            + ";"
+            "   color: " + colors["button_foreground_enabled"].name() + ";"
+            "   background-color: " + colors["button_background_enabled"].name() + ";"
             "   border:none"
             "}"
             "QPushButton[selected='1']{"
-            "   color: " + NativeUI.colors["button_foreground_disabled"].name() + ";"
-            "   background-color:"
-            + NativeUI.colors["button_background_disabled"].name()
-            + ";"
+            "   color: " + colors["button_foreground_disabled"].name() + ";"
+            "   background-color:" + colors["button_background_disabled"].name() + ";"
             "   border:none"
             "}"
         )
 
         self.setStyleSheet(style)
         self.setProperty("selected", "0")
+
+    def localise_text(self, text: dict) -> int:
+        self.setText(text[self.__label_key])
+        return 0
