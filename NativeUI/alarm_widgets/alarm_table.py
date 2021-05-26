@@ -19,10 +19,10 @@ from datetime import datetime
 
 
 class AlarmTable(QtWidgets.QTableWidget):
+    """Table containing all of the alarms since power up are contained. Easily sorted"""
     def __init__(self, NativeUI, *args, **kwargs):
         super(AlarmTable, self).__init__(*args, **kwargs)
 
-        self.alarmDict = {}
         self.setSizePolicy(
             QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Expanding
         )
@@ -40,40 +40,33 @@ class AlarmTable(QtWidgets.QTableWidget):
         self.payloadKeys = ["alarm_type", "alarm_code"]
         self.resizeColumnsToContents()
 
-        self.alarmDict = {}
+        self.alarmCellDict = {}
         self.timer = QtCore.QTimer()
         self.timer.setInterval(100)
         # self.timer.timeout.connect(self.updateDuration)
         self.timer.start()
 
-    def addAlarm(self, abstractAlarm):
-        timestamp = str(datetime.now())[:-3]
-        newItem = QtWidgets.QListWidgetItem(
-            self.solidBell,
-            timestamp
-            + ": "
-            + abstractAlarm.alarmPayload["alarm_type"]
-            + " - "
-            + abstractAlarm.alarmPayload["alarm_code"],
-        )
-        self.insertItem(0, newItem)  # add to the top
-        # self.labelList
+    # def addAlarm(self, abstractAlarm):
+    #     timestamp = str(datetime.now())[:-3]
+    #     newItem = QtWidgets.QListWidgetItem(
+    #         self.solidBell,
+    #         timestamp
+    #         + ": "
+    #         + abstractAlarm.alarmPayload["alarm_type"]
+    #         + " - "
+    #         + abstractAlarm.alarmPayload["alarm_code"],
+    #     )
+    #     self.insertItem(0, newItem)  # add to the top
 
-        # widg = self.cellWidget(rowNumber, 4)
-        # cellItem.setText(str(abstractAlarm.duration))
-        #     abstractAlarm.alarmExpired.connect(lambda i =newItem, j = abstractAlarm: self.update_duration(i,j))
-        #     self.setItem(self.nrows, colnum, newItem)
-        # tableItem.setText(str(abstractAlarm.duration))
-
-    def removeAlarm(self, abstractAlarm):
-        for x in range(self.count() - 1):
-            if abstractAlarm.alarmPayload["alarm_code"] in self.item(x).text():
-                self.takeItem(x)
+    # def removeAlarm(self, abstractAlarm):
+    #     for x in range(self.count() - 1):
+    #         if abstractAlarm.alarmPayload["alarm_code"] in self.item(x).text():
+    #             self.takeItem(x)
 
     def addAlarmRow(self, abstractAlarm):
+        """Add a new row 1 cell at a time. Goes through alarm payload to fill information"""
         self.setSortingEnabled(False)
         self.setRowCount(self.nrows + 1)
-        colnum = 0
 
         newItem = QtWidgets.QTableWidgetItem(str(abstractAlarm.startTime)[:-3])
         self.setItem(self.nrows, 0, newItem)
@@ -85,26 +78,20 @@ class AlarmTable(QtWidgets.QTableWidget):
         self.setItem(self.nrows, 2, newItem)
 
         newItem = QtWidgets.QTableWidgetItem(" ")
-        self.alarmDict[self.nrows] = newItem
-        self.setItem(self.nrows, 3, self.alarmDict[self.nrows])
-        # abstractAlarm.alarmExpired.connect(lambda i = self.alarmDict[self.nrows], j = abstractAlarm: self.update_duration(i,j))
+        self.alarmCellDict[self.nrows] = newItem
+        self.setItem(self.nrows, 3, self.alarmCellDict[self.nrows])
+        # abstractAlarm.alarmExpired.connect(lambda i = self.alarmCellDict[self.nrows], j = abstractAlarm: self.update_duration(i,j))
         self.timer.timeout.connect(
-            lambda i=self.alarmDict[self.nrows], j=abstractAlarm: self.update_duration(
+            lambda i=self.alarmCellDict[self.nrows], j=abstractAlarm: self.update_duration(
                 i, j
             )
         )
 
-        if self.nrows == 1:
-            self.resizeColumnsToContents()
+        #if self.nrows == 1:
+        self.resizeColumnsToContents()
         self.nrows = self.nrows + 1
         self.setSortingEnabled(True)
 
     def update_duration(self, cellItem, abstractAlarm):
         cellItem.setText(str(abstractAlarm.duration))
 
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    widg = alarmList()
-    widg.show()
-    sys.exit(app.exec_())

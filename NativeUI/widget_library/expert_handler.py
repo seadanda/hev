@@ -1,5 +1,6 @@
 from global_widgets.global_spinbox import labelledSpin
 from widget_library.ok_cancel_buttons_widget import OkButtonWidget, CancelButtonWidget, OkSendButtonWidget
+from global_widgets.global_typeval_popup import AbstractTypeValPopup
 
 from PySide2 import QtWidgets, QtGui, QtCore
 from handler_library.handler import PayloadHandler
@@ -29,6 +30,8 @@ class ExpertHandler(PayloadHandler):  # chose QWidget over QDialog family becaus
             self.spinDict[key] = widget
         if isinstance(widget, OkButtonWidget) or isinstance(widget, CancelButtonWidget) or isinstance(widget,OkSendButtonWidget):
             self.buttonDict[key] = widget
+        if isinstance(widget, AbstractTypeValPopup):
+            self.password_lock = widget
 
 
     def active_payload(self, *args) -> int:

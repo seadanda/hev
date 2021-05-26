@@ -180,6 +180,7 @@ class Layout:
                     self.widgets.personal_display,
                     self.widgets.localisation_button,
                     self.widgets.battery_display,
+                    self.widgets.lock_button,
                 ]
             )
         )
@@ -326,8 +327,8 @@ class Layout:
         # Create the stack
         page_settings = SwitchableStackWidget(
             self.NativeUI,
-            [self.layout_settings_expert(), tab_charts, tab_info],
-            ["Expert", "Charts", "Info"],
+            [tab_charts, tab_info, self.layout_settings_expert()],
+            ["Charts", "Info", "Expert"],
         )
         page_settings.setFont(self.NativeUI.text_font)
         self.widgets.add_widget(page_settings, "setting_stack")
@@ -680,11 +681,11 @@ class Layout:
 
         vlayout.addLayout(hButtonLayout)
 
-        passlock_stack = QtWidgets.QStackedWidget()
-        passlock_stack.addWidget(self.NativeUI.widgets.expert_password_widget)
-        passlock_stack.addWidget(expert_tab)
+        #passlock_stack = #QtWidgets.QStackedWidget()
+        self.NativeUI.widgets.expert_passlock_stack.addWidget(self.NativeUI.widgets.expert_password_widget)
+        self.NativeUI.widgets.expert_passlock_stack.addWidget(expert_tab)
         #break this here
-        return passlock_stack#expert_tab
+        return self.NativeUI.widgets.expert_passlock_stack#expert_tab
 
     def layout_main_spin_buttons(self) -> QtWidgets.QWidget:
         hlayout = QtWidgets.QHBoxLayout()

@@ -2,7 +2,7 @@
   "settings":[
 [["APNEA", "ms", "APNEA", "SET_THRESHOLD_MIN", "APNEA", 5, 20, 10, 1, 0]],
 [["Check Pressure Patient", "ms", "CHECK_P_PATIENT", "SET_THRESHOLD_MIN", "CHECK_P_PATIENT"],["Check Pressure Patient", "ms", "CHECK_P_PATIENT", "SET_THRESHOLD_MAX", "CHECK_P_PATIENT"]],
-[["FIO2", "%", "HIGH_FIO2", "SET_THRESHOLD_MIN", "HIGH_FIO2", -10, 0, -5, 0.1, 1],["Percentage O2", "", "fiO2_percent", "SET_TARGET_CURRENT", "FIO2_PERCENT", 20, 100, 21, 1, 0],["FIO2", "%", "HIGH_FIO2", "SET_THRESHOLD_MAX", "HIGH_FIO2", 0, 10, 5, 0.1, 1]],
+[["FIO2", "%", "HIGH_FIO2", "SET_THRESHOLD_MIN", "HIGH_FIO2", -10, 0, -5, 1, 0],["Percentage O2", "", "fiO2_percent", "SET_TARGET_CURRENT", "FIO2_PERCENT", 0, 100, 51, 1, 0],["FIO2", "%", "HIGH_FIO2", "SET_THRESHOLD_MAX", "HIGH_FIO2", 0, 10, 5, 1, 0]],
 [["Pressure", " ", "HIGH_PRESSURE", "SET_THRESHOLD_MIN", "HIGH_PRESSURE"],["Inhale Pressure","","inspiratory_pressure","SET_TARGET_CURRENT","INSPIRATORY_PRESSURE", 10, 50, 17, 1, 0],["Pressure", " ", "HIGH_PRESSURE", "SET_THRESHOLD_MAX", "HIGH_PRESSURE"],["Pressure", " ", "HIGH_PRESSURE", "SET_THRESHOLD_MAX", "HIGH_PRESSURE"]],
 [["Respiratory Rate", " ", "HIGH_RR", "SET_THRESHOLD_MIN", "HIGH_RR", -10, 0, -5, 0.1, 1],["Respiratory Rate","/min","respiratory_rate","SET_TARGET_CURRENT","RESPIRATORY_RATE", 10, 20, 15, 0.1, 1],["Respiratory Rate", " ", "HIGH_RR", "SET_THRESHOLD_MAX", "HIGH_RR", 0, 10, 5, 0.1, 1]],
 [["VTE", " ", "HIGH_VTE", "SET_THRESHOLD_MIN", "HIGH_VTE", -10, 0, -5, 1, 0],["Inhale Volume", "", "volume", "SET_TARGET_CURRENT", "VOLUME", 200, 800, 400, 20, 0],["VTE", " ", "HIGH_VTE", "SET_THRESHOLD_MAX", "HIGH_VTE",0, 10, 5, 1, 0]],

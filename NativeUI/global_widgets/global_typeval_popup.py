@@ -23,6 +23,7 @@ class AbstractTypeValPopup(QtWidgets.QDialog):
     """Popup takes user input to put in spin box. """
     okPressed = QtCore.Signal(str)
     cancelPressed = QtCore.Signal()
+    correctPassword = QtCore.Signal()
 
     def __init__(self, NativeUI, characterType, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -31,6 +32,8 @@ class AbstractTypeValPopup(QtWidgets.QDialog):
         # self.min, self.max, self.initVal, self.step, self.decPlaces = min, max, initVal, step, decPlaces
         grid = QtWidgets.QGridLayout()
         grid.setSpacing(1)
+
+        #self.label_text, self.min, self.max, self.initVal, self.step, self.decPlaces = 'Enter Password', 0, 10000, 0, 0, 0
 
         self.setStyleSheet("border-radius:4px; background-color:black")
         self.characterType = characterType
@@ -84,24 +87,17 @@ class AbstractTypeValPopup(QtWidgets.QDialog):
             self.numberpad.numberPressed.connect(self.handle_alphapress)
             hlayout.addWidget(self.lineEdit)
 
-
-
-        # grid.addWidget(self.lineEdit, 0, 0, 1, 2)
-
-
         self.hlayout2 = QtWidgets.QHBoxLayout()
 
         self.okButton = OkButtonWidget(NativeUI)
         self.okButton.setEnabled(True)
-        self.okButton.pressed.connect(self.handle_ok_press)
         self.hlayout2.addWidget(self.okButton)
-        # grid.addWidget(self.okButton, 1, 0)
 
         self.cancelButton = CancelButtonWidget(NativeUI)
         self.cancelButton.setEnabled(True)
 
         self.hlayout2.addWidget(self.cancelButton)
-        # grid.addWidget(self.cancelButton, 1, 1)
+
         vlayout = QtWidgets.QVBoxLayout()
         vlayout.addWidget(self.label)
         vlayout.addLayout(hlayout)
@@ -112,6 +108,13 @@ class AbstractTypeValPopup(QtWidgets.QDialog):
         self.setWindowFlags(
             QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint
         )  # no window title
+        self.password = 'A'
+
+    def submit_password(self):
+        val = self.lineEdit.text()
+        if val == self.password:
+            self.correctPassword.emit()
+        self.lineEdit.setText('') # reset text whether or not password was successful
 
     def handle_ok_press(self):
         val = self.lineEdit.text()
@@ -131,7 +134,7 @@ class AbstractTypeValPopup(QtWidgets.QDialog):
             self.label_text =  currentWidg.label_text
         self.label.setText(self.label_text)
 
-        self.lineEdit.setText(str(currentWidg.value()))
+        self.lineEdit.setText('')#str(currentWidg.value()))
 
     def handle_numberpress(self, symbol):
         """Handle number pad button press. Put button value in line edit text, and handle inputs

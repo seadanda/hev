@@ -60,6 +60,12 @@ class CMD_TYPE(Enum):
     SET_PERSONAL = 15
     GET_THRESHOLD_MIN = 16
     GET_THRESHOLD_MAX = 17
+    TEST_AUDIO_ALARM = 18
+    SKIP_NEXT_CALIBRATION = 19
+    DO_CALIBRATION = 20
+    MUTE_ALARM = 21
+    RESET_ALARM = 22
+
 
 
 @unique
@@ -184,6 +190,14 @@ class ALARM_CODES(Enum):
     O2_FAIL = 23  # HP
     PRESSURE_SENSOR_FAULT = 24  # HP
     ARDUINO_FAIL = 25  # HP
+    ALARM_TEST = 26  # HP
+    HIGH_VME = 27  #   MP
+    LOW_VME = 28  #   MP
+    HIGH_VMI = 29  #   MP
+    LOW_VMI = 30  #   MP
+    EXTENDED_HIGH_PRESSURE = 31  # HP
+    ALARMS_COUNT = 32
+
 
 
 class CMD_MAP(Enum):
@@ -240,6 +254,9 @@ class PAYLOAD_TYPE(IntEnum):
     BATTERY = 11
     LOOP_STATUS = 12
     PERSONAL = 13
+    ALARM_MUTE = 14
+    BAD_THRESHOLD = 15
+
 
 
 class HEVVersionError(Exception):
