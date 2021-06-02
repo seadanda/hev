@@ -1,0 +1,20 @@
+[hevpi]
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python3"
+
+[local]
+localhost
+
+[nuliv]
+nuliv
+
+[hevpi0]
+hevpi0
+
+[hevpi1]
+hevpi1
+
+[allpi]
+localhost ansible_connection=local ansible_python_interpreter="/usr/bin/env python3"
+nuliv
+hevpi0
+hevpi1

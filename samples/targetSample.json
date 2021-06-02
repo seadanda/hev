@@ -1,0 +1,20 @@
+{
+    "version": 182,
+    "timestamp": 544077,
+    "type": "TARGET",
+    "mode": "CURRENT",
+    "inspiratory_pressure": 17.0,
+    "ie_ratio": 0.33779263496398926,
+    "volume": 400.0,
+    "respiratory_rate": 15.0,
+    "peep": 5.0,
+    "fiO2_percent": 21.0,
+    "inhale_time": 1.0,
+    "inhale_trigger_enable": 1,
+    "exhale_trigger_enable": 0,
+    "volume_trigger_enable": 0,
+    "inhale_trigger_threshold": 5.0,
+    "exhale_trigger_threshold": 25.0,
+    "buffer_upper_pressure": 300.0,
+    "buffer_lower_pressure": 285.0
+}

@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # © Copyright CERN, Riga Technical University and University of Liverpool 2020.
 # All rights not expressly granted are reserved. 
 # 
@@ -20,9 +22,10 @@
 # of all those involved with the High Energy Ventilator project
 # (https://hev.web.cern.ch/).
 
-ansible_home=`pwd`/playbooks
+ansible_home=$(pwd)/playbooks
 
 export ANSIBLE_CONFIG=$ansible_home/ansible.cfg
 export ANSIBLE_INVENTORY=$ansible_home/hosts
 export ANSIBLE_LIBRARY=$ansible_home
-
+export ANSIBLE_LOG_PATH=$ansible_home/logs/"$(date +'%Y%m%d-%H%M%S')".log
+#export ANSIBLE_DEBUG=True

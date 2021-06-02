@@ -1,0 +1,14 @@
+{"settings":[
+["Respiratory Rate","/min","respiratory_rate","SET_TARGET_","RESPIRATORY_RATE", 0, 20, 15, 0.1, 1],
+["PEEP","cm h2o","peep","SET_TARGET_","PEEP", 0, 100, 15, 0.1, 1],
+["Inhale Time", "s", "inhale_time", "SET_TARGET_", "INHALE_TIME", 0, 20, 1, 0.1, 1],
+["IE Ratio", "", "ie_ratio", "SET_TARGET_", "IE_RATIO", 0, 1, 0.338, 0.001, 3],
+["Inhale Trigger Sensitivity","","inhale_trigger_threshold","SET_TARGET_","INHALE_TRIGGER_THRESHOLD", 0, 20, 5, 0.2, 1],
+["Exhale Trigger Sensitivity","","exhale_trigger_threshold","SET_TARGET_","EXHALE_TRIGGER_THRESHOLD", 0, 50, 25, 0.2, 1],
+["Inhale Pressure","","inspiratory_pressure","SET_TARGET_","INSPIRATORY_PRESSURE", 10, 50, 17, 1, 0],
+["Inhale Volume", "", "volume", "SET_TARGET_", "VOLUME", 200, 800, 400, 20, 0],
+["Percentage O2", "", "fiO2_percent", "SET_TARGET_", "FIO2_PERCENT", 20, 100, 51, 0.1, 1]],
+"radioSettings": ["Inhale Time", "IE Ratio"],
+"enableDict":{"PC/AC":[1, 1,0, 1, 1, 0, 1, 0, 1], "PC/AC-PRVC":[1, 1,1, 0, 1, 0, 1, 1, 1], "PC-PSV":[1, 1,1, 0, 1, 0, 1, 0, 1], "CPAP":[1, 1,0, 1, 1, 0, 1, 0, 1]},
+"mainPageSettings": ["Inhale Pressure", "Respiratory Rate", "Inhale Time", "IE Ratio", "Percentage O2", "PEEP" ]
+}
